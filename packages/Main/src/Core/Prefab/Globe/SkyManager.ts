@@ -6,7 +6,6 @@ import {
     getMoonDirectionECEF,
     getSunDirectionECEF,
     PrecomputedTexturesGenerator,
-    SunDirectionalLight,
 } from '@takram/three-atmosphere';
 import {
     EffectPass,
@@ -22,7 +21,7 @@ import View from 'Core/View';
 class SkyManager {
     private readonly sky: THREE.Mesh;
     private readonly skyLight: SkyLightProbe;
-    private readonly sunLight: SunDirectionalLight;
+    private readonly sunLight: THREE.DirectionalLight;
     private readonly aerialPerspective: AerialPerspectiveEffect;
     effectPass: EffectPass;
     scene: THREE.Scene;
@@ -48,23 +47,16 @@ class SkyManager {
 
         // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
-        this.skyLight.intensity = 1;
+        this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
 
         this.date = new Date(); // now
 
-        // SunDirectionalLight computes sunlight transmittance
-        // to its target position.
-        // Only creating a sky light probe *and* a sunlight
-        // (without adding them to the scene) is enough to render a sky.
-        this.sunLight = new SunDirectionalLight();
-        this.sunLight.intensity = 0.2;
+        // Sunlight and shadow
+        this.sunLight = new THREE.DirectionalLight(0xffffff, 0.2);
         this.sunLight.target.position.copy(camera.position);
-
-        // shadow support
         this.sunLight.castShadow = true;
         this.sunLight.shadow.mapSize.set(4096, 4096);
-
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
@@ -72,7 +64,7 @@ class SkyManager {
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFShadowMap;
 
         composer.addPass(new RenderPass(scene, camera));
         this.effectPass = new EffectPass(
@@ -88,7 +80,6 @@ class SkyManager {
 
         const textures = generator.textures;
         Object.assign(skyMaterial, textures);
-        this.sunLight.transmittanceTexture = textures.transmittanceTexture;
         this.skyLight.irradianceTexture = textures.irradianceTexture;
         Object.assign(this.aerialPerspective, textures);
 
@@ -143,30 +134,40 @@ class SkyManager {
 
         // Center the shadow around the view center
         // Use depth buffer picking at screen center
-        const screenCenterPos = this.view.getPickingPositionFromDepth(null);
-        if (screenCenterPos) {
-            this.sunLight.target.position.copy(screenCenterPos);
-        }
+        let sunTargetPos = this.view.getPickingPositionFromDepth(null);
+        if (!sunTargetPos) { sunTargetPos = camera.position; }
 
-        this.sunLight.sunDirection.copy(sunDirection);
-        const shadowHalfSide = 0.017 * camera.far + 200; // determined empirically
-        this.sunLight.distance = shadowHalfSide;
-        this.sunLight.update();
+        // Only update if the position has changed enough,
+        // to avoid flickering effect
+        const prevSunTargetPos = this.sunLight.target.position;
+        if (sunTargetPos.distanceTo(prevSunTargetPos) > 100) {
+            this.sunLight.target.position.copy(sunTargetPos);
+            this.sunLight.target.updateMatrixWorld();
+        }
         const shadowCam = this.sunLight.shadow.camera;
-        shadowCam.far = 2 * shadowHalfSide;
-        shadowCam.left = -shadowHalfSide;
-        shadowCam.right = shadowHalfSide;
-        shadowCam.top = shadowHalfSide;
-        shadowCam.bottom = -shadowHalfSide;
-        shadowCam.updateProjectionMatrix();
+        const prevShadowHalfSide = shadowCam.top;
+        this.sunLight.position.copy(sunDirection).multiplyScalar(prevShadowHalfSide)
+            .add(prevSunTargetPos);
+        this.sunLight.updateMatrixWorld();
+
+        // Calculate shadow box half-side to render shadows on all screen
+        // in most cases. These values were determined empirically.
+        // Only update if the value has changed enough,
+        // to avoid flickering effect
+        const shadowHalfSide = 0.017 * camera.far + 200;
+        if (Math.abs(shadowHalfSide - prevShadowHalfSide) > prevShadowHalfSide * 0.1) {
+            shadowCam.far = 2 * shadowHalfSide;
+            shadowCam.left = -shadowHalfSide;
+            shadowCam.right = shadowHalfSide;
+            shadowCam.top = shadowHalfSide;
+            shadowCam.bottom = -shadowHalfSide;
+            shadowCam.updateProjectionMatrix();
+        }
 
         this.skyLight.sunDirection.copy(sunDirection);
         this.skyLight.position.copy(camera.position); // position must not be the origin
         this.skyLight.update();
 
-        // necessary for Three to compute the light direction
-        this.sunLight.updateMatrixWorld();
-        this.sunLight.target.updateMatrixWorld();
         this.skyLight.updateMatrixWorld();
     }
 

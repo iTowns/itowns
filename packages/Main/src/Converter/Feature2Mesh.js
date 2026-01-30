@@ -624,6 +624,8 @@ function featureToMesh(feature, options) {
         mesh.material.vertexColors = true;
         mesh.material.color = new THREE.Color(0xffffff);
     }
+
+    mesh.castShadow = true;
     mesh.feature = feature;
 
     return mesh;
