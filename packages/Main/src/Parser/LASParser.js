@@ -21,6 +21,39 @@ async function loader() {
     return _thread;
 }
 
+async function parse(data, options, type = 'parseFile') {
+    const lasLoader = await loader();
+    const source = options.in.source;
+
+    const config = {
+        colorDepth: source.colorDepth,
+        in: {
+            crs: source.crs,
+            projDefs: proj4.defs(source.crs),
+        },
+        out: {
+            crs: options.in.crs,
+            projDefs: proj4.defs(options.in.crs),
+            origin: options.in.origin.toArray(),
+            rotation: options.in.rotation.toArray(),
+        },
+    };
+
+    if (type === 'parseChunk') {
+        config.pointCount = options.in.numPoints;
+        config.header = source.header;
+        config.eb = source.eb;
+    }
+
+    const parsedData = await lasLoader[type](Transfer(data), config);
+
+    const geometry = buildBufferGeometry(parsedData.attributes);
+    geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
+    geometry.userData.header = parsedData.header;
+
+    return geometry;
+}
+
 function buildBufferGeometry(attributes) {
     const geometry = new THREE.BufferGeometry();
 
@@ -86,29 +119,7 @@ export default {
      * `THREE.BufferGeometry`.
      */
     async parseChunk(data, options = {}) {
-        const lasLoader = await loader();
-        const source = options.in.source;
-        const origin = options.in.origin;
-        const quaternion = options.in.rotation;
-        const parsedData = await lasLoader.parseChunk(Transfer(data), {
-            pointCount: options.in.numPoints,
-            header: source.header,
-            eb: source.eb,
-            colorDepth: source.colorDepth,
-            in: {
-                crs: source.crs,
-                projDefs: proj4.defs(source.crs),
-            },
-            out: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: origin.toArray(),
-                rotation: quaternion.toArray(),
-            },
-        });
-
-        const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
+        const geometry = await parse(data, options, 'parseChunk');
         return geometry;
     },
 
@@ -137,27 +148,7 @@ export default {
             console.warn("Warning: options 'skip' not supported anymore");
         }
 
-        const lasLoader = await loader();
-        const source = options.in.source;
-
-        const parsedData = await lasLoader.parseFile(Transfer(data), {
-            colorDepth: source.colorDepth,
-            in: {
-                crs: source.crs,
-                projDefs: proj4.defs(source.crs),
-            },
-            out: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: options.in.origin.toArray(),
-                rotation: options.in.rotation.toArray(),
-            },
-        });
-
-        const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
-        geometry.userData.header = parsedData.header;
-
+        const geometry = await parse(data, options, 'parseFile');
         return geometry;
     },
 };
