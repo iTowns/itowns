@@ -35,9 +35,8 @@ export default {
             addPickingAttribute(points);
             points.frustumCulled = false;
             points.matrixAutoUpdate = false;
-            points.position.copy(node.origin);
-
-            points.quaternion.copy(node.rotation).invert();
+            points.position.copy(geometry.userData.position);
+            points.quaternion.copy(geometry.userData.quaternion);
             points.updateMatrix();
 
             points.layer = layer;
