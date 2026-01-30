@@ -49,7 +49,7 @@ export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
 export abstract class PotreeNodeBase extends PointCloudNode {
     index: number;
 
-    childrenBitField: number;
+    childrenBitField: number | undefined;
     baseurl: string;
     offsetBBox?: Box3;
     crs: string;
@@ -59,8 +59,8 @@ export abstract class PotreeNodeBase extends PointCloudNode {
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
-        childrenBitField = 0,
+        numPoints: number,
+        childrenBitField: number | undefined,
         source: { baseurl: string },
         crs: string,
     ) {
@@ -76,7 +76,7 @@ export abstract class PotreeNodeBase extends PointCloudNode {
     }
 
     override get octreeIsLoaded(): boolean {
-        return !(this.childrenBitField && this.children.length === 0);
+        return !(this.childrenBitField !== 0 && this.children.length === 0);
     }
 
     override get id(): string {
@@ -93,8 +93,8 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         return this._hierarchyKey;
     }
 
-    override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
-        return this.source.fetcher(url, networkOptions);
+    override fetcher(url: string): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, this.networkOptions);
     }
 
     override createChildAABB(childNode: this, childIndex: number): void {
