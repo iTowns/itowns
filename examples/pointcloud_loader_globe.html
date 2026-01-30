@@ -1,0 +1,192 @@
+<html>
+    <head>
+        <title>Itowns - Point cloud loader (Globe)</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
+            }
+        }
+        </script>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/pointcloud_loader.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <form id="load-form" method="GET">
+            <p class="form-text">Specify the URL of a point cloud to load</p>
+
+            <label for="url">URL</label>
+            <input type="text" id="url" name="url" required placeholder="Point cloud URL" />
+
+            <label for="format">Format</label>
+            <select id="format" name="format">
+                <option value="auto" selected>Auto-detect</option>
+                <option value="ept">Entwine (EPT)</option>
+                <option value="copc">COPC</option>
+                <option value="potree">Potree 1.x</option>
+                <option value="potree2">Potree 2.x</option>
+            </select>
+
+            <label for="crs">CRS</label>
+            <input id="crs" name="crs" list="crs-list" placeholder="Auto-detect">
+            <datalist id="crs-list">
+                <option value="EPSG:4978">EPSG:4978</option>
+            </datalist>
+
+            <button type="submit">Load</button>
+
+            <div id="error-message" role="alert"></div>
+        </form>
+
+        <div id="viewerDiv"></div>
+
+        <script type="module">
+            import { WebGLRenderTarget, DepthTexture, FloatType } from 'three';
+            import Stats from 'three/addons/libs/stats.module.js';
+            import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+            import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+            import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+            import { getFormat, getPointCloudClass, zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
+            import { EDLPass } from './jsm/postprocessing/EDLPass.js';
+
+            import { CRS, MAIN_LOOP_EVENTS, View, GlobeView, Fetcher, TMSSource, ColorLayer, WMTSSource, ElevationLayer } from 'itowns';
+            import { PointCloudDebug } from 'debug';
+
+            const viewerDiv = document.getElementById('viewerDiv');
+            const form = document.getElementById('load-form');
+            const urlInput = document.getElementById('url');
+            const formatSelect = document.getElementById('format');
+            const crsInput = document.getElementById('crs');
+            const errorMessage = document.getElementById('error-message');
+
+            function withHidden(view, predicate, func) {
+                const visibilitySet = new Set();
+                const layers = view.getLayers(layer => {
+                    return layer.isGeometryLayer && predicate(layer) && layer.visible
+                });
+
+                layers.forEach(layer => {
+                    layer.object3d.visible = false;
+                    visibilitySet.add(layer.object3d);
+                });
+
+                func(view);
+
+                visibilitySet.forEach(object => {
+                    object.visible = true;
+                });
+            }
+
+            async function load(url, options = {}) {
+                const { format = 'auto', crs } = options;
+                const { Source, Layer } = getPointCloudClass(format);
+
+                if (crs) {
+                    await CRS.fromEPSG(crs);
+                }
+
+                const view = new GlobeView(viewerDiv, {}, {
+                    controls: {
+                        minDistance: 5,
+                    }
+                });
+
+                const gfxEngine = view.mainLoop.gfxEngine;
+                const renderer = gfxEngine.renderer;
+                const size = gfxEngine.getWindowSize();
+
+                const renderTarget = new WebGLRenderTarget(size.x, size.y);
+                renderTarget.depthTexture = new DepthTexture(size.x, size.y, FloatType);
+
+                const composer = new EffectComposer(renderer, renderTarget);
+                const renderPass = new RenderPass(view.scene, view.camera3D);
+                const edlPass = new EDLPass(view.camera3D, size.x, size.y);
+                composer.addPass(renderPass);
+                composer.addPass(edlPass);
+
+                view.render = function render() {
+                    // Render point cloud + EDL to screen
+                    withHidden(view, layer => !layer.isPointCloudLayer, () => {
+                        composer.render();
+                    });
+
+                    // Render globe with depth test
+                    withHidden(view, layer => layer.isPointCloudLayer, () => {
+                        renderer.render(view.scene, view.camera3D);
+                    });
+                };
+
+
+                const source = new Source({ url, crs });
+                await source.whenReady;
+
+                const layer = new Layer('pointcloud', { source });
+                layer.crs = source.crs;
+                View.prototype.addLayer.call(view, layer);
+
+                const openSMJSON = await Fetcher.json('./layers/JSONLayers/OPENSM.json');
+                view.addLayer(
+                    new ColorLayer(openSMJSON.id, {
+                        ...openSMJSON,
+                        source: new TMSSource(openSMJSON.source),
+                    }),
+                );
+
+                const worldDTMJSON = await Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+                view.addLayer(
+                    new ElevationLayer(worldDTMJSON.id, {
+                        ...worldDTMJSON,
+                        source: new WMTSSource(worldDTMJSON.source),
+                    }),
+                );
+
+                await layer.whenReady;
+                zoomToLayerGlobe(view, layer);
+
+                window.addEventListener('resize', () => {
+                    const newSize = gfxEngine.getWindowSize();
+                    composer.setSize(newSize.x, newSize.y);
+                });
+
+                const stats = new Stats();
+                document.body.appendChild(stats.dom);
+                view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_START, () => stats.begin());
+                view.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, () => stats.end());
+
+                const gui = new GUI();
+                PointCloudDebug.initTools(view, layer, gui);
+
+                const edlFolder = gui.addFolder('Eye-Dome Lighting');
+                edlFolder.add(edlPass, 'enabled').name('Enabled').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'strength', 0, 10, 0.1).name('Strength').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'kernelRadius', 0.1, 5, 0.1).name('Radius').onChange(() => view.notifyChange());
+                edlFolder.open();
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            const url = params.get('url');
+            if (url) {
+                try {
+                    const format = getFormat(url, params.get('format'));
+                    const crs = params.get('crs') || undefined;
+                    urlInput.value = url;
+                    formatSelect.value = format ?? 'auto';
+                    crsInput.value = crs ?? '';
+                    await load(url, { format, crs });
+                } catch (error) {
+                    console.error(error);
+                    const message = error?.message ?? 'Failed to load the point cloud.';
+                    form.classList.toggle('error', true);
+                    errorMessage.textContent = message;
+                }
+            }
+        </script>
+    </body>
+</html>
