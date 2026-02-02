@@ -81,7 +81,7 @@
             var vpcLayer, vpcSource;
 
             function onLayerReady() {
-                var lookAt = vpcLayer.root.origin.toVector3();
+                var lookAt = vpcLayer.root.clampOBB.position;
 
                 var size = new THREE.Vector3();
                 vpcLayer.root.voxelOBB.box3D.getSize(size);
