@@ -32,7 +32,7 @@ describe('COPC', function () {
     describe('Copc Layer', function () {
         it('instanciates a layer', (done) => {
             const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
-            layer.whenReady
+            layer.startup()
                 .then(() => {
                     assert.equal(source.zmin, source.header.min[2]);
                     assert.ok(layer.root.isCopcNode);
