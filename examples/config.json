@@ -19,6 +19,8 @@
     },
 
     "Pointcloud": {
+        "pointcloud_loader": "Pointcloud loader",
+        "pointcloud_loader_globe": "Pointcloud loader (globe)",
         "potree_25d_map": "Potree 2.5D map",
         "potree2_25d_map": "Potree 2.5D map 2.0 format",
         "potree_3d_map": "Potree 3D map",
