@@ -1,7 +1,6 @@
 import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import PotreeBinParser from 'Parser/PotreeBinParser';
-import PotreeCinParser from 'Parser/PotreeCinParser';
 
 type PotreeBBox = {
     lx: number; ly: number; lz: number;
@@ -11,7 +10,7 @@ type PotreeBBox = {
 interface PotreeCloud {
     boundingBox: PotreeBBox;
     tightBoundingBox: PotreeBBox;
-    pointAttributes: string[];
+    pointAttributes: 'LAS' | 'LAZ' | /* BINARY format */ string[];
     spacing: number;
     scale: number;
     hierarchyStepSize: number;
@@ -42,7 +41,6 @@ class PotreeSource extends Source {
     boundsConforming!: [number, number, number, number, number, number];
     pointAttributes!: string[];
     baseurl!: string;
-    extension!: 'cin' | 'bin';
     scale!: number;
     zmin!: number;
     zmax!: number;
@@ -131,12 +129,14 @@ class PotreeSource extends Source {
                     cloud.tightBoundingBox.uy,
                     cloud.tightBoundingBox.uz,
                 ];
-                this.pointAttributes = cloud.pointAttributes;
+                if (Array.isArray(cloud.pointAttributes)) {
+                    this.pointAttributes = cloud.pointAttributes;
+                } else {
+                    throw new Error('[PotreeSource] Unsupported LAS/LAZ format');
+                }
                 this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
-                // @ts-expect-error non-standard CIN extension, shall be removed
-                this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
-                this.parser = this.extension === 'cin' ?
-                    PotreeCinParser.parse : PotreeBinParser.parse;
+
+                this.parser = PotreeBinParser.parse;
                 this.scale = cloud.scale;
 
                 this.zmin = cloud.tightBoundingBox.lz;
