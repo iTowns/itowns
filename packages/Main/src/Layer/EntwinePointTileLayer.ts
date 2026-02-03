@@ -46,6 +46,7 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
 
             const { bounds } = source;
             this.root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, this.crs);
+
             this.root.voxelOBB.setFromArray(bounds).projOBB(source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
 
