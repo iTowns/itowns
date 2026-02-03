@@ -44,7 +44,7 @@ export function fillHTMLWithPickingInfo(event, pickingArg) {
 }
 
 function zoomToSphere(view, tile, sphere) {
-    const transform = tile.cached.transform;
+    const transform = tile.engineData.transform;
 
     const center = new Vector3().fromArray(sphere).applyMatrix4(transform);
     const radius = sphere[3] * transform.getMaxScaleOnAxis();
