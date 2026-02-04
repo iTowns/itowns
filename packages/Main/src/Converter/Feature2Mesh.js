@@ -625,7 +625,6 @@ function featureToMesh(feature, options) {
         mesh.material.color = new THREE.Color(0xffffff);
     }
 
-    mesh.castShadow = true;
     mesh.feature = feature;
 
     return mesh;
@@ -697,6 +696,7 @@ export default {
             const meshes = features.map((feature) => {
                 const mesh = featureToMesh(feature, options);
                 mesh.layer = this;
+                mesh.castShadow = this.castShadow;
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);

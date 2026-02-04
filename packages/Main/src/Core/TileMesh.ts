@@ -10,6 +10,7 @@ import type { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import type LayerUpdateState from 'Layer/LayerUpdateState';
 
 interface TileLayerLike {
+    receiveShadow: boolean;
     tileMatrixSets: string[];
 }
 
@@ -76,7 +77,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
 
         this.link = {};
 
-        this.receiveShadow = true;
+        this.receiveShadow = layer.receiveShadow;
 
         let _visible = true;
         Object.defineProperty(this, 'visible', {
