@@ -7,22 +7,6 @@ import {
     Potree2Source, Potree2Layer,
 } from 'itowns';
 
-class Potree extends PotreeSource {
-    constructor(source) {
-        const url = new URL(source.url);
-        const file = url.pathname.split('/').pop();
-        super({ ...source, url: new URL('.', url.href).href, file });
-    }
-}
-
-class Potree2 extends Potree2Source {
-    constructor(source) {
-        const url = new URL(source.url);
-        const file = url.pathname.split('/').pop();
-        super({ ...source, url: new URL('.', url.href).href, file });
-    }
-}
-
 export function getFormat(url, format) {
     if (format !== 'auto') { return format; }
     if (url.includes('.copc.laz')) { return 'copc'; }
@@ -40,10 +24,10 @@ export function getPointCloudClass(format) {
         return { Source: EntwinePointTileSource, Layer: EntwinePointTileLayer };
     }
     if (format === 'potree') {
-        return { Source: Potree, Layer: PotreeLayer };
+        return { Source: PotreeSource, Layer: PotreeLayer };
     }
     if (format === 'potree2') {
-        return { Source: Potree2, Layer: Potree2Layer };
+        return { Source: Potree2Source, Layer: Potree2Layer };
     }
 
     throw new Error(`Unsupported format ${format}`);

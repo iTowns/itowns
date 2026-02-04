@@ -38,10 +38,16 @@ interface Potree2Metadata {
 }
 
 interface Potree2SourceParameters {
-    /** folder url */
+    /**
+     * URL of the metadata.json file, or base URL of the pointcloud if `file` is
+     * provided (deprecated).
+     */
     url: string;
-    /** metadata file name */
-    file: string;
+    /**
+     * @deprecated Use `url` parameter with the full URL to the
+     * metadata.json file instead.
+     */
+    file?: string;
     crs: string;
     metadata?: Potree2Metadata;
     networkOptions?: RequestInit;
@@ -121,13 +127,12 @@ function parseAttributes(jsonAttributes: Potree2Metadata['attributes']): Potree2
  */
 
 class Potree2Source extends Source {
-    file: string;
     extension: 'bin';
+    baseurl: string;
 
     // Properties initialized after fetching metadata
     metadata!: Potree2Metadata;
     pointAttributes!: Potree2PointAttributes;
-    baseurl!: string;
     zmin!: number;
     zmax!: number;
     spacing!: number;
@@ -277,28 +282,34 @@ class Potree2Source extends Source {
      * ```
      */
     constructor(source: Potree2SourceParameters) {
-        if (!source.file) {
-            throw new Error('New Potree2Source: file is required');
-        }
         if (!source.crs) {
             // with better data and the spec this might be removed
-            throw new Error('New PotreeSource: crs is required');
+            throw new Error('[Potree2Source]: crs is required');
         }
 
-        super(source);
-        this.file = source.file;
+        let url: string;
+        if (source.file) {
+            console.warn(
+                'Potree2Source: deprecated file parameter. ' +
+                'Use url with the full path to metadata.json instead (e.g., url: "https://example.com/pointcloud/metadata.json").',
+            );
+            url = new URL(source.file, source.url).href;
+        } else {
+            url = source.url;
+        }
+
+        super({ ...source, url });
+        this.baseurl = new URL('.', url).href;
         this.fetcher = Fetcher.arrayBuffer;
         this.parser = Potree2BinParser.parse;
         this.extension = 'bin';
 
         this.whenReady = (source.metadata ?
             Promise.resolve(source.metadata) :
-            Fetcher.json(`${this.url}/${this.file}`,
-                this.networkOptions) as Promise<Potree2Metadata>)
+            Fetcher.json(this.url, this.networkOptions) as Promise<Potree2Metadata>)
             .then((metadata) => {
                 this.metadata = metadata;
                 this.pointAttributes = parseAttributes(metadata.attributes);
-                this.baseurl = `${this.url}`;
 
                 this.zmin = metadata.attributes
                     .filter(attributes => attributes.name === 'position')[0].min[2];
