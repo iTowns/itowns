@@ -17,6 +17,7 @@ import {
     EffectComposer,
 } from 'postprocessing';
 import View from 'Core/View';
+import { getRig } from 'Utils/CameraUtils';
 
 class SkyManager {
     private readonly sky: THREE.Mesh;
@@ -132,10 +133,8 @@ class SkyManager {
         // to the uniforms used in post-processing effects
         (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
 
-        // Center the shadow around the view center
-        // Use depth buffer picking at screen center
-        let sunTargetPos = this.view.getPickingPositionFromDepth(null);
-        if (!sunTargetPos) { sunTargetPos = camera.position; }
+        // Center the shadow around the camera's target position
+        const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
 
         // Only update if the position has changed enough,
         // to avoid flickering effect
