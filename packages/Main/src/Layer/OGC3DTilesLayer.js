@@ -588,8 +588,8 @@ class OGC3DTilesLayer extends GeometryLayer {
             geometry.needsUpdate = true;
         }
 
-        model.castShadow = true;
-        model.receiveShadow = true;
+        model.castShadow = this.castShadow;
+        model.receiveShadow = this.receiveShadow;
     }
 
     handleTasks() {

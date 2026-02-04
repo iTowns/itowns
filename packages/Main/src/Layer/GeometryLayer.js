@@ -119,6 +119,18 @@ class GeometryLayer extends Layer {
         // Feature options
         this.filteringExtent = !this.source.isFileSource;
         this.structure = '3d';
+
+        /**
+         * Whether the object gets rendered into shadow map.
+         * @type {boolean}
+         */
+        this.castShadow = true;
+
+        /**
+         * Whether the material receives shadows.
+         * @type {boolean}
+         */
+        this.receiveShadow = true;
     }
 
     get visible() {
