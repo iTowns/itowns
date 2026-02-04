@@ -180,27 +180,32 @@ describe('Entwine Point Tile', function () {
 
         describe('finds the common ancestor of two nodes', () => {
             let root;
+            const crs = 'EPSG:4978';
             before('create octree', function () {
-                const source = { url: 'http://server.geo', extension: 'laz' };
-                root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000);
+                const source = {
+                    url: 'http://server.geo',
+                    extension: 'laz',
+                    crs,
+                };
+                root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000, crs);
                 root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
                 object3d.add(root.clampOBB);
 
-                root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000));
-                root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000));
-                root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000));
+                root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000, crs));
+                root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000, crs));
+                root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000, crs));
 
-                root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000));
-                root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000));
-                root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000));
-                root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000));
-                root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000));
+                root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000, crs));
+                root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000, crs));
+                root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000, crs));
+                root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000, crs));
+                root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000, crs));
 
-                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000));
-                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000));
-                root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000));
-                root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000));
-                root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source));
+                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000, crs));
+                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000, crs));
+                root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000, crs));
+                root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000, crs));
+                root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source, 10, crs));
             });
 
             let ancestor;
