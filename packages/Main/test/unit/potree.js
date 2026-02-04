@@ -16,7 +16,7 @@ const object3d = new Object3D();
 
 // potree 1.7
 const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa';
-const fileName = 'cloud.js';
+const cloudUrl = `${baseurl}/cloud.js`;
 
 describe('Potree', function () {
     let metadataJson;
@@ -26,7 +26,7 @@ describe('Potree', function () {
     let dataFetched;
     it('fetch test data from https://github.com/potree', async function () {
         const networkOptions = process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {};
-        metadataJson = await Fetcher.json(`${baseurl}/${fileName}`, networkOptions);
+        metadataJson = await Fetcher.json(cloudUrl, networkOptions);
         potreeRRbin = await Fetcher.arrayBuffer(`${baseurl}/data/r/r.bin`, networkOptions);
         potreeRRhrc = await Fetcher.arrayBuffer(`${baseurl}/data/r/r.hrc`, networkOptions);
         potreeRR0bin = await Fetcher.arrayBuffer(`${baseurl}/data/r/r0.bin`, networkOptions);
@@ -61,8 +61,7 @@ describe('Potree', function () {
             viewer = new GlobeView(renderer.domElement, placement, { renderer });
 
             potreeSource = new PotreeSource({
-                file: fileName,
-                url: baseurl,
+                url: cloudUrl,
                 crs: 'EPSG:4978',
             });
 
@@ -91,8 +90,7 @@ describe('Potree', function () {
                 try {
                     // eslint-disable-next-line no-unused-vars
                     const source = new PotreeSource({
-                        file: fileName,
-                        url: baseurl,
+                        url: cloudUrl,
                     });
                 } catch (err) {
                     assert.ok(err instanceof Error);

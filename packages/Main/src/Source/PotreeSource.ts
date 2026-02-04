@@ -18,8 +18,16 @@ interface PotreeCloud {
 }
 
 interface PotreeSourceParameters {
+    /**
+     * URL of the cloud.js file, or base URL of the pointcloud if `file` is
+     * provided (deprecated).
+     */
     url: string;
-    file: string;
+    /**
+     * @deprecated Use `url` parameter with the full URL to the cloud.js file
+     * instead.
+     */
+    file?: string;
     crs: string;
     cloud?: PotreeCloud;
     networkOptions?: RequestInit;
@@ -29,12 +37,9 @@ interface PotreeSourceParameters {
  * PotreeSource are object containing informations on how to fetch
  * points cloud resources.
  *
- * @param url - folder url.
- * @param file - cloud file name.
  */
 
 class PotreeSource extends Source {
-    file: string;
     extensionOctree: 'hrc';
 
     // Properties initialized after fetching cloud file
@@ -101,16 +106,24 @@ class PotreeSource extends Source {
      *
      */
     constructor(source: PotreeSourceParameters) {
-        if (!source.file) {
-            throw new Error('New PotreeSource: file is required');
-        }
         if (!source.crs) {
             // with better data and the spec this might be removed
             throw new Error('New PotreeSource: crs is required');
         }
 
-        super(source);
-        this.file = source.file;
+        let url: string;
+        if (source.file) {
+            console.warn(
+                'PotreeSource: deprecated file parameter. ' +
+                'Use url with the full path to cloud.js instead (e.g., url: "https://example.com/pointcloud/cloud.js").',
+            );
+            url = new URL(source.file, source.url).href;
+        } else {
+            url = source.url;
+        }
+
+        super({ ...source, url });
+        this.baseurl = new URL('.', url).href;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'hrc';
 
@@ -119,7 +132,7 @@ class PotreeSource extends Source {
         this.whenReady = (
             source.cloud ?
                 Promise.resolve(source.cloud) :
-            Fetcher.json(`${this.url}/${this.file}`, this.networkOptions) as Promise<PotreeCloud>)
+            Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
@@ -134,7 +147,7 @@ class PotreeSource extends Source {
                 } else {
                     throw new Error('[PotreeSource] Unsupported LAS/LAZ format');
                 }
-                this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
+                this.baseurl = new URL(`${cloud.octreeDir}/r`, this.baseurl).href;
 
                 this.parser = PotreeBinParser.parse;
                 this.scale = cloud.scale;

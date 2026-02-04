@@ -80,8 +80,7 @@
                 */
 
                 itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
-                const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia';
-                const file = 'cloud.js';
+                const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
                 const crs = 'EPSG:25831';
 
                 viewerDiv = document.getElementById('viewerDiv');
@@ -96,7 +95,6 @@
 
                 // Configure Point Cloud layer
                 const potreeSource = new itowns.PotreeSource({
-                    file,
                     url,
                     crs,
                 });

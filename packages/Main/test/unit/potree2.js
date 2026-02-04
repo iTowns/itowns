@@ -25,8 +25,7 @@ describe('Potree2', function () {
 
         // Configure Point Cloud layer
         potree2Source = new Potree2Source({
-            file: 'metadata.json',
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             crs: viewer.referenceCrs,
         });
@@ -47,13 +46,12 @@ describe('Potree2', function () {
         try {
             // eslint-disable-next-line no-unused-vars
             const source = new Potree2Source({
-                file: 'metadata.json',
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
                 networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             });
         } catch (err) {
             assert.ok(err instanceof Error);
-            assert.equal(err.message, 'New PotreeSource: crs is required');
+            assert.equal(err.message, '[Potree2Source]: crs is required');
         }
     });
 
