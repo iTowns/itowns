@@ -8,18 +8,30 @@ const MODES = {
 
 type RenderMode = typeof MODES[keyof typeof MODES];
 
-type Object = THREE.Object3D & { mode: RenderMode };
+/**
+ * @privateRemarks
+ * Look at the use of CommonMaterial in PointsMaterial to see why this interface
+ * workaround is required: we're currently dynamically adding properties to
+ * materials as aliases to the uniform values.
+ */
+export interface ModalObject extends THREE.Object3D {
+    mode: RenderMode;
+    material: THREE.Material & { mode: RenderMode }
+}
 
+/**
+ * Sets the rendering mode of all the `objects` and their children to `mode`,
+ * runs the `callback`, reverts the rendering mode and returns the result.
+ */
 function scope<T>(
-    objects: Array<Object>,
+    objects: Array<ModalObject>,
     mode: RenderMode,
-    callback: (objects: Array<Object>) => T,
+    callback: (objects: Array<ModalObject>) => T,
 ): T {
     const oldModes = objects.map(obj => obj.mode ?? MODES.FINAL);
     for (const obj of objects) {
         obj.traverse((node) => {
-            // @ts-expect-error Don't know quite what type this is yet
-            const material = node.material;
+            const material = (node as ModalObject).material;
             if (material) {
                 material.mode = mode;
             }
@@ -28,8 +40,7 @@ function scope<T>(
     const res = callback(objects);
     for (const [index, obj] of objects.entries()) {
         obj.traverse((node) => {
-            // @ts-expect-error Don't know quite what type this is yet
-            const material = node.material;
+            const material = (node as ModalObject).material;
             if (material) {
                 material.mode = oldModes[index];
             }
@@ -38,8 +49,4 @@ function scope<T>(
     return res;
 }
 
-// Rendering mode
-// According to the rendering mode, the material's object switches
-// the mode property of the materials
 export default { MODES, scope };
-
