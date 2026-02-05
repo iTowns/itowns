@@ -1,0 +1,14 @@
+{
+    "extends": "../../tsconfig.json",
+    "include": ["./**/*.ts", "../jsm/**/*.js"],
+    "exclude": [ "dist", "node_modules" ],
+    "compilerOptions": {
+        "outDir": "dist",
+        "baseUrl": ".",
+        "module": "ESNext",
+        "target": "esnext",
+        "moduleResolution": "Bundler",
+        "sourceMap": true,
+        "declaration": false,
+    },
+}
