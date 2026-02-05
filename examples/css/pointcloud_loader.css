@@ -1,0 +1,105 @@
+:root {
+    --itowns-color-bg: #000000;
+    --itowns-color-bg-field: #232323;
+    --itowns-color-primary: #ffffff;
+    --itowns-color-muted: #bbbbbb;
+    --itowns-color-accent: #0077BB;
+    --itowns-color-red: #cc3311;
+
+    --itowns-font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    --itowns-text-sm: 11px;
+
+    --itowns-spacing-xs: 8px;
+    --itowns-spacing-md: 16px;
+
+    --itowns-radius: 6px;
+}
+
+#controls {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    left: var(--itowns-spacing-md);
+    bottom: var(--itowns-spacing-md);
+    gap: var(--itowns-spacing-xs);
+    width: 100%;
+    max-width: 245px;
+}
+
+.loader-panel {
+    display: grid;
+    gap: var(--itowns-spacing-xs);
+    padding: var(--itowns-spacing-xs);
+    background: var(--itowns-color-bg);
+    color: var(--itowns-color-primary);
+    border-radius: var(--itowns-radius);
+    font-family: var(--itowns-font);
+    font-size: var(--itowns-text-sm);
+}
+
+#load-form {
+    grid-template-columns: auto 1fr;
+}
+
+#load-form .form-text {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--itowns-color-muted);
+    line-height: 1.3;
+}
+
+#load-form .form-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    margin: var(--itowns-spacing-xs) 0;
+    border: 0;
+    background: var(--itowns-color-bg-field);
+}
+
+.loader-panel label {
+    align-self: center;
+}
+
+.loader-panel input[type="text"],
+.loader-panel input[list],
+.loader-panel select {
+    background: var(--itowns-color-bg-field);
+    padding: var(--itowns-spacing-xs);
+    border: 0px;
+    border-radius: var(--itowns-radius);
+    color: var(--itowns-color-primary);
+    font: inherit;
+}
+
+.loader-panel input[type="text"]:focus,
+.loader-panel input[list]:focus,
+.loader-panel select:focus {
+    outline: 1px solid var(--itowns-color-accent);
+    outline-offset: 1px;
+}
+
+.loader-panel input::placeholder {
+    color: var(--itowns-color-muted);
+}
+
+#load-form button {
+    grid-column: 1 / -1;
+    padding: var(--itowns-spacing-xs);
+    background: var(--itowns-color-accent);
+    border: 0;
+    border-radius: var(--itowns-radius);
+    color: var(--itowns-color-primary);
+    font: inherit;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#error-message {
+    display: none;
+    grid-column: 1 / -1;
+    color: var(--itowns-color-red);
+}
+
+#load-form.error #error-message {
+    display: block;
+}

@@ -47,8 +47,7 @@ describe('Potree2 Provider', function () {
 
         const layers = [];
         let source = new Potree2Source({
-            file: 'metadata.json',
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             crs: 'EPSG:4978',
             metadata,
@@ -65,8 +64,7 @@ describe('Potree2 Provider', function () {
 
         // // // normals as vector
         source = new Potree2Source({
-            file: 'metadata.json',
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             crs: 'EPSG:4978',
             metadata: {
@@ -133,8 +131,7 @@ describe('Potree2 Provider', function () {
 
         // // spheremapped normals
         source = new Potree2Source({
-            file: 'metadata.json',
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             crs: 'EPSG:4978',
             metadata: {
@@ -201,8 +198,7 @@ describe('Potree2 Provider', function () {
 
         // // oct16 normals
         source = new Potree2Source({
-            file: 'metadata.json',
-            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion',
+            url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/potree2.0/lion/metadata.json',
             networkOptions: process.env.HTTPS_PROXY ? { agent: new HttpsProxyAgent(process.env.HTTPS_PROXY) } : {},
             crs: 'EPSG:4978',
             metadata: {

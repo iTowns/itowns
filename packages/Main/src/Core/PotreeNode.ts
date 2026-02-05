@@ -18,7 +18,7 @@ class PotreeNode extends PotreeNodeBase {
     }
 
     override get url(): string {
-        return `${this.baseurl}/${this.hierarchyKey}.${this.source.extension}`;
+        return `${this.baseurl}/${this.hierarchyKey}.bin`;
     }
 
     override get networkOptions(): RequestInit {

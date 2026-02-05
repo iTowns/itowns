@@ -91,7 +91,6 @@ class EntwinePointTileSource extends Source {
             if (metadata.srs) {
                 if (metadata.srs.authority && metadata.srs.horizontal) {
                     this.crs = `${metadata.srs.authority}:${metadata.srs.horizontal}`;
-                    // @ts-expect-error CRS.defs is ill-typed for this use-case
                     if (!CRS.defs(this.crs)) {
                         CRS.defs(this.crs, metadata.srs.wkt);
                     }

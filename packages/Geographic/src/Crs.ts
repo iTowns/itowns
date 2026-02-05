@@ -173,14 +173,41 @@ export function axisOrder(crs: ProjectionLike) {
 
 /**
  * Defines a proj4 projection as a named alias.
- * This function is a specialized wrapper over the
- * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections)
- * function.
- *
- * @param code - Named alias of the currently defined projection.
- * @param proj4def - Proj4 or WKT string of the defined projection.
+ * This function is an alias for the
+ * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections) function.
  */
-export const defs = (code: string, proj4def: string) => proj4.defs(code, proj4def);
+export const defs = proj4.defs;
+
+/**
+ * Fetches a CRS definition from epsg.io and registers it with proj4.
+ * If the CRS is already defined, returns the existing definition.
+ *
+ * @param crs - The EPSG code string (e.g. "EPSG:2154").
+ * @returns The proj4 projection definition.
+ *
+ * @example
+ * // Register EPSG:2154 (RGF93 / Lambert-93)
+ * await CRS.fromEPSG('EPSG:2154');
+ *
+ * // Register EPSG:4269 (NAD83)
+ * await CRS.fromEPSG('EPSG:4269');
+ */
+export async function fromEPSG(crs: string): Promise<ProjectionDefinition> {
+    const def = proj4.defs(crs);
+    if (def) {
+        return def;
+    }
+
+    const code = crs.replace(/^EPSG:/i, '');
+    const response = await fetch(`https://epsg.io/${code}.proj4`);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch EPSG:${code} from epsg.io: ${response.status}`);
+    }
+
+    const proj4def = await response.text();
+    proj4.defs(crs, proj4def);
+    return proj4.defs(crs);
+}
 
 export function defsFromWkt(wkt: string) {
     proj4.defs('unknown', wkt);

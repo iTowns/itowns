@@ -9,8 +9,8 @@ import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
-const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa/';
-const fileName = 'cloud.js';
+const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa';
+const cloudUrl = `${baseurl}/cloud.js`;
 
 describe('Potree Provider', function () {
     let potreeRRhrc;
@@ -50,8 +50,7 @@ describe('Potree Provider', function () {
                 };
 
                 const source = new PotreeSource({
-                    file: fileName,
-                    url: baseurl,
+                    url: cloudUrl,
                     crs: 'EPSG:4978',
                     cloud,
                 });
@@ -78,8 +77,7 @@ describe('Potree Provider', function () {
                 };
 
                 const source = new PotreeSource({
-                    file: fileName,
-                    url: baseurl,
+                    url: cloudUrl,
                     crs: 'EPSG:4978',
                     cloud,
                 });
@@ -104,8 +102,7 @@ describe('Potree Provider', function () {
                     octreeDir: 'data',
                 };
                 const source = new PotreeSource({
-                    file: fileName,
-                    url: baseurl,
+                    url: cloudUrl,
                     crs: 'EPSG:4978',
                     cloud,
                 });
@@ -130,7 +127,6 @@ describe('Potree Provider', function () {
                     octreeDir: 'data',
                 };
                 const source = new PotreeSource({
-                    file: fileName,
                     url: baseurl,
                     cloud,
                     crs: 'EPSG:4978',

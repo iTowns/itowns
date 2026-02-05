@@ -1,7 +1,6 @@
 import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import PotreeBinParser from 'Parser/PotreeBinParser';
-import PotreeCinParser from 'Parser/PotreeCinParser';
 
 type PotreeBBox = {
     lx: number; ly: number; lz: number;
@@ -11,7 +10,7 @@ type PotreeBBox = {
 interface PotreeCloud {
     boundingBox: PotreeBBox;
     tightBoundingBox: PotreeBBox;
-    pointAttributes: string[];
+    pointAttributes: 'LAS' | 'LAZ' | /* BINARY format */ string[];
     spacing: number;
     scale: number;
     hierarchyStepSize: number;
@@ -19,8 +18,16 @@ interface PotreeCloud {
 }
 
 interface PotreeSourceParameters {
+    /**
+     * URL of the cloud.js file, or base URL of the pointcloud if `file` is
+     * provided (deprecated).
+     */
     url: string;
-    file: string;
+    /**
+     * @deprecated Use `url` parameter with the full URL to the cloud.js file
+     * instead.
+     */
+    file?: string;
     crs: string;
     cloud?: PotreeCloud;
     networkOptions?: RequestInit;
@@ -30,19 +37,15 @@ interface PotreeSourceParameters {
  * PotreeSource are object containing informations on how to fetch
  * points cloud resources.
  *
- * @param url - folder url.
- * @param file - cloud file name.
  */
 
 class PotreeSource extends Source {
-    file: string;
     extensionOctree: 'hrc';
 
     // Properties initialized after fetching cloud file
     boundsConforming!: [number, number, number, number, number, number];
     pointAttributes!: string[];
     baseurl!: string;
-    extension!: 'cin' | 'bin';
     scale!: number;
     zmin!: number;
     zmax!: number;
@@ -103,16 +106,24 @@ class PotreeSource extends Source {
      *
      */
     constructor(source: PotreeSourceParameters) {
-        if (!source.file) {
-            throw new Error('New PotreeSource: file is required');
-        }
         if (!source.crs) {
             // with better data and the spec this might be removed
             throw new Error('New PotreeSource: crs is required');
         }
 
-        super(source);
-        this.file = source.file;
+        let url: string;
+        if (source.file) {
+            console.warn(
+                'PotreeSource: deprecated file parameter. ' +
+                'Use url with the full path to cloud.js instead (e.g., url: "https://example.com/pointcloud/cloud.js").',
+            );
+            url = new URL(source.file, source.url).href;
+        } else {
+            url = source.url;
+        }
+
+        super({ ...source, url });
+        this.baseurl = new URL('.', url).href;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'hrc';
 
@@ -121,7 +132,7 @@ class PotreeSource extends Source {
         this.whenReady = (
             source.cloud ?
                 Promise.resolve(source.cloud) :
-            Fetcher.json(`${this.url}/${this.file}`, this.networkOptions) as Promise<PotreeCloud>)
+            Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
@@ -131,12 +142,14 @@ class PotreeSource extends Source {
                     cloud.tightBoundingBox.uy,
                     cloud.tightBoundingBox.uz,
                 ];
-                this.pointAttributes = cloud.pointAttributes;
-                this.baseurl = `${this.url}/${cloud.octreeDir}/r`;
-                // @ts-expect-error non-standard CIN extension, shall be removed
-                this.extension = cloud.pointAttributes === 'CIN' ? 'cin' : 'bin';
-                this.parser = this.extension === 'cin' ?
-                    PotreeCinParser.parse : PotreeBinParser.parse;
+                if (Array.isArray(cloud.pointAttributes)) {
+                    this.pointAttributes = cloud.pointAttributes;
+                } else {
+                    throw new Error('[PotreeSource] Unsupported LAS/LAZ format');
+                }
+                this.baseurl = new URL(`${cloud.octreeDir}/r`, this.baseurl).href;
+
+                this.parser = PotreeBinParser.parse;
                 this.scale = cloud.scale;
 
                 this.zmin = cloud.tightBoundingBox.lz;
