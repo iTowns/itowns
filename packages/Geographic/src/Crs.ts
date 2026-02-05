@@ -173,14 +173,10 @@ export function axisOrder(crs: ProjectionLike) {
 
 /**
  * Defines a proj4 projection as a named alias.
- * This function is a specialized wrapper over the
- * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections)
- * function.
- *
- * @param code - Named alias of the currently defined projection.
- * @param proj4def - Proj4 or WKT string of the defined projection.
+ * This function is an alias for the
+ * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections) function.
  */
-export const defs = (code: string, proj4def: string) => proj4.defs(code, proj4def);
+export const defs = proj4.defs;
 
 /**
  * Fetches a CRS definition from epsg.io and registers it with proj4.
