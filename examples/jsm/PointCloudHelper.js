@@ -5,6 +5,7 @@ import {
     EntwinePointTileSource, EntwinePointTileLayer,
     PotreeSource, PotreeLayer,
     Potree2Source, Potree2Layer,
+    PNTS_MODE,
 } from 'itowns';
 
 export function getFormat(url, format) {
@@ -30,6 +31,16 @@ export function getPointCloudClass(format) {
         return { Source: Potree2Source, Layer: Potree2Layer };
     }
 
+    throw new Error(`Unsupported format ${format}`);
+}
+
+export function getDefaultAttribute(format) {
+    if (format === 'copc' || format === 'ept') {
+        return PNTS_MODE.INTENSITY;
+    }
+    if (format === 'potree' || format === 'potree2') {
+        return PNTS_MODE.COLOR;
+    }
     throw new Error(`Unsupported format ${format}`);
 }
 

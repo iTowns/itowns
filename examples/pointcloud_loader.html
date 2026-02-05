@@ -20,31 +20,42 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
     <body>
-        <form id="load-form" method="GET">
-            <p class="form-text">Specify the URL of a point cloud to load</p>
+        <div id="controls">
+            <div id="showcase-panel" class="loader-panel">
+                <label for="showcase">Play with the showcase</label>
+                <select id="showcase" name="showcase">
+                    <option value="" selected>Select a dataset...</option>
+                    <option value="chicago">Chicago (USGS)</option>
+                    <option value="barcelona">Barcelona (ICGC)</option>
+                </select>
+            </div>
 
-            <label for="url">URL</label>
-            <input type="text" id="url" name="url" required placeholder="Point cloud URL" />
+            <form id="load-form" class="loader-panel" method="GET">
+                <p class="form-text">Or specify the URL of a point cloud to load:</p>
 
-            <label for="format">Format</label>
-            <select id="format" name="format">
-                <option value="auto" selected>Auto-detect</option>
-                <option value="ept">Entwine (EPT)</option>
-                <option value="copc">COPC</option>
-                <option value="potree">Potree 1.x</option>
-                <option value="potree2">Potree 2.x</option>
-            </select>
+                <label for="url">URL</label>
+                <input type="text" id="url" name="url" required placeholder="Point cloud URL" />
 
-            <label for="crs">CRS</label>
-            <input id="crs" name="crs" list="crs-list" placeholder="Auto-detect">
-            <datalist id="crs-list">
-                <option value="EPSG:4978">EPSG:4978</option>
-            </datalist>
+                <label for="format">Format</label>
+                <select id="format" name="format">
+                    <option value="auto" selected>Auto-detect</option>
+                    <option value="ept">Entwine (EPT)</option>
+                    <option value="copc">COPC</option>
+                    <option value="potree">Potree 1.x</option>
+                    <option value="potree2">Potree 2.x</option>
+                </select>
 
-            <button type="submit">Load</button>
+                <label for="crs">CRS</label>
+                <input id="crs" name="crs" list="crs-list" placeholder="Auto-detect">
+                <datalist id="crs-list">
+                    <option value="EPSG:4978">EPSG:4978</option>
+                </datalist>
 
-            <div id="error-message" role="alert"></div>
-        </form>
+                <button type="submit">Load</button>
+
+                <div id="error-message" role="alert"></div>
+            </form>
+        </div>
 
         <div id="viewerDiv"></div>
 
@@ -52,9 +63,9 @@
             import { Vector3 } from 'three';
             import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
             import Stats from 'stats-gl';
-            import { getFormat, getPointCloudClass, zoomToLayer } from './jsm/PointCloudHelper.js';
+            import { getFormat, getPointCloudClass, getDefaultAttribute, zoomToLayer } from './jsm/PointCloudHelper.js';
 
-            import { CRS, MAIN_LOOP_EVENTS, PlanarControls, View } from 'itowns';
+            import { CRS, MAIN_LOOP_EVENTS, PNTS_MODE, PlanarControls, View } from 'itowns';
             import { PointCloudDebug } from 'debug';
 
             const viewerDiv = document.getElementById('viewerDiv');
@@ -75,7 +86,10 @@
                 const source = new Source({ url, crs });
                 await source.whenReady;
 
-                const layer = new Layer('pointcloud', { source });
+                const layer = new Layer('pointcloud', {
+                    source,
+                    mode: getDefaultAttribute(format),
+                });
                 layer.crs = source.crs;
 
                 const view = new View(layer.crs, viewerDiv);
@@ -116,6 +130,42 @@
                     form.classList.toggle('error', true);
                     errorMessage.textContent = message;
                 }
+            }
+        </script>
+
+        <script type="module">
+            function loadShowcase(input) {
+                const showcase = typeof input === 'string' ? input : input?.target?.value;
+                if (!showcase) {
+                    return;
+                }
+                let url;
+                let format;
+                let crs;
+                switch (showcase) {
+                    case 'barcelona':
+                        url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
+                        format = 'potree';
+                        crs = 'EPSG:25831';
+                        break;
+                    default:
+                        url = 'https://s3-us-west-2.amazonaws.com/usgs-lidar-public/USGS_LPC_IL_4County_Cook_2017_LAS_2019/ept.json';
+                        format = 'ept';
+                        crs = '';
+                        break;
+                }
+                const params = new URLSearchParams();
+                params.set('url', url);
+                params.set('format', format);
+                if (crs) {
+                    params.set('crs', crs);
+                }
+                window.location.search = params.toString();
+            }
+
+            document.getElementById('showcase').addEventListener('change', loadShowcase);
+            if (!document.getElementById('url').value) {
+                loadShowcase('chicago');
             }
         </script>
     </body>
