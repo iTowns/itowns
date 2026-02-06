@@ -1,16 +1,22 @@
-import { Coordinates } from '@itowns/geographic';
 import assert from 'assert';
 import Potree2BinParser from 'Parser/Potree2BinParser';
 import * as THREE from 'three';
 
 describe('Potree2BinParser', function () {
+    const crs = 'EPSG:3857';
     it('should correctly parse position buffer', function (done) {
-        const nbPoints = 12;
-        const buffer = new ArrayBuffer(nbPoints * 4 * 3);
+        const nbPoints = 10;
+        const spatialDim = 3;// x, y, z
+        const bufferDim = 4;// int32
+        const buffer = new ArrayBuffer(nbPoints * bufferDim * spatialDim);
         const dv = new DataView(buffer);
-        for (let i = 0; i < nbPoints * 3; i++) {
-            dv.setInt32(i * 4, i * 2, true);
+        for (let i = 0; i < nbPoints; i++) {
+            dv.setInt32((i * spatialDim + 0) * bufferDim, i * 2, true);
+            dv.setInt32((i * spatialDim + 1) * bufferDim, i * 2, true);
+            dv.setInt32((i * spatialDim + 2) * bufferDim, i * 2, true);
         }
+
+        const valPositionMax = (nbPoints - 1) * 2;
 
         const options = {
             in: {
@@ -35,15 +41,16 @@ describe('Potree2BinParser', function () {
                         }],
                         vectors: [],
                     },
-                    crs: 'EPSG:4978',
+                    crs,
                 },
                 voxelOBB: {
-                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
+                },
+                clampOBB: {
+                    center: new THREE.Vector3(valPositionMax * 0.5, valPositionMax * 0.5, valPositionMax * 0.5),
                 },
                 numPoints: nbPoints,
-                crs: 'EPSG:4978',
-                origin: new Coordinates('EPSG:4978', 0, 0, 0),
-                rotation: new THREE.Quaternion(),
+                crs,
             },
         };
 
@@ -51,10 +58,11 @@ describe('Potree2BinParser', function () {
             .then((geometry) => {
                 const posAttr = geometry.getAttribute('position');
                 assert.equal(posAttr.itemSize, 3);
+                const origin = geometry.userData.position;
                 assert.ok(posAttr.array instanceof Float32Array);
                 assert.equal(posAttr.array.length, nbPoints * 3);
-                assert.equal(posAttr.array[0], 0);
-                assert.equal(posAttr.array[11], 22);
+                assert.equal(posAttr.array[0], -origin.x);// x of the 1st point
+                assert.equal(posAttr.array[14], 8);// z of the 5th point
                 done();
             })
             .catch(done);
@@ -68,9 +76,9 @@ describe('Potree2BinParser', function () {
         const dv = new DataView(buffer);
         for (let i = 0; i < numPoints; i++) {
             // position
-            dv.setInt32(i * numbyte + 0, 3 * i, true);
-            dv.setInt32(i * numbyte + 4, 3 * i + 1, true);
-            dv.setInt32(i * numbyte + 8, 3 * i + 2, true);
+            dv.setInt32(i * numbyte + 0, 2 * i + 1, true);// to avoid 0 for the deepStrictEqual
+            dv.setInt32(i * numbyte + 4, 2 * i + 1, true);
+            dv.setInt32(i * numbyte + 8, 2 * i + 1, true);
             // intensity
             dv.setInt16(i * numbyte + 12, 100 + i, true);
             // color
@@ -80,6 +88,8 @@ describe('Potree2BinParser', function () {
             // classification
             dv.setUint8(i * numbyte + 20, i * 3);
         }
+
+        const valPositionMax = numPoints * 2 - 1;
 
         const options = {
             in: {
@@ -137,15 +147,16 @@ describe('Potree2BinParser', function () {
                         }],
                         vectors: [],
                     },
-                    crs: 'EPSG:4978',
+                    crs,
                 },
                 voxelOBB: {
-                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(1, 1, 1)),
+                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
+                },
+                clampOBB: {
+                    center: new THREE.Vector3(),
                 },
                 numPoints,
-                crs: 'EPSG:4978',
-                origin: new Coordinates('EPSG:4978', 0, 0, 0),
-                rotation: new THREE.Quaternion(),
+                crs,
             },
         };
 
@@ -159,10 +170,12 @@ describe('Potree2BinParser', function () {
 
                 // check position buffer
                 assert.equal(posAttr.itemSize, 3);
-                assert.deepStrictEqual(posAttr.array, Float32Array.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14));
+                assert.deepStrictEqual(posAttr.array,
+                    Float32Array.of(1, 1, 1, 3, 3, 3, 5, 5, 5, 7, 7, 7, 9, 9, 9),
+                    'positions');
                 // check intensity
                 assert.equal(intensityAttr.itemSize, 1);
-                assert.deepStrictEqual(intensityAttr.potree.preciseBuffer, Uint16Array.of(100, 101, 102, 103, 104));
+                assert.deepStrictEqual(intensityAttr.potree.preciseBuffer, Uint16Array.of(100, 101, 102, 103, 104), 'intensity');
                 // check colors
                 assert.equal(colorAttr.itemSize, 4);
                 assert.deepStrictEqual(colorAttr.array, Uint8Array.of(
