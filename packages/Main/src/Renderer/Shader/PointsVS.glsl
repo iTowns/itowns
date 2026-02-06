@@ -31,6 +31,13 @@ uniform int sizeMode;
 uniform float minAttenuatedSize;
 uniform float maxAttenuatedSize;
 
+// Adaptive point size uniforms
+uniform sampler2D visibleNodes;
+uniform float octreeSpacing;
+uniform float octreeSize;
+uniform float nodeDepth;
+uniform float nodeStartOffset;
+
 attribute vec4 unique_id;
 attribute float intensity;
 attribute float classification;
@@ -39,6 +46,52 @@ attribute float pointSourceID;
 attribute float returnNumber;
 attribute float numberOfReturns;
 attribute float scanAngle;
+
+// Adaptive point size calculation functions (from Potree)
+int numberOfOnes(int number, int index) {
+    int numOnes = 0;
+    int tmp = 128;
+    for (int i = 7; i >= 0; i--) {
+        if (number >= tmp) {
+            number = number - tmp;
+            if (i <= index) {
+                numOnes++;
+            }
+        }
+        tmp = tmp / 2;
+    }
+    return numOnes;
+}
+
+float getLOD() {
+    vec3 offset = vec3(0.0, 0.0, 0.0);
+    int iOffset = int(nodeStartOffset);
+    float depth = nodeDepth;
+    for (float i = 0.0; i <= 30.0; i++) {
+        float nodeSizeAtLevel = octreeSize / pow(2.0, i + nodeDepth);
+
+        vec3 index3d = (position-offset) / nodeSizeAtLevel;
+        index3d = floor(index3d + 0.5);
+        int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
+
+        vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+        int mask = int(round(value.r * 255.0));
+        bool isBitSet = ((mask >> index) & 1) != 0;
+
+        if (isBitSet) {
+            int advanceGreen = int(round(value.g * 255.0)) * 256;
+            int advanceChild = numberOfOnes(mask, index - 1);
+            int advance = advanceGreen + advanceChild;
+            iOffset = iOffset + advance;
+            depth++;
+        } else {
+            float lodOffset = (255.0 * value.a) / 10.0 - 10.0;
+            return depth + lodOffset;
+        }
+        offset = offset + (vec3(1.0, 1.0, 1.0) * nodeSizeAtLevel * 0.5) * index3d;
+    }
+    return depth;
+}
 
 void main() {
     vec2 uv = vec2(classification/255., 0.5);
@@ -123,6 +176,19 @@ void main() {
         if (isPerspective) {
             gl_PointSize *= scale / -mvPosition.z;
             gl_PointSize = clamp(gl_PointSize, minAttenuatedSize, maxAttenuatedSize);
+        }
+    } else if (sizeMode == PNTS_SIZE_MODE_ADAPTIVE) {
+        bool isPerspective = isPerspectiveMatrix(projectionMatrix);
+
+        float r = octreeSpacing * 1.7;
+        float pointSizeAttenuation = pow(2.0, getLOD());
+        float worldSpaceSize = 1.0 * size * r / pointSizeAttenuation;
+
+        if (isPerspective) {
+            float projFactor = scale / -mvPosition.z;
+            gl_PointSize = worldSpaceSize * projFactor;
+        } else {
+            // gl_PointSize = (worldSpaceSize / uOrthoWidth) * uScreenWidth;
         }
     }
 
