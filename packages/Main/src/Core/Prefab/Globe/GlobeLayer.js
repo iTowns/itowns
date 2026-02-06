@@ -1,14 +1,8 @@
 import * as THREE from 'three';
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
-import { ellipsoidSizes } from '@itowns/geographic';
+import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import { globalExtentTMS, schemeTiles } from 'Core/Tile/TileGrid';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
-
-// matrix to convert sphere to ellipsoid
-const worldToScaledEllipsoid = new THREE.Matrix4();
-// camera's position in worldToScaledEllipsoid system
-const cameraPosition = new THREE.Vector3();
-let magnitudeSquared = 0.0;
 
 // vectors for operation purpose
 const scaledHorizonCullingPoint = new THREE.Vector3();
@@ -85,18 +79,34 @@ class GlobeLayer extends TiledGeometryLayer {
         //    https://cesiumjs.org/2013/04/25/Horizon-culling/
         // This method assumes that the globe is a unit sphere at 0,0,0 so
         // we setup a world-to-scaled-ellipsoid matrix4
-        worldToScaledEllipsoid.copy(this.object3d.matrixWorld).invert();
-        worldToScaledEllipsoid.premultiply(
+        this.worldToScaledEllipsoid = new THREE.Matrix4();
+        this.worldToScaledEllipsoid.copy(this.object3d.matrixWorld).invert();
+        this.worldToScaledEllipsoid.premultiply(
             new THREE.Matrix4().makeScale(
                 1 / ellipsoidSizes.x,
                 1 / ellipsoidSizes.y,
                 1 / ellipsoidSizes.z));
+
+        // camera's position and magnitude in worldToScaledEllipsoid system
+        this._cameraPosition = new THREE.Vector3();
+        this._magnitudeSquared = 0.0;
     }
 
     preUpdate(context, changeSources) {
         // pre-horizon culling
-        cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
-        magnitudeSquared = cameraPosition.lengthSq() - 1.0;
+        this._cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(this.worldToScaledEllipsoid);
+
+        const horizonScaleFactor = context.view.horizonScaleFactor;
+        if (horizonScaleFactor < 1) {
+            // Computing a scaling factor to apply to camera position to scale horizon distance linearly :
+            // actual horizon * horizon scale factor = scaled camera horizon
+            // See horizon culling formula and Cesium culling method documentation
+            const cameraLengthSquared = this._cameraPosition.lengthSq();
+            const targetLengthSquared = horizonScaleFactor * horizonScaleFactor * (cameraLengthSquared - 1) + 1;
+            const cameraScaleFactor = Math.sqrt(targetLengthSquared / cameraLengthSquared);
+            this._cameraPosition.multiplyScalar(cameraScaleFactor);
+        }
+        this._magnitudeSquared = this._cameraPosition.lengthSq() - 1.0;
 
         return super.preUpdate(context, changeSources);
     }
@@ -121,17 +131,25 @@ class GlobeLayer extends TiledGeometryLayer {
             return false;
         }
 
-        return GlobeLayer.horizonCulling(node.horizonCullingPointElevationScaled);
+        return this.horizonCulling(node.horizonCullingPointElevationScaled);
     }
 
-    static horizonCulling(point) {
+    /**
+     * Compute the occlusion of a point by the globe.
+     * See {@link https://cesiumjs.org/2013/04/25/Horizon-culling/}.
+     *
+     * @param {THREE.Vector3} point - The point to check for occlusion (in world coordinates).
+     * @returns {boolean} True if the point is occluded by the globe, false otherwise.
+     */
+    horizonCulling(point) {
         // see https://cesiumjs.org/2013/04/25/Horizon-culling/
-        scaledHorizonCullingPoint.copy(point).applyMatrix4(worldToScaledEllipsoid);
-        scaledHorizonCullingPoint.sub(cameraPosition);
+        scaledHorizonCullingPoint.copy(point).applyMatrix4(this.worldToScaledEllipsoid);
+        scaledHorizonCullingPoint.sub(this._cameraPosition);
 
         const vtMagnitudeSquared = scaledHorizonCullingPoint.lengthSq();
-        const dot = -scaledHorizonCullingPoint.dot(cameraPosition);
-        const isOccluded = magnitudeSquared < 0 ? dot > 0 : magnitudeSquared < dot && magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
+        const dot = -scaledHorizonCullingPoint.dot(this._cameraPosition);
+        const isOccluded = this._magnitudeSquared < 0 ? dot > 0
+            : this._magnitudeSquared < dot && this._magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
 
         return isOccluded;
     }
