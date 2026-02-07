@@ -108,7 +108,7 @@
     "typescript": "^5.8.2",
     "undici": "^7.5.0",
     "webgl-mock": "^0.1.7",
-    "webpack": "^5.98.0",
+    "webpack": "^5.105.0",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.1"
   },
