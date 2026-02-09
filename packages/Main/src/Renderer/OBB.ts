@@ -24,7 +24,7 @@ class OBB extends THREE.Object3D {
     z: { min: number, max: number, scale: number, delta: number };
 
     private _center: undefined | THREE.Vector3;
-    private _matrixWorldInverse: undefined | THREE.Matrix4;
+    private matrixWorldInverse: undefined | THREE.Matrix4;
 
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
@@ -52,15 +52,12 @@ class OBB extends THREE.Object3D {
         return this._center;
     }
 
-    get matrixWorldInverse() {
-        if (this._matrixWorldInverse !== undefined) { return this._matrixWorldInverse; }
-        this._matrixWorldInverse = this.matrixWorld.clone().invert();
-        return this._matrixWorldInverse;
-    }
-
     override updateMatrixWorld(force?: boolean) {
-        this._matrixWorldInverse = undefined;
+        const matrixWorldInverseNeedsUpdate = this.matrixAutoUpdate || this.matrixWorldNeedsUpdate;
         super.updateMatrixWorld(force);
+        if (matrixWorldInverseNeedsUpdate || force) {
+            this.matrixWorldInverse = this.matrixWorld.clone().invert();
+        }
     }
 
     /**
