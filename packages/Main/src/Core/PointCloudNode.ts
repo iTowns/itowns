@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import OBB from 'Renderer/OBB';
 import proj4 from 'proj4';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 export interface PointCloudSource {
     spacing: number;
@@ -78,10 +78,11 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     get origin(): Coordinates {
         if (this._origin != undefined) { return this._origin; }
         const center = this.clampOBB.center;
-        const centerCrsIn = proj4(this.crs, this.source.crs).forward(center);
+        const centerCrsIn = CRS.transform(this.crs, this.source.crs).forward(center);
         this._origin =  new Coordinates(this.crs)
             .setFromArray(
-                proj4(this.source.crs, this.crs).forward([centerCrsIn.x, centerCrsIn.y, 0]));
+                CRS.transform(this.source.crs, this.crs)
+                    .forward([centerCrsIn.x, centerCrsIn.y, 0]));
         return this._origin;
     }
 
