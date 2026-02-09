@@ -46,7 +46,7 @@ class CopcLayer extends PointCloudLayer {
             this.root.voxelOBB.setFromArray(cube).projOBB(source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
 
-            this.object3d.add(this.root.clampOBB);
+            this.obbes.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
             return this.root.loadOctree();

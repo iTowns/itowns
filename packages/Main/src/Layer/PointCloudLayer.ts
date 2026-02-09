@@ -22,7 +22,6 @@ export interface PointCloudLayerParameters {
     source: PointCloudSource;
     object3d?: THREE.Group;
     group?: THREE.Group;
-    bboxes?: THREE.Group;
     octreeDepthLimit?: number;
     pointBudget?: number;
     pointSize?: number;
@@ -172,10 +171,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     readonly group: THREE.Group;
 
     /**
-     * Container group for the points bounding boxes.
+     * Container group for the oriented points bounding boxes.
      * Add this to the three.js scene in order to render it.
      */
-    readonly bboxes: THREE.Group;
+    readonly obbes: THREE.Group;
 
     /**
      * Maximum depth to which points will be loaded and rendered.
@@ -246,7 +245,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         const {
             object3d = new THREE.Group(),
             group = new THREE.Group(),
-            bboxes = new THREE.Group(),
             octreeDepthLimit = -1,
             pointBudget = 2000000,
             pointSize = 2,
@@ -271,10 +269,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.group.name = 'points';
         this.object3d.add(this.group);
 
-        this.bboxes = bboxes;
-        this.bboxes.name = 'bboxes';
-        this.bboxes.visible = false;
-        this.object3d.add(this.bboxes);
+        this.obbes = new THREE.Group();
+        this.obbes.name = 'obbes';
+        this.obbes.visible = false;
+        this.object3d.add(this.obbes);
 
         this.group.updateMatrixWorld();
 
