@@ -1,12 +1,10 @@
 import { Vector3, type Vector3Like, type Matrix4, MathUtils } from 'three';
-import proj4, { type Converter } from 'proj4';
 import Ellipsoid from './Ellipsoid';
 import * as CRS from './Crs';
 
 import type { ProjectionLike } from './Crs';
 
 const ellipsoid = /* @__PURE__ */ new Ellipsoid();
-const projectionCache: Record<string, Record<string, Converter>> = {};
 
 const v0 = /* @__PURE__ */ new Vector3();
 const v1 = /* @__PURE__ */ new Vector3();
@@ -19,18 +17,6 @@ export interface CoordinatesLike {
     readonly x: number;
     readonly y: number;
     readonly z: number;
-}
-
-function proj4cache(crsIn: ProjectionLike, crsOut: ProjectionLike): Converter {
-    if (!projectionCache[crsIn]) {
-        projectionCache[crsIn] = {};
-    }
-
-    if (!projectionCache[crsIn][crsOut]) {
-        projectionCache[crsIn][crsOut] = proj4(crsIn, crsOut);
-    }
-
-    return projectionCache[crsIn][crsOut];
 }
 
 /**
@@ -348,7 +334,7 @@ class Coordinates {
                 this.y = MathUtils.clamp(this.y, -89.999999, 89.999999);
             }
 
-            target.setFromArray(proj4cache(this.crs, crs)
+            target.setFromArray(CRS.transform(this.crs, crs)
                 .forward([this.x, this.y, this.z]));
         }
 

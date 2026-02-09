@@ -193,7 +193,7 @@ class OBB extends THREE.Object3D {
         let forward = ((coord: [number, number, number]) => coord);
         if (crsIn !== crsOut) {
             try {
-                forward = proj4(crsIn, crsOut).forward;
+                forward = CRS.transform(crsIn, crsOut).forward;
             } catch (err) {
                 throw new Error(`${err} is not defined in proj4`);
             }

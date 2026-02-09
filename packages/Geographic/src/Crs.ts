@@ -1,4 +1,5 @@
 import proj4 from 'proj4';
+import type { Converter } from 'proj4';
 import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
 
 type proj4Def = {
@@ -23,6 +24,19 @@ proj4.defs('WGS84').axis = 'neu';
  * [`proj4.defs`](https://github.com/proj4js/proj4js#named-projections).
  */
 export type ProjectionLike = string;
+
+const proj4Cache: Record<string, Record<string, Converter>> = {};
+export function transform(crsIn: ProjectionLike, crsOut: ProjectionLike): Converter {
+    if (!proj4Cache[crsIn]) {
+        proj4Cache[crsIn] = {};
+    }
+
+    if (!proj4Cache[crsIn][crsOut]) {
+        proj4Cache[crsIn][crsOut] = proj4(crsIn, crsOut);
+    }
+
+    return proj4Cache[crsIn][crsOut];
+}
 
 function isString(s: unknown): s is string {
     return typeof s === 'string' || s instanceof String;
