@@ -60,7 +60,7 @@ describe('Potree2', function () {
             .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
                 assert.equal(potree2Layer.root.children.length, 6);
-                potree2Layer.bboxes.visible = true;
+                potree2Layer.obbes.visible = true;
                 done();
             }).catch(done);
     });
