@@ -10,18 +10,15 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
 
     viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
-    const restore = tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.ID));
-
-    const buffer = view.mainLoop.gfxEngine.renderViewToBuffer(
+    /** @type THREE.RenderTarget */
+    const buffer = RenderMode.scope(tileLayer.level0Nodes, RenderMode.MODES.ID, () => view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {
             x: viewCoords.x - radius,
             y: viewCoords.y - radius,
             width: 1 + radius * 2,
             height: 1 + radius * 2,
-        });
-
-    restore.forEach(r => r());
+        }));
 
     const ids = [];
 

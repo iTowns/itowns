@@ -971,6 +971,14 @@ class View extends THREE.EventDispatcher {
         return result;
     }
 
+    /**
+     * @param {number} x - Horizontal position in view coordinates.
+     * @param {number} y - Vertical position in view coordinates.
+     * @param {number} width - Width in pixels.
+     * @param {number} height - Height in pixels.
+     * @param {THREE.RenderTarget?} buffer - If null, a Uint8 buffer is created matching the previous params.
+     * @returns {THREE.RenderTarget} The provided buffer or a newly created one, filled with the depth buffer data.
+     */
     readDepthBuffer(x, y, width, height, buffer) {
         const g = this.mainLoop.gfxEngine;
         const currentWireframe = this.tileLayer.wireframe;
@@ -986,11 +994,10 @@ class View extends THREE.EventDispatcher {
             this.tileLayer.visible = true;
         }
 
-        const restore = this.tileLayer.level0Nodes.map(n => RenderMode.push(n, RenderMode.MODES.DEPTH));
-        buffer = g.renderViewToBuffer(
+        buffer = RenderMode.scope(this.tileLayer.level0Nodes, RenderMode.MODES.DEPTH, () => g.renderViewToBuffer(
             { camera: this.camera, scene: this.tileLayer.object3d },
-            { x, y, width, height, buffer });
-        restore.forEach(r => r());
+            { x, y, width, height, buffer },
+        ));
 
         if (this.tileLayer.wireframe !== currentWireframe) {
             this.tileLayer.wireframe = currentWireframe;
