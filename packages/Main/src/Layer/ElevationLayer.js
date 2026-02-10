@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
@@ -115,7 +114,9 @@ class ElevationLayer extends RasterLayer {
      * @return     {RasterElevationTile}  The raster elevation node added.
      */
     setupRasterNode(node) {
-        const rasterElevationNode = new RasterElevationTile(this);
+        const tiles = node.getExtentsByProjection(this.crs);
+
+        const rasterElevationNode = new RasterElevationTile(this, tiles);
 
         node.material.setElevationTile(rasterElevationNode);
         node.material.setElevationTileId(this.id);
@@ -123,7 +124,6 @@ class ElevationLayer extends RasterLayer {
         const updateBBox = () => node.setBBoxZ({
             min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
         });
-        updateBBox();
 
         // listen elevation updating
         rasterElevationNode.addEventListener('rasterElevationLevelChanged', updateBBox);
@@ -135,11 +135,16 @@ class ElevationLayer extends RasterLayer {
             this.removeEventListener('scale-property-changed', updateBBox);
         });
 
+        // Init the node by parent
+        rasterElevationNode.initFromParent(node.parent.material?.getElevationTile());
+
         return rasterElevationNode;
     }
 
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeElevation(context, this, node, parent);
+    anyVisibleData(node) {
+        const current = node.material.getElevationTile()?.layer;
+        return super.anyVisibleData(node)
+            && (current?.source == this.source || this.source.zoom.min > (current?.source.zoom.max || -1));
     }
 }
 
