@@ -177,6 +177,10 @@ class WFSSource extends Source {
     extentInsideLimit(extent) {
         return this.extent.intersectsExtent(extent);
     }
+
+    anyVisibleData(e) {
+        return this.extentInsideLimit(e);
+    }
 }
 
 export default WFSSource;

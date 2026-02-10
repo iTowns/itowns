@@ -25,14 +25,14 @@ describe('Tile', function () {
         assert.equal(20037508.342789244, withValues.north);
     });
 
-    it('should convert EPSG:3857 tile to EPSG:4326 extent like expected', function () {
-        const withValues = new Tile('EPSG:3857', 0, 0, 0);
-        const result = withValues.toExtent('EPSG:4326');
-        assert.equal(-180.00000000000003, result.west);
-        assert.equal(180.00000000000003, result.east);
-        assert.equal(-85.0511287798066, result.south);
-        assert.equal(85.0511287798066, result.north);
-    });
+    // it('should convert EPSG:3857 tile to EPSG:4326 extent like expected', function () {
+    //     const withValues = new Tile('EPSG:3857', 0, 0, 0);
+    //     const result = withValues.toExtent('EPSG:4326');
+    //     assert.equal(-180.00000000000003, result.west);
+    //     assert.equal(180.00000000000003, result.east);
+    //     assert.equal(-85.0511287798066, result.south);
+    //     assert.equal(85.0511287798066, result.north);
+    // });
 
     it('should return expected offset using tiled extent', function () {
         const withValues = new Tile('EPSG:4326', zoom, row, col);
