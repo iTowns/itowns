@@ -1,5 +1,5 @@
 import { GeometryLayer, Layer, View } from 'Main';
-import { EventDispatcher, Camera as ThreeCamera } from 'three';
+import { EventDispatcher, Object3D, Camera as ThreeCamera } from 'three';
 import Camera from 'Renderer/Camera';
 import c3DEngine from 'Renderer/c3DEngine';
 import Scheduler from './Scheduler/Scheduler';
@@ -37,64 +37,46 @@ type Context = {
     view: View,
 };
 
-type UpdatableGeometryLayer = GeometryLayer & {
-    update<T>(context: Context, layer: Layer, node: T): Array<T> | undefined
+type UpdatableGeometryLayer<T> = GeometryLayer & {
+    update(context: Context, layer: Layer, node: T): Array<T> | undefined
 };
 
-function updateElements(
+function updateElements<T extends Object3D>(
     context: Context,
-    geometryLayer: UpdatableGeometryLayer,
-    elements?: Array<unknown>,
+    geometryLayer: UpdatableGeometryLayer<T>,
+    elements?: Array<T>,
 ) {
     if (!elements) {
         return;
     }
     for (const element of elements) {
         // update element
-        // TODO find a way to notify attachedLayers when geometryLayer deletes
+        // TODO: find a way to notify attachedLayers when geometryLayer deletes
         // some elements and then update Debug.js:addGeometryLayerDebugFeatures
         const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
 
         const sub = geometryLayer.getObjectToUpdateForAttachedLayers(element);
 
         if (sub) {
-            if (sub.element) {
-                if (__DEBUG__) {
-                    if (!(sub.element.isObject3D)) {
-                        throw new Error(`
+            for (let i = 0; i < sub.elements.length; i++) {
+                if (!(sub.elements[i].isObject3D)) {
+                    throw new Error(`
                             Invalid object for attached layer to update.
                             Must be a THREE.Object and have a THREE.Material`);
-                    }
                 }
                 // update attached layers
                 for (const attachedLayer of geometryLayer.attachedLayers) {
                     if (attachedLayer.ready) {
                         // @ts-expect-error Updatable layer
-                        attachedLayer.update(context, attachedLayer, sub.element, sub.parent);
+                        attachedLayer.update(context,
+                            attachedLayer,
+                            sub.elements[i],
+                            sub.parent);
                     }
                 }
             }
-            // FIXME: this shouldn't be able to happen, figure out why it exists
-            // else if (sub.elements) {
-            //     for (let i = 0; i < sub.elements.length; i++) {
-            //         if (!(sub.elements[i].isObject3D)) {
-            //             throw new Error(`
-            //                 Invalid object for attached layer to update.
-            //                 Must be a THREE.Object and have a THREE.Material`);
-            //         }
-            //         // update attached layers
-            //         for (const attachedLayer of geometryLayer.attachedLayers) {
-            //             if (attachedLayer.ready) {
-            //                 // @ts-expect-error Updatable layer
-            //                 attachedLayer.update(context,
-            //                     attachedLayer,
-            //                     sub.elements[i],
-            //                     sub.parent);
-            //             }
-            //         }
-            //     }
-            // }
         }
+
         updateElements(context, geometryLayer, newElementsToUpdate);
     }
 }
@@ -176,7 +158,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
             }
         });
 
-        for (const geometryLayer of view.getLayers((x, y) => !y)) {
+        for (const geometryLayer of view.getLayers((_, y) => !y)) {
             if (geometryLayer.ready && geometryLayer.visible && !geometryLayer.frozen) {
                 view.execFrameRequesters(
                     MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this.#updateLoopRestarted,
