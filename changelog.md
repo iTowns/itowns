@@ -1,3 +1,189 @@
+<a name="2.46.1-next.29"></a>
+## [2.46.1-next.29](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.29) (2026-02-11)
+
+
+### Features
+
+* add Docker support ([9c61e23](https://github.com/iTowns/itowns/commit/9c61e23))
+* Add support for Cloud Optimized Geotiff ([4933b31](https://github.com/iTowns/itowns/commit/4933b31))
+* Add support for Geotiff ([a0b18a8](https://github.com/iTowns/itowns/commit/a0b18a8))
+* allow assigning a funcion to a style property after its declaration ([01be54d](https://github.com/iTowns/itowns/commit/01be54d))
+* **camera:** calculate dynamic, optimized camera near/far and fog ([56b722b](https://github.com/iTowns/itowns/commit/56b722b))
+* **crs:** add EPSG fetch and register helper ([170ddea](https://github.com/iTowns/itowns/commit/170ddea))
+* deprecate file option in Potree(2)Source ([cd7a5b8](https://github.com/iTowns/itowns/commit/cd7a5b8))
+* **deps:** bump proj4 from 2.9.3 to 2.9.10 ([16cf342](https://github.com/iTowns/itowns/commit/16cf342))
+* **geographic:** let user import single modules ([f160270](https://github.com/iTowns/itowns/commit/f160270))
+* **OBB:** add a cache for OrientationUtils quaternion computation ([b02b8fc](https://github.com/iTowns/itowns/commit/b02b8fc))
+* **pointcloud:** add load, error and dispose events ([4dedf1d](https://github.com/iTowns/itowns/commit/4dedf1d))
+* **PointCloudNode:** generate bbox in a referentiel local (view Crs tranformed to z normal) ([77163e3](https://github.com/iTowns/itowns/commit/77163e3))
+* **pointcloud:** remove non-standard cin format ([a7e70a0](https://github.com/iTowns/itowns/commit/a7e70a0))
+* **pointcloud:** remove support of progressive display ([1a2ab12](https://github.com/iTowns/itowns/commit/1a2ab12))
+* **rendering:** implement physically acurate sky, atmosphere and lighting ([66a44d4](https://github.com/iTowns/itowns/commit/66a44d4))
+* **Vpc:** add VpcSource/Layer as COPC or EPT MultiSource/Layer ([ebbdfa0](https://github.com/iTowns/itowns/commit/ebbdfa0))
+
+
+### Bug Fixes
+
+* **camera:** don't add default fog in views where camera has static near/far ([a969ced](https://github.com/iTowns/itowns/commit/a969ced))
+* **ci:** fix missing env variable for release ([e548cf0](https://github.com/iTowns/itowns/commit/e548cf0))
+* **Cog-Geotiff:** Fix tile raster dimensions ([3fedcae](https://github.com/iTowns/itowns/commit/3fedcae))
+* **Crs:** add 'ft' as possible unit ([01dedb6](https://github.com/iTowns/itowns/commit/01dedb6))
+* **crs:** CRS.defs as an alias for proj4.defs ([41eaf39](https://github.com/iTowns/itowns/commit/41eaf39))
+* disable atmospheric lighting by default ([3bb2080](https://github.com/iTowns/itowns/commit/3bb2080))
+* **doc:** remove typescript doc for COG/Geotiff ([8bc6ed3](https://github.com/iTowns/itowns/commit/8bc6ed3))
+* **docs:** exclude sub-folder node_modules to fix doc build ([315518e](https://github.com/iTowns/itowns/commit/315518e))
+* **ElevationLayer:** don't assume Layer's Source has a TMS-like structure ([502c20b](https://github.com/iTowns/itowns/commit/502c20b))
+* **entwine:** load node Octree if we don't have children yet ([9bc62e0](https://github.com/iTowns/itowns/commit/9bc62e0))
+* **example:** fix copc_simple_loader example ([adc7d7b](https://github.com/iTowns/itowns/commit/adc7d7b))
+* **examples:** fix loading screen import in some examples ([84d9059](https://github.com/iTowns/itowns/commit/84d9059))
+* **examples:** remove obsolete osm urls ([9a988ec](https://github.com/iTowns/itowns/commit/9a988ec))
+* fix wrong install path for dependencies ([c6f5964](https://github.com/iTowns/itowns/commit/c6f5964))
+* **geotiff:** Fix geotiff sample ([d856fe1](https://github.com/iTowns/itowns/commit/d856fe1))
+* **OrientationUtils:** add UTM support ([b5b6e9a](https://github.com/iTowns/itowns/commit/b5b6e9a))
+* **PlanarView:** Add option in planarView to prevent dynamic near/far calculation ([2c83b28](https://github.com/iTowns/itowns/commit/2c83b28))
+* **pointcloud:** fix node loading mechanism ([5a30a77](https://github.com/iTowns/itowns/commit/5a30a77))
+* **PointCloudLayer:** move debug functions to Debug/PointCloudDebug ([43eaeaf](https://github.com/iTowns/itowns/commit/43eaeaf))
+* **PointCloudNode:** fix mode in material ([d8ee5fb](https://github.com/iTowns/itowns/commit/d8ee5fb))
+* **PointCloudNode:** project child node.obb after computation ([c3d645c](https://github.com/iTowns/itowns/commit/c3d645c))
+* **pointcloud:** prevent query on missing Potree2 hierarchy ([8667d35](https://github.com/iTowns/itowns/commit/8667d35))
+* **PointCloud:** projection in a custom local referentiel ([976b4e4](https://github.com/iTowns/itowns/commit/976b4e4))
+* **PointVS:** fix for pointCloud elevation display ([4d52ac8](https://github.com/iTowns/itowns/commit/4d52ac8))
+* **Potree2:** add reprojection in Potree2BrotliLoader ([cdd2013](https://github.com/iTowns/itowns/commit/cdd2013))
+* **Potree2BinParser:** fix error in pointAttributes property ([9b24c35](https://github.com/iTowns/itowns/commit/9b24c35))
+* **renderer:** restore renderer/VR state after texture rendering ([7277c52](https://github.com/iTowns/itowns/commit/7277c52))
+* **renderer:** track render target usage before cleaning them up, to fix prematurely unloading textures ([9a2c86a](https://github.com/iTowns/itowns/commit/9a2c86a))
+* **test:** add test for CRS.defsFromWkt() ([86bbbbb](https://github.com/iTowns/itowns/commit/86bbbbb))
+* **test:** vpc test time out ([6646776](https://github.com/iTowns/itowns/commit/6646776))
+* **TileBuilder:** resolve computeExtraOffset type pain ([05d9e5f](https://github.com/iTowns/itowns/commit/05d9e5f))
+* **TileLayer:** fix material opacity ([71fa255](https://github.com/iTowns/itowns/commit/71fa255))
+* **VpcLayer:** fix 'root' nodes -> add them all to layer.object3d ([483bfa8](https://github.com/iTowns/itowns/commit/483bfa8))
+* **VPC:** reprojection for VPC layer ([e05324e](https://github.com/iTowns/itowns/commit/e05324e))
+* **Vpc:** use scheduler to fetch source.metadata ([1bdfb37](https://github.com/iTowns/itowns/commit/1bdfb37))
+* **worker:** no support three in worker ([bdf49ed](https://github.com/iTowns/itowns/commit/bdf49ed))
+
+
+### Examples
+
+* add copc_3d_loader to example menu ([628f03e](https://github.com/iTowns/itowns/commit/628f03e))
+* add default datasets for point clouds examples ([6ff72dc](https://github.com/iTowns/itowns/commit/6ff72dc))
+* add generic pointcloud loader examples ([ad34e02](https://github.com/iTowns/itowns/commit/ad34e02))
+* **mars:** fix invalid wmts service ([8d4652e](https://github.com/iTowns/itowns/commit/8d4652e))
+* **PointCloudLayer:** add copc_3D_loader example and new dataset ([618d989](https://github.com/iTowns/itowns/commit/618d989))
+* **Potree:** remove the extra '/' in url ([c0118ec](https://github.com/iTowns/itowns/commit/c0118ec))
+* **vpc:** add 3d loader ([a14d2cd](https://github.com/iTowns/itowns/commit/a14d2cd))
+* **Vpc:** update to three 0.182 ([5409c67](https://github.com/iTowns/itowns/commit/5409c67))
+
+
+### Code Refactoring
+
+* **CRS:** move proj4Cache to CRS and use it where it's needed ([876bf16](https://github.com/iTowns/itowns/commit/876bf16))
+* **geographic:** don't use three default import ([be2ec44](https://github.com/iTowns/itowns/commit/be2ec44))
+* **LASLoader:** use three in LASLoader ([c28ce52](https://github.com/iTowns/itowns/commit/c28ce52))
+* **LASParser:** reproj data during parsing ([43290af](https://github.com/iTowns/itowns/commit/43290af))
+* migrate OBB to typescript ([7aaf134](https://github.com/iTowns/itowns/commit/7aaf134))
+* migrate TileMesh to typescript ([31a364f](https://github.com/iTowns/itowns/commit/31a364f))
+* **OBB:** change computation of matrixWorldInverse ([9daccc4](https://github.com/iTowns/itowns/commit/9daccc4))
+* **OBB:** move node.OBBes computation to OBB.ts ([e11829a](https://github.com/iTowns/itowns/commit/e11829a))
+* **PointCloud:** factorize load method ([90b3f01](https://github.com/iTowns/itowns/commit/90b3f01))
+* **PointCloudLayer:** add obbes to 'obbes' group for performance ([6492a41](https://github.com/iTowns/itowns/commit/6492a41))
+* **PointCloudLayer:** fix whenReady ([bd10f61](https://github.com/iTowns/itowns/commit/bd10f61))
+* **PointCloudLayer:** supp addInitializationStep() ([60a0092](https://github.com/iTowns/itowns/commit/60a0092))
+* **PointCloudNode:** move center to OBB ([d062881](https://github.com/iTowns/itowns/commit/d062881))
+* **PointCloudNode:** move depth to Parent Class ([97165e2](https://github.com/iTowns/itowns/commit/97165e2))
+* **PointCloudNode:** remove reference to layer in Node (use source directly) ([662f273](https://github.com/iTowns/itowns/commit/662f273))
+* **PotreeNodes:** add index as property of the node ([ac15109](https://github.com/iTowns/itowns/commit/ac15109))
+* **PtCloudProvider:** supp position and rotation in userData ([5b4705f](https://github.com/iTowns/itowns/commit/5b4705f))
+* **RenderMode:** typescript and simplification ([4dca3d4](https://github.com/iTowns/itowns/commit/4dca3d4))
+* rewrite code checking extrusion height was set, defining setter/getter separately ([6a6ee3b](https://github.com/iTowns/itowns/commit/6a6ee3b))
+* **VpcSource:** cleanup ([a9b8a77](https://github.com/iTowns/itowns/commit/a9b8a77))
+
+
+### Workflow and chores
+
+* **Cog-Geotiff:** rewrite relative imports ([67832d6](https://github.com/iTowns/itowns/commit/67832d6))
+* **contributors:** addition of myself as long overdue ([bbda503](https://github.com/iTowns/itowns/commit/bbda503))
+* **deps-dev:** bump js-yaml from 4.1.0 to 4.1.1 ([710d2d6](https://github.com/iTowns/itowns/commit/710d2d6))
+* **deps-dev:** bump js-yaml from 4.1.0 to 4.1.1 ([4e7d0cf](https://github.com/iTowns/itowns/commit/4e7d0cf))
+* **deps-dev:** bump node-forge from 1.3.1 to 1.3.3 ([5b1abcf](https://github.com/iTowns/itowns/commit/5b1abcf))
+* **deps:** bump lodash from 4.17.21 to 4.17.23 ([c1c128c](https://github.com/iTowns/itowns/commit/c1c128c))
+* **deps:** bump qs and express ([e2a5988](https://github.com/iTowns/itowns/commit/e2a5988))
+* **geographic:** mark module-levels function as pure ([872baed](https://github.com/iTowns/itowns/commit/872baed))
+* **integration:** update job names to match Node version ([00e8ead](https://github.com/iTowns/itowns/commit/00e8ead))
+* migrate convertToTile to typescript ([c6e9175](https://github.com/iTowns/itowns/commit/c6e9175))
+* **node:** update to node 24 ([d01b83f](https://github.com/iTowns/itowns/commit/d01b83f))
+* **pointcloud:** factorize entwine/copc nodes ([2f351a5](https://github.com/iTowns/itowns/commit/2f351a5))
+* **pointcloud:** factorize potree/potree2 nodes ([1568c0b](https://github.com/iTowns/itowns/commit/1568c0b))
+* **pointcloud:** migrate layers to typescript ([ef8be5e](https://github.com/iTowns/itowns/commit/ef8be5e))
+* **pointcloud:** migrate nodes to typescript ([0165c09](https://github.com/iTowns/itowns/commit/0165c09))
+* **pointcloud:** migrate pointcloud sources to typescript ([39e0b27](https://github.com/iTowns/itowns/commit/39e0b27))
+* remove npm token as OIDC is now used ([dbbccf9](https://github.com/iTowns/itowns/commit/dbbccf9))
+* **TileMesh:** remove dynamically added zoom property ([30c7728](https://github.com/iTowns/itowns/commit/30c7728))
+* update caniuse-lite ([e9c0786](https://github.com/iTowns/itowns/commit/e9c0786))
+* update to three v182 ([bbd11b5](https://github.com/iTowns/itowns/commit/bbd11b5))
+
+
+### Documentation
+
+* **ColorLayer:** rewrote ambiguous documentation ([fd85969](https://github.com/iTowns/itowns/commit/fd85969))
+* **CRS:** fix error message ([57e4b3c](https://github.com/iTowns/itowns/commit/57e4b3c))
+* **LayerUpdateState:** update and refine documentation ([33d8dc7](https://github.com/iTowns/itowns/commit/33d8dc7))
+* **OBB:** update and refine documentation ([6bc71c9](https://github.com/iTowns/itowns/commit/6bc71c9))
+* **TileMesh:** update and refine documentation ([0e90f3e](https://github.com/iTowns/itowns/commit/0e90f3e))
+
+
+### Tests
+
+* **EptNode:** unit tests on LoadOctree ([3331469](https://github.com/iTowns/itowns/commit/3331469))
+* **functional:** modif in hook for better message ([0be9910](https://github.com/iTowns/itowns/commit/0be9910))
+* **PointCloud:** improve unit tests (copc and ept) ([209cb76](https://github.com/iTowns/itowns/commit/209cb76))
+* **PointCloudNode:** fix: add crs parameter when instantiating a node ([99e8ee6](https://github.com/iTowns/itowns/commit/99e8ee6))
+* **PointCloudNode:** update linked to custom referentiel ([4ca0617](https://github.com/iTowns/itowns/commit/4ca0617))
+* **PointCloud:** update linked to reprojection ([3c1ccb3](https://github.com/iTowns/itowns/commit/3c1ccb3))
+* **Potree:** unit test ([3c93bbe](https://github.com/iTowns/itowns/commit/3c93bbe))
+* **vpc:** add unit tests ([8de95be](https://github.com/iTowns/itowns/commit/8de95be))
+* **vpc:** update ([c53156b](https://github.com/iTowns/itowns/commit/c53156b))
+
+
+### Others
+
+* 2.46.1-next.28 ([e8ad8b5](https://github.com/iTowns/itowns/commit/e8ad8b5))
+* 2.46.1-next.27 ([3e19f1f](https://github.com/iTowns/itowns/commit/3e19f1f))
+* 2.46.1-next.26 ([802cdf3](https://github.com/iTowns/itowns/commit/802cdf3))
+* 2.46.1-next.25 ([cb2d3a0](https://github.com/iTowns/itowns/commit/cb2d3a0))
+* 2.46.1-next.24 ([6b47518](https://github.com/iTowns/itowns/commit/6b47518))
+* 2.46.1-next.23 ([0644990](https://github.com/iTowns/itowns/commit/0644990))
+* 2.46.1-next.22 ([0915855](https://github.com/iTowns/itowns/commit/0915855))
+* 2.46.1-next.21 ([2c6a49e](https://github.com/iTowns/itowns/commit/2c6a49e))
+* 2.46.1-next.20 ([73a763d](https://github.com/iTowns/itowns/commit/73a763d))
+* 2.46.1-next.19 ([aefba56](https://github.com/iTowns/itowns/commit/aefba56))
+* 2.46.1-next.18 ([26310e6](https://github.com/iTowns/itowns/commit/26310e6))
+* 2.46.1-next.17 ([4f7a360](https://github.com/iTowns/itowns/commit/4f7a360))
+* 2.46.1-next.16 ([c44bde9](https://github.com/iTowns/itowns/commit/c44bde9))
+* 2.46.1-next.15 ([060725b](https://github.com/iTowns/itowns/commit/060725b))
+* 2.46.1-next.14 ([020d4b3](https://github.com/iTowns/itowns/commit/020d4b3))
+* 2.46.1-next.13 ([18eb19e](https://github.com/iTowns/itowns/commit/18eb19e))
+* 2.46.1-next.12 ([0daeb94](https://github.com/iTowns/itowns/commit/0daeb94))
+* 2.46.1-next.11 ([690db27](https://github.com/iTowns/itowns/commit/690db27))
+* 2.46.1-next.10 ([58c3a97](https://github.com/iTowns/itowns/commit/58c3a97))
+* 2.46.1-next.9 ([1a28e4c](https://github.com/iTowns/itowns/commit/1a28e4c))
+* 2.46.1-next.8 ([f750422](https://github.com/iTowns/itowns/commit/f750422))
+* 2.46.1-next.7 ([17d66f0](https://github.com/iTowns/itowns/commit/17d66f0))
+* 2.46.1-next.6 ([05e6354](https://github.com/iTowns/itowns/commit/05e6354))
+* 2.46.1-next.5 ([7ea8130](https://github.com/iTowns/itowns/commit/7ea8130))
+* 2.46.1-next.4 ([ba8afee](https://github.com/iTowns/itowns/commit/ba8afee))
+* 2.46.1-next.3 ([1c6f83c](https://github.com/iTowns/itowns/commit/1c6f83c))
+* 2.46.1-next.2 ([9884dbf](https://github.com/iTowns/itowns/commit/9884dbf))
+* 2.46.1-next.1 ([2e1d0ae](https://github.com/iTowns/itowns/commit/2e1d0ae))
+* 2.46.1-next.0 ([d9faec7](https://github.com/iTowns/itowns/commit/d9faec7))
+
+
+### BREAKING CHANGES
+
+* **pointcloud:** remove non-standard potree cin format, only the bin format will be supported
+* **pointcloud:** PointcloudLayer#supportsProgressiveDisplay option removed
+
+
+
 <a name="2.46.1-next.28"></a>
 ## [2.46.1-next.28](https://github.com/iTowns/itowns/compare/v2.46.0...v2.46.1-next.28) (2026-02-10)
 
