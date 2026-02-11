@@ -6,6 +6,9 @@ import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
 
 import type { Extent, ProjectionLike } from '@itowns/geographic';
 
+// import from OrientationUtils ?
+type QuaternionFunction = (coords: Coordinates, target?: THREE.Quaternion) => THREE.Quaternion;
+
 // get oriented bounding box of tile
 const builder = new GlobeTileBuilder({ uvCount: 1 });
 const size = new THREE.Vector3();
@@ -13,6 +16,19 @@ const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 let _obb: OBB;
+
+const orientUtilsCache: Record<ProjectionLike, Record<ProjectionLike, QuaternionFunction>> = {};
+function quaternionFromCRSToCRS(crsIn: ProjectionLike, crsOut: ProjectionLike): QuaternionFunction {
+    if (!orientUtilsCache[crsIn]) {
+        orientUtilsCache[crsIn] = {};
+    }
+
+    if (!orientUtilsCache[crsIn][crsOut]) {
+        orientUtilsCache[crsIn][crsOut] = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
+    }
+
+    return orientUtilsCache[crsIn][crsOut];
+}
 
 // it could be considered to remove THREE.Object3D extend.
 /**
@@ -24,7 +40,7 @@ class OBB extends THREE.Object3D {
     z: { min: number, max: number, scale: number, delta: number };
 
     private _center: undefined | THREE.Vector3;
-    private matrixWorldInverse: undefined | THREE.Matrix4;
+    private matrixWorldInverse: THREE.Matrix4;
 
     /**
      * @param min - (optional) A {@link THREE.Vector3} representing the lower
@@ -42,6 +58,7 @@ class OBB extends THREE.Object3D {
         this.natBox = new THREE.Box3(min.clone(), max.clone());
         this.box3D = this.natBox.clone();
         this.z = { min: 0, max: 0, scale: 1.0, delta: 0 };
+        this.matrixWorldInverse = this.matrixWorld.clone().invert();
     }
 
     get center(): THREE.Vector3 {
@@ -216,10 +233,10 @@ class OBB extends THREE.Object3D {
 
         // get LocalRotation
         const isGeocentric = proj4.defs(crsOut).projName === 'geocent';
-        let rotation = new THREE.Quaternion();
+        let quaternion = new THREE.Quaternion();
         if (isGeocentric) {
             const coordOrigin = new Coordinates(crsOut).setFromArray(origin);
-            rotation = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
+            quaternion = quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
         }
 
         // project corners in local referentiel
@@ -230,13 +247,13 @@ class OBB extends THREE.Object3D {
                 corners[i + 1] - origin[1],
                 corners[i + 2] - origin[2],
             );
-            cornerLocal.applyQuaternion(rotation);
+            cornerLocal.applyQuaternion(quaternion);
             cornersLocal.push(...cornerLocal.toArray());
         }
 
         this.box3D.setFromArray(cornersLocal);
         this.position.fromArray(origin);
-        this.quaternion.copy(rotation).invert();
+        this.quaternion.copy(quaternion).invert();
 
         this.updateMatrix();
         this.updateMatrixWorld();
