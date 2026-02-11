@@ -7,19 +7,22 @@ import PointCloudLayer from 'Layer/PointCloudLayer';
 function _instantiateSubRoot(source, crs) {
     return source.whenReady.then((src) => {
         let root;
+        let bounds;
         if (src.isCopcSource) {
             const { info } = src;
             const { pageOffset, pageLength } = info.rootHierarchyPage;
+            bounds = info.cube;
             root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1, crs);
-            root.setOBBes(info.cube.slice(0, 3), info.cube.slice(3, 6));
         } else if (src.isEntwinePointTileSource) {
+            bounds = source.boundsConforming;
             root = new EntwinePointTileNode(0, 0, 0, 0, src, -1, crs);
-            root.setOBBes(src.boundsConforming.slice(0, 3), src.boundsConforming.slice(3, 6));
         } else {
             const msg = '[VPCLayer]: stack point cloud format not supporter';
             console.warn(msg);
             PointCloudLayer.handlingError(msg);
         }
+        root.voxelOBB.setFromArray(bounds).projOBB(source.crs, crs);
+        root.clampOBB.copy(root.voxelOBB).clampZ(source.zmin, source.zmax);
         return root;
     });
 }
@@ -74,7 +77,8 @@ class VpcLayer extends PointCloudLayer {
             this.root = new PointCloudNode(0, 0);
             this.root.source = this.source;
             this.root.crs = this.crs;
-            this.root.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+            this.root.voxelOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
@@ -101,7 +105,8 @@ class VpcLayer extends PointCloudLayer {
                 // as well as the octree, before calling load() on the real root.
                 mockSubRoot.load = promisedRoot.then(root => root.load());
 
-                mockSubRoot.setOBBes(boundsConforming.slice(0, 3), boundsConforming.slice(3, 6));
+                mockSubRoot.voxelOBB.setFromArray(boundsConforming).projOBB(source.crs, this.crs);
+                mockSubRoot.clampOBB.copy(mockSubRoot.voxelOBB).clampZ(source.zmin, source.zmax);
                 this.object3d.add(mockSubRoot.clampOBB);
                 mockSubRoot.clampOBB.updateMatrixWorld(true);
 

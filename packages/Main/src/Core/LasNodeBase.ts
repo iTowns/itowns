@@ -69,9 +69,8 @@ abstract class LasNodeBase extends PointCloudNode {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     override createChildAABB(childNode: this, _indexChild: number): void {
         // initialize the child node obb
-        childNode.voxelOBB.copy(this.voxelOBB);
-        const voxelBBox = this.voxelOBB.box3D;
-        const childVoxelBBox = childNode.voxelOBB.box3D;
+        const voxelBBox = this.voxelOBB.natBox;
+        const childVoxelBBox = voxelBBox.clone();
 
         // factor to apply, based on the depth difference (can be > 1)
         const f = 2 ** (childNode.depth - this.depth);
@@ -94,17 +93,10 @@ abstract class LasNodeBase extends PointCloudNode {
         // use the size computed above to set the max
         childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
 
+        childNode.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
+
         // get a clamped bbox from the voxel bbox
-        childNode.clampOBB.copy(childNode.voxelOBB);
-
-        const childClampBBox = childNode.clampOBB.box3D;
-
-        if (childClampBBox.min.z < this.source.zmax) {
-            childClampBBox.max.z = Math.min(childClampBBox.max.z, this.source.zmax);
-        }
-        if (childClampBBox.max.z > this.source.zmin) {
-            childClampBBox.min.z = Math.max(childClampBBox.min.z, this.source.zmin);
-        }
+        childNode.clampOBB.copy(childNode.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
         (this.clampOBB.parent as Group).add(childNode.clampOBB);
         childNode.clampOBB.updateMatrixWorld(true);
