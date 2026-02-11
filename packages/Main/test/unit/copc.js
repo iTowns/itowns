@@ -34,13 +34,14 @@ describe('COPC', function () {
         it('instanciates a layer', (done) => {
             layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
             assert.ok(layer.isCopcLayer);
-            layer.startup()
+            layer.startup();
+            layer.whenReady
                 .then(() => {
                     assert.equal(source.zmin, source.header.min[2]);
                     assert.ok(layer.root.isCopcNode);
                     // loadOctree() is now called during the load
                     // assert.ok(layer.root.children.length > 0);
-                    assert.ok(layer.object3d.children.indexOf(layer.root.clampOBB) >= 0);
+                    assert.ok(layer.obbes.children.indexOf(layer.root.clampOBB) >= 0);
                     done();
                 }).catch(done);
         });
