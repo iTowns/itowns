@@ -79,7 +79,7 @@
             }
 
             function onLayerReady() {
-                var lookAt = layer.root.origin.toVector3();
+                var lookAt = layer.root.clampOBB.position;
 
                 const size = new THREE.Vector3();
                 layer.root.voxelOBB.box3D.getSize(size);

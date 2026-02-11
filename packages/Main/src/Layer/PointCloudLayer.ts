@@ -356,7 +356,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      */
     loadData(
         elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number,
-    ): [] | PointCloudNode[] {
+    ): void {
         elt.notVisibleSince = undefined;
 
         // only load geometry if this elements has points
@@ -382,6 +382,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
                     elt.obj.visible = false;
+
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
@@ -398,24 +399,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 });
             }
         }
-
-        if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(
-                context,
-                layer.pointSize,
-                elt.pointSpacing,
-                distanceToCamera,
-            ) / this.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
-            }
-        }
-        return [];
     }
 
     /**
@@ -460,7 +443,26 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         const distanceToCamera = bbox.distanceToPoint(point);
 
-        return this.loadData(elt, context, layer, distanceToCamera);
+        this.loadData(elt, context, layer, distanceToCamera);
+
+        if (elt.children && elt.children.length) {
+            elt.sse = computeScreenSpaceError(
+                context,
+                layer.pointSize,
+                elt.pointSpacing,
+                distanceToCamera,
+            ) / this.sseThreshold;
+            if (elt.sse >= 1) {
+                return elt.children;
+            } else {
+                for (const child of elt.children) {
+                    markForDeletion(child);
+                }
+                return [];
+            }
+        }
+
+        return [];
     }
 
     postUpdate() {

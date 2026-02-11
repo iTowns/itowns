@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
 import proj4 from 'proj4';
+import { OrientationUtils, Coordinates } from '@itowns/geographic';
 import { LASAttributes } from 'Loader/LASConstant';
 
 let _lazPerf;
@@ -21,6 +22,46 @@ async function loader() {
     return _thread;
 }
 
+async function parse(data, options, type = 'parseFile') {
+    const lasLoader = await loader();
+    const source = options.in.source;
+
+    const center = new Coordinates(options.in.crs)
+        .setFromVector3(options.in.clampOBB.center);
+    const centerZ0 = projZ0(center, source.crs, options.in.crs);
+    const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
+
+    const config = {
+        colorDepth: source.colorDepth,
+        in: {
+            crs: source.crs,
+            projDefs: proj4.defs(source.crs),
+        },
+        out: {
+            crs: options.in.crs, // move crs to out ?
+            projDefs: proj4.defs(options.in.crs),
+            origin: centerZ0,
+            rotation: quaternion.toArray(),
+        },
+    };
+
+    if (type === 'parseChunk') {
+        config.pointCount = options.in.numPoints;
+        config.header = source.header;
+        config.eb = source.eb;
+    }
+
+    const parsedData = await lasLoader[type](Transfer(data), config);
+
+    const geometry = buildBufferGeometry(parsedData.attributes);
+    geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
+    // geometry.userData.header = parsedData.header;
+    geometry.userData.position = new Coordinates(options.in.crs).setFromArray(centerZ0);
+    geometry.userData.quaternion = quaternion.clone().invert();
+
+    return geometry;
+}
+
 function buildBufferGeometry(attributes) {
     const geometry = new THREE.BufferGeometry();
 
@@ -30,6 +71,22 @@ function buildBufferGeometry(attributes) {
     });
 
     return geometry;
+}
+
+// get the projection of a point at Z=0
+function projZ0(center, crsIn, crsOut) {
+    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
+    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    return centerZ0;
+}
+
+function getQuaternion(origin, crsIn, crsOut) {
+    let quaternion = new THREE.Quaternion();
+    if (proj4.defs(crsOut).projName === 'geocent') {
+        const coord = new Coordinates(crsOut).setFromArray(origin);
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+    }
+    return quaternion;
 }
 
 /** The LASParser module provides a [parse]{@link
@@ -86,29 +143,7 @@ export default {
      * `THREE.BufferGeometry`.
      */
     async parseChunk(data, options = {}) {
-        const lasLoader = await loader();
-        const source = options.in.source;
-        const origin = options.in.origin;
-        const quaternion = options.in.rotation;
-        const parsedData = await lasLoader.parseChunk(Transfer(data), {
-            pointCount: options.in.numPoints,
-            header: source.header,
-            eb: source.eb,
-            colorDepth: source.colorDepth,
-            in: {
-                crs: source.crs,
-                projDefs: proj4.defs(source.crs),
-            },
-            out: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: origin.toArray(),
-                rotation: quaternion.toArray(),
-            },
-        });
-
-        const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
+        const geometry = await parse(data, options, 'parseChunk');
         return geometry;
     },
 
@@ -137,27 +172,7 @@ export default {
             console.warn("Warning: options 'skip' not supported anymore");
         }
 
-        const lasLoader = await loader();
-        const source = options.in.source;
-
-        const parsedData = await lasLoader.parseFile(Transfer(data), {
-            colorDepth: source.colorDepth,
-            in: {
-                crs: source.crs,
-                projDefs: proj4.defs(source.crs),
-            },
-            out: {
-                crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: options.in.origin.toArray(),
-                rotation: options.in.rotation.toArray(),
-            },
-        });
-
-        const geometry = buildBufferGeometry(parsedData.attributes);
-        geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
-        geometry.userData.header = parsedData.header;
-
+        const geometry = await parse(data, options, 'parseFile');
         return geometry;
     },
 };
