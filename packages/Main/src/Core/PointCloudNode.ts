@@ -130,6 +130,11 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
             return this.findCommonAncestor(node.parent as this);
         }
     }
+
+    traverse(callback: (node: this) => void): void {
+        callback(this);
+        this.children.forEach(child => child.traverse(callback));
+    }
 }
 
 export default PointCloudNode;

@@ -1,4 +1,4 @@
-import { View, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, GeometryLayer } from 'itowns';
+import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'itowns';
 import * as THREE from 'three';
 import OBBHelper from './OBBHelper';
 
@@ -49,119 +49,62 @@ function setupControllerVisibily(gui, displayMode, sizeMode) {
     }
 }
 
-/**
- * Generate the position array of the bbox corner form the bbox
- * Adapted from THREE.BoxHelper.js
- * https://github.com/mrdoob/three.js/blob/master/src/helpers/BoxHelper.js
- *
- * @param {THREE.box3} bbox - Box3 of the node
- * @returns {array}
- */
-function getCornerPosition(bbox) {
-    const array =  new Float32Array(8 * 3);
+const red = new THREE.Color(0xff0000);
 
-    const min = bbox.min;
-    const max = bbox.max;
-
-    /*
-      5____4
-    1/___0/|
-    | 6__|_7
-    2/___3/
-
-    0: max.x, max.y, max.z
-    1: min.x, max.y, max.z
-    2: min.x, min.y, max.z
-    3: max.x, min.y, max.z
-    4: max.x, max.y, min.z
-    5: min.x, max.y, min.z
-    6: min.x, min.y, min.z
-    7: max.x, min.y, min.z
-    */
-    array[0] = max.x; array[1] = max.y; array[2] = max.z;
-    array[3] = min.x; array[4] = max.y; array[5] = max.z;
-    array[6] = min.x; array[7] = min.y; array[8] = max.z;
-    array[9] = max.x; array[10] = min.y; array[11] = max.z;
-    array[12] = max.x; array[13] = max.y; array[14] = min.z;
-    array[15] = min.x; array[16] = max.y; array[17] = min.z;
-    array[18] = min.x; array[19] = min.y; array[20] = min.z;
-    array[21] = max.x; array[22] = min.y; array[23] = min.z;
-    return array;
+function isVisibleLeaf(node) {
+    if (!node.visible) { return false; }
+    return !node.children.some(c => c.visible);
 }
 
-const red =  new THREE.Color(0xff0000);
-function debugIdUpdate(context, layer, node) {
-    // filtering helper attached to node with the current debug layer
-    if (!node.link) {
-        node.link = {};
-    }
-    let helper = node.link[layer.id];
-    if (node.visible) {
-        if (!helper) {
-            helper = new THREE.Group();
+function setupOBBDebugPlugin(layer, boxGroup, debugState) {
+    function createOBBHelper(node) {
+        if (node._obbHelper) { return; }
+        const helper = new OBBHelper(node.voxelOBB, null, red);
+        helper._debugNode = node;
+        node._obbHelper = helper;
+        boxGroup.add(helper);
+        helper.updateMatrixWorld(true);
 
-            // node obbes
-            const obbHelper = new OBBHelper(node.clampOBB, node.voxelKey, red);
-            obbHelper.layer = layer;
-            helper.add(obbHelper);
-
-            // point data boxes (in local ref)
-            const tightboxHelper = new THREE.BoxHelper(undefined, 0x0000ff);
-            if (node.obj) {
-                tightboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-                tightboxHelper.applyMatrix4(node.obj.matrixWorld);
-                node.obj.tightboxHelper = tightboxHelper;
-                helper.add(tightboxHelper);
-                tightboxHelper.updateMatrixWorld(true);
-            } else if (node.promise) {
-                // TODO rethink architecture of node.obj/node.promise ?
-                node.promise.then(() => {
-                    if (node.obj) {
-                        tightboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-                        tightboxHelper.applyMatrix4(node.obj.matrixWorld);
-                        node.obj.tightboxHelper = tightboxHelper;
-                        helper.add(tightboxHelper);
-                        tightboxHelper.updateMatrixWorld(true);
-                    }
-                });
+        if (!debugState.displayParentBounds) {
+            helper.visible = isVisibleLeaf(node);
+            if (node.parent?._obbHelper) {
+                node.parent._obbHelper.visible = isVisibleLeaf(node.parent);
             }
+        }
+    }
 
-            node.link[layer.id] = helper;
+    function removeOBBHelper(node) {
+        if (!node._obbHelper) { return; }
+        boxGroup.remove(node._obbHelper);
+        node._obbHelper = undefined;
+
+        if (!debugState.displayParentBounds && node.parent?.visible && node.parent?._obbHelper) {
+            node.parent._obbHelper.visible = isVisibleLeaf(node.parent);
+        }
+    }
+
+    layer.addEventListener('tile-visibility-change', (event) => {
+        if (event.visible) {
+            createOBBHelper(event.tile);
         } else {
-            node.link[layer.id].visible = true;
+            removeOBBHelper(event.tile);
         }
+    });
 
-        layer.object3d.add(helper);
-
-        if (node.children && node.children.length) {
-            if (node.sse >= 1) {
-                return node.children;
-            } else {
-                for (const child of node.children) {
-                    if (child.link?.[layer.id]) {
-                        child.link[layer.id].visible = false;
-                    }
-                }
-            }
-        }
-    } else if (helper) {
-        layer.object3d.remove(helper);
-    }
+    layer.addEventListener('dispose-model', (event) => {
+        removeOBBHelper(event.tile);
+    });
 }
 
-class DebugLayer extends GeometryLayer {
-    constructor(id, options = {}) {
-        super(id, options.object3d || new THREE.Group(), options);
-        this.update = debugIdUpdate;
-        this.isDebugLayer = true;
-        this.layer = options.layer;
-    }
-
-    preUpdate(context, sources) {
-        if (sources.has(this.parent)) {
-            this.object3d.clear();
+function refreshHelperVisibility(boxGroup, debugState) {
+    for (const helper of boxGroup.children) {
+        if (helper._debugNode) {
+            if (debugState.displayParentBounds) {
+                helper.visible = true;
+            } else {
+                helper.visible = isVisibleLeaf(helper._debugNode);
+            }
         }
-        return this.layer.preUpdate(context, sources);
     }
 }
 
@@ -303,22 +246,23 @@ export default {
         // UI
         const debugUI = layer.debugUI.addFolder('Debug').close();
 
-        const obb_layer_id = `${layer.id}_obb_debug`;
-        const obbLayer = new DebugLayer(obb_layer_id, {
-            visible: false,
-            cacheLifeTime: Infinity,
-            source: false,
-            layer,
-        });
+        // OBB debug plugin: event-driven, shows voxelOBB helpers
+        const boxGroup = new THREE.Group();
+        boxGroup.name = 'debug-obb-group';
+        boxGroup.visible = false;
+        layer.object3d.add(boxGroup);
 
-        if (view.getLayerById(obbLayer.id)) {
-            view.removeLayer(obbLayer.id);
-        }
-        View.prototype.addLayer.call(view, obbLayer);
+        const debugState = { displayParentBounds: false };
+        setupOBBDebugPlugin(layer, boxGroup, debugState);
 
-        debugUI.add(obbLayer, 'visible').name('Display Bounding Boxes')
+        debugUI.add(boxGroup, 'visible').name('Display Bounding Boxes')
             .onChange(() => {
-                view.notifyChange(obbLayer);
+                view.notifyChange(layer);
+            });
+        debugUI.add(debugState, 'displayParentBounds').name('Display Parent Bounds')
+            .onChange(() => {
+                refreshHelperVisibility(boxGroup, debugState);
+                view.notifyChange(layer);
             });
 
         debugUI.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
