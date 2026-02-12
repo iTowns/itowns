@@ -316,6 +316,18 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.maxElevationRange = this.maxElevationRange ?? this.source.zmax;
     }
 
+    setNodeVisible(node: PointCloudNode, visible: boolean) {
+        if (visible !== node._wasVisible) {
+            this.dispatchEvent({
+                type: 'node-visibility-change',
+                tile: node,
+                visible,
+            });
+            node.visible = visible;
+            node._wasVisible = visible;
+        }
+    }
+
     preUpdate(context: Context) {
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
@@ -506,6 +518,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
         }
+
+        for (const pts of this.group.children as THREE.Points[]) {
+            this.setNodeVisible(pts.userData.node, pts.visible);
+        }
+
+        this.dispatchEvent({ type: 'post-update' });
     }
 
     // @ts-expect-error Layer and Picking are not typed yet
