@@ -462,13 +462,14 @@ export function quaternionFromCRSToEnu(
     }
 }
 
+const quaternionCrs2CrsCache: Record<string, Record<string, QuaternionFunction>> = {};
 export function quaternionFromCRSToCRS(
-    crsIn: ProjectionLike,
-    crsOut: ProjectionLike,
+    crsIn: string,
+    crsOut: string,
 ): QuaternionFunction;
 export function quaternionFromCRSToCRS(
-    crsIn: ProjectionLike,
-    crsOut: ProjectionLike,
+    crsIn: string,
+    crsOut: string,
     coords: Coordinates,
     target?: Quaternion,
 ): Quaternion;
@@ -484,8 +485,8 @@ export function quaternionFromCRSToCRS(
  * function to compute it from coordinates.
  */
 export function quaternionFromCRSToCRS(
-    crsIn: ProjectionLike,
-    crsOut: ProjectionLike,
+    crsIn: string,
+    crsOut: string,
     coordinates?: Coordinates,
     target = new Quaternion(),
 ) {
@@ -494,9 +495,23 @@ export function quaternionFromCRSToCRS(
         return (origin: Coordinates, target = new Quaternion()) => target.set(0, 0, 0, 1);
     }
 
+    if (quaternionCrs2CrsCache[crsIn] && quaternionCrs2CrsCache[crsIn][crsOut]) {
+        return quaternionCrs2CrsCache[crsIn][crsOut];
+    }
+
     // get rotations from the local East/North/Up (ENU) frame to both CRS.
     const fromCrs = quaternionFromCRSToEnu(crsIn);
     const toCrs = quaternionFromEnuToCRS(crsOut);
-    return (origin: Coordinates, target = new Quaternion()) =>
-        toCrs(origin, target).multiply(fromCrs(origin, quat));
+
+    if (!quaternionCrs2CrsCache[crsIn]) {
+        quaternionCrs2CrsCache[crsIn] = {};
+    }
+
+    if (!quaternionCrs2CrsCache[crsIn][crsOut]) {
+        quaternionCrs2CrsCache[crsIn][crsOut] =
+            (origin: Coordinates, target = new Quaternion()) =>
+                toCrs(origin, target).multiply(fromCrs(origin, quat));
+    }
+
+    return quaternionCrs2CrsCache[crsIn][crsOut];
 }

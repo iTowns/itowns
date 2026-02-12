@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
-import proj4 from 'proj4';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 import { LASAttributes } from 'Loader/LASConstant';
 
 let _lazPerf;
@@ -35,11 +34,11 @@ async function parse(data, options, type = 'parseFile') {
         colorDepth: source.colorDepth,
         in: {
             crs: source.crs,
-            projDefs: proj4.defs(source.crs),
+            projDefs: CRS.defs(source.crs),
         },
         out: {
             crs: options.in.crs, // move crs to out ?
-            projDefs: proj4.defs(options.in.crs),
+            projDefs: CRS.defs(options.in.crs),
             origin: centerZ0,
             rotation: quaternion.toArray(),
         },
@@ -75,14 +74,14 @@ function buildBufferGeometry(attributes) {
 
 // get the projection of a point at Z=0
 function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
-    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
+    const centerZ0 = CRS.transform(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
     return centerZ0;
 }
 
 function getQuaternion(origin, crsIn, crsOut) {
     let quaternion = new THREE.Quaternion();
-    if (proj4.defs(crsOut).projName === 'geocent') {
+    if (CRS.defs(crsOut).projName === 'geocent') {
         const coord = new Coordinates(crsOut).setFromArray(origin);
         quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
     }
