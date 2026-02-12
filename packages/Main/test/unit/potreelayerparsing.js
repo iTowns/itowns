@@ -151,7 +151,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
         const meta = {
             obj: 'a',
         };
-        assert.equal(PotreeLayer.prototype.getObjectToUpdateForAttachedLayers(meta).element, 'a');
+        assert.equal(PotreeLayer.prototype.getObjectToUpdateForAttachedLayers(meta).elements[0], 'a');
     });
     it('should correctly return the element and its parent', function () {
         const meta = {
@@ -161,7 +161,7 @@ describe('getObjectToUpdateForAttachedLayers', function () {
             },
         };
         const result = PotreeLayer.prototype.getObjectToUpdateForAttachedLayers(meta);
-        assert.equal(result.element, 'a');
+        assert.equal(result.elements[0], 'a');
         assert.equal(result.parent, 'b');
     });
 });
