@@ -142,10 +142,14 @@ class GeometryLayer extends Layer {
     // object to update for attached layer.
     // See 3dtilesLayer or PotreeLayer for examples.
     // eslint-disable-next-line arrow-body-style
+    /**
+     * @param {THREE.Object3D} obj
+     * @returns { { elements: THREE.Object3D[], parent: THREE.Object3D } }
+     */
     getObjectToUpdateForAttachedLayers(obj) {
         if (obj.parent && obj.material) {
             return {
-                element: obj,
+                elements: [obj],
                 parent: obj.parent,
             };
         }
@@ -153,7 +157,7 @@ class GeometryLayer extends Layer {
 
     // Placeholder
     // eslint-disable-next-line
-    postUpdate() {}
+    postUpdate() { }
 
     // Placeholder
     // eslint-disable-next-line

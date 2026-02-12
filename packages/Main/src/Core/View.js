@@ -485,7 +485,7 @@ class View extends THREE.EventDispatcher {
      * view.getLayers(layer => layer.isGeometryLayer);
      * // get one layer with id
      * view.getLayers(layer => layer.id === 'itt');
-     * @param {function(Layer):boolean} filter
+     * @param {function(Layer, Layer?):boolean} filter
      * @returns {Array<Layer>}
      */
     getLayers(filter) {
