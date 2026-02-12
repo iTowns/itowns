@@ -270,6 +270,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.point.base_altitude;
 
             coord.copy(localCoord)
                 .applyMatrix4(context.collection.matrixWorld);
@@ -279,7 +280,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
             }
 
             baseCoord.copy(up)
-                .multiplyScalar(style.point.base_altitude - coord.z).add(localCoord)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
                 .toArray(vertices, v);
         }
 
@@ -427,7 +428,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-            const { base_altitude } = style.fill;
+            const base_altitude = style.fill.base_altitude;
 
             coord.copy(localCoord)
                 .applyMatrix4(context.collection.matrixWorld);
@@ -551,7 +552,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     const startIn = start * 3;
     const startTop = start + numVertices / 3;
     const endIn = startIn + count * 3;
-    const { base_altitude, extrusion_height, color } = style.fill;
+    const { color } = style.fill;
     let topColor;
     let baseColor;
     if (colors) {
@@ -568,6 +569,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
+            const { base_altitude, extrusion_height } = style.fill;
             const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrixWorld);
             if (worldCoord.crs === 'EPSG:4978') {
                 // altitude conversion from geocentered to elevation (from ground)
@@ -672,7 +674,6 @@ function updateLineBuffers(featureMesh, buffers, id) {
         return;
     }
 
-    const base_altitude = style.stroke.base_altitude;
     for (let v = start * 3, j = start; j < end; v += 3, j++) {
         if (vertices) {
             if (feature.normals) {
@@ -680,11 +681,12 @@ function updateLineBuffers(featureMesh, buffers, id) {
             }
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.stroke.base_altitude;
 
             coord.copy(localCoord)
                 .applyMatrix4(context.collection.matrixWorld);
             if (coord.crs == 'EPSG:4978') {
-                // altitude conversion from geocentered to elevation (from ground)
+            // altitude conversion from geocentered to elevation (from ground)
                 coord.as('EPSG:4326', coord);
             }
 
