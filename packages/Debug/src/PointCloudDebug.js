@@ -1,4 +1,4 @@
-import { View, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, GeometryLayer } from 'itowns';
+import { PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE } from 'itowns';
 import * as THREE from 'three';
 import OBBHelper from './OBBHelper';
 
@@ -49,92 +49,155 @@ function setupControllerVisibily(gui, displayMode, sizeMode) {
     }
 }
 
-const red =  new THREE.Color(0xff0000);
-// const blue =  new THREE.Color(0x0000ff);
-const yellow =  new THREE.Color(0xffff00);
-function debugIdUpdate(context, layer, node) {
-    // filtering helper attached to node with the current debug layer
-    if (!node.link) {
-        node.link = {};
-    }
+function createOBBHelper(node) {
+    return new OBBHelper(node.voxelOBB, new THREE.Color(THREE.Color.NAMES.darkred));
+}
 
-    let helper = node.link[layer.id];
+function createClampOBBHelper(node) {
+    return new OBBHelper(node.clampOBB, new THREE.Color(THREE.Color.NAMES.red));
+}
 
-    if (node.visible) {
-        if (!helper) {
-            helper = new THREE.Group();
-            helper.name = 'helper';
-
-            // node OBBes
-            const obbHelper = new OBBHelper(node.clampOBB, node.voxelKey, red);
-            obbHelper.layer = layer;
-
-            helper.add(obbHelper);
-
-            // point data OBBes
-            const pointsOBBes = new THREE.Group();
-            pointsOBBes.name = 'tightBBox';
+function createBoxHelper(node) {
+    // point data OBBes
+    const pointsOBBes = new THREE.Group();
+    pointsOBBes.name = 'tightBBox';
+    if (node.obj) {
+        const pointsOBB = {
+            position: node.obj.position.clone(),
+            quaternion: node.obj.quaternion.clone(),
+            box3D: node.obj.geometry.boundingBox.clone(),
+        };
+        const pointsOBBHelper = new OBBHelper(pointsOBB, new THREE.Color(THREE.Color.NAMES.yellow));
+        pointsOBBes.add(pointsOBBHelper);
+    } else if (node.promise) {
+        // TODO rethink architecture of node.obj/node.promise ?
+        node.promise.then(() => {
             if (node.obj) {
                 const pointsOBB = {
                     position: node.obj.position.clone(),
                     quaternion: node.obj.quaternion.clone(),
                     box3D: node.obj.geometry.boundingBox.clone(),
                 };
-                const pointsOBBHelper = new OBBHelper(pointsOBB, node.voxelKey, yellow);
-                helper.add(pointsOBBHelper);
-            } else if (node.promise) {
-                // TODO rethink architecture of node.obj/node.promise ?
-                node.promise.then(() => {
-                    if (node.obj) {
-                        const pointsOBB = {
-                            position: node.obj.position.clone(),
-                            quaternion: node.obj.quaternion.clone(),
-                            box3D: node.obj.geometry.boundingBox.clone(),
-                        };
-                        const pointsOBBHelper = new OBBHelper(pointsOBB, node.voxelKey, yellow);
-                        helper.add(pointsOBBHelper);
-                    }
-                });
+                const pointsOBBHelper = new OBBHelper(pointsOBB, new THREE.Color(THREE.Color.NAMES.yellow));
+                pointsOBBes.add(pointsOBBHelper);
             }
-
-            node.link[layer.id] = helper;
-        } else {
-            node.link[layer.id].visible = true;
-        }
-
-        layer.object3d.add(helper);
-        helper.updateMatrixWorld(true);
-
-        if (node.children && node.children.length) {
-            if (node.sse >= 1) {
-                return node.children;
-            } else {
-                for (const child of node.children) {
-                    if (child.link?.[layer.id]) {
-                        child.link[layer.id].visible = false;
-                    }
-                }
-            }
-        }
-    } else if (helper) {
-        layer.object3d.remove(helper);
+        });
     }
+    return pointsOBBes;
+
+
+    /*
+    const bboxHelper = new THREE.BoxHelper(undefined, new THREE.Color(THREE.Color.NAMES.blue));
+    if (node.obj) {
+        bboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
+        bboxHelper.applyMatrix4(node.obj.matrixWorld);
+    } else if (node.promise) {
+        // TODO rethink architecture of node.obj/node.promise ?
+        node.promise.then(() => {
+            if (node.obj) {
+                bboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
+                bboxHelper.applyMatrix4(node.obj.matrixWorld);
+            }
+        });
+    }
+    return bboxHelper;
+    */
 }
 
-class DebugLayer extends GeometryLayer {
-    constructor(id, options = {}) {
-        super(id, options.object3d || new THREE.Group(), options);
-        this.update = debugIdUpdate;
-        this.isDebugLayer = true;
-        this.layer = options.layer;
-        this.layer.object3d.add(this.object3d);
+const NODE_BOXES_SYMBOL = Symbol('PointCloudNode.boxes');
+
+class PointCloudDebug {
+    constructor() {
+        this.displayBoxBounds = false;
+        this.displayOBBBounds = false;
+        this.displayClampBounds = false;
+
+        this.layer = null;
+        this._onTileVisibilityChange = null;
+        this._onDisposeModel = null;
+        this._update = null;
+
+        this.group = new THREE.Group();
+
+        this.obbGroup = new THREE.Group();
+        this.obbGroup.name = 'PointCloudDebug.obbGroup';
+        this.group.add(this.obbGroup);
+        this.obbGroup.updateMatrixWorld();
+
+        this.clampOBBGroup = new THREE.Group();
+        this.clampOBBGroup.name = 'PointCloudDebug.clampOBBGroup';
+        this.group.add(this.clampOBBGroup);
+        this.clampOBBGroup.updateMatrixWorld();
+
+        this.boxGroup = new THREE.Group();
+        this.boxGroup.name = 'PointCloudDebug.boxGroup';
+        this.group.add(this.boxGroup);
+        this.boxGroup.updateMatrixWorld();
     }
 
-    preUpdate(context, sources) {
-        if (sources.has(this.parent)) {
-            this.object3d.clear();
+    init(layer) {
+        this.layer = layer;
+
+        this._onTileVisibilityChange = this.onTileVisibilityChange.bind(this);
+        this._onDisposeModel = this.onDisposeModel.bind(this);
+        this._update = this.update.bind(this);
+
+        layer.addEventListener('dispose-model', this._onDisposeModel);
+        layer.addEventListener('post-update', this._update);
+        layer.addEventListener('node-visibility-change', this._onTileVisibilityChange);
+    }
+
+    onDisposeModel({ tile }) {
+        const helpers = tile[NODE_BOXES_SYMBOL]; // Group of OBB helpers?
+        if (helpers) {
+            helpers.obb.dispose();
+            helpers.clampOBB.dispose();
+            helpers.bbox.children.forEach(child => child.dispose());
+            delete tile[NODE_BOXES_SYMBOL];
         }
-        return this.layer.preUpdate(context, sources);
+    }
+
+    onTileVisibilityChange({ tile, visible }) {
+        let helpers = tile[NODE_BOXES_SYMBOL];
+        if (visible && !helpers) {
+            helpers = {
+                obb: createOBBHelper(tile),
+                clampOBB: createClampOBBHelper(tile),
+                bbox: createBoxHelper(tile),
+            };
+            tile[NODE_BOXES_SYMBOL] = helpers;
+        }
+
+        if (helpers) {
+            if (!visible) {
+                this.obbGroup.remove(helpers.obb);
+                this.clampOBBGroup.remove(helpers.clampOBB);
+                this.boxGroup.remove(helpers.bbox);
+            } else {
+                this.obbGroup.add(helpers.obb);
+                helpers.obb.updateMatrixWorld(true);
+                this.clampOBBGroup.add(helpers.clampOBB);
+                helpers.clampOBB.updateMatrixWorld(true);
+                this.boxGroup.add(helpers.bbox);
+                helpers.bbox.updateMatrixWorld(true);
+            }
+        }
+    }
+
+    update() {
+        this.obbGroup.visible = this.displayOBBBounds;
+        this.clampOBBGroup.visible = this.displayClampBounds;
+        this.boxGroup.visible = this.displayBoxBounds;
+    }
+
+    dispose() {
+        const { layer, obbGroup } = this;
+
+        layer?.removeEventListener('dispose-model', this._onDisposeModel);
+        layer?.removeEventListener('update-after', this._update);
+        layer?.removeEventListener('node-visibility-change', this._onTileVisibilityChange);
+
+        obbGroup?.removeFromParent();
     }
 }
 
@@ -276,23 +339,19 @@ export default {
         // UI
         const debugUI = layer.debugUI.addFolder('Debug').close();
 
-        const obb_layer_id = `${layer.id}_obb_debug`;
-        const obbLayer = new DebugLayer(obb_layer_id, {
-            visible: false,
-            cacheLifeTime: Infinity,
-            source: false,
-            layer,
+        const debugBoxes = new PointCloudDebug();
+        debugBoxes.init(layer);
+        view.scene.add(debugBoxes.group);
+
+        debugUI.add(debugBoxes, 'displayOBBBounds').name('Node OBB').onChange(() => {
+            view.notifyChange(layer, true);
         });
-
-        if (view.getLayerById(obbLayer.id)) {
-            view.removeLayer(obbLayer.id);
-        }
-        View.prototype.addLayer.call(view, obbLayer);
-
-        debugUI.add(obbLayer, 'visible').name('Display Bounding Boxes')
-            .onChange(() => {
-                view.notifyChange(obbLayer);
-            });
+        debugUI.add(debugBoxes, 'displayClampBounds').name('Node OBB (clamp)').onChange(() => {
+            view.notifyChange(layer, true);
+        });
+        debugUI.add(debugBoxes, 'displayBoxBounds').name('Geometry Box').onChange(() => {
+            view.notifyChange(layer, true);
+        });
 
         debugUI.add(layer, 'dbgStickyNode').name('Sticky node name').onChange(update);
         debugUI.add(layer, 'dbgDisplaySticky').name('Display sticky node').onChange(update);
