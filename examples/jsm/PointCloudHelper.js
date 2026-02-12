@@ -56,8 +56,8 @@ export function zoomToLayer(view, layer) {
     const radius = length / 2;
     const distance = radius / Math.tan(fov / 2);
 
-    const up = new Vector3(0, 0, 1);
-    camera.position.copy(center).addScaledVector(up, distance);
+    camera.position.copy(center).addScaledVector(new Vector3(0, 0, 1), distance);
+    camera.up.copy(new Vector3(0, 1, 0));
     camera.far = 2 * distance;
     camera.lookAt(center);
     camera.updateProjectionMatrix();
