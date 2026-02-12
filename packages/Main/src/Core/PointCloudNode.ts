@@ -31,8 +31,11 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     /** The cubique obb clamped to zmin and zmax. */
     clampOBB: OBB;
 
-    // Properties used internally by PointCloud layer
+    /** Property used internally by PointCloud layer. */
     visible: boolean;
+    /** Property used internally by PointCloud layer. */
+    _wasVisible: boolean;
+
     /** The sse of the node set at an nitial value of -1. */
     sse: number;
     notVisibleSince: number | undefined;
@@ -54,6 +57,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.sse = -1;
 
         this.visible = false;
+        this._wasVisible = false;
         this.promise = null;
     }
 
