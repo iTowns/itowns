@@ -38,7 +38,7 @@ type Context = {
 };
 
 type UpdatableGeometryLayer<T> = GeometryLayer & {
-    update(context: Context, layer: Layer, node: T): Array<T> | undefined
+    update(context: Context, layer: Layer, node: T, parent?: T): Array<T> | undefined
 };
 
 function updateElements<T extends Object3D>(
@@ -67,8 +67,7 @@ function updateElements<T extends Object3D>(
                 // update attached layers
                 for (const attachedLayer of geometryLayer.attachedLayers) {
                     if (attachedLayer.ready) {
-                        // @ts-expect-error Updatable layer
-                        attachedLayer.update(context,
+                        (attachedLayer as UpdatableGeometryLayer<T>).update(context,
                             attachedLayer,
                             sub.elements[i],
                             sub.parent);
