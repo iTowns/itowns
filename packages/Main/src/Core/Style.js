@@ -83,9 +83,9 @@ function replaceWhitePxl(imgd, color, id) {
         const colorToChange = new Color('white');
         for (let i = 0, n = pix.length; i < n; i += 4) {
             const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-            pix[i] = (pix[i] * d +  newColor.r * 255 * (1 - d));
-            pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
-            pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
+            pix[i] = (pix[i] * d + newColor.r * 255 * (1 - d));
+            pix[i + 1] = (pix[i + 1] * d + newColor.g * 255 * (1 - d));
+            pix[i + 2] = (pix[i + 2] * d + newColor.b * 255 * (1 - d));
         }
         cachedImg.set(`${id}_${color}`, imgd);
         return imgd;
@@ -127,7 +127,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
         {
             enumerable: true,
             get: () => {
-                // != to check for 'undefined' and 'null' value)
+                // != to check for 'undefined' and 'null' value
                 if (property != undefined) { return readExpression(property, style.context); }
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
@@ -138,6 +138,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
+                style.propVersions[parameter] = (style.propVersions[parameter] ?? 0) + 1;
             },
         });
 }
@@ -190,6 +191,10 @@ export class StyleContext {
     setLocalCoordinatesFromArray(vertices, offset) {
         this.#worldCoordsComputed = false;
         return this.#localCoordinates.setFromArray(vertices, offset);
+    }
+
+    get geometry() {
+        return this.#geometry;
     }
 
     get properties() {
@@ -454,6 +459,8 @@ class Style {
         params.text = params.text || {};
         params.icon = params.icon || {};
 
+        this.propVersions = {};
+
         this.zoom = {};
         defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
         defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
@@ -481,6 +488,7 @@ class Style {
                 },
                 set: (v) => {
                     this._extrusionHeight = v;
+                    this.propVersions.extrusion_height = (this.propVersions.extrusion_height ?? 0) + 1;
                 },
             },
         );
@@ -651,7 +659,7 @@ class Style {
             icon = document.createElement('img');
         }
 
-        const iconPromise  = new Promise((resolve, reject) => {
+        const iconPromise = new Promise((resolve, reject) => {
             const opt = {
                 size: this.icon.size,
                 color: this.icon.color,
