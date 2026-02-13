@@ -32,6 +32,7 @@ type Attitude = Partial<EulerAngles> | Partial<PhotogrammetryAngles>;
 
 type QuaternionFunction = (coords: Coordinates, target?: Quaternion) => Quaternion;
 
+// To unify with Crs.js ProjectionLike type ?
 type ProjectionLike = ProjectionDefinition | string;
 type LCCProjection = { long0: number, lat0: number };
 type TMercProjection = { a: number, b: number, e?: number, long0: number };
