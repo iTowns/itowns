@@ -157,6 +157,23 @@
                 view.skyManager.enabled = v;
             });
 
+            const cameraFolder = debugMenu.gui.addFolder('Camera Far Plane');
+
+            cameraFolder.add(view, 'farFactor', 0.1, 1).name('Far Factor').onChange(() => {
+                view._updateCameraRangeAndFog();
+                view.notifyChange();
+            });
+
+            cameraFolder.add(view, 'maxFarAltitude', 1000, 100000).name('Max Far Altitude').onChange(() => {
+                view._updateCameraRangeAndFog();
+                view.notifyChange();
+            });
+
+            cameraFolder.add(view, 'minFarDistance', 1000, 20000).name('Min Far Distance').onChange(() => {
+                view._updateCameraRangeAndFog();
+                view.notifyChange();
+            });
+
             debug.createTileDebugUI(debugMenu.gui, view);
 
             window.view = view;
