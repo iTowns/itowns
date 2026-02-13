@@ -198,7 +198,6 @@ function featureToPoint(feature, options) {
     up.set(0, 0, 1).multiply(inverseScale);
 
     const pointMaterialSize = [];
-    context.setFeature(feature);
 
     for (const geometry of feature.geometries) {
         const id = batchId(geometry.properties, featureId);
@@ -258,7 +257,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
     const { vertices, colors, batchIds } = buffers;
 
     // geometry range
-    const geometry = context.getGeometry();
+    const geometry = context.geometry;
     const start = geometry.indices[0].offset;
     const count = geometry.indices[0].count;
     const end = start + count;
@@ -305,7 +304,6 @@ function featureToLine(feature, options) {
     const geom = new THREE.BufferGeometry();
 
     const lineMaterialWidth = [];
-    context.setFeature(feature);
 
     // total number of line segments across all geometries
     let totalSegments = 0;
@@ -350,6 +348,78 @@ function featureToLine(feature, options) {
     return new THREE.LineSegments(geom, options.lineMaterial);
 }
 
+/**
+ * Update vertex and index data for LINE features.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {TypedArray} [buffers.indices] - Target index buffer to write line segment indices to.
+ * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateLineBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    const { vertices, colors, batchIds, indices } = buffers;
+
+    // geometry range
+    const geometry = context.geometry;
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+
+    // avoid integer overflow with 16-bit index buffers
+    if (indices instanceof Uint16Array && end - 1 > 0xffff) {
+        console.warn('Feature to Line: integer overflow, too many points in lines');
+        return;
+    }
+
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
+        if (vertices) {
+            if (feature.normals) {
+                up.fromArray(feature.normals, v).multiply(inverseScale);
+            }
+
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.stroke.base_altitude;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude conversion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+                .toArray(vertices, v);
+        }
+
+        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
+        if (batchIds) { batchIds[j] = id; }
+
+        if (indices && j < end - 1) {
+            indices[buffers.indexPtr++] = j;
+            indices[buffers.indexPtr++] = j + 1;
+        }
+    }
+}
+
 function featureToPolygon(feature, options) {
     const vertices = new Float32Array(feature.vertices);
     const colors = new Uint8Array(feature.vertices.length);
@@ -357,7 +427,6 @@ function featureToPolygon(feature, options) {
 
     const batchIds = new Uint32Array(vertices.length / 3);
     const batchId = options.batchId || ((p, id) => id);
-    context.setFeature(feature);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     up.set(0, 0, 1).multiply(inverseScale);
@@ -416,7 +485,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
-    const geometry = context.getGeometry();
+    const geometry = context.geometry;
     const start = geometry.indices[0].offset;
     const lastIndex = geometry.indices.slice(-1)[0];
     const end = lastIndex.offset + lastIndex.count;
@@ -489,7 +558,6 @@ function featureToExtrudedPolygon(feature, options) {
 
     let featureId = 0;
 
-    context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
@@ -541,7 +609,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
-    const geometry = context.getGeometry();
+    const geometry = context.geometry;
     const start = geometry.indices[0].offset;
     const lastIndex = geometry.indices.slice(-1)[0];
     const end = lastIndex.offset + lastIndex.count;
@@ -629,78 +697,6 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
                 index.offset,
                 index.count,
                 !(index.ccw ?? isClockWise));
-        }
-    }
-}
-
-/**
- * Update vertex and index data for LINE features.
- *
- * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object.
- * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
- * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
- * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
- * @param {TypedArray} [buffers.indices] - Target index buffer to write line segment indices to.
- * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
- * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
- */
-function updateLineBuffers(featureMesh, buffers, id) {
-    const feature = featureMesh.feature;
-    const ptsIn = feature.vertices;
-    if (!ptsIn?.length) {
-        console.error('Feature has no vertices');
-        return;
-    }
-
-    // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
-
-    const { vertices, colors, batchIds, indices } = buffers;
-
-    // geometry range
-    const geometry = context.getGeometry();
-    const start = geometry.indices[0].offset;
-    const count = geometry.indices[0].count;
-    const end = start + count;
-
-    // avoid integer overflow with 16-bit index buffers
-    if (indices instanceof Uint16Array && end - 1 > 0xffff) {
-        console.warn('Feature to Line: integer overflow, too many points in lines');
-        return;
-    }
-
-    for (let v = start * 3, j = start; j < end; v += 3, j++) {
-        if (vertices) {
-            if (feature.normals) {
-                up.fromArray(feature.normals, v).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-            const base_altitude = style.stroke.base_altitude;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude conversion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            baseCoord.copy(up)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-                .toArray(vertices, v);
-        }
-
-        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
-        if (batchIds) { batchIds[j] = id; }
-
-        if (indices && j < end - 1) {
-            indices[buffers.indexPtr++] = j;
-            indices[buffers.indexPtr++] = j + 1;
         }
     }
 }
