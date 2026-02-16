@@ -14,7 +14,7 @@ function _instantiateSubRoot(source, crs) {
             bounds = info.cube;
             root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1, crs);
         } else if (src.isEntwinePointTileSource) {
-            bounds = source.boundsConforming;
+            bounds = src.bounds;
             root = new EntwinePointTileNode(0, 0, 0, 0, src, -1, crs);
         } else {
             const msg = '[VPCLayer]: stack point cloud format not supporter';
@@ -22,7 +22,7 @@ function _instantiateSubRoot(source, crs) {
             PointCloudLayer.handlingError(msg);
         }
         root.voxelOBB.setFromArray(bounds).projOBB(source.crs, crs);
-        root.clampOBB.copy(root.voxelOBB).clampZ(source.zmin, source.zmax);
+        root.clampOBB.copy(root.voxelOBB).clampZ(src.zmin, src.zmax);
         return root;
     });
 }
@@ -92,6 +92,7 @@ class VpcLayer extends PointCloudLayer {
                 const promisedRoot = _instantiateSubRoot(src, this.crs);
 
                 promisedRoot.then((r) => {
+                    r.parent = this.root;
                     this.object3d.add(r.clampOBB);
                     r.clampOBB.updateMatrixWorld(true);
                     this.root.children[i] = r;
@@ -103,13 +104,14 @@ class VpcLayer extends PointCloudLayer {
                 mockSubRoot.loadOctree = promisedRoot.then(root => root.loadOctree());
                 // when load() is called on the mockSubRoot, we need the associated source to be loaded
                 // as well as the octree, before calling load() on the real root.
-                mockSubRoot.load = promisedRoot.then(root => root.load());
+                mockSubRoot.load = promisedRoot.then(root => root.load);
 
                 mockSubRoot.voxelOBB.setFromArray(boundsConforming).projOBB(source.crs, this.crs);
                 mockSubRoot.clampOBB.copy(mockSubRoot.voxelOBB).clampZ(source.zmin, source.zmax);
                 this.object3d.add(mockSubRoot.clampOBB);
                 mockSubRoot.clampOBB.updateMatrixWorld(true);
 
+                mockSubRoot.parent = this.root;
                 this.root.children[i] = mockSubRoot;
             });
 
