@@ -105,6 +105,7 @@
             view.render = function render() {
                 var g = view.mainLoop.gfxEngine;
                 var r = g.renderer;
+                r.view = view;
                 r.setRenderTarget(g.fullSizeRenderTarget);
                 r.clear();
                 r.render(view.scene, view.camera3D);
@@ -116,6 +117,7 @@
                 r.setRenderTarget(null);
                 r.clear();
                 r.render(postprocessScene, cam);
+                r.view = null;
             };
 
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
