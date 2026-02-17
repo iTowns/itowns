@@ -1,6 +1,7 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
+import { TileMatrixSetLimits } from 'Core/Tile/Tile';
 
 /**
  * An object defining the source of resources to get from a
@@ -84,50 +85,29 @@ class TMSSource extends Source {
 
         if (!source.extent) {
             // default to the global extent
+
             this.extent = globalExtentTMS.get(source.crs);
         }
 
-        this.zoom = source.zoom;
-
         this.isInverted = source.isInverted || false;
-        this.crs = source.crs;
-        this.tileMatrixSetLimits = source.tileMatrixSetLimits;
-        this.extentSetlimits = {};
+
+        this.tileMatrixSetLimits = TileMatrixSetLimits.fromCapabilities(source.tileMatrixSetLimits, this.crs);
+
         this.tileMatrixCallback = source.tileMatrixCallback || (zoomLevel => zoomLevel);
 
-        if (!this.zoom) {
-            if (this.tileMatrixSetLimits) {
-                const arrayLimits = Object.keys(this.tileMatrixSetLimits);
-                const size = arrayLimits.length;
-                const maxZoom = Number(arrayLimits[size - 1]);
-                const minZoom = maxZoom - size + 1;
-
-                this.zoom = {
-                    min: minZoom,
-                    max: maxZoom,
-                };
-            } else {
-                this.zoom = { min: 0, max: Infinity };
-            }
-        }
+        this.zoom = source.zoom || this.tileMatrixSetLimits.zoom;
     }
 
     urlFromExtent(tile) {
         return URLBuilder.xyz(tile, this);
     }
 
-    // TODO :
-    // faire une fonction intersect data
-    // avec emprise, coordinates, (rayon, camera ),...
     anyVisibleData(tile) {
-        const limit = this.tileMatrixSetLimits && this.tileMatrixSetLimits[tile.zoom];
+        return  tile.zoom >= this.zoom.min &&
 
-        return tile.zoom >= this.zoom.min && tile.zoom <= this.zoom.max && (
-            !limit ||
-            (tile.row >= limit.minTileRow &&
-                tile.col >= limit.minTileCol &&
-                tile.row <= limit.maxTileRow &&
-                tile.col <= limit.maxTileCol));
+                tile.zoom <= this.zoom.max &&
+
+                this.tileMatrixSetLimits.isInside(tile);
     }
 }
 
