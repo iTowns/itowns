@@ -313,51 +313,29 @@ class TiledGeometryLayer extends GeometryLayer {
         if (!node.parent) {
             return ObjectRemovalHelper.removeChildrenAndCleanup(this, node);
         }
-        // early exit if parent' subdivision is in progress
-        if (node.parent.pendingSubdivision) {
-            node.visible = false;
-            node.material.visible = false;
-            this.info.update(node);
-            return undefined;
-        }
 
-        // do proper culling
         node.visible = !this.culling(node, context.camera);
 
-        if (node.visible) {
-            let requestChildrenUpdate = false;
-
-            node.material.visible = true;
-            node.material.layersNeedUpdate = true;
+        if (node.visible && this.subdivision(context, node)) {
+            node.material.visible = false;
             this.info.update(node);
 
-            if (node.pendingSubdivision || (TiledGeometryLayer.hasEnoughTexturesToSubdivide(context, node) && this.subdivision(context, this, node))) {
-                this.subdivideNode(context, node);
-                // display iff children aren't ready
-                node.material.visible = node.pendingSubdivision;
-                this.info.update(node);
-                requestChildrenUpdate = true;
-            }
-
-            if (node.material.visible) {
-                if (!requestChildrenUpdate) {
-                    return ObjectRemovalHelper.removeChildren(this, node);
-                }
-            }
-
-            return requestChildrenUpdate ? node.children.filter(n => n.layer == this) : undefined;
+            return this.subdivideNode(context, node);
         }
 
-        node.material.visible = false;
+        node.material.visible = node.visible;
+
+        // [TEMP] find best place to update uniforms
+        node.material.layersNeedUpdate = node.material.visible;
+
         this.info.update(node);
         return ObjectRemovalHelper.removeChildren(this, node);
     }
 
     convert(requester, extent) {
-        return convertToTile.convert(requester, extent, this).then((tileMesh) => {
-            tileMesh.material.renderTargetCache = this.renderTargetCache;
-            return tileMesh;
-        });
+        const tileMesh = convertToTile.convert(requester, extent, this);
+        tileMesh.material.renderTargetCache = this.renderTargetCache;
+        return tileMesh;
     }
 
     /**
@@ -376,62 +354,6 @@ class TiledGeometryLayer extends GeometryLayer {
     }
 
     /**
-     * Tell if a node has enough elevation or color textures to subdivide.
-     * Subdivision is prevented if:
-     * <ul>
-     *  <li>the node is covered by at least one elevation layer and if the node
-     *  doesn't have an elevation texture yet</li>
-     *  <li>a color texture is missing</li>
-     * </ul>
-     *
-     * @param {Object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
-     * @param {TileMesh} node - The node to subdivide.
-     *
-     * @returns {boolean} False if the node can not be subdivided, true
-     * otherwise.
-     */
-    static hasEnoughTexturesToSubdivide(context, node) {
-        const layerUpdateState = node.layerUpdateState || {};
-        let nodeLayer = node.material.getElevationTile();
-
-        for (const e of context.elevationLayers) {
-            const extents = node.getExtentsByProjection(e.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > e.zoom.max || zoom < e.zoom.min) {
-                continue;
-            }
-            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
-                // no stop subdivision in the case of a loading error
-                if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
-                    continue;
-                }
-                return false;
-            }
-        }
-
-        for (const c of context.colorLayers) {
-            if (c.frozen || !c.visible || !c.ready) {
-                continue;
-            }
-            const extents = node.getExtentsByProjection(c.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > c.zoom.max || zoom < c.zoom.min) {
-                continue;
-            }
-            // no stop subdivision in the case of a loading error
-            if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
-                continue;
-            }
-            nodeLayer = node.material.getColorTile(c.id);
-            if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
      * Subdivides a node of this layer. If the node is currently in the process
      * of subdivision, it will not do anything here. The subdivision of a node
      * will occur in four part, to create a quadtree. The extent of the node
@@ -444,38 +366,21 @@ class TiledGeometryLayer extends GeometryLayer {
      * @param {TileMesh} node - The node to subdivide.
      * @return {Promise}  { description_of_the_return_value }
      */
+
     subdivideNode(context, node) {
-        if (!node.pendingSubdivision && !node.children.some(n => n.layer == this)) {
+        if (node.children.length === 0) {
             const extents = node.extent.subdivision();
-            // TODO: pendingSubdivision mechanism is fragile, get rid of it
-            node.pendingSubdivision = true;
 
-            const command = {
-                /* mandatory */
-                view: context.view,
-                requester: node,
-                layer: this,
-                priority: 10000,
-                /* specific params */
-                extentsSource: extents,
-                redraw: false,
-            };
-
-            return context.scheduler.execute(command).then((children) => {
-                for (const child of children) {
-                    node.add(child);
-                    child.updateMatrixWorld(true);
-                }
-
-                node.pendingSubdivision = false;
-                context.view.notifyChange(node, false);
-            }, (err) => {
-                node.pendingSubdivision = false;
-                if (!err.isCancelledCommandException) {
-                    throw new Error(err);
-                }
+            extents.forEach((extent) => {
+                const child = this.convert(node, extent);
+                node.add(child);
+                child.updateMatrixWorld(true);
             });
+            context.view.notifyChange(node, true);
         }
+
+
+        return node.children;
     }
 
     /**
@@ -483,12 +388,11 @@ class TiledGeometryLayer extends GeometryLayer {
      *
      * @param {Object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
-     * @param {PlanarLayer} layer - This layer, parameter to be removed.
      * @param {TileMesh} node - The node to test.
      *
      * @return {boolean} - True if the node is subdivisable, otherwise false.
      */
-    subdivision(context, layer, node) {
+    subdivision(context, node) {
         if (node.level < this.minSubdivisionLevel) {
             return true;
         }
