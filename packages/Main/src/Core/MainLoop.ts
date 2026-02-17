@@ -13,21 +13,21 @@ export const RENDERING_SCHEDULED = 1;
  */
 export const MAIN_LOOP_EVENTS = {
     /** Fired at the start of the update */
-    UPDATE_START: 'update_start',
+    UPDATE_START: 'update_start' as const,
     /** Fired before the camera update */
-    BEFORE_CAMERA_UPDATE: 'before_camera_update',
+    BEFORE_CAMERA_UPDATE: 'before_camera_update' as const,
     /** Fired after the camera update */
-    AFTER_CAMERA_UPDATE: 'after_camera_update',
+    AFTER_CAMERA_UPDATE: 'after_camera_update' as const,
     /** Fired before the layer update */
-    BEFORE_LAYER_UPDATE: 'before_layer_update',
+    BEFORE_LAYER_UPDATE: 'before_layer_update' as const,
     /** Fired after the layer update */
-    AFTER_LAYER_UPDATE: 'after_layer_update',
+    AFTER_LAYER_UPDATE: 'after_layer_update' as const,
     /** Fired before the render */
-    BEFORE_RENDER: 'before_render',
+    BEFORE_RENDER: 'before_render' as const,
     /** Fired after the render */
-    AFTER_RENDER: 'after_render',
+    AFTER_RENDER: 'after_render' as const,
     /** Fired at the end of the update */
-    UPDATE_END: 'update_end',
+    UPDATE_END: 'update_end' as const,
 };
 
 type Context = {
