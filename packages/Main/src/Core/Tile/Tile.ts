@@ -210,4 +210,57 @@ export function tiledCovering(e: Extent, tms: string) {
     }
 }
 
+export class TileMatrixSetLimits {
+    constructor() {
+        this.limits = {};
+
+        this.size = 0;
+
+        this.zoom = {
+            min: 0,
+
+            max: Infinity,
+        };
+    }
+
+    static fromCapabilities(json, crs) {
+        const tm = new TileMatrixSetLimits();
+
+        if (!json) {
+            return tm;
+        }
+
+        const arrayLimits = Object.keys(json).map(a => Number(a));
+
+        tm.zoom.min = Math.min(...arrayLimits);
+
+        tm.zoom.max = Math.max(...arrayLimits);
+
+        arrayLimits.forEach((a) => {
+            const limit = json[a];
+
+            tm.limits[a] = {
+                min: new Tile(crs, a, limit.minTileRow, limit.minTileCol),
+
+                max: new Tile(crs, a, limit.maxTileRow, limit.maxTileCol),
+            };
+        });
+
+        return tm;
+    }
+
+    isInside(tile: Tile) {
+        const limit = this.limits[tile.zoom];
+
+        if (limit) {
+            return  tile.row >= limit.min.row &&
+                    tile.col >= limit.min.col &&
+                    tile.row <= limit.max.row &&
+                    tile.col <= limit.max.col;
+        }
+
+        return this.size === 0;
+    }
+}
+
 export default Tile;
