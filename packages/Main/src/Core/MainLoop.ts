@@ -131,7 +131,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
                 document.title += ' ⌛';
             }
 
-            // TODO Fix asynchronization between xr and MainLoop render loops.
+            // TODO: Fix asynchronization between xr and MainLoop render loops.
             // WebGLRenderer#setAnimationLoop must be used for WebXR projects.
             // (see WebXR#initializeWebXR).
             if (!this.gfxEngine.renderer.xr.isPresenting) {
@@ -254,8 +254,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
     private _renderView(view: View, dt: number) {
         view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_RENDER, dt, this._updateLoopRestarted);
 
-        if ('render' in view) {
-            // @ts-expect-error View isn't typed yet.
+        if (view.render) {
             view.render();
         } else {
             // use default rendering method
