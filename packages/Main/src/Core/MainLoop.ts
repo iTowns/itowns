@@ -1,8 +1,9 @@
-import { GeometryLayer, Layer, View } from 'Main';
-import { EventDispatcher, Object3D, Camera as ThreeCamera } from 'three';
-import Camera from 'Renderer/Camera';
-import c3DEngine from 'Renderer/c3DEngine';
-import Scheduler from './Scheduler/Scheduler';
+import type { GeometryLayer, Layer, View } from 'Main';
+import type { Object3D, Camera as ThreeCamera } from 'three';
+import { EventDispatcher } from 'three';
+import type Camera from 'Renderer/Camera';
+import type c3DEngine from 'Renderer/c3DEngine';
+import type Scheduler from './Scheduler/Scheduler';
 
 export const RENDERING_PAUSED = 0;
 export const RENDERING_SCHEDULED = 1;
