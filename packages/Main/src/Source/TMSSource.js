@@ -1,10 +1,6 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
-import { Extent } from '@itowns/geographic';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import Tile from 'Core/Tile/Tile';
-
-const _tile = new Tile('EPSG:4326', 0, 0, 0);
 
 /**
  * An object defining the source of resources to get from a
@@ -120,30 +116,18 @@ class TMSSource extends Source {
         return URLBuilder.xyz(tile, this);
     }
 
-    onLayerAdded(options) {
-        super.onLayerAdded(options);
-        // Build extents of the set of identical zoom tiles.
-        const parent = options.out.parent;
-        // The extents crs is chosen to facilitate in raster tile process.
-        const crs = parent ? parent.extent.crs : options.out.crs;
-        if (this.tileMatrixSetLimits && !this.extentSetlimits[crs]) {
-            this.extentSetlimits[crs] = {};
-            _tile.crs = this.crs;
-            for (let i = this.zoom.max; i >= this.zoom.min; i--) {
-                const tmsl = this.tileMatrixSetLimits[i];
-                const { west, north } = _tile.set(i, tmsl.minTileRow, tmsl.minTileCol).toExtent(crs);
-                const { east, south } = _tile.set(i, tmsl.maxTileRow, tmsl.maxTileCol).toExtent(crs);
-                this.extentSetlimits[crs][i] = new Extent(crs, west, east, south, north);
-            }
-        }
-    }
+    // TODO :
+    // faire une fonction intersect data
+    // avec emprise, coordinates, (rayon, camera ),...
+    anyVisibleData(tile) {
+        const limit = this.tileMatrixSetLimits && this.tileMatrixSetLimits[tile.zoom];
 
-    extentInsideLimit(extent, zoom) {
-        // This layer provides data starting at level = layer.source.zoom.min
-        // (the zoom.max property is used when building the url to make
-        //  sure we don't use invalid levels)
-        return zoom >= this.zoom.min && zoom <= this.zoom.max &&
-                (this.extentSetlimits[extent.crs] == undefined || this.extentSetlimits[extent.crs][zoom].intersectsExtent(extent));
+        return tile.zoom >= this.zoom.min && tile.zoom <= this.zoom.max && (
+            !limit ||
+            (tile.row >= limit.minTileRow &&
+                tile.col >= limit.minTileCol &&
+                tile.row <= limit.maxTileRow &&
+                tile.col <= limit.maxTileCol));
     }
 }
 

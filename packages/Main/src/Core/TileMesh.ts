@@ -143,9 +143,8 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      * @param renderer - The renderer used to render textures.
      */
     override onBeforeRender(renderer: THREE.WebGLRenderer) {
-        if (this.material.layersNeedUpdate) {
-            this.material.updateLayersUniforms(renderer);
-        }
+        // why remove if (this.material.layersNeedUpdate) {
+        this.material.updateLayersUniforms(renderer);
 
         // Track actual usage every time this mesh is rendered
         // Use global current rendering view ID set by MainLoop
