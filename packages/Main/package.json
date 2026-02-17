@@ -73,9 +73,5 @@
     "proj4": "^2.20.2",
     "three": "^0.182.0"
   },
-  "devDependencies": {
-    "chalk": "^5.4.1",
-    "copyfiles": "^2.4.1"
-  },
   "homepage": "https://itowns.github.io/"
 }
