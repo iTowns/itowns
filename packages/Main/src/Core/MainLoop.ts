@@ -91,7 +91,7 @@ function filterChangeSources(
     let fullUpdate = false;
     const filtered = new Set<UpdateSource>();
     updateSources.forEach((src) => {
-        if (src === geometryLayer || (src as ThreeCamera).isCamera) {
+        if (src === geometryLayer || 'isCamera' in src) {
             geometryLayer.info.clear();
             fullUpdate = true;
         } else if ((src as { layer: Layer }).layer === geometryLayer) {
