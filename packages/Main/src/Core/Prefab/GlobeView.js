@@ -4,13 +4,14 @@ import View, { VIEW_EVENTS } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
 import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
-import CameraUtils, { getRig }  from 'Utils/CameraUtils';
+import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import {
     getSunDirectionECEF,
 } from '@takram/three-atmosphere';
+import SunLight from 'Renderer/SunLight';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -173,11 +174,7 @@ class GlobeView extends View {
         this.date = new Date(); // now
 
         // Sunlight and shadow
-        this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
-        this.sunLight.target.position.copy(this.camera3D.position);
-        this.sunLight.castShadow = true;
-        this.sunLight.shadow.mapSize.set(4096, 4096);
-
+        this.sunLight = new SunLight(2);
         this.scene.add(
             this.sunLight,
             this.sunLight.target); // to update matrixWorld at each frame
@@ -193,49 +190,15 @@ class GlobeView extends View {
     }
 
     onAfterCameraUpdate() {
-        /**
-         * @type {THREE.PerspectiveCamera | THREE.OrthographicCamera}
-         */
-        const camera = this.camera3D;
-
         const sunDirection = new THREE.Vector3();
         getSunDirectionECEF(this.date, sunDirection);
         // This creates a white disk at the Sun's position
         sunDirection.multiplyScalar(1.00002);
 
-        // Center the shadow around the camera's target position
-        const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
 
-        // Only update if the position has changed enough,
-        // to avoid flickering effect
-        const prevSunTargetPos = this.sunLight.target.position;
-        if (sunTargetPos.distanceTo(prevSunTargetPos) > 100) {
-            this.sunLight.target.position.copy(sunTargetPos);
-            this.sunLight.target.updateMatrixWorld();
-        }
-        const shadowCam = this.sunLight.shadow.camera;
-        const prevShadowHalfSide = shadowCam.top;
-        this.sunLight.position.copy(sunDirection).multiplyScalar(prevShadowHalfSide)
-            .add(prevSunTargetPos);
-        this.sunLight.updateMatrixWorld();
-
-        // Calculate shadow box half-side to render shadows on all screen
-        // in most cases. These values were determined empirically.
-        // Only update if the value has changed enough,
-        // to avoid flickering effect
-        const shadowHalfSide = 0.017 * camera.far + 200;
-        if (Math.abs(shadowHalfSide - prevShadowHalfSide) > prevShadowHalfSide * 0.1) {
-            shadowCam.far = 2 * shadowHalfSide;
-            shadowCam.left = -shadowHalfSide;
-            shadowCam.right = shadowHalfSide;
-            shadowCam.top = shadowHalfSide;
-            shadowCam.bottom = -shadowHalfSide;
-            shadowCam.updateProjectionMatrix();
-        }
+        this.sunLight.update(sunDirection, this.camera3D);
 
         // actually only useful if Sun or Moon direction has changed
-        // which is currently always the case because based on current time,
-        // or if camera has moved.
         if (this.skyManager) { this.skyManager.update(this.date, sunDirection); }
     }
 
