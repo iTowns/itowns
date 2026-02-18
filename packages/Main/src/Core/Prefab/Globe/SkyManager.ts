@@ -4,7 +4,6 @@ import {
     SkyLightProbe,
     SkyMaterial,
     getMoonDirectionECEF,
-    getSunDirectionECEF,
     PrecomputedTexturesGenerator,
 } from '@takram/three-atmosphere';
 import {
@@ -16,23 +15,19 @@ import {
     EffectMaterial,
     EffectComposer,
 } from 'postprocessing';
-import View from 'Core/View';
-import { getRig } from 'Utils/CameraUtils';
+import GlobeView from 'Core/Prefab/GlobeView';
 
 class SkyManager {
     private readonly sky: THREE.Mesh;
     private readonly skyLight: SkyLightProbe;
-    private readonly sunLight: THREE.DirectionalLight;
     private readonly aerialPerspective: AerialPerspectiveEffect;
     private readonly effectPass: EffectPass;
     private readonly scene: THREE.Scene;
     private readonly composer: EffectComposer;
     private readonly fog: THREE.Fog;
-    private readonly view: View;
+    private readonly view: GlobeView;
 
-    public date: Date;
-
-    constructor(view: View) {
+    constructor(view: GlobeView) {
         this.view = view;
         const scene = view.scene;
         this.scene = scene;
@@ -50,14 +45,6 @@ class SkyManager {
         this.skyLight = new SkyLightProbe();
         this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
-
-        this.date = new Date(); // now
-
-        // Sunlight and shadow
-        this.sunLight = new THREE.DirectionalLight(0xffffff, 0.2);
-        this.sunLight.target.position.copy(camera.position);
-        this.sunLight.castShadow = true;
-        this.sunLight.shadow.mapSize.set(4096, 4096);
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
@@ -88,14 +75,10 @@ class SkyManager {
 
         this.enable();
 
-        // actually only useful if Sun or Moon direction has changed
-        // which is currently always the case because based on current time,
-        // or if camera has moved.
         scene.onBeforeRender = () => {
             // disable fog only during render
             // to let its parameters be modified elsewhere
             if (this.enabled) { this.scene.fog = null; }
-            this.update();
         };
         scene.onAfterRender = () => {
             if (this.enabled) { this.scene.fog = this.fog; }
@@ -104,17 +87,12 @@ class SkyManager {
         this.composer.render();
     }
 
-    update() {
+    update(date: Date, sunDirection: THREE.Vector3) {
         const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         if (!this.enabled) { return; }
 
-        const sunDirection = new THREE.Vector3();
         const moonDirection = new THREE.Vector3();
-
-        getSunDirectionECEF(this.date, sunDirection);
-        getMoonDirectionECEF(this.date, moonDirection);
-        // This creates a white disk at the Sun's position
-        sunDirection.multiplyScalar(1.00002);
+        getMoonDirectionECEF(date, moonDirection);
 
         this.sky.updateMatrixWorld();
 
@@ -126,42 +104,11 @@ class SkyManager {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        const cam = camera as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * cam.near, 0);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * camera.near, 0);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
         (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
-
-        // Center the shadow around the camera's target position
-        const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
-
-        // Only update if the position has changed enough,
-        // to avoid flickering effect
-        const prevSunTargetPos = this.sunLight.target.position;
-        if (sunTargetPos.distanceTo(prevSunTargetPos) > 100) {
-            this.sunLight.target.position.copy(sunTargetPos);
-            this.sunLight.target.updateMatrixWorld();
-        }
-        const shadowCam = this.sunLight.shadow.camera;
-        const prevShadowHalfSide = shadowCam.top;
-        this.sunLight.position.copy(sunDirection).multiplyScalar(prevShadowHalfSide)
-            .add(prevSunTargetPos);
-        this.sunLight.updateMatrixWorld();
-
-        // Calculate shadow box half-side to render shadows on all screen
-        // in most cases. These values were determined empirically.
-        // Only update if the value has changed enough,
-        // to avoid flickering effect
-        const shadowHalfSide = 0.017 * camera.far + 200;
-        if (Math.abs(shadowHalfSide - prevShadowHalfSide) > prevShadowHalfSide * 0.1) {
-            shadowCam.far = 2 * shadowHalfSide;
-            shadowCam.left = -shadowHalfSide;
-            shadowCam.right = shadowHalfSide;
-            shadowCam.top = shadowHalfSide;
-            shadowCam.bottom = -shadowHalfSide;
-            shadowCam.updateProjectionMatrix();
-        }
 
         this.skyLight.sunDirection.copy(sunDirection);
         this.skyLight.position.copy(camera.position); // position must not be the origin
@@ -186,16 +133,15 @@ class SkyManager {
     }
 
     enable() {
-        this.scene.add(
-            this.sky,
-            this.sunLight,
-            this.sunLight.target, // to update matrixWorld at each frame
-            this.skyLight);
+        // Realistic rendering requires a dimmer sunlight
+        this.view.sunLight.intensity *= 0.1;
+        this.scene.add(this.sky, this.skyLight);
         this.composer.addPass(this.effectPass, 1);
     }
 
     disable() {
-        this.scene.remove(this.sky, this.sunLight, this.sunLight.target, this.skyLight);
+        this.view.sunLight.intensity *= 10;
+        this.scene.remove(this.sky, this.skyLight);
         this.composer.removePass(this.effectPass);
     }
 }

@@ -197,7 +197,7 @@
 
             // Add date/time controls to adjust sun position
             const dateFolder = gui.addFolder('Date/Time');
-            const date = view.skyManager.date;
+            const date = view.date;
             dateFolder.add(
                 { month: Math.min(12, Math.max(1, 1 + date.getMonth())) }, 'month', 1, 12, 1
             ).onChange((v) => {
