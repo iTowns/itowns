@@ -50,6 +50,7 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+            import { zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
 
             var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
@@ -90,16 +91,8 @@
 
             var eptLayer;
             function onLayerReady() {
-                var lookAt = new itowns.Coordinates(view.referenceCrs)
-                    .setFromVector3(eptLayer.root.clampOBB.center);
-
-                var size = new THREE.Vector3();
-                eptLayer.root.voxelOBB.box3D.getSize(size);
-
-                view.controls.lookAtCoordinate({
-                    coord: lookAt,
-                    range: 2 * size.length(),
-                }, false);
+                zoomToLayerGlobe(view, eptLayer);
+                debug.PointCloudDebug.initTools(view, eptLayer, debugGui);
             }
 
             function loadEPT(url, options) {
@@ -126,9 +119,6 @@
                 eptLayer = new itowns.EntwinePointTileLayer('Entwine Point Tile', config);
 
                 itowns.View.prototype.addLayer.call(view, eptLayer).then(onLayerReady);
-
-                eptLayer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, eptLayer, debugGui));
             }
 
             const loadUrlBtn = document.getElementById('loadUrlBtn');

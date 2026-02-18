@@ -53,6 +53,7 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+            import { zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
 
             var potreeLayer;
             var oldPostUpdate;
@@ -106,17 +107,7 @@
 
             // add potreeLayer to scene
             function onLayerReady() {
-                var lookAt = potreeLayer.root.clampOBB.position;
-
-                var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
-
-                var size = new THREE.Vector3();
-                potreeLayer.root.voxelOBB.box3D.getSize(size);
-
-                view.controls.lookAtCoordinate({
-                    coord: coordLookAt,
-                    range: 2 * size.length(),
-                }, false);
+                zoomToLayerGlobe(view, potreeLayer);
 
                 // add GUI
                 debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);

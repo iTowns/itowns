@@ -54,6 +54,7 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+            import { zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
 
             var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
@@ -94,16 +95,8 @@
             loadCopc(url, options);
 
             function onLayerReady() {
-                var lookAt = layer.root.clampOBB.position;
-                var coordLookAt = new itowns.Coordinates(view.referenceCrs).setFromVector3(lookAt);
-
-                var size = new THREE.Vector3();
-                layer.root.voxelOBB.box3D.getSize(size);
-
-                view.controls.lookAtCoordinate({
-                    coord: coordLookAt,
-                    range: 2 * size.length(),
-                }, false);
+                zoomToLayerGlobe(view, layer);
+                debug.PointCloudDebug.initTools(view, layer, debugGui);
             }
 
             function loadCopc(url, options) {
@@ -134,9 +127,6 @@
                 layer = new itowns.CopcLayer('COPC', config);
 
                 itowns.View.prototype.addLayer.call(view, layer).then(onLayerReady);
-
-                layer.whenReady
-                    .then(() => debug.PointCloudDebug.initTools(view, layer, debugGui));
             }
 
             const loadUrlBtn = document.getElementById('loadUrlBtn');
