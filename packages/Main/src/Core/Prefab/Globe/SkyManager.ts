@@ -51,8 +51,6 @@ class SkyManager {
 
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFShadowMap;
 
         composer.addPass(new RenderPass(scene, camera));
         this.effectPass = new EffectPass(
@@ -60,6 +58,8 @@ class SkyManager {
             this.aerialPerspective,
             new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
+        this.effectPass.enabled = false;
+        composer.addPass(this.effectPass);
         composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
 
         // Generate precomputed textures.
@@ -136,13 +136,13 @@ class SkyManager {
         // Realistic rendering requires a dimmer sunlight
         this.view.sunLight.intensity *= 0.1;
         this.scene.add(this.sky, this.skyLight);
-        this.composer.addPass(this.effectPass, 1);
+        this.effectPass.enabled = true;
     }
 
     disable() {
         this.view.sunLight.intensity *= 10;
         this.scene.remove(this.sky, this.skyLight);
-        this.composer.removePass(this.effectPass);
+        this.effectPass.enabled = false;
     }
 }
 
