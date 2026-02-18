@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
 import proj4 from 'proj4';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 let _thread;
 
@@ -25,8 +25,8 @@ function decoder(w, metadata) {
 
 // get the projection of a point at Z=0
 function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
-    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
+    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
     return centerZ0;
 }
 

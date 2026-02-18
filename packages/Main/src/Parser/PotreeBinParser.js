@@ -1,6 +1,6 @@
 import proj4 from 'proj4';
 import * as THREE from 'three';
-import { OrientationUtils, Coordinates } from '@itowns/geographic';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 // See the different constants holding ordinal, name, numElements, byteSize in PointAttributes.cpp in PotreeConverter
 // elementByteSize is byteSize / numElements
@@ -53,8 +53,8 @@ const POINT_ATTRIBUTES = {
 
 // get the projection of a point at Z=0
 function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = proj4(crsOut, crsIn).forward(center);
-    const centerZ0 = proj4(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
+    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
     return centerZ0;
 }
 

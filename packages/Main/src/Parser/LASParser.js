@@ -75,7 +75,7 @@ function buildBufferGeometry(attributes) {
 // get the projection of a point at Z=0
 function projZ0(center, crsIn, crsOut) {
     const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
-    const centerZ0 = CRS.transform(crsIn, crsOut).forward([centerCrsIn.x, centerCrsIn.y, 0]);
+    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
     return centerZ0;
 }
 
