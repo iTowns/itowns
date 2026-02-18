@@ -22,6 +22,7 @@ export interface TileLayerLike {
     tileMatrixSets: string[];
     materialOptions: LayeredMaterialParameters;
     builder: TileBuilder<TileBuilderParams>;
+    castShadow: boolean;
     receiveShadow: boolean;
 }
 
