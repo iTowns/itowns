@@ -178,6 +178,8 @@ class GlobeView extends View {
         this.scene.add(
             this.sunLight,
             this.sunLight.target); // to update matrixWorld at each frame
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
@@ -194,7 +196,6 @@ class GlobeView extends View {
         getSunDirectionECEF(this.date, sunDirection);
         // This creates a white disk at the Sun's position
         sunDirection.multiplyScalar(1.00002);
-
 
         this.sunLight.update(sunDirection, this.camera3D);
 
