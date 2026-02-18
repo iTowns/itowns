@@ -7,7 +7,7 @@ describe('TMSSource', function () {
         url: 'http://',
         crs: 'EPSG:3857',
         tileMatrixSetLimits: {
-            5: { minTileRow: 0, maxTileRow: 32, minTileCol: 0, maxTileCol: 32 },
+            5: { MinTileRow: 0, MaxTileRow: 32, MinTileCol: 0, MaxTileCol: 32 },
         },
     };
 
@@ -17,7 +17,7 @@ describe('TMSSource', function () {
         const extent = new Tile('TMS:3857', 5, 0, 0);
         assert.ok(source.isTMSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, extent.zoom));
+        assert.ok(source.anyVisibleData(extent));
     });
 });
 

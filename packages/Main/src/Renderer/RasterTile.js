@@ -1,8 +1,42 @@
 import * as THREE from 'three';
 import { ELEVATION_MODES } from 'Renderer/LayeredMaterial';
+import LayerUpdateState from 'Layer/LayerUpdateState';
+import { nextLevelToFetch } from 'Layer/LayerUpdateStrategy';
+import handlingError from 'Process/handlerNodeError';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
+
+function materialCommandQueuePriorityFunction(material) {
+    // We know that 'node' is visible because commands can only be
+    // issued for visible nodes.
+    // TODO: need priorization of displayed nodes
+    // Then prefer displayed node over non-displayed one
+    return material.visible ? 100 : 10;
+}
+
+function refinementCommandCancellationFn(cmd) {
+    const { requester, view } = cmd;
+    const child = requester.children[0];
+
+    // to do remove useless
+    return !cmd.force && (!view || !requester.parent || !requester.material || !requester.material.visible || child?.visible);
+}
+
+// eslint-disable-next-line no-unused-vars
+function buildCommand(tile, extentsSource, requester, view) {
+    return {
+        view,
+        layer: tile.layer,
+        extentsSource,
+        extentsDestination: tile.tiles,
+        requester,
+        priority: materialCommandQueuePriorityFunction(requester.material),
+        earlyDropFunction: refinementCommandCancellationFn,
+        partialLoading: true,
+        force: tile.level == -1,
+    };
+}
 
 const pitch = new THREE.Vector4();
 
@@ -28,7 +62,7 @@ function getIndiceWithPitch(i, pitch, w) {
  * @class RasterTile
  */
 export class RasterTile extends THREE.EventDispatcher {
-    constructor(layer) {
+    constructor(layer, tiles) {
         super();
         this.layer = layer;
         this.crs = layer.parent.tileMatrixSets.indexOf(layer.crs);
@@ -37,9 +71,12 @@ export class RasterTile extends THREE.EventDispatcher {
         }
 
         this.textures = [];
+        this.tiles = tiles;
         this.offsetScales = [];
         this.level = EMPTY_TEXTURE_ZOOM;
         this.needsUpdate = false;
+        this.state = new LayerUpdateState();
+        this.lowestLevelError = Infinity;
 
         this._handlerCBEvent = () => { this.needsUpdate = true; };
         layer.addEventListener('visible-property-changed', this._handlerCBEvent);
@@ -58,11 +95,35 @@ export class RasterTile extends THREE.EventDispatcher {
         return this.layer.visible;
     }
 
-    initFromParent(parent, extents) {
+    load(requester, view) {
+        if (this.state.canTryUpdate()) {
+            this.state.newTry();
+
+            const nextLevel = nextLevelToFetch(this);
+            const nextTiles = this.tiles.map(tile => tile.tiledExtentParent(nextLevel));
+
+            const command = buildCommand(this, nextTiles, requester, view);
+
+            return view.mainLoop.scheduler.execute(command).then((textures) => {
+                this.setTextures(textures);
+
+                if (nextLevelToFetch(this) == this.level) {
+                    this.state.noMoreUpdatePossible();
+                } else {
+                    this.state.success();
+                }
+
+                return textures;
+            }, () => this.state.success())
+                .catch(err => handlingError(err, requester, this.layer, nextLevel, view));
+        }
+    }
+
+    initFromParent(parent) {
         if (parent && parent.level > this.level) {
             let index = 0;
             const sortedParentTextures = this.sortBestParentTextures(parent.textures);
-            for (const childExtent of extents) {
+            for (const childExtent of this.tiles) {
                 const matchingParentTexture = sortedParentTextures
                     .find(parentTexture => parentTexture && childExtent.isInside(parentTexture.extent));
                 if (matchingParentTexture) {
@@ -71,9 +132,13 @@ export class RasterTile extends THREE.EventDispatcher {
                 }
             }
 
+            if (nextLevelToFetch(this) == this.level) {
+                this.state.noMoreUpdatePossible();
+            }
+
             if (__DEBUG__) {
-                if (index != extents.length) {
-                    console.error(`non-coherent result ${index} vs ${extents.length}.`, extents);
+                if (index != this.tiles.length) {
+                    console.error(`non-coherent result ${index} vs ${this.tiles.length}.`, this.tiles);
                 }
             }
         }
@@ -136,13 +201,14 @@ export class RasterTile extends THREE.EventDispatcher {
             this.textures[index] = texture || null;
             this.offsetScales[index] = offsetScale;
             this.needsUpdate = true;
+            return texture;
         }
     }
 
-    setTextures(textures, pitchs) {
+    setTextures(textures) {
         this.disposeRedrawnTextures(textures);
         for (let i = 0, il = textures.length; i < il; ++i) {
-            this.setTexture(i, textures[i], pitchs[i]);
+            this.setTexture(i, textures[i], this.tiles[i].offsetToParent(textures[i].extent));
         }
     }
 
@@ -165,8 +231,8 @@ export class RasterColorTile extends RasterTile {
 }
 
 export class RasterElevationTile extends RasterTile {
-    constructor(layer) {
-        super(layer);
+    constructor(layer, tiles) {
+        super(layer, tiles);
         const defaultEle = {
             bias: 0,
             mode: ELEVATION_MODES.DATA,
@@ -210,23 +276,23 @@ export class RasterElevationTile extends RasterTile {
         }
     }
 
-    initFromParent(parent, extents) {
+    initFromParent(parent) {
         const currentLevel = this.level;
-        super.initFromParent(parent, extents);
+        super.initFromParent(parent);
         this.updateMinMaxElevation();
         if (currentLevel !== this.level) {
             this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
         }
     }
 
-    setTextures(textures, offsetScales) {
+    setTextures(textures) {
         const anyValidTexture = textures.find(texture => texture != null);
         if (!anyValidTexture) {
             return;
         }
         const currentLevel = this.level;
         this.replaceNoDataValueFromTexture(anyValidTexture);
-        super.setTextures(textures, offsetScales);
+        super.setTextures(textures);
         this.updateMinMaxElevation();
         if (currentLevel !== this.level) {
             this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });

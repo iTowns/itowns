@@ -184,7 +184,7 @@ class FileSource extends Source {
         return this._featuresCaches[out.crs].get(0);
     }
 
-    extentInsideLimit(extent) {
+    anyVisibleData(extent) {
         return this.extent.intersectsExtent(extent);
     }
 }

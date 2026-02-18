@@ -110,7 +110,7 @@ export class TileGeometry extends THREE.BufferGeometry {
      * @param keys - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
-        cacheTile: LRUCache<string, Promise<this>>,
+        cacheTile: LRUCache<string, this>,
         key: string,
     ): void {
         if (this._refCount !== null) {

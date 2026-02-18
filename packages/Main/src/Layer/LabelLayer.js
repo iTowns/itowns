@@ -415,7 +415,7 @@ class LabelLayer extends GeometryLayer {
             node.layerUpdateState[this.id] = new LayerUpdateState();
         }
 
-        if (!this.source.extentInsideLimit(node.extent, zoomDest)) {
+        if (!extentsDestination.find(e => this.source.anyVisibleData(e))) {
             node.layerUpdateState[this.id].noMoreUpdatePossible();
             return;
         } else if (this.#hasLabelChildren(node.parent)) {
