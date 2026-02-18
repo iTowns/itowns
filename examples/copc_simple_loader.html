@@ -50,6 +50,7 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+            import { zoomToLayer } from './jsm/PointCloudHelper.js';
 
             let layer; // COPCLayer
 
@@ -79,24 +80,10 @@
             }
 
             function onLayerReady() {
-                var lookAt = layer.root.clampOBB.position;
+                zoomToLayer(view, layer);
 
-                const size = new THREE.Vector3();
-                layer.root.voxelOBB.box3D.getSize(size);
-
-                controls.groundLevel = layer.minElevationRange;
-                var corner = new THREE.Vector3(...layer.source.header.min);
-                var position = corner.clone().add(
-                    size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
-                );
-
-                const camera = view.camera.camera3D;
-                camera.far = 10.0 * size.length();
-                camera.position.copy(position);
-                camera.lookAt(lookAt);
-                camera.updateProjectionMatrix();
-
-                view.notifyChange(camera);
+                // add GUI
+                debug.PointCloudDebug.initTools(view, layer, gui)
             }
 
             function loadCopc(url, options) {
@@ -125,8 +112,6 @@
                     }
                     layer = new itowns.CopcLayer('COPC', config);
                     view.addLayer(layer).then(onLayerReady);
-                    layer.whenReady
-                        .then(() => debug.PointCloudDebug.initTools(view, layer, gui));
                 })
             }
 
