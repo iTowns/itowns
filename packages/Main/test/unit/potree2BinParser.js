@@ -16,8 +16,6 @@ describe('Potree2BinParser', function () {
             dv.setInt32((i * spatialDim + 2) * bufferDim, i * 2, true);
         }
 
-        const valPositionMax = (nbPoints - 1) * 2;
-
         const options = {
             in: {
                 source: {
@@ -43,11 +41,8 @@ describe('Potree2BinParser', function () {
                     },
                     crs,
                 },
-                voxelOBB: {
-                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
-                },
                 clampOBB: {
-                    center: new THREE.Vector3(valPositionMax * 0.5, valPositionMax * 0.5, valPositionMax * 0.5),
+                    matrixWorld: new THREE.Matrix4(),
                 },
                 numPoints: nbPoints,
                 crs,
@@ -61,7 +56,7 @@ describe('Potree2BinParser', function () {
                 const origin = geometry.userData.position;
                 assert.ok(posAttr.array instanceof Float32Array);
                 assert.equal(posAttr.array.length, nbPoints * 3);
-                assert.equal(posAttr.array[0], -origin.x);// x of the 1st point
+                assert.equal(posAttr.array[0], -origin[0], '1st point x value');// x of the 1st point
                 assert.equal(posAttr.array[14], 8);// z of the 5th point
                 done();
             })
@@ -88,8 +83,6 @@ describe('Potree2BinParser', function () {
             // classification
             dv.setUint8(i * numbyte + 20, i * 3);
         }
-
-        const valPositionMax = numPoints * 2 - 1;
 
         const options = {
             in: {
@@ -149,11 +142,8 @@ describe('Potree2BinParser', function () {
                     },
                     crs,
                 },
-                voxelOBB: {
-                    box3D: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
-                },
                 clampOBB: {
-                    center: new THREE.Vector3(),
+                    matrixWorld: new THREE.Matrix4(),
                 },
                 numPoints,
                 crs,

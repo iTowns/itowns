@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
-import proj4 from 'proj4';
 import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 let _thread;
@@ -23,18 +22,10 @@ function decoder(w, metadata) {
     return metadata.encoding === 'BROTLI' ? w.parseBrotli : w.parse;
 }
 
-// get the projection of a point at Z=0
-function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
-    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
-    return centerZ0;
-}
-
 function getQuaternion(origin, crsIn, crsOut) {
     let quaternion = new THREE.Quaternion();
-    if (proj4.defs(crsOut).projName === 'geocent') {
-        const coord = new Coordinates(crsOut).setFromArray(origin);
-        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+    if (CRS.defs(crsOut).projName === 'geocent') {
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(origin);
     }
     return quaternion;
 }
@@ -103,34 +94,27 @@ export default {
 
         const pointAttributes = source.pointAttributes;
 
-        const box = options.in.voxelOBB.box3D;
-        const min = box.min;
-        const size = box.max.clone().sub(box.min);
-        const max = box.max;
-
         const numPoints = options.in.numPoints;
 
-        const center = new Coordinates(options.in.crs)
-            .setFromVector3(options.in.clampOBB.center);
-        const centerZ0 = projZ0(center, source.crs, options.in.crs);
+        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+            new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrixWorld),
+        );
+
         const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
 
         const config = {
             in: {
                 crs: source.crs,
-                projDefs: proj4.defs(source.crs),
+                projDefs: CRS.defs(source.crs),
             },
             out: {
                 crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: centerZ0,
+                projDefs: CRS.defs(options.in.crs),
+                origin: centerZ0.toArray(),
                 rotation: quaternion.toArray(),
             },
             pointAttributes,
             scale,
-            min,
-            max,
-            size,
             offset,
             numPoints,
         };
@@ -141,8 +125,8 @@ export default {
         const geometry = buildBufferGeometry(parsedData.attributeBuffers);
 
         geometry.computeBoundingBox();
-        geometry.userData.position = new Coordinates(options.in.crs).setFromArray(centerZ0);
-        geometry.userData.quaternion = quaternion.clone().invert();
+        geometry.userData.position = parsedData.userData.position;
+        geometry.userData.quaternion = parsedData.userData.quaternion;
 
         return geometry;
     },

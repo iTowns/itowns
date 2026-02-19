@@ -21,69 +21,62 @@ async function loader() {
     return _thread;
 }
 
-async function parse(data, options, type = 'parseFile') {
-    const lasLoader = await loader();
+function commonOptions(options) {
     const source = options.in.source;
-
-    const center = new Coordinates(options.in.crs)
-        .setFromVector3(options.in.clampOBB.center);
-    const centerZ0 = projZ0(center, source.crs, options.in.crs);
-    const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
-
-    const config = {
+    return {
+        crs: {
+            in: source.crs,
+            out: options.in.crs,
+        },
+        matrixWorld: options.in.clampOBB.matrixWorld,
         colorDepth: source.colorDepth,
-        in: {
-            crs: source.crs,
-            projDefs: CRS.defs(source.crs),
-        },
-        out: {
-            crs: options.in.crs, // move crs to out ?
-            projDefs: CRS.defs(options.in.crs),
-            origin: centerZ0,
-            rotation: quaternion.toArray(),
-        },
     };
-
-    if (type === 'parseChunk') {
-        config.pointCount = options.in.numPoints;
-        config.header = source.header;
-        config.eb = source.eb;
-    }
-
-    const parsedData = await lasLoader[type](Transfer(data), config);
-
-    const geometry = buildBufferGeometry(parsedData.attributes);
-    geometry.boundingBox = new THREE.Box3().fromJSON(parsedData.box);
-    // geometry.userData.header = parsedData.header;
-    geometry.userData.position = new Coordinates(options.in.crs).setFromArray(centerZ0);
-    geometry.userData.quaternion = quaternion.clone().invert();
-
-    return geometry;
 }
 
-function buildBufferGeometry(attributes) {
+async function parse(data, options, type = 'parseFile') {
+    const centerZ0 = new Coordinates(options.crs.out).setFromVector3(
+        new THREE.Vector3().applyMatrix4(options.matrixWorld),
+    );
+    const quaternion = getQuaternion(centerZ0, options.crs.in, options.crs.out);
+
+    options.in = {
+        crs: options.crs.in,
+        projDefs: CRS.defs(options.crs.in),
+    };
+    options.out = {
+        crs: options.crs.out,
+        projDefs: CRS.defs(options.crs.out),
+        origin: centerZ0.toArray(),
+        rotation: quaternion.toArray(),
+    };
+
+    const lasLoader = await loader();
+    const parsedData = await lasLoader[type](Transfer(data), options);
+
+    return buildBufferGeometry(parsedData);
+}
+
+function buildBufferGeometry(parsedData) {
     const geometry = new THREE.BufferGeometry();
+
+    const { attributes, userData } = parsedData;
 
     Object.keys(attributes).forEach((attributeName) => {
         const { bufferName, size, normalized  } = LASAttributes.find(a => a.name === attributeName);
         geometry.setAttribute(bufferName, new THREE.BufferAttribute(attributes[attributeName], size || 1, normalized));
     });
 
-    return geometry;
-}
+    geometry.boundingBox = new THREE.Box3().fromJSON(userData.boundingBox);
+    geometry.userData.position = userData.position;
+    geometry.userData.quaternion = userData.quaternion;
 
-// get the projection of a point at Z=0
-function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
-    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
-    return centerZ0;
+    return geometry;
 }
 
 function getQuaternion(origin, crsIn, crsOut) {
     let quaternion = new THREE.Quaternion();
     if (CRS.defs(crsOut).projName === 'geocent') {
-        const coord = new Coordinates(crsOut).setFromArray(origin);
-        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(origin);
     }
     return quaternion;
 }
@@ -142,7 +135,17 @@ export default {
      * `THREE.BufferGeometry`.
      */
     async parseChunk(data, options = {}) {
-        const geometry = await parse(data, options, 'parseChunk');
+        const source = options.in.source;
+        const config = {
+            pointCount: options.in.numPoints,
+            header: source.header,
+            eb: source.eb,
+        };
+
+        const geometry = await parse(data, {
+            ...commonOptions(options),
+            ...config,
+        }, 'parseChunk');
         return geometry;
     },
 
@@ -171,7 +174,9 @@ export default {
             console.warn("Warning: options 'skip' not supported anymore");
         }
 
-        const geometry = await parse(data, options, 'parseFile');
+        const geometry = await parse(data, {
+            ...commonOptions(options),
+        }, 'parseFile');
         return geometry;
     },
 };

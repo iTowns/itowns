@@ -1,4 +1,3 @@
-import proj4 from 'proj4';
 import * as THREE from 'three';
 import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
@@ -51,18 +50,10 @@ const POINT_ATTRIBUTES = {
     },
 };
 
-// get the projection of a point at Z=0
-function projZ0(center, crsIn, crsOut) {
-    const centerCrsIn = CRS.transform(crsOut, crsIn).forward(center);
-    const centerZ0 = CRS.transform(crsOut, crsIn).inverse([centerCrsIn.x, centerCrsIn.y, 0]);
-    return centerZ0;
-}
-
 function getQuaternion(origin, crsIn, crsOut) {
     let quaternion = new THREE.Quaternion();
-    if (proj4.defs(crsOut).projName === 'geocent') {
-        const coord = new Coordinates(crsOut).setFromArray(origin);
-        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coord);
+    if (CRS.defs(crsOut).projName === 'geocent') {
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(origin);
     }
     return quaternion;
 }
@@ -130,14 +121,14 @@ export default {
         const offset = options.in.voxelOBB.natBox.min.toArray();
 
         const forward = (source.crs !== options.in.crs) ?
-            proj4(source.crs, options.in.crs).forward :
+            CRS.transform(source.crs, options.in.crs).forward :
             (x => x);
         const applyQuaternion = (source.crs !== options.in.crs) ?
             _applyQuaternion : (x => x);
 
-        const center = new Coordinates(options.in.crs)
-            .setFromVector3(options.in.clampOBB.center);
-        const centerZ0 = projZ0(center, source.crs, options.in.crs);
+        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+            new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrixWorld),
+        );
         const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
         const quaternionArr = quaternion.toArray();
 
@@ -170,9 +161,9 @@ export default {
                     const [x, y, z] = forward(position);
 
                     const position2 = applyQuaternion([
-                        x - centerZ0[0],
-                        y - centerZ0[1],
-                        z - centerZ0[2],
+                        x - centerZ0.x,
+                        y - centerZ0.y,
+                        z - centerZ0.z,
                     ], quaternionArr);
 
                     array[arrayOffset + 0] = position2[0];
@@ -189,8 +180,8 @@ export default {
         }
 
         geometry.computeBoundingBox();
-        geometry.userData.position = new Coordinates(options.in.crs).setFromArray(centerZ0);
-        geometry.userData.quaternion = quaternion.clone().invert();
+        geometry.userData.position = centerZ0.toArray();
+        geometry.userData.quaternion = quaternion.toJSON();
 
         return Promise.resolve(geometry);
     },

@@ -102,12 +102,12 @@ describe('LASParser', function () {
             assert.strictEqual(bufferGeometry.attributes.classification.count, pointCount);
             assert.strictEqual(bufferGeometry.attributes.color.count, pointCount);
 
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + origin.x, boundsConforming[0], epsilon), 'min.x');
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + origin.y, boundsConforming[1], epsilon), 'min.y');
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + origin.z, boundsConforming[2], epsilon), 'min.z');
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + origin.x, boundsConforming[3], epsilon), 'max.x');
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + origin.y, boundsConforming[4], epsilon), 'max.y');
-            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + origin.z, boundsConforming[5], epsilon), 'max.z');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.x + origin[0], boundsConforming[0], epsilon), 'min.x');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.y + origin[1], boundsConforming[1], epsilon), 'min.y');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.min.z + origin[2], boundsConforming[2], epsilon), 'min.z');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.x + origin[0], boundsConforming[3], epsilon), 'max.x');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.y + origin[1], boundsConforming[4], epsilon), 'max.y');
+            assert.ok(compareWithEpsilon(bufferGeometry.boundingBox.max.z + origin[2], boundsConforming[5], epsilon), 'max.z');
         });
 
         it('parses a copc chunk to a THREE.BufferGeometry', async function _it() {
