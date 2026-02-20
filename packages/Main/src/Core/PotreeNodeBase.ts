@@ -1,6 +1,5 @@
 import { Vector3, type Box3 } from 'three';
-import PointCloudNode from './PointCloudNode';
-
+import PointCloudNode from 'Core/PointCloudNode';
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
 // of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
 // by applying the same subdivision algo recursively)
@@ -47,53 +46,38 @@ export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
 }
 
 export abstract class PotreeNodeBase extends PointCloudNode {
-    index: number;
-
-    childrenBitField: number | undefined;
-    baseurl: string;
+    override numPoints: number;
     crs: string;
 
-    private _hierarchyKey: string | undefined;
+    abstract hierarchyKey: string;
+    abstract childrenBitField: number;
 
     constructor(
         depth: number,
-        index: number,
         numPoints: number,
-        childrenBitField: number | undefined,
-        source: { baseurl: string },
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth);
 
-        this.childrenBitField = childrenBitField;
-
-        this.index = index;
-
-        this.baseurl = source.baseurl;
+        this.numPoints = numPoints;
 
         this.crs = crs;
     }
 
-    override get octreeIsLoaded(): boolean {
-        return !(this.childrenBitField !== 0 && this.children.length === 0);
+    override get childrenCreated(): boolean {
+        return !(this.childrenBitField > 0 && this.children.length === 0);
+    }
+
+    override get hierarchyIsLoaded(): boolean {
+        return this.numPoints >= 0;
     }
 
     override get id(): string {
         return this.hierarchyKey;
     }
 
-    get hierarchyKey(): string {
-        if (this._hierarchyKey != undefined) { return this._hierarchyKey; }
-        if (this.depth === 0) {
-            this._hierarchyKey = 'r';
-        } else {
-            this._hierarchyKey = `${this.parent?.hierarchyKey}${this.index}`;
-        }
-        return this._hierarchyKey;
-    }
-
-    override fetcher(url: string): Promise<ArrayBuffer> {
-        return this.source.fetcher(url, this.networkOptions);
+    override fetcher(url: string, networkOptions = this.networkOptions): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, networkOptions);
     }
 
     override createChildAABB(childNode: this, childIndex: number): void {

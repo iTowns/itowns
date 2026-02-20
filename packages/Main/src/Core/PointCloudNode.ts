@@ -19,9 +19,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     depth: number;
 
-    /** The number of points in this node.
-     * '-1' is the node has been loaded yet */
-    numPoints: number;
     /** The children nodes of this node. */
     children: this[];
     parent: this | undefined;
@@ -40,12 +37,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     promise: Promise<unknown> | null;
     obj: THREE.Points & { matrixWorldInverse?: THREE.Matrix4 } | undefined;
 
-    constructor(depth: number, numPoints: number) {
+    abstract numPoints: number;
+
+    constructor(depth: number) {
         super();
 
         this.depth = depth;
-
-        this.numPoints = numPoints;
 
         this.children = [];
         this.parent = undefined;
@@ -58,11 +55,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.promise = null;
     }
 
+    abstract childrenCreated: boolean;
     abstract get networkOptions(): RequestInit;
-    abstract get octreeIsLoaded(): boolean;
+    abstract get hierarchyIsLoaded(): boolean;
     abstract get id(): string;
     abstract get url(): string;
-    abstract loadOctree(): Promise<void>;
+    abstract createChildren(): Promise<void>;
     abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
 
@@ -71,8 +69,8 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     }
 
     async load(): Promise<THREE.BufferGeometry> {
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
+        if (!this.childrenCreated) {
+            await this.createChildren();
         }
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {
