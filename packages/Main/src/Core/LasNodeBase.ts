@@ -46,7 +46,7 @@ abstract class LasNodeBase extends PointCloudNode {
         return this.source.networkOptions;
     }
 
-    override get octreeIsLoaded(): boolean {
+    override get hierarchyIsLoaded(): boolean {
         return this.numPoints >= 0;
     }
 
