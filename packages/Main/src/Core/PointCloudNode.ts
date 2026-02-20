@@ -57,11 +57,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.promise = null;
     }
 
+    abstract childrenCreated: boolean;
     abstract get networkOptions(): RequestInit;
-    abstract get octreeIsLoaded(): boolean;
+    abstract get hierarchyIsLoaded(): boolean;
     abstract get id(): string;
     abstract get url(): string;
-    abstract loadOctree(): Promise<void>;
+    abstract createChildren(): Promise<void>;
     abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
 
@@ -70,8 +71,8 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     }
 
     async load(): Promise<THREE.BufferGeometry> {
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
+        if (!this.childrenCreated) {
+            await this.createChildren();
         }
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {

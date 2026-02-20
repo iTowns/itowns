@@ -1,19 +1,46 @@
 import PotreeNodeBase from 'Core/PotreeNodeBase';
 import type PotreeSource from 'Source/PotreeSource';
 
+type NodeInfo = {
+    hierarchyKey: string,
+    childrenBitField: number, // 0 <= integer <= 255
+    numPoints: number, // integer >= 0
+}
+
 class PotreeNode extends PotreeNodeBase {
     source: PotreeSource;
+
+    hierarchy: Record<string, NodeInfo>;
+
+    private _baseurl: string | undefined;
 
     constructor(
         depth: number,
         index: number,
         numPoints: number,
-        childrenBitField: number | undefined,
+        childrenBitField: number,
         source: PotreeSource,
         crs: string,
     ) {
         super(depth, index, numPoints, childrenBitField, source, crs);
         this.source = source;
+
+        this.hierarchy = {};
+    }
+
+    override get baseurl(): string {
+        if (this._baseurl != undefined) { return this._baseurl; }
+        if (this.depth === 0) {
+            this._baseurl = this.source.baseurl;
+            return this._baseurl;
+        }
+        const parent = this.parent as this;
+        if ((this.depth % this.source.hierarchyStepSize) == 0) {
+            this._baseurl = `${parent.baseurl}/${this.hierarchyKey.substring(1)}`;
+        } else {
+            this._baseurl = parent.baseurl;
+        }
+        return this._baseurl;
     }
 
     override get url(): string {
@@ -24,44 +51,81 @@ class PotreeNode extends PotreeNodeBase {
         return this.source.networkOptions;
     }
 
-    override async loadOctree(): Promise<void> {
+    async loadHierarchy(): Promise<Record<string, NodeInfo>> {
+        if (this.hierarchyIsLoaded) {
+            return this.hierarchy;
+        }
+        console.log('loadHierarchy', this.id);
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
-        const blob = await this.fetcher(octreeUrl);
+        const buffer = await this.fetcher(octreeUrl);
+        const view = new DataView(buffer);
 
-        const view = new DataView(blob);
+        // parseHierarchy
+        this.childrenBitField = view.getUint8(0);
+        this.numPoints = view.getUint32(1, true);
 
-        let offset = 0;
+        const stack: NodeInfo[] = [];
+        const root = {
+            hierarchyKey: 'r',
+            childrenBitField: this.childrenBitField,
+            numPoints: this.numPoints,
+        };
+        stack.push(root);
+        const byteLength = view.byteLength;
 
-        this.childrenBitField = view.getUint8(0); offset += 1;
-        this.numPoints = view.getUint32(1, true); offset += 4;
+        const hierarchy: Record<string, NodeInfo> = {
+            r: { ...root },
+        };
 
-        const stack = [];
-        stack.push(this);
+        let offset = 5;
 
-        while (stack.length && offset < blob.byteLength) {
-            const snode = stack.shift() as PotreeNode;
+        while (stack.length && offset < byteLength) {
+            const snode = stack.shift() as NodeInfo;
             // look up 8 children
-            for (let indexChild = 0; indexChild < 8; indexChild++) {
-                // does snode have a #indexChild child ?
+            for (let childIndex = 0; childIndex < 8; childIndex++) {
+                // does snode have a #childIndex child ?
                 if ((snode.childrenBitField as number) &
-                        (1 << indexChild) && (offset + 5) <= blob.byteLength) {
-                    const childrenBitField = view.getUint8(offset); offset += 1;
-                    const numPoints = view.getUint32(offset, true); offset += 4;
-                    const child = new PotreeNode(
-                        snode.depth + 1, indexChild,
-                        numPoints, childrenBitField,
-                        this.source, this.crs);
+                        (1 << childIndex) && (offset + 5) <= byteLength) {
+                    const child: NodeInfo = {
+                        hierarchyKey: `${snode.hierarchyKey}${childIndex}`,
+                        childrenBitField: view.getUint8(offset),
+                        numPoints: view.getUint32(offset + 1, true),
+                    };
 
-                    snode.add(child, indexChild);
-                    // For Potree1 Parser
-                    if ((child.depth % this.source.hierarchyStepSize) == 0) {
-                        child.baseurl = `${this.baseurl}/${child.hierarchyKey.substring(1)}`;
-                    } else {
-                        child.baseurl = this.baseurl;
-                    }
                     stack.push(child);
+                    hierarchy[child.hierarchyKey] = { ...child };
+                    offset += 5;
                 }
             }
+        }
+        this.hierarchy = hierarchy;
+        return hierarchy;
+    }
+
+    override async createChildren(): Promise<void> {
+        await this.loadHierarchy();
+
+        const childMask = this.hierarchy[this.hierarchyKey].childrenBitField;
+
+        for (let childIndex = 0; childIndex < 8; childIndex++) {
+            const childExists = ((1 << childIndex) & childMask) !== 0;
+
+            if (!childExists) {
+                continue;
+            }
+
+            const childHierarchyKey = `${this.hierarchyKey}${childIndex}`;
+
+            const childrenBitField = this.hierarchy[childHierarchyKey].childrenBitField;
+            const numPoints = this.hierarchy[childHierarchyKey].numPoints;
+
+            const child = new PotreeNode(
+                this.depth + 1, childIndex,
+                numPoints, childrenBitField,
+                this.source, this.crs);
+
+            this.add(child as this, childIndex);
+            child.hierarchy = this.hierarchy;
         }
     }
 }
