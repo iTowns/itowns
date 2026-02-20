@@ -85,10 +85,6 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
         if (!nodeLayer) {
             // Create new raster node
             nodeLayer = layer.setupRasterNode(node);
-
-            // Init the node by parent
-            const parentLayer = parent.material?.getTile(layer.id);
-            nodeLayer.initFromParent(parentLayer, extentsDestination);
         }
 
         // Proposed new process, two separate processes:
@@ -186,9 +182,6 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
 
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
-
-        const parentLayer = parent.material?.getTile(layer.id);
-        nodeLayer.initFromParent(parentLayer, extentsDestination);
 
         if (nodeLayer.level >= layer.source.zoom.min) {
             context.view.notifyChange(node, false);

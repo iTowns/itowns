@@ -58,27 +58,6 @@ export class RasterTile extends THREE.EventDispatcher {
         return this.layer.visible;
     }
 
-    initFromParent(parent, extents) {
-        if (parent && parent.level > this.level) {
-            let index = 0;
-            const sortedParentTextures = this.sortBestParentTextures(parent.textures);
-            for (const childExtent of extents) {
-                const matchingParentTexture = sortedParentTextures
-                    .find(parentTexture => parentTexture && childExtent.isInside(parentTexture.extent));
-                if (matchingParentTexture) {
-                    this.setTexture(index++, matchingParentTexture,
-                        childExtent.offsetToParent(matchingParentTexture.extent));
-                }
-            }
-
-            if (__DEBUG__) {
-                if (index != extents.length) {
-                    console.error(`non-coherent result ${index} vs ${extents.length}.`, extents);
-                }
-            }
-        }
-    }
-
     sortBestParentTextures(textures) {
         const sortByValidity = (a, b) => {
             if (a.isTexture === b.isTexture) {
@@ -207,15 +186,6 @@ export class RasterElevationTile extends RasterTile {
         super.dispose(removeEvent);
         if (removeEvent) {
             this.layer.removeEventListener('scale-property-changed', this._handlerCBEvent);
-        }
-    }
-
-    initFromParent(parent, extents) {
-        const currentLevel = this.level;
-        super.initFromParent(parent, extents);
-        this.updateMinMaxElevation();
-        if (currentLevel !== this.level) {
-            this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
         }
     }
 

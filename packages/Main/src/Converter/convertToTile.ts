@@ -89,8 +89,27 @@ export default {
             if (parent) {
                 tile.geoidHeight = parent.geoidHeight;
                 const geoidHeight = geoidLayerIsVisible(layer) ? tile.geoidHeight : 0;
-                tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
                 tile.material.setUniform('geoidHeight', geoidHeight);
+
+                const parent_uniforms = parent.material.uniforms;
+                const child_uniforms = tile.material.uniforms;
+
+                if (parent.material.uniforms.map.value) {
+                    const extentParent = parent_uniforms.map.value.extent;
+                    child_uniforms.map.value = parent_uniforms.map.value;
+                    child_uniforms.colorOffsetScales.value = tile.extent.offsetToParent(extentParent);
+                }
+
+                if (parent_uniforms.displacementMap.value) {
+                    const extentParent = parent_uniforms.displacementMap.value.extent.toExtent(tile.extent.crs);
+                    child_uniforms.displacementMap.value = parent_uniforms.displacementMap.value;
+                    child_uniforms.elevationOffsetScales.value = tile.extent.offsetToParent(extentParent);
+                    const rasterElevationNode = parent_uniforms.elevationLayer.value;
+                    child_uniforms.elevationLayer.value = rasterElevationNode;
+                    tile.setBBoxZ({ min: rasterElevationNode.min, max: rasterElevationNode.max, scale: rasterElevationNode.layer.scale, geoidHeight });
+                } else {
+                    tile.setBBoxZ({ min: parent.obb.z.min, max: parent.obb.z.max, geoidHeight });
+                }
             }
 
             return tile;

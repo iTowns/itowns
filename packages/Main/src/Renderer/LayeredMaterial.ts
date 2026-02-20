@@ -5,7 +5,7 @@ import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
-import { makeDataArrayRenderTarget } from './WebGLComposer';
+import { drawMap } from './WebGLComposer';
 import { RenderTargetCache } from './RenderTargetCache';
 
 const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
@@ -90,88 +90,38 @@ const defaultStructLayers: Readonly<{
  * @param renderer - The renderer used to render textures.
  * @param renderTargetCache - Cache for managing render targets.
  */
-function updateLayersUniformsForType<Type extends 'c' | 'e'>(
+function updateLayersUniforms(
     uniforms: { [name: string]: THREE.IUniform },
     tiles: RasterTile[],
-    max: number,
-    type: Type,
     renderer: THREE.WebGLRenderer,
     renderTargetCache: RenderTargetCache | undefined,
-) {
-    // Aliases for readability
-    const uLayers = uniforms.layers.value;
-    const uTextures = uniforms.textures;
-    const uOffsetScales = uniforms.offsetScales.value;
-    const uTextureCount = uniforms.textureCount;
+    extent: Extent) {
+    if (tiles.find(tile => tile.textures.length == 0)) {
+        return;
+    }
 
-    // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
-    let count = 0;
-    let width = 0;
-    let height = 0;
+    const textureSetId = extent.toString();
 
-    // Determine total count of textures and dimensions
-    // (assuming all textures are same size)
-    let textureSetId: string = type;
-    for (const tile of tiles) {
-        // FIXME: RasterElevationTile are always passed to this function
-        // alone so this works, but it's really not great even ignoring
-        // the dynamic addition of a field.
-        // @ts-expect-error: adding field to passed layer
-        tile.textureOffset = count;
+    let renderTarget = renderTargetCache?.get(textureSetId);
 
-        for (
-            let i = 0;
-            i < tile.textures.length && count < max;
-            ++i, ++count
-        ) {
-            const texture = tile.textures[i];
-            if (!texture) { continue; }
-
-            textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
-            uLayers[count] = tile;
-
-            const img = texture.image;
-            if (!img || img.width <= 0 || img.height <= 0) {
-                console.error('Texture image not loaded or has zero dimensions');
-                uTextureCount.value = 0;
-                return;
-            } else if (count == 0) {
-                width = img.width;
-                height = img.height;
-            } else if (width !== img.width || height !== img.height) {
-                console.error('Texture dimensions mismatch');
-                uTextureCount.value = 0;
-                return;
-            }
+    if (!renderTarget) {
+        if (tiles.length == 0) {
+            return;
         }
+
+        renderTarget = new THREE.WebGLRenderTarget(256, 256, { depthBuffer: false });
+
+        drawMap(renderTarget, tiles, renderer, extent);
+
+        renderTargetCache?.set(textureSetId, renderTarget);
+
+        renderTarget.texture.userData = { textureSetId };
+    } else {
+        drawMap(renderTarget, tiles, renderer, extent);
     }
 
-    const cachedRT = renderTargetCache?.get(textureSetId);
-
-    if (cachedRT) {
-        uTextures.value = cachedRT.texture;
-        uTextureCount.value = count;
-        return;
-    }
-
-    const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
-    if (!rt) {
-        uTextureCount.value = 0;
-        return;
-    }
-
-    renderTargetCache?.set(textureSetId, rt);
-    rt.texture.userData = { textureSetId };
-    uniforms.textures.value = rt.texture;
-
-    if (count > max) {
-        console.warn(
-            `LayeredMaterial: Not enough texture units (${max} < ${count}), `
-            + 'excess textures have been discarded.',
-        );
-    }
-    uTextureCount.value = count;
+    uniforms.colorOffsetScales.value = identityOffsetScale;
+    uniforms.map.value = renderTarget.texture;
 }
 
 export const ELEVATION_MODES = {
@@ -221,16 +171,13 @@ interface LayeredMaterialRawUniforms {
     outlineColors: THREE.Color[];
 
     // Elevation layers
-    elevationLayers: Array<StructElevationLayer>;
-    elevationTextures: THREE.DataArrayTexture | null;
+    elevationLayer: StructElevationLayer;
+    displacementMap: THREE.DataTexture | null;
     elevationOffsetScales: Array<THREE.Vector4>;
-    elevationTextureCount: number;
 
     // Color layers
-    colorLayers: Array<StructColorLayer>;
-    colorTextures: THREE.DataArrayTexture | null;
-    colorOffsetScales: Array<THREE.Vector4>;
-    colorTextureCount: number;
+    map: THREE.DataTexture | null;
+    colorOffsetScales: THREE.Vector4;
 }
 
 let nbSamplers: [number, number] | undefined;
@@ -380,18 +327,11 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         // elevation/color layer uniforms, to be updated using updateUniforms()
         this.initUniforms({
-            elevationLayers: new Array(nbSamplers[0])
-                .fill(defaultStructLayers.elevation),
-            elevationTextures: null,
-            elevationOffsetScales: new Array(nbSamplers[0])
-                .fill(identityOffsetScale),
-            elevationTextureCount: 0,
-
-            colorLayers: new Array(nbSamplers[1])
-                .fill(defaultStructLayers.color),
-            colorTextures: null,
-            colorOffsetScales: new Array(nbSamplers[1])
-                .fill(identityOffsetScale),
+            elevationLayer: defaultStructLayers.elevation,
+            displacementMap: null,
+            elevationOffsetScales: identityOffsetScale,
+            map: null,
+            colorOffsetScales: identityOffsetScale,
             colorTextureCount: 0,
         });
 
@@ -481,45 +421,28 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         }> {
         return {
             layers: this.uniforms[`${type}Layers`],
-            textures: this.uniforms[`${type}Textures`],
+            textures: type == 'color' ? this.uniforms.map : this.uniforms.dislacementMap,
             offsetScales: this.uniforms[`${type}OffsetScales`],
             textureCount: this.uniforms[`${type}TextureCount`],
         };
     }
 
-    /**
-     * Updates uniforms for both color and elevation layers.
-     * Orchestrates the processing of visible color layers and elevation tiles.
-     *
-     * @param renderer - The renderer used to render textures into arrays.
-     */
-    public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
+    public updateLayersUniforms(renderer: THREE.WebGLRenderer, extent: Extent): void {
         const colorlayers = this.colorTiles
             .filter(rt => rt.visible && rt.opacity > 0);
         colorlayers.sort((a, b) =>
             this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
         );
 
-        updateLayersUniformsForType(
-            this.getLayerUniforms('color'),
-            colorlayers,
-            this.defines.NUM_FS_TEXTURES,
-            'c',
-            renderer,
-            this.renderTargetCache,
-        );
+        updateLayersUniforms(this.uniforms, colorlayers, renderer, this.renderTargetCache, extent);
 
-        if (this.elevationTileId !== undefined && this.getElevationTile()) {
-            if (this.elevationTile !== undefined) {
-                updateLayersUniformsForType(
-                    this.getLayerUniforms('elevation'),
-                    [this.elevationTile],
-                    this.defines.NUM_VS_TEXTURES,
-                    'e',
-                    renderer,
-                    this.renderTargetCache,
-                );
-            }
+        const { displacementMap } = this.uniforms;
+
+        if (this.elevationTile?.level > 0) {
+            const { uniforms, elevationTile } = this;
+            displacementMap.value = elevationTile.textures[0];
+            uniforms.elevationOffsetScales.value = elevationTile.offsetScales[0];
+            uniforms.elevationLayer.value = elevationTile;
         }
 
         this.layersNeedUpdate = false;

@@ -144,7 +144,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      */
     override onBeforeRender(renderer: THREE.WebGLRenderer) {
         if (this.material.layersNeedUpdate) {
-            this.material.updateLayersUniforms(renderer);
+            this.material.updateLayersUniforms(renderer, this.extent);
         }
 
         // Track actual usage every time this mesh is rendered
