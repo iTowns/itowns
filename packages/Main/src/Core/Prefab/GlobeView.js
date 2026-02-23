@@ -85,8 +85,12 @@ class GlobeView extends View {
      * @param {function} [options.webXR.callback] - WebXR rendering callback.
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
-     * @param {number} [options.farFactor=20] - Controls how far the camera can see.
-     * The maximum view distance is this factor times the camera's altitude (above sea level).
+     * @param {number} [options.farFactor=0.3] - Controls the far plane distance at low altitudes.
+     * Value between 0 and 1. Lower values reduce far distance near the ground. At higher altitudes,
+     * far distance transitions to full horizon distance.
+     * @param {number} [options.maxFarAltitude=50000] - the altitude at which the horizon is fully visible (meters).
+     * @param {number} [options.minFarDistance=5000] - the minimum horizon distance.
+     * Between 0 and 1.
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
      * Between 0 and 1.
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
@@ -101,11 +105,19 @@ class GlobeView extends View {
 
         this.camera3D.near = Math.max(15.0, 0.000002352 * ellipsoidSizes.x);
         this.camera3D.far = ellipsoidSizes.x * 10;
+
+        this.fogSpread = options.fogSpread ?? 0.4;
+        this.farFactor = options.farFactor ?? 0.3;
+        this.maxFarAltitude = options.maxFarAltitude ?? 50000;
+        // 5km corresponds to the theoretical distance for a person at sea level
+        this.minFarDistance = options.minFarDistance ?? 5000;
+
         const tileLayer = new GlobeLayer('globe', options.object3d, options);
         this.mainLoop.gfxEngine.label2dRenderer.infoTileLayer = tileLayer.info;
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
+        this.horizonScaleFactor = 1;
 
         if (!placement.isExtent) {
             placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
@@ -113,9 +125,6 @@ class GlobeView extends View {
             placement.heading = placement.heading || 0;
             placement.range = placement.range || ellipsoidSizes.x * 2.0;
         }
-
-        this.farFactor = options.farFactor ?? 40;
-        this.fogSpread = options.fogSpread ?? 0.5;
 
         if (options.noControls) {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
@@ -126,36 +135,10 @@ class GlobeView extends View {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
 
-            const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
-
             if (options.dynamicCameraNearFar || options.dynamicCameraNearFar === undefined) {
-                this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => {
-                    // update camera's near and far
-                    const originToCamSq = this.camera3D.position.lengthSq();
-
-                    // maximum possible distance from ground to camera
-                    const camCoordinates = new Coordinates(this.referenceCrs)
-                        .setFromVector3(this.camera3D.position);
-                    camCoordinates.as(this.tileLayer.extent.crs, camCoordinates);
-                    const camToSeaLevel = camCoordinates.z;
-
-                    const camToGroundDistMin = camToSeaLevel - View.ALTITUDE_MAX;
-                    this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
-
-                    // distance from camera to the horizon
-                    const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
-
-                    this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
-                    this.camera3D.updateProjectionMatrix();
-
-                    const fog = this.scene.fog;
-                    if (!fog) { return; }
-                    fog.far = this.camera3D.far;
-                    fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
-                });
+                this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
+                this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, this._updateCameraRangeAndFog.bind(this));
             }
-
-            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
         // GlobeView needs this.camera.resize to set perpsective matrix camera
@@ -169,6 +152,52 @@ class GlobeView extends View {
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
         }
+    }
+
+    /**
+     * Internal method to update the camera's near and far planes, and the scene's fog
+     * based on the current camera position and altitude.
+     * @private
+     */
+    _updateCameraRangeAndFog() {
+        const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
+
+        // maximum possible distance from ground to camera
+        const camToSeaLevel = new Coordinates(this.referenceCrs)
+            .setFromVector3(this.camera3D.position)
+            .as(this.tileLayer.extent.crs)
+            .z;
+
+        const camToGroundDistMin = camToSeaLevel - View.ALTITUDE_MAX;
+        this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
+
+        this.horizonScaleFactor = this.computeHorizonScaleFactor(camToSeaLevel);
+        const behindGlobeDistance = (this.camera3D.position.length() + globeRadiusMin);
+
+        // Set the far plane to scaled horizon distance
+        if (this.horizonScaleFactor < 1 && (!this.skyManager || !this.skyManager.enabled)) {
+            // camera's position and magnitude in worldToScaledEllipsoid system
+            const cameraPosition = new THREE.Vector3();
+            cameraPosition.copy(this.camera3D.position).applyMatrix4(this.tileLayer.worldToScaledEllipsoid);
+
+            // Minimum distance from camera to the horizon (The globe is not a perfect sphere, this is not constant)
+            const horizonDistance = Math.sqrt(Math.max(0, cameraPosition.lengthSq() - 1)) * globeRadiusMin;
+            const reducedHorizonDist = horizonDistance * this.horizonScaleFactor;
+            this.camera3D.far = Math.max(this.minFarDistance, reducedHorizonDist);
+        } else {
+            // Setting the far plane behind the globe when scale factor is 1 or when realistic lighting is enabled.
+            // Three-geospatial aerial-perspective is not working well with closer far-plane while being dense
+            // enough to hide tile culling.
+            this.camera3D.far = behindGlobeDistance;
+        }
+
+        this.camera3D.updateProjectionMatrix();
+
+        const fog = this.scene.fog;
+        if (!fog) { return; }
+        // Fog is only visible when the horizon is scaled down.
+        fog.far = this.camera3D.far;
+        fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
     }
 
     /**
@@ -212,6 +241,19 @@ class GlobeView extends View {
 
     getMetersToDegrees(meters = 1) {
         return THREE.MathUtils.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+    }
+
+    /**
+     * This factor reduces the visible horizon at low altitudes based on farFactor and maxFarAltitude.
+     * farFactor corresponds to its minimum and maxFarAltitude the altitude at which the horizon is fully visible.
+     * @param {number} altitude - Camera altitude above sea level in meters
+     * @returns {number} Scale factor between farFactor and 1
+     */
+    computeHorizonScaleFactor(altitude) {
+        if (this.farFactor === 1 || altitude >= this.maxFarAltitude) {
+            return 1;
+        }
+        return this.farFactor + altitude / (this.maxFarAltitude / (1 - this.farFactor));
     }
 }
 
