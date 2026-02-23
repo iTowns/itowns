@@ -78,7 +78,7 @@
             view.addLayer(mvtLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
             // Request redraw
-            view.notifyChange(true);
+            view.notifyChange({});
             debug.createTileDebugUI(menuGlobe.gui, view);
             window.view = view;
             window.itowns = itowns;
