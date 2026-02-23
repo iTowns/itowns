@@ -221,8 +221,8 @@ export default {
 
             return target;
         }
-        // Instead of doing N raycast (1 per x,y returned by traversePickingCircle),
-        // we force render the zone of interest.
+        // Instead of doing N raycasts (1 per x,y returned by traversePickingCircle),
+        // we force rendering the zone of interest.
         // Then we'll only do raycasting for the pixels where something was drawn.
         const zone = {
             x: viewCoords.x - radius,
@@ -230,33 +230,30 @@ export default {
             width: 1 + radius * 2,
             height: 1 + radius * 2,
         };
+
+        // Render object with clear-alpha temporarily null
+        // to tell rendered object apart from background.
+        // Checking colors would not work because the object may sometimes be rendered
+        // with the same color as the clear-color.
+        const engine = view.mainLoop.gfxEngine;
+        const renderer = engine.renderer;
+        const origClearAlpha = renderer.getClearAlpha();
+        renderer.setClearAlpha(0);
         const pixels = view.mainLoop.gfxEngine.renderViewToBuffer(
             { scene: object, camera: view.camera },
             zone);
+        renderer.setClearAlpha(origClearAlpha);
 
-        const clearColor = new THREE.Color();
-        view.mainLoop.gfxEngine.renderer.getClearColor(clearColor);
-        const clearR = Math.round(255 * clearColor.r);
-        const clearG = Math.round(255 * clearColor.g);
-        const clearB = Math.round(255 * clearColor.b);
-
-        // Raycaster use NDC coordinate
+        // Raycaster uses NDC coordinate
         const tmp = normalized.clone();
         traversePickingCircle(radius, (x, y) => {
             // x, y are offset from the center of the picking circle,
-            // and pixels is a square where 0, 0 is the top-left corner.
+            // and pixels is a square where [0, 0] is the top-left corner.
             // So we need to shift x,y by radius.
+            // We only need to check the 4th color component: alpha.
             const xi = x + radius;
             const yi = y + radius;
-            const offset = (yi * (radius * 2 + 1) + xi) * 4;
-            const r = pixels[offset];
-            const g = pixels[offset + 1];
-            const b = pixels[offset + 2];
-            // Use approx. test to avoid rounding error or to behave
-            // differently depending on hardware rounding mode.
-            if (Math.abs(clearR - r) <= 1 &&
-                Math.abs(clearG - g) <= 1 &&
-                Math.abs(clearB - b) <= 1) {
+            if (!pixels[3 + (yi * (radius * 2 + 1) + xi) * 4]) {
                 // skip because nothing has been rendered here
                 return;
             }
