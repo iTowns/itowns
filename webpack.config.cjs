@@ -27,6 +27,7 @@ const include = [
     path.resolve(__dirname, 'packages/Main/src'),
     path.resolve(__dirname, 'packages/Debug/src'),
     path.resolve(__dirname, 'packages/Widgets/src'),
+    path.resolve(__dirname, 'examples/demo/src'),
 ];
 
 // excludes path to externalize
@@ -166,8 +167,36 @@ module.exports = () => {
         ],
     };
 
+    const configServe = {
+        ...configESM,
+        entry: {
+            ...configESM.entry,
+            demo: {
+                import: './examples/demo/src/index.ts',
+                dependOn: 'itowns',
+            },
+        },
+        output: {
+            ...configESM.output,
+        },
+        resolve: {
+            ...configESM.resolve,
+        },
+        plugins: [
+            new ESLintPlugin({
+                files: include,
+            }),
+        ],
+        experiments: {
+            outputModule: true,
+        },
+        externals: {
+            three: 'three',
+        },
+    };
+
     if (process.env.WEBPACK_SERVE) {
-        configESM.devServer = {
+        configServe.devServer = {
             hot: false,
             devMiddleware: {
                 publicPath: '/dist/',
@@ -187,7 +216,7 @@ module.exports = () => {
             },
         };
 
-        return configESM;
+        return [configServe];
     } else {
         return [configESM, configUMD];
     }

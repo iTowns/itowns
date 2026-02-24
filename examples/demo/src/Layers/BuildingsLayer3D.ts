@@ -1,0 +1,64 @@
+import * as itowns from 'itowns';
+import * as THREE from 'three';
+import type { LayerPromiseType } from '../Types';
+import { BuildingsSource } from '../Sources';
+
+export const BuildingsLayer3D: LayerPromiseType = {
+    id: 'VTBuilding3D',
+    layerPromise: undefined,
+    cachedLayer: undefined,
+    getLayer: (meshCallback?: (mesh: THREE.Mesh) => void) => {
+        if (BuildingsLayer3D.cachedLayer) {
+            return Promise.resolve(BuildingsLayer3D.cachedLayer);
+        }
+        if (!BuildingsLayer3D.layerPromise) {
+            BuildingsLayer3D.layerPromise = (async () => {
+                BuildingsLayer3D.cachedLayer = new itowns.FeatureGeometryLayer(
+                    BuildingsLayer3D.id, {
+                        // @ts-expect-error source property undefined
+                        source: await BuildingsSource.getSource(),
+                        zoom: { min: 15 },
+                        onMeshCreated: meshCallback,
+                        accurate: false,
+                        style: {
+                            fill: {
+                                base_altitude: (p: { alti_sol: number }) => p.alti_sol || 0,
+                                extrusion_height: (p: { hauteur: number }) => p.hauteur || 0,
+                            },
+                        },
+                    });
+                return BuildingsLayer3D.cachedLayer;
+            })();
+        }
+        return BuildingsLayer3D.layerPromise;
+    },
+    getPickingInfo(feature) {
+        const properties = feature as {
+            object: {
+                feature: {
+                    id: string,
+                    geometries: {
+                        properties: {
+                            alti_sol: string,
+                            hauteur: string,
+                            isole: string,
+                            niveau: string,
+                            symbo: string,
+                            territoire: string,
+                        }
+                    }[]
+                }
+            }
+        };
+
+        return {
+            ID: properties.object.feature.id,
+            'Ground altitude': properties.object.feature.geometries[0].properties.alti_sol,
+            Height: properties.object.feature.geometries[0].properties.hauteur,
+            Isolated: properties.object.feature.geometries[0].properties.isole,
+            Level: properties.object.feature.geometries[0].properties.niveau,
+            Symbol: properties.object.feature.geometries[0].properties.symbo,
+            Territory: properties.object.feature.geometries[0].properties.territoire,
+        };
+    },
+};

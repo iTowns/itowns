@@ -1,0 +1,167 @@
+#demoUI {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 1vh;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: min(80vw, 70vh); 
+    max-height: 40vh;
+    padding: 2vh 3vh;
+    border-radius: 3rem;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(0.5vh);
+    z-index: 100;
+}
+
+#textContainer {
+    position: static;
+
+    display: flex;
+    flex-direction: column;
+
+    color: black;
+    text-align: center;
+    font-family:'Courier New', Courier, monospace;
+}
+
+/*** Navigation Menu ***/
+#navigationContainer {
+    position: static;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    
+    width: 100%;
+    gap: 2vh;
+    margin-top: 2vh;
+}
+
+button {
+    display: inline-block;
+
+    border: 1px solid black;
+    border-radius: 0.5rem;
+    padding: 0.5vh 2vh;
+    
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    font-size: min(1vh, 1.5vw);
+    font-family:'Courier New', Courier, monospace;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #E5E5E5;
+    color: black;
+}
+
+button:active {
+    background-color: #7EA8C5;
+    color: white;
+}
+
+button.active {
+    background-color: #7EA8C5;
+    color: white;
+}
+
+#sceneDots {
+    display: flex;
+    flex-direction: row;
+    gap: min(1vh, 1.5vw);
+    align-items: center;
+}
+
+.scene-dot {
+    width: min(1.5vh, 2vw);
+    height: min(1.5vh, 2vw);
+    border-radius: 50%;
+    border: 1px solid #000;
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.scene-dot.active {
+    background-color: #7EA8C5;
+    transform: scale(1.4);
+}
+
+.scene-dot:hover {
+    background-color: #E5E5E5;
+}
+
+/*** Feature Picking Info ***/
+#feature-picking-info {
+    position: fixed;
+    top: 1vh;
+    right: 1vh;
+    padding: 1vh 1.5vh;
+    border-radius: 1vh;
+    overflow-y: auto;
+
+    font-family:'Courier New', Courier, monospace;
+    font-size: min(1.5vh, 2vw);
+    color: black;
+
+    width: 25vw;
+    max-height: 45vh;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(0.5vh);
+
+    z-index: 100;
+
+    pointer-events: auto;
+}
+
+/*** Point Cloud Config ***/
+#point-cloud-config {
+    position: fixed;
+    top: 1vh;
+    right: 1vh;
+    padding: 1vh 1.5vh;
+    border-radius: 1vh;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    font-family:'Courier New', Courier, monospace;
+    font-size: min(1.5vh, 2vw);
+    color: black;
+
+    width: 25vw;
+    max-height: 45vh;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(0.5vh);
+
+    z-index: 100;
+}
+
+#point-cloud-buttons {
+    width: 100%;
+    display: flex;
+    justify-self: center;
+}
+
+#point-cloud-config button {
+    width: 50%;
+}
+
+#point-cloud-config button:first-child {
+    border-right: none;
+    border-radius: 0.5rem 0 0 0.5rem;
+}
+
+#point-cloud-config button:last-child {
+    border-left: none;
+    border-radius: 0 0.5rem 0.5rem 0;
+}

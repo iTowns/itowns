@@ -1,0 +1,9 @@
+const Config = {
+    DURATION: 2000,
+    DISTANCE_SCALER: 150000,
+    MAX_RANGE: 25000000,
+    ATMOSPHERE_THRESHOLD: 4000000,
+    DRAG_THRESHOLD: 5,
+};
+
+export default Config;
