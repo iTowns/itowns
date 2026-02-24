@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { spawn, Thread, Transfer } from 'threads';
-import proj4 from 'proj4';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 let _thread;
 
@@ -20,6 +20,47 @@ async function loader() {
 
 function decoder(w, metadata) {
     return metadata.encoding === 'BROTLI' ? w.parseBrotli : w.parse;
+}
+
+function getQuaternion(origin, crsIn, crsOut) {
+    let quaternion = new THREE.Quaternion();
+    if (CRS.defs(crsOut).projName === 'geocent') {
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(origin);
+    }
+    return quaternion;
+}
+
+function buildBufferGeometry(attributeBuffers) {
+    const geometry = new THREE.BufferGeometry();
+    Object.keys(attributeBuffers).forEach((attributeName) => {
+        const buffer = attributeBuffers[attributeName].buffer;
+
+        if (attributeName === 'position') {
+            geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+        } else if (attributeName === 'rgba') {
+            geometry.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
+        } else if (attributeName === 'NORMAL') {
+            geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
+        } else if (attributeName === 'INDICES') {
+            const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
+            bufferAttribute.normalized = true;
+            geometry.setAttribute('indices', bufferAttribute);
+        } else {
+            const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
+
+            const batchAttribute = attributeBuffers[attributeName].attribute;
+            bufferAttribute.potree = {
+                offset: attributeBuffers[attributeName].offset,
+                scale: attributeBuffers[attributeName].scale,
+                preciseBuffer: attributeBuffers[attributeName].preciseBuffer,
+                range: batchAttribute.range,
+            };
+
+            geometry.setAttribute(attributeName, bufferAttribute);
+        }
+    });
+
+    return geometry;
 }
 
 export default {
@@ -44,74 +85,48 @@ export default {
      * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
     parse: async function parse(buffer, options) {
+        const potreeLoader = await loader();
         const source = options.in.source;
+
         const metadata = source.metadata;
-        const pointAttributes = source.pointAttributes;
         const scale = metadata.scale;
-        const box = options.in.voxelOBB.box3D;
-        const min = box.min;
-        const size = box.max.clone().sub(box.min);
-        const max = box.max;
         const offset = metadata.offset;
+
+        const pointAttributes = source.pointAttributes;
+
         const numPoints = options.in.numPoints;
 
-        const potreeLoader = await loader();
-        const decode = decoder(potreeLoader, metadata);
+        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+            new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrixWorld),
+        );
 
-        const origin = options.in.origin;
-        const quaternion = options.in.rotation;
+        const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
 
-        const data = await decode(Transfer(buffer), {
+        const config = {
             in: {
                 crs: source.crs,
-                projDefs: proj4.defs(source.crs),
+                projDefs: CRS.defs(source.crs),
             },
             out: {
                 crs: options.in.crs,
-                projDefs: proj4.defs(options.in.crs),
-                origin: origin.toArray(),
+                projDefs: CRS.defs(options.in.crs),
+                origin: centerZ0.toArray(),
                 rotation: quaternion.toArray(),
             },
             pointAttributes,
             scale,
-            min,
-            max,
-            size,
             offset,
             numPoints,
-        });
+        };
 
-        const buffers = data.attributeBuffers;
-        const geometry = new THREE.BufferGeometry();
-        Object.keys(buffers).forEach((property) => {
-            const buffer = buffers[property].buffer;
+        const decode = decoder(potreeLoader, metadata);
+        const parsedData = await decode(Transfer(buffer), config);
 
-            if (property === 'position') {
-                geometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-            } else if (property === 'rgba') {
-                geometry.setAttribute('color', new THREE.BufferAttribute(new Uint8Array(buffer), 4, true));
-            } else if (property === 'NORMAL') {
-                geometry.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(buffer), 3));
-            } else if (property === 'INDICES') {
-                const bufferAttribute = new THREE.BufferAttribute(new Uint8Array(buffer), 4);
-                bufferAttribute.normalized = true;
-                geometry.setAttribute('indices', bufferAttribute);
-            } else {
-                const bufferAttribute = new THREE.BufferAttribute(new Float32Array(buffer), 1);
-
-                const batchAttribute = buffers[property].attribute;
-                bufferAttribute.potree = {
-                    offset: buffers[property].offset,
-                    scale: buffers[property].scale,
-                    preciseBuffer: buffers[property].preciseBuffer,
-                    range: batchAttribute.range,
-                };
-
-                geometry.setAttribute(property, bufferAttribute);
-            }
-        });
+        const geometry = buildBufferGeometry(parsedData.attributeBuffers);
 
         geometry.computeBoundingBox();
+        geometry.userData.position = parsedData.userData.position;
+        geometry.userData.quaternion = parsedData.userData.quaternion;
 
         return geometry;
     },

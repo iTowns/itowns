@@ -28,7 +28,7 @@ abstract class LasNodeBase extends PointCloudNode {
     constructor(depth: number,
         x: number, y: number, z: number,
         source: PointCloudSource,
-        numPoints: number = 0,
+        numPoints: number,
         crs: string,
     ) {
         super(depth, numPoints);

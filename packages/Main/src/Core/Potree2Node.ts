@@ -34,7 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import type Potree2Source from 'Source/Potree2Source';
-import type { BufferGeometry } from 'three';
 import PotreeNodeBase from 'Core/PotreeNodeBase';
 
 const NODE_TYPE = {
@@ -48,29 +47,21 @@ type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
 
-    loaded: boolean;
-    loading: boolean;
-
     // Properties initialized after loading hierarchy
     byteOffset!: bigint;
     byteSize!: bigint;
-    hierarchyByteOffset!: bigint;
-    hierarchyByteSize!: bigint;
     nodeType!: NodeType;
 
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
-        childrenBitField = 0,
+        numPoints: number,
+        childrenBitField: number | undefined,
         source: Potree2Source,
         crs: string,
     ) {
         super(depth, index, numPoints, childrenBitField, source, crs);
         this.source = source;
-
-        this.loaded = false;
-        this.loading = false;
     }
 
     override get url(): string {
@@ -78,15 +69,10 @@ class Potree2Node extends PotreeNodeBase {
     }
 
     override get networkOptions(): RequestInit {
-        let byteOffset = this.byteOffset;
-        let byteSize = this.byteSize;
-        if (this.nodeType === NODE_TYPE.PROXY) {
-            byteOffset = this.hierarchyByteOffset;
-            byteSize = this.hierarchyByteSize;
-        }
-        const first = byteOffset;
-        const last = first + byteSize - 1n;
+        const first = this.byteOffset;
+        const last = first + this.byteSize - 1n;
 
+        const regex = /^https:\/\/(raw|media)\.githubusercontent\.com/;
         // When we specify 'multipart/byteranges' on headers request it triggers
         // a preflight request. Currently github doesn't support it https://github.com/orgs/community/discussions/24659
         // But if we omit header parameter, github seems to know it's a
@@ -95,7 +81,7 @@ class Potree2Node extends PotreeNodeBase {
             ...this.source.networkOptions,
             headers: {
                 ...this.source.networkOptions.headers,
-                ...(this.url.startsWith('https://raw.githubusercontent.com') ? {} : { 'content-type': 'multipart/byteranges' }),
+                ...(regex.test(this.url) ? {} : { 'content-type': 'multipart/byteranges' }),
                 Range: `bytes=${first}-${last}`,
             },
         };
@@ -103,26 +89,13 @@ class Potree2Node extends PotreeNodeBase {
         return networkOptions;
     }
 
-    override async load(): Promise<BufferGeometry> {
-        return super.load()
-            .then((data) => {
-                this.loaded = true;
-                this.loading = false;
-                return data;
-            });
-    }
-
     override loadOctree(): Promise<void> {
-        if (this.loaded || this.loading) {
-            return Promise.resolve();
-        }
-        this.loading = true;
-        return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
+        return this.loadHierarchy();
     }
 
     async loadHierarchy(): Promise<void> {
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.fetcher(hierarchyUrl, this.networkOptions);
+        const buffer = await this.fetcher(hierarchyUrl);
         this.parseHierarchy(buffer);
     }
 
@@ -142,28 +115,24 @@ class Potree2Node extends PotreeNodeBase {
             const type = view.getUint8(offset + 0) as NodeType;
             const childMask = view.getUint8(offset + 1);
             const numPoints = view.getUint32(offset + 2, true);
-            const byteOffset = view.getBigInt64(offset + 6, true);
-            const byteSize = view.getBigInt64(offset + 14, true);
+
+            current.byteOffset = view.getBigInt64(offset + 6, true);
+            current.byteSize = view.getBigInt64(offset + 14, true);
 
             if (current.nodeType === NODE_TYPE.PROXY) {
                 // replace proxy with real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
                 current.numPoints = numPoints;
+                current.childrenBitField = childMask;
             } else if (type === NODE_TYPE.PROXY) {
                 // load proxy
-                current.hierarchyByteOffset = byteOffset;
-                current.hierarchyByteSize = byteSize;
-                current.numPoints = numPoints;
             } else {
                 // load real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
                 current.numPoints = numPoints;
+                current.childrenBitField = childMask;
             }
 
             if (current.byteSize === 0n) {
-                // workaround for issue potree/potree#1125
+                // workaround for issue potree/potree/issues/1125
                 // some inner nodes erroneously report >0 points even though
                 // have 0 points however, they still report a byteSize of 0,
                 // so based on that we now set node.numPoints to 0.
@@ -184,7 +153,7 @@ class Potree2Node extends PotreeNodeBase {
                 }
 
                 const child = new Potree2Node(
-                    current.depth + 1, childIndex, numPoints, childMask, this.source, this.crs);
+                    current.depth + 1, childIndex, -1, undefined, this.source, this.crs);
                 current.add(child, childIndex);
                 stack.push(child);
             }

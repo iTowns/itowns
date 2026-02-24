@@ -1,5 +1,4 @@
-import * as THREE from 'three';
-import PotreeNodeBase, { computeChildBBox } from 'Core/PotreeNodeBase';
+import PotreeNodeBase from 'Core/PotreeNodeBase';
 import type PotreeSource from 'Source/PotreeSource';
 
 class PotreeNode extends PotreeNodeBase {
@@ -8,8 +7,8 @@ class PotreeNode extends PotreeNodeBase {
     constructor(
         depth: number,
         index: number,
-        numPoints = 0,
-        childrenBitField = 0,
+        numPoints: number,
+        childrenBitField: number | undefined,
         source: PotreeSource,
         crs: string,
     ) {
@@ -26,17 +25,17 @@ class PotreeNode extends PotreeNodeBase {
     }
 
     override async loadOctree(): Promise<void> {
-        this.offsetBBox = new THREE.Box3()
-            .setFromArray(this.source.boundsConforming);// Only for Potree1
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
-        const blob = await this.fetcher(octreeUrl, this.networkOptions);
+        const blob = await this.fetcher(octreeUrl);
+
         const view = new DataView(blob);
-        const stack = [];
+
         let offset = 0;
 
         this.childrenBitField = view.getUint8(0); offset += 1;
         this.numPoints = view.getUint32(1, true); offset += 4;
 
+        const stack = [];
         stack.push(this);
 
         while (stack.length && offset < blob.byteLength) {
@@ -44,16 +43,17 @@ class PotreeNode extends PotreeNodeBase {
             // look up 8 children
             for (let indexChild = 0; indexChild < 8; indexChild++) {
                 // does snode have a #indexChild child ?
-                if (snode.childrenBitField & (1 << indexChild) && (offset + 5) <= blob.byteLength) {
+                if ((snode.childrenBitField as number) &
+                        (1 << indexChild) && (offset + 5) <= blob.byteLength) {
                     const childrenBitField = view.getUint8(offset); offset += 1;
-                    const numPoints = view.getUint32(offset, true) || this.numPoints; offset += 4;
+                    const numPoints = view.getUint32(offset, true); offset += 4;
                     const child = new PotreeNode(
                         snode.depth + 1, indexChild,
-                        numPoints, childrenBitField, this.source, this.crs);
+                        numPoints, childrenBitField,
+                        this.source, this.crs);
 
                     snode.add(child, indexChild);
                     // For Potree1 Parser
-                    child.offsetBBox = computeChildBBox(child.parent!.offsetBBox!, indexChild);
                     if ((child.depth % this.source.hierarchyStepSize) == 0) {
                         child.baseurl = `${this.baseurl}/${child.hierarchyKey.substring(1)}`;
                     } else {

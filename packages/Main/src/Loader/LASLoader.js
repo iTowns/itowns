@@ -117,7 +117,12 @@ class LASLoader {
             getColor(i);
         }
 
-        return { attributes, box: box.toJSON() };
+        const userData = {
+            boundingBox: box.toJSON(),
+            position: origin.toArray(),
+            quaternion: quaternion.toJSON(),
+        };
+        return { attributes, userData };
     }
 
     /**
@@ -181,11 +186,7 @@ class LASLoader {
         const eb = ebVlr && Las.ExtraBytes.parse(await Las.Vlr.fetch(getter, ebVlr));
 
         const view = Las.View.create(pointData, header, eb);
-
-        return {
-            ...this._parseView(view, options),
-            header,
-        };
+        return this._parseView(view, options);
     }
 }
 

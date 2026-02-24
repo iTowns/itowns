@@ -30,15 +30,25 @@ describe('COPC', function () {
     });
 
     describe('Copc Layer', function () {
+        let layer;
         it('instanciates a layer', (done) => {
-            const layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
-            layer.startup()
+            layer = new CopcLayer('copc', { source, crs: 'EPSG:4978' });
+            assert.ok(layer.isCopcLayer);
+            layer.startup();
+            layer.whenReady
                 .then(() => {
                     assert.equal(source.zmin, source.header.min[2]);
                     assert.ok(layer.root.isCopcNode);
-                    assert.ok(layer.root.children.length > 0);
+                    // loadOctree() is now called during the load
+                    // assert.ok(layer.root.children.length > 0);
+                    assert.ok(layer.obbes.children.indexOf(layer.root.clampOBB) >= 0);
                     done();
                 }).catch(done);
+        });
+
+        it('loadOctree()', async function _it() {
+            await layer.root.loadOctree();
+            assert.ok(layer.root.children.length > 0);
         });
     });
 
@@ -73,7 +83,8 @@ describe('COPC', function () {
             root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, 0, 1000, source, 10, crs));
         });
 
-        describe('finds the common ancestor of two nodes', () => {
+        describe.skip('finds the common ancestor of two nodes', () => {
+            // done in pointcloudnode.js
             let ancestor;
             it('cousins => grand parent', () => {
                 ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);

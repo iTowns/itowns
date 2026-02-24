@@ -38,7 +38,7 @@ class EntwinePointTileNode extends LasNodeBase {
         depth: number,
         x: number, y: number, z: number,
         source: EntwinePointTileSource,
-        numPoints: number = 0,
+        numPoints: number,
         crs: string,
     ) {
         super(depth, x, y, z, source, numPoints, crs);
@@ -57,7 +57,8 @@ class EntwinePointTileNode extends LasNodeBase {
     override async loadOctree(): Promise<void> {
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         const hierarchy =
-        await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
+            await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
+
         this.numPoints = hierarchy[this.voxelKey];
 
         const stack = [];

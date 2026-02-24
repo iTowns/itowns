@@ -111,15 +111,15 @@ function dealign24b(mortoncode) {
     return x;
 }
 
-export default async function load(buffer, options) {
-    const { pointAttributes, scale, size, offset, numPoints } = options;
+export default function load(buffer, options) {
+    const { pointAttributes, scale, offset, numPoints } = options;
 
     let bytes;
     if (numPoints === 0) {
         bytes = { buffer: new ArrayBuffer(0) };
     } else {
         try {
-            bytes = await decompress(new Int8Array(buffer));
+            bytes = decompress(new Int8Array(buffer));
         } catch (e) {
             bytes = { buffer: new ArrayBuffer(numPoints * (pointAttributes.byteSize + 12)) };
             console.error(`problem with node ${name}: `, e);
@@ -139,24 +139,6 @@ export default async function load(buffer, options) {
 
     const attributeBuffers = {};
 
-    const gridSize = 32;
-    const grid = new Uint32Array(gridSize ** 3);
-    const toIndex = (x, y, z) => {
-        // min is already subtracted
-        const dx = gridSize * x / size.x;
-        const dy = gridSize * y / size.y;
-        const dz = gridSize * z / size.z;
-
-        const ix = Math.min(parseInt(dx, 10), gridSize - 1);
-        const iy = Math.min(parseInt(dy, 10), gridSize - 1);
-        const iz = Math.min(parseInt(dz, 10), gridSize - 1);
-
-        const index = ix + iy * gridSize + iz * gridSize * gridSize;
-
-        return index;
-    };
-
-    let numOccupiedCells = 0;
     let byteOffset = 0;
     for (const pointAttribute of pointAttributes.attributes) {
         if (['POSITION_CARTESIAN', 'position'].includes(pointAttribute.name)) {
@@ -206,14 +188,6 @@ export default async function load(buffer, options) {
                     y - origin[1],
                     z - origin[2],
                 ], quaternion);
-
-                // Ask what is it doign exactly ?
-                // const index = toIndex(x, y, z);
-                const index = toIndex(position.x, position.y, position.z);
-                const count = grid[index]++;
-                if (count === 0) {
-                    numOccupiedCells++;
-                }
 
                 positions[3 * j + 0] = position[0];
                 positions[3 * j + 1] = position[1];
@@ -297,8 +271,6 @@ export default async function load(buffer, options) {
         }
     }
 
-    const occupancy = parseInt(numPoints / numOccupiedCells, 10);
-
     { // add indices
         const buff = new ArrayBuffer(numPoints * 4);
         const indices = new Uint32Array(buff);
@@ -355,9 +327,13 @@ export default async function load(buffer, options) {
         }
     }
 
+    const userData = {
+        position: origin,
+        quaternion,
+    };
+
     return {
-        buffer,
         attributeBuffers,
-        density: occupancy,
+        userData,
     };
 }
