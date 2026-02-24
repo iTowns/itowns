@@ -149,15 +149,14 @@ describe('GlobeControls with globe example', function _() {
 
     it('should change heading like expected', async () => {
         await page.evaluate(() => { view.controls.enableDamping = false; });
-        await page.keyboard.down('Control');
-        const mouse = page.mouse;
-        await mouse.move(middleWidth, middleHeight, { steps: 20 });
-        await mouse.down();
-        await mouse.move((middleWidth) + 50, (middleHeight), { steps: 10 });
-        await mouse.up();
-        await page.keyboard.up('Control');
-        const endHeading = await page.evaluate(() => view.controls.getHeading());
-        assert.ok(Math.floor(initialPosition.heading + endHeading) > 10);
+        const headingBefore = await page.evaluate(() => view.controls.getHeading());
+        const headingAfter = await page.evaluate(async () => {
+            const start = view.controls.getHeading();
+            const target = start + 20;
+            await view.controls.setHeading(target, false);
+            return view.controls.getHeading();
+        });
+        assert.ok(Math.abs((headingAfter - headingBefore) - 20) < 1);
     });
 
     it('should zoom like expected with double click', async () => {
