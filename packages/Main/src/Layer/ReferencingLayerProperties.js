@@ -4,18 +4,21 @@ function ReferLayerProperties(material, layer) {
     if (layer && layer.isGeometryLayer) {
         material.layer = layer;
 
+        const getOpacity = (opacity) => {
+            const styleOpacity = material.layer.style?.fill?.opacity ?? 1;
+            const layerOpacity = material.layer.opacity;
+            return styleOpacity * layerOpacity * (opacity ?? 1);
+        };
+
         let opacity;
         if (material.uniforms && material.uniforms.opacity != undefined) {
             opacity = material.uniforms.opacity.value;
             Object.defineProperty(material.uniforms.opacity, 'value', {
-                get: () => material.layer.opacity * opacity,
-                set: (value) => { opacity = value; },
+                get: () => getOpacity(opacity),
             });
         } else if (material.opacity != undefined) {
-            opacity = material.opacity;
             Object.defineProperty(material, 'opacity', {
-                get: () => material.layer.opacity * opacity,
-                set: (value) => { opacity = value; },
+                get: () => getOpacity(opacity),
             });
         }
 
@@ -65,7 +68,7 @@ function ReferLayerProperties(material, layer) {
         let tPrev = transparent;
         Object.defineProperty(material, 'transparent', {
             get: () => {
-                const t = material.layer.opacity < 1.0 || transparent;
+                const t = getOpacity() < 1.0 || transparent;
                 if (t !== tPrev) {
                     material.needsUpdate = true;
                     tPrev = t;

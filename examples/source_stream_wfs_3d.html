@@ -7,8 +7,7 @@
             "imports": {
                 "itowns": "../dist/itowns.js",
                 "debug": "../dist/debug.js",
-                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
-                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "lil": "https://unpkg.com/lil-gui@0.19.2/dist/lil-gui.esm.min.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
                 "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
@@ -16,6 +15,12 @@
             }
         }
         </script>
+
+        <style type="text/css">
+            .lil-gui {
+                left: 15px;
+            }
+        </style>
 
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/example.css">
@@ -32,7 +37,7 @@
         </div>
         <script type="module">
 
-            import GuiTools from 'GuiTools';
+            import lil from 'lil';
             import setupLoadingScreen from 'LoadingScreen';
             import * as THREE from 'three';
             import * as itowns from 'itowns';
@@ -67,7 +72,7 @@
             itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer);
             });
 
             // Add two elevation layers.
@@ -75,7 +80,7 @@
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer);
             }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
@@ -169,6 +174,9 @@
                 return properties.hauteur;
             }
 
+            var useFixedHeight = true;
+            var useFixedColor = true;
+
             function acceptFeature(properties) {
                 return !!properties.hauteur;
             }
@@ -218,25 +226,33 @@
                 filter: acceptFeature,
                 source: wfsBuildingSource,
                 zoom: { min: 14 },
-
-                style: {
-                    fill: {
-                        color: colorBuildings,
-                        base_altitude: altitudeBuildings,
-                        extrusion_height: extrudeBuildings,
-                    }
-                }
+                style: { fill: { base_altitude: altitudeBuildings } }
             });
             view.addLayer(wfsBuildingLayer);
 
-            var menuGlobe = new GuiTools('menuDiv', view);
+            var debugGui = new lil();
+
+            // Add buttons to toggle extrusion height and color
+            const extrusionToggle = {
+                toggleHeight: function () {
+                    useFixedHeight = !useFixedHeight;
+                    wfsBuildingLayer.style.fill.extrusion_height = useFixedHeight ? 8 : extrudeBuildings
+                    view.notifyChange(wfsBuildingLayer);
+                },
+                toggleColor: function () {
+                    useFixedColor = !useFixedColor;
+                    wfsBuildingLayer.style.fill.color = useFixedColor ? color.set(0x00cc00) : colorBuildings
+                    view.notifyChange(wfsBuildingLayer);
+                }
+            };
+
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
             });
 
-            debug.createTileDebugUI(menuGlobe.gui, view);
+            debug.createTileDebugUI(debugGui, view);
 
             function picking(event) {
                 if(view.controls.isPaused) {
@@ -269,24 +285,38 @@
             for (var layer of view.getLayers()) {
                 if (layer.id === 'WFS Bus lines') {
                     layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(debugGui, view, layer);
                         debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
+                        gui.close();
                     });
                 }
                 if (layer.id === 'WFS Building') {
                     layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(debugGui, view, layer);
                         debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
+
+                        // Buttons to demonstrate dynamic style updates
+                        gui.add(extrusionToggle, 'toggleHeight').name('Toggle Extrusion (Property/8)');
+                        gui.add(extrusionToggle, 'toggleColor').name('Toggle Color');
+                        extrusionToggle.toggleHeight();
+                        extrusionToggle.toggleColor();
+
                         window.addEventListener('mousemove', picking, false);
+                        gui.close();
                     });
                 }
                 if (layer.id === 'WFS Route points') {
                     layer.whenReady.then( function _(layer) {
-                        var gui = debug.GeometryDebug.createGeometryDebugUI(menuGlobe.gui, view, layer);
+                        var gui = debug.GeometryDebug.createGeometryDebugUI(debugGui, view, layer);
                         debug.GeometryDebug.addMaterialSize(gui, view, layer, 1, 200);
+                        gui.close();
                     });
                 }
             }
+
+            // Close all GUI folders on start
+            debugGui.foldersRecursive().forEach(folder => folder.close());
+
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
