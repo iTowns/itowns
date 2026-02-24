@@ -104,7 +104,7 @@ class c3DEngine {
             this.renderer.domElement.style.top = 0;
         } catch (ex) {
             if (!WEBGL.isWebGL2Available()) {
-                viewerDiv.appendChild(WEBGL.getErrorMessage(2));
+                viewerDiv.appendChild(WEBGL.getWebGL2ErrorMessage());
             }
             throw ex;
         }

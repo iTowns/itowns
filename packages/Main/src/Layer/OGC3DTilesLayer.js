@@ -4,11 +4,14 @@ import {
     GLTFStructuralMetadataExtension,
     GLTFMeshFeaturesExtension,
     GLTFCesiumRTCExtension,
+// eslint-disable-next-line import/no-unresolved
+} from '3d-tiles-renderer/three/plugins';
+import {
     CesiumIonAuthPlugin,
     GoogleCloudAuthPlugin,
     ImplicitTilingPlugin,
 // eslint-disable-next-line import/no-unresolved
-} from '3d-tiles-renderer/plugins';
+} from '3d-tiles-renderer/core/plugins';
 
 import GeometryLayer from 'Layer/GeometryLayer';
 import iGLTFLoader from 'Parser/iGLTFLoader';
@@ -46,7 +49,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * @property {Object} tileset - the tileset json parsed in an Object
      * @property {String} url - tileset url
      */
-    LOAD_TILE_SET: 'load-tile-set',
+    LOAD_TILE_SET: 'load-tileset',
     /**
      * Fired when a tile model is loaded
      * @event OGC3DTilesLayer#load-model
@@ -511,7 +514,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.setResolutionFromRenderer(view.camera3D, view.renderer);
         // Setup whenReady to be fullfiled when the root tileset has been loaded
         let rootTilesetLoaded = false;
-        this.tilesRenderer.addEventListener('load-tile-set', () => {
+        this.tilesRenderer.addEventListener('load-tileset', () => {
             view.notifyChange(this);
             if (!rootTilesetLoaded) {
                 rootTilesetLoaded = true;

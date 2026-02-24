@@ -16,9 +16,58 @@ describe('view_3d_map', function _() {
     });
 
     it('should return the correct tile', async () => {
-        const level = await page.evaluate(() => view.pickObjectsAt(
+        const candidates = [
             { x: 221, y: 119 },
-        )[0].object.level);
+            { x: 210, y: 110 },
+            { x: 230, y: 110 },
+            { x: 210, y: 130 },
+            { x: 230, y: 130 },
+            { x: 200, y: 120 },
+            { x: 240, y: 120 },
+        ];
+        const pickResult = await page.evaluate((cands) => {
+            const getFirst = picks => (picks.length ? picks[0] : undefined);
+            let chosen = null;
+            let picks = [];
+            const candidateStats = [];
+            cands.some((c) => {
+                picks = view.pickObjectsAt(c, 5);
+                const first = getFirst(picks);
+                candidateStats.push({
+                    candidate: c,
+                    picksLength: picks.length,
+                    firstLevel: first && first.object ? first.object.level : null,
+                    firstLayer: first && first.layer ? first.layer.id : null,
+                });
+                if (picks.length > 0) {
+                    chosen = c;
+                    return true;
+                }
+                return false;
+            });
+            const displayed = (view.tileLayer && view.tileLayer.info && view.tileLayer.info.displayed && view.tileLayer.info.displayed.tiles)
+                ? [...view.tileLayer.info.displayed.tiles].length : null;
+            const transform = itowns.CameraUtils.getTransformCameraLookingAtTarget(view, view.camera3D);
+            const first = getFirst(picks);
+            return {
+                chosen,
+                picksLength: picks.length,
+                level: first && first.object ? first.object.level : null,
+                firstPickShape: first ? {
+                    hasObject: !!first.object,
+                    objectLevel: first && first.object ? first.object.level : null,
+                    objectType: first && first.object ? first.object.type : null,
+                    layerId: first && first.layer ? first.layer.id : null,
+                } : null,
+                renderingState: view.mainLoop ? view.mainLoop.renderingState : null,
+                commandsWaiting: view.mainLoop && view.mainLoop.scheduler ? view.mainLoop.scheduler.commandsWaitingExecutionCount() : null,
+                displayedTilesCount: displayed,
+                candidateStats,
+                windowSize: { width: window.innerWidth, height: window.innerHeight, dpr: window.devicePixelRatio },
+                camera: { heading: transform.heading, tilt: transform.tilt, range: transform.range },
+            };
+        }, candidates);
+        const level = pickResult.level;
 
         assert.equal(2, level);
     });

@@ -21,8 +21,10 @@ import type {
     TypedArrayWithDimensions,
     Pool,
     GeoTIFFImage,
+    ReadRGBOptions,
 } from 'geotiff';
 
+type Reader = (options: ReadRGBOptions & { interleave: true }) => Promise<TypedArrayWithDimensions>;
 
 export type TextureWithExtent = DataTexture & { extent: Extent }
 
@@ -192,7 +194,7 @@ class GeotiffNode {
         this.samplesPerPixel = image.getSamplesPerPixel();
     }
 
-    private get reader() {
+    private get reader(): Reader {
         return this.samplesPerPixel === 3
             ? this.image.readRGB.bind(this.image)
             : this.image.readRasters.bind(this.image);

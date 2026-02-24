@@ -28,9 +28,10 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
+    "3d-tiles-renderer": "^0.4.20",
     "@itowns/geographic": "^2.46.0",
     "@tweenjs/tween.js": "^25.0.0",
-    "chart.js": "^4.4.8",
+    "chart.js": "^4.5.1",
     "dat.gui": "^0.7.9",
     "itowns": "^2.46.0"
   }

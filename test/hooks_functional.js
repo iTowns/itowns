@@ -127,6 +127,37 @@ const loadExample = async (url, screenshotName) => {
 
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
+    await page.setRequestInterception(true);
+    const localModuleMap = new Map([
+        ['https://unpkg.com/three@0.182.0/examples/jsm/effects/ParallaxBarrierEffect.js', './node_modules/three/examples/jsm/effects/ParallaxBarrierEffect.js'],
+        ['https://unpkg.com/three@0.182.0/examples/jsm/effects/StereoEffect.js', './node_modules/three/examples/jsm/effects/StereoEffect.js'],
+        ['https://unpkg.com/three@0.182.0/examples/jsm/effects/AnaglyphEffect.js', './node_modules/three/examples/jsm/effects/AnaglyphEffect.js'],
+        ['https://unpkg.com/three@0.182.0/examples/jsm/loaders/ColladaLoader.js', './node_modules/three/examples/jsm/loaders/ColladaLoader.js'],
+    ]);
+    page.on('request', (request) => {
+        const requestUrl = request.url();
+        const localPath = localModuleMap.get(requestUrl);
+        if (localPath) {
+            fs.readFile(localPath, (err, data) => {
+                if (err) {
+                    request.continue().catch(() => {});
+                    return;
+                }
+                request.respond({
+                    status: 200,
+                    contentType: 'text/javascript',
+                    headers: {
+                        'access-control-allow-origin': '*',
+                        'access-control-allow-methods': 'GET, OPTIONS',
+                        'cross-origin-resource-policy': 'cross-origin',
+                    },
+                    body: data.toString('utf-8'),
+                }).catch(() => {});
+            });
+            return;
+        }
+        request.continue().catch(() => {});
+    });
 
     try {
         await page.goto(url);
@@ -282,14 +313,9 @@ export const mochaHooks = {
             args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
         }
 
-        if (!process.env.DEBUG) {
-            // use GPU acceleration to make tests faster in headless mode
-            args.push('--use-angle=default');
-
-            // disable GL when actual rendering is not needed,
-            // to make tests even faster
-            args.push('--disable-gl-drawing-for-tests');
-        }
+        args.push('--disable-gpu');
+        args.push('--enable-features=AllowSwiftShaderFallback,AllowSoftwareGLFallbackDueToCrashes');
+        args.push('--enable-unsafe-swiftshader');
 
         // https://developer.chrome.com/articles/new-headless/
         const headless = !process.env.DEBUG && 'new';
