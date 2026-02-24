@@ -8,9 +8,7 @@
                 "itowns": "../dist/itowns.js",
                 "debug": "../dist/debug.js",
                 "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
-                "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
-                "itowns_widgets": "../dist/itowns_widgets.js",
                 "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                 "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
             }
@@ -60,18 +58,11 @@
         <script type="module">
             import * as THREE from 'three';
             import dat from 'dat';
-            import GuiTools from 'GuiTools';
             import setupLoadingScreen from 'LoadingScreen';
             import * as itowns from 'itowns';
             import * as debug from 'debug';
-            import * as itowns_widgets from 'itowns_widgets';
 
-            import {
-                AmbientLight,
-                PMREMGenerator,
-            } from 'three';
             import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-            import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
             import {
                 zoomToLayer,
                 fillHTMLWithPickingInfo,
@@ -102,6 +93,7 @@
 
             // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
+                realisticLighting: true,
                 controls: {
                     minDistance: 100,
                 }
@@ -114,17 +106,6 @@
             itowns.enableDracoLoader('./libs/draco/');
             itowns.enableKtx2Loader('./lib/basis/', view.renderer);
             itowns.enableMeshoptDecoder(MeshoptDecoder);
-
-            // Add ambient light to globally illuminates all objects
-            const light = new AmbientLight(0x404040, 40);
-            view.scene.add(light);
-
-            // Set the environment map for all physical materials in the scene.
-            // Otherwise, mesh with only diffuse colors will appear black.
-            const environment = new RoomEnvironment();
-            const pmremGenerator = new PMREMGenerator(view.renderer);
-            view.scene.environment = pmremGenerator.fromScene(environment).texture;
-            pmremGenerator.dispose();
 
             // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
@@ -212,6 +193,27 @@
                     .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
             }
 
+            // ---------- DATE/TIME CONTROLS ----------
+
+            // Add date/time controls to adjust sun position
+            const dateFolder = gui.addFolder('Date/Time');
+            const date = view.date;
+            dateFolder.add(
+                { month: Math.min(12, Math.max(1, 1 + date.getMonth())) }, 'month', 1, 12, 1
+            ).onChange((v) => {
+                date.setMonth(Math.min(12, Math.max(1, v)) - 1);
+                view.notifyChange();
+            }).name('month (1-12)');
+            dateFolder.add(
+                { hour: Math.min(21, Math.max(6, date.getHours())) }, 'hour', 6, 21, 0.1
+            ).onChange((v) => {
+                const clampedValue = Math.min(21, Math.max(6, v));
+                const hours = Math.floor(clampedValue);
+                const minutes = (clampedValue - hours) * 60;
+                date.setHours(hours, minutes);
+                view.notifyChange();
+            }).name('hour (6-21)');
+
             function loadLyon() {
                 setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
             }
@@ -225,10 +227,10 @@
             }
 
 
-            
+
 
             const readUrlButton = document.getElementById('readURLButton');
-            
+
             const loadLyonButton = document.getElementById('loadLyonButton');
             const loadSeteButton = document.getElementById('loadSeteButton');
             const loadLilleButton = document.getElementById('loadLilleButton');
@@ -245,7 +247,7 @@
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
-            
+
             function loadPassedModel() {
                 const passedUrl = uri.searchParams.get('3dtiles');
                 if (passedUrl) {

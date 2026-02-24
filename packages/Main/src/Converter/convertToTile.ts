@@ -1,28 +1,13 @@
 import * as THREE from 'three';
-import TileMesh from 'Core/TileMesh';
+import TileMesh, { TileLayerLike } from 'Core/TileMesh';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import { newTileGeometry, TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
+import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
 import type { Extent } from '@itowns/geographic';
-import type { LayeredMaterialParameters } from 'Renderer/LayeredMaterial';
 
 const dimensions = new THREE.Vector2();
-
-// A simplified interface for TiledGeometryLayer.
-// It is used to avoid a dependency on the full TiledGeometryLayer type.
-interface TileLayerLike {
-    diffuse: THREE.Color;
-    showOutline: boolean;
-    isGlobeLayer: boolean;
-    segments: number;
-    disableSkirt: boolean;
-    hideSkirt: boolean;
-    tileMatrixSets: string[];
-    materialOptions: LayeredMaterialParameters;
-    builder: TileBuilder<TileBuilderParams>;
-}
 
 function setTileFromTiledLayer(tile: TileMesh, tileLayer: TileLayerLike) {
     if (tileLayer.diffuse) {

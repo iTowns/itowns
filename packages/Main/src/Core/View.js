@@ -1016,12 +1016,12 @@ class View extends THREE.EventDispatcher {
      * Returns the world position on the terrain (view's crs: referenceCrs) under view coordinates.
      * This position is computed with depth buffer.
      *
-     * @param      {THREE.Vector2}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
+     * @param      {THREE.Vector2 | null}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
      * @param      {THREE.Vector3}  [target=THREE.Vector3()] target. the result will be copied into this Vector3. If not present a new one will be created.
      * @return     {THREE.Vector3}  the world position on the terrain in view's crs: referenceCrs.
      */
 
-    getPickingPositionFromDepth(mouse, target = new THREE.Vector3()) {
+    getPickingPositionFromDepth(mouse = null, target = new THREE.Vector3()) {
         if (!this.tileLayer || this.tileLayer.level0Nodes.length == 0 || (!this.tileLayer.level0Nodes[0])) {
             target = undefined;
             return;

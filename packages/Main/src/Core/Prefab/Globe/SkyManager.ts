@@ -4,9 +4,7 @@ import {
     SkyLightProbe,
     SkyMaterial,
     getMoonDirectionECEF,
-    getSunDirectionECEF,
     PrecomputedTexturesGenerator,
-    SunDirectionalLight,
 } from '@takram/three-atmosphere';
 import {
     EffectPass,
@@ -17,22 +15,19 @@ import {
     EffectMaterial,
     EffectComposer,
 } from 'postprocessing';
-import View from 'Core/View';
+import GlobeView from 'Core/Prefab/GlobeView';
 
 class SkyManager {
-    sky: THREE.Mesh;
-    skyLight: SkyLightProbe;
-    sunLight: SunDirectionalLight;
-    aerialPerspective: AerialPerspectiveEffect;
-    effectPass: EffectPass;
-    scene: THREE.Scene;
-    composer: EffectComposer;
-    fog: THREE.Fog;
-    view: View;
+    private readonly sky: THREE.Mesh;
+    private readonly skyLight: SkyLightProbe;
+    private readonly aerialPerspective: AerialPerspectiveEffect;
+    private readonly effectPass: EffectPass;
+    private readonly scene: THREE.Scene;
+    private readonly composer: EffectComposer;
+    private readonly fog: THREE.Fog;
+    private readonly view: GlobeView;
 
-    public date: Date;
-
-    constructor(view: View) {
+    constructor(view: GlobeView) {
         this.view = view;
         const scene = view.scene;
         this.scene = scene;
@@ -48,18 +43,8 @@ class SkyManager {
 
         // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
-        this.skyLight.intensity = 1;
+        this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
-
-        this.date = new Date(); // now
-
-        // SunDirectionalLight computes sunlight transmittance
-        // to its target position.
-        // Only creating a sky light probe *and* a sunlight
-        // (without adding them to the scene) is enough to render a sky.
-        this.sunLight = new SunDirectionalLight({ distance: 300 });
-        this.sunLight.intensity = 0.2;
-        this.sunLight.target.position.copy(camera.position);
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
@@ -73,6 +58,8 @@ class SkyManager {
             this.aerialPerspective,
             new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
+        this.effectPass.enabled = false;
+        composer.addPass(this.effectPass);
         composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
 
         // Generate precomputed textures.
@@ -81,7 +68,6 @@ class SkyManager {
 
         const textures = generator.textures;
         Object.assign(skyMaterial, textures);
-        this.sunLight.transmittanceTexture = textures.transmittanceTexture;
         this.skyLight.irradianceTexture = textures.irradianceTexture;
         Object.assign(this.aerialPerspective, textures);
 
@@ -89,14 +75,10 @@ class SkyManager {
 
         this.enable();
 
-        // actually only useful if Sun or Moon direction has changed
-        // which is currently always the case because based on current time,
-        // or if camera has moved.
         scene.onBeforeRender = () => {
             // disable fog only during render
             // to let its parameters be modified elsewhere
             if (this.enabled) { this.scene.fog = null; }
-            this.update(camera);
         };
         scene.onAfterRender = () => {
             if (this.enabled) { this.scene.fog = this.fog; }
@@ -105,16 +87,12 @@ class SkyManager {
         this.composer.render();
     }
 
-    update(camera: THREE.Camera) {
+    update(date: Date, sunDirection: THREE.Vector3) {
+        const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         if (!this.enabled) { return; }
 
-        const sunDirection = new THREE.Vector3();
         const moonDirection = new THREE.Vector3();
-
-        getSunDirectionECEF(this.date, sunDirection);
-        getMoonDirectionECEF(this.date, moonDirection);
-        // This creates a white disk at the Sun's position
-        sunDirection.multiplyScalar(1.00002);
+        getMoonDirectionECEF(date, moonDirection);
 
         this.sky.updateMatrixWorld();
 
@@ -126,23 +104,16 @@ class SkyManager {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        const cam = camera as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * cam.near, 0);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * camera.near, 0);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
         (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
 
-        this.sunLight.sunDirection.copy(sunDirection);
-        this.sunLight.update();
-
         this.skyLight.sunDirection.copy(sunDirection);
         this.skyLight.position.copy(camera.position); // position must not be the origin
         this.skyLight.update();
 
-        // necessary for Three to compute the light direction
-        this.sunLight.updateMatrixWorld();
-        this.sunLight.target.updateMatrixWorld();
         this.skyLight.updateMatrixWorld();
     }
 
@@ -162,17 +133,16 @@ class SkyManager {
     }
 
     enable() {
-        this.scene.add(
-            this.sky,
-            this.sunLight,
-            this.sunLight.target, // to update matrixWorld at each frame
-            this.skyLight);
-        this.composer.addPass(this.effectPass, 1);
+        // Realistic rendering requires a dimmer sunlight
+        this.view.sunLight.intensity *= 0.1;
+        this.scene.add(this.sky, this.skyLight);
+        this.effectPass.enabled = true;
     }
 
     disable() {
-        this.scene.remove(this.sky, this.sunLight, this.sunLight.target, this.skyLight);
-        this.composer.removePass(this.effectPass);
+        this.view.sunLight.intensity *= 10;
+        this.scene.remove(this.sky, this.skyLight);
+        this.effectPass.enabled = false;
     }
 }
 
