@@ -1,5 +1,7 @@
 import * as THREE from 'three';
+import TinyQueue from 'tinyqueue';
 import GeometryLayer from 'Layer/GeometryLayer';
+import OBB from 'Renderer/OBB';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 
@@ -71,6 +73,51 @@ interface Context {
     };
 }
 
+function computeObjectScreenSpace(context: Context, object: OBB) {
+    // Update camera matrices
+    context.camera.camera3D.updateMatrixWorld();
+
+    // Get bounding sphere from the OBB's box3D
+    const box3 = object.box3D;
+    const sphere = new THREE.Sphere();
+    box3.getBoundingSphere(sphere);
+
+    // Transform sphere center to world space using the OBB's matrixWorld
+    const sphereCenterWorld = new THREE.Vector3();
+    sphereCenterWorld.copy(sphere.center);
+    sphereCenterWorld.applyMatrix4(object.matrixWorld);
+
+    // Get camera position in world space
+    const cameraPos = context.camera.camera3D.position;
+
+    // Calculate distance from camera to sphere center
+    const dx = cameraPos.x - sphereCenterWorld.x;
+    const dy = cameraPos.y - sphereCenterWorld.y;
+    const dz = cameraPos.z - sphereCenterWorld.z;
+    const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+
+    // If camera is inside or very close to the sphere, return maximum weight
+    if (distance - sphere.radius < 0) {
+        return Infinity;
+    }
+
+    // Handle perspective camera (similar to Potree)
+    if (context.camera.camera3D instanceof THREE.PerspectiveCamera) {
+        const fov = (context.camera.camera3D.fov * Math.PI) / 180;
+        const slope = Math.tan(fov / 2);
+        const projFactor = (0.5 * context.camera.height) / (slope * distance);
+        const screenPixelRadius = sphere.radius * projFactor;
+
+        return screenPixelRadius;
+    } else {
+        // Handle orthographic camera
+        // For orthographic, we can use the diagonal of the box projected
+        // to screen
+        const diagonal = box3.max.clone().sub(box3.min).length();
+        return diagonal;
+    }
+}
+
 function computeSSEPerspective(
     context: Context,
     pointSize: number,
@@ -118,21 +165,6 @@ function computeScreenSpaceError(
     }
 
     return computeSSEPerspective(context, pointSize, pointSpacing, distance);
-}
-
-function markForDeletion(elt: PointCloudNode) {
-    if (elt.obj) {
-        elt.obj.visible = false;
-    }
-
-    if (!elt.notVisibleSince) {
-        elt.notVisibleSince = Date.now();
-        // Set .sse to an invalid value
-        elt.sse = -1;
-    }
-    for (const child of elt.children) {
-        markForDeletion(child);
-    }
 }
 
 function changeIntensityRange(layer: PointCloudLayer) {
@@ -227,6 +259,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * Be default it is a new `PointsMaterial`. */
     material: THREE.PointsMaterial;
 
+    private _visibleNodes: Set<PointCloudNode>;
+    private _loadedNodes: Set<PointCloudNode>;
+
     /**
      * Constructs a new instance of point cloud layer.
      * Constructs a new instance of a Point Cloud Layer. This should not be used
@@ -309,6 +344,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.root = undefined;
 
         this.displayedCount = 0;
+
+        this._visibleNodes = new Set<PointCloudNode>();
+        this._loadedNodes = new Set<PointCloudNode>();
     }
 
     setElevationRange() {
@@ -356,14 +394,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      */
     loadData(
         elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number,
-    ): [] | PointCloudNode[] {
-        elt.notVisibleSince = undefined;
-
+    ) {
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
-            if (elt.obj) {
-                elt.obj.visible = true;
-            } else if (!elt.promise) {
+            if (!elt.obj && !elt.promise) {
                 const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of nearest node
                 const priority = computeScreenSpaceError(
@@ -378,14 +412,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     view: context.view,
                     priority,
                     redraw: true,
-                    earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
+                    earlyDropFunction: cmd => cmd.requester.notVisibleSince !== undefined || !this.visible,
                 }).then((pts: THREE.Points) => {
+                    this._loadedNodes.add(elt);
                     elt.obj = pts;
-                    elt.obj.visible = false;
-                    // make sure to add it here, otherwise it might never
-                    // be added nor cleaned
-                    this.group.add(elt.obj);
-                    elt.obj.updateMatrixWorld(true);
                     context.view.notifyChange(this);
                     this.dispatchEvent({ type: 'load-model', scene: pts, tile: elt });
                 }).catch((err: { isCancelledCommandException: boolean }) => {
@@ -398,24 +428,27 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 });
             }
         }
+    }
 
-        if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(
-                context,
-                layer.pointSize,
-                elt.pointSpacing,
-                distanceToCamera,
-            ) / this.sseThreshold;
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
-            }
+    setTileVisibility(node: PointCloudNode, visible: boolean) {
+        const { obj } = node;
+
+        if (!obj) {
+            return;
         }
-        return [];
+
+        if (visible) {
+            this._visibleNodes.add(node);
+            this.group.add(obj);
+            obj.updateMatrixWorld(true);
+            node.notVisibleSince = undefined;
+        } else {
+            this._visibleNodes.delete(node);
+            this.group.remove(obj);
+            node.notVisibleSince = Date.now();
+        }
+        node.visible = visible;
+        this.dispatchEvent({ type: 'tile-visibility-change', tile: node, visible });
     }
 
     /**
@@ -428,83 +461,81 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      *
      * @returns The child nodes to update or [] if there is none.
      */
-    update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
-        elt.visible = false;
-
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox as THREE.Box3;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-        }
-
-        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
-
-        if (!elt.visible) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        // TODO: See if we can limit the calcul of the matrixWorlInverse.
-        point.copy(context.camera.camera3D.position)
-            .applyMatrix4(object3d.matrixWorld.clone().invert());
-
-        const distanceToCamera = bbox.distanceToPoint(point);
-
-        return this.loadData(elt, context, layer, distanceToCamera);
-    }
-
-    postUpdate() {
-        this.displayedCount = 0;
-        for (const pts of this.group.children as THREE.Points[]) {
-            if (pts.visible) {
-                const count = pts.geometry.attributes.position.count;
-                pts.geometry.setDrawRange(0, count);
-                this.displayedCount += count;
+    update(context: Context, layer: this, root: PointCloudNode) {
+        const rootWithWeight = { node: root, weight: Infinity };
+        const stack = new TinyQueue([rootWithWeight], (a, b) => {
+            if (b.weight < a.weight) {
+                return -1;
             }
-        }
+            if (b.weight > a.weight) {
+                return 1;
+            }
+            return 0;
+        });
+        let numVisiblePoints = 0;
+        while (stack.length > 0) {
+            const { node } = stack.pop() as { node: PointCloudNode };
 
-        if (this.displayedCount > this.pointBudget) {
-            // This format doesn't require points to be evenly distributed,
-            // so we're going to sort the nodes by "importance"
-            // (= on screen size) and display only the first N nodes
-            this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+            const bbox = node.voxelOBB.box3D;
+            const object3d = node.voxelOBB;
 
-            let limitHit = false;
-            this.displayedCount = 0;
-            for (const pts of this.group.children as THREE.Points[]) {
-                const count = pts.geometry.attributes.position.count;
-                if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                    pts.visible = false;
-                    limitHit = true;
-                } else {
-                    this.displayedCount += count;
+            let visible = this.octreeDepthLimit < 0 || this.octreeDepthLimit >= node.depth;
+            visible = visible && context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            visible = visible && numVisiblePoints + node.numPoints <= this.pointBudget;
+
+            this.setTileVisibility(node, visible);
+
+            if (!visible) {
+                continue;
+            }
+
+            numVisiblePoints += node.numPoints;
+
+            point.copy(context.camera.camera3D.position).applyMatrix4(object3d.matrixWorldInverse);
+            const distanceToCamera = bbox.distanceToPoint(point);
+
+            this.loadData(node, context, layer, distanceToCamera);
+
+            node.sse = computeScreenSpaceError(
+                context,
+                layer.pointSize,
+                node.pointSpacing,
+                distanceToCamera,
+            );
+            for (const child of node.children) {
+                if (node.sse >= this.sseThreshold) {
+                    const childWeight = computeObjectScreenSpace(context, child.voxelOBB);
+                    stack.push({ node: child, weight: childWeight });
+                } else if (child.visible !== false) {
+                    this.setTileVisibility(child, false);
                 }
             }
         }
+    }
 
+    postUpdate() {
         const now = Date.now();
-        for (let i = this.group.children.length - 1; i >= 0; i--) {
-            const obj = this.group.children[i] as THREE.Points;
-            if (!obj.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
-                // remove from group
-                this.group.children.splice(i, 1);
+        this.displayedCount = 0;
+        for (const node of this._visibleNodes) {
+            this.displayedCount += node.numPoints;
+        }
 
+        const disposedNodes = new Set<PointCloudNode>();
+        for (const node of this._loadedNodes) {
+            const obj = node.obj as THREE.Points;
+            if (obj && node.notVisibleSince !== undefined && (now - node.notVisibleSince) > 10000) {
+                disposedNodes.add(node);
                 // no need to dispose obj.material, as it is shared by all
                 // objects of this layer
                 obj.geometry.dispose();
-                obj.userData.node.obj = null;
-                this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
+                node.obj = undefined;
+                node.notVisibleSince = undefined;
+                this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: node });
             }
+        }
+
+        for (const node of disposedNodes) {
+            this._loadedNodes.delete(node);
         }
     }
 

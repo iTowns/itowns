@@ -67,7 +67,8 @@
     "pbf": "^4.0.1",
     "postprocessing": "^6.37.3",
     "shpjs": "^6.1.0",
-    "threads": "^1.7.0"
+    "threads": "^1.7.0",
+    "tinyqueue": "^3.0.0"
   },
   "peerDependencies": {
     "proj4": "^2.19.10",
