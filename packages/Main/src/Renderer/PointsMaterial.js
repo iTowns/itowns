@@ -25,6 +25,7 @@ export const PNTS_SHAPE = {
 export const PNTS_SIZE_MODE = {
     VALUE: 0,
     ATTENUATED: 1,
+    ADAPTIVE: 2,
 };
 
 const white = new THREE.Color(1.0,  1.0,  1.0);
@@ -245,6 +246,12 @@ class PointsMaterial extends THREE.ShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'gamma', gamma);
         CommonMaterial.setUniformProperty(this, 'ambientBoost', ambientBoost);
 
+        // Adaptive point size uniforms
+        CommonMaterial.setUniformProperty(this, 'octreeSpacing', 1.0);
+        CommonMaterial.setUniformProperty(this, 'octreeSize', 1.0);
+        CommonMaterial.setUniformProperty(this, 'nodeDepth', 0.0);
+        CommonMaterial.setUniformProperty(this, 'nodeStartOffset', 0.0);
+
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
         const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
@@ -262,10 +269,22 @@ class PointsMaterial extends THREE.ShaderMaterial {
         // add texture to apply visibility.
         const dataVisi = new Uint8Array(256 * 1);
         const textureVisi = new THREE.DataTexture(dataVisi, 256, 1, THREE.RedFormat);
-
         textureVisi.needsUpdate = true;
         textureVisi.magFilter = THREE.NearestFilter;
         CommonMaterial.setUniformProperty(this, 'visibilityTexture', textureVisi);
+
+        const dataNodes = new Uint8Array(2048 * 4);
+        for (let i = 0; i < 2048; i++) {
+            const j = 4 * i;
+            dataNodes[j + 0] = 0;
+            dataNodes[j + 1] = 0;
+            dataNodes[j + 2] = 0;
+            dataNodes[j + 3] = 100;
+        }
+        const visibleNodesTexture = new THREE.DataTexture(dataNodes, 2048, 1, THREE.RGBAFormat);
+        visibleNodesTexture.needsUpdate = true;
+        visibleNodesTexture.magFilter = THREE.NearestFilter;
+        CommonMaterial.setUniformProperty(this, 'visibleNodes', visibleNodesTexture);
 
         // Classification and other discrete values scheme
         this.classificationScheme = classificationScheme;
@@ -393,6 +412,48 @@ class PointsMaterial extends THREE.ShaderMaterial {
     /** @param {number} ambientBoost */
     set ambientBoost(ambientBoost) {
         this.uniforms.ambientBoost.value = ambientBoost;
+    }
+
+    // Adaptive point size properties
+
+    /** @returns {number} */
+    get octreeSpacing() {
+        return this.uniforms.octreeSpacing.value;
+    }
+
+    /** @param {number} octreeSpacing */
+    set octreeSpacing(octreeSpacing) {
+        this.uniforms.octreeSpacing.value = octreeSpacing;
+    }
+
+    /** @returns {number} */
+    get octreeSize() {
+        return this.uniforms.octreeSize.value;
+    }
+
+    /** @param {number} octreeSize */
+    set octreeSize(octreeSize) {
+        this.uniforms.octreeSize.value = octreeSize;
+    }
+
+    /** @returns {number} */
+    get nodeDepth() {
+        return this.uniforms.nodeDepth.value;
+    }
+
+    /** @param {number} depth */
+    set nodeDepth(depth) {
+        this.uniforms.nodeDepth.value = depth;
+    }
+
+    /** @returns {number} */
+    get nodeStartOffset() {
+        return this.uniforms.nodeStartOffset.value;
+    }
+
+    /** @param {number} offset */
+    set nodeStartOffset(offset) {
+        this.uniforms.nodeStartOffset.value = offset;
     }
 
     recomputeClassification() {
