@@ -14,7 +14,6 @@ class EntwinePointTileNode extends LasNodeBase {
 
     source: EntwinePointTileSource;
 
-    crs: string;
     url: string;
 
     hierarchy: Record<string, number>;
@@ -49,7 +48,7 @@ class EntwinePointTileNode extends LasNodeBase {
 
         this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
 
-        this.hierarchy = { '0-0-0-0': -1 };
+        this.hierarchy = {};
     }
 
     override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
@@ -64,43 +63,28 @@ class EntwinePointTileNode extends LasNodeBase {
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         this.hierarchy =
             await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
+        console.log('loadHierarchy', this.hierarchy);
         return this.hierarchy;
     }
 
-    override async createChildren(): Promise<void> {
-        await this.loadHierarchy();
-
+    override readHierarchy() {
         this.numPoints = this.hierarchy[this.voxelKey];
-
-        const depth = this.depth + 1;
-        const x = this.x * 2;
-        const y = this.y * 2;
-        const z = this.z * 2;
-
-        this.findAndCreateChild(depth, x,     y,     z);
-        this.findAndCreateChild(depth, x + 1, y,     z);
-        this.findAndCreateChild(depth, x,     y + 1, z);
-        this.findAndCreateChild(depth, x + 1, y + 1, z);
-        this.findAndCreateChild(depth, x,     y,     z + 1);
-        this.findAndCreateChild(depth, x + 1, y,     z + 1);
-        this.findAndCreateChild(depth, x,     y + 1, z + 1);
-        this.findAndCreateChild(depth, x + 1, y + 1, z + 1);
-        this.childrenCreated = true;
     }
 
     override findAndCreateChild(
         depth: number,
         x: number, y: number, z: number,
-        // hierarchy: Record<string, number>,
     ): void {
-        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const childVoxelKey = buildVoxelKey(depth, x, y, z);
 
-        const numPoints = this.hierarchy[voxelKey];
+        const numPoints = this.hierarchy[childVoxelKey];
 
         if (numPoints) {
             const child = new EntwinePointTileNode(
                 depth, x, y, z,
-                this.source, numPoints, this.crs);
+                this.source,
+                numPoints,
+                this.crs);
             child.hierarchy = this.hierarchy;
             this.add(child as this, 0);
         }
