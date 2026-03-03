@@ -50,14 +50,9 @@ class CopcNode extends LasNodeBase {
         this.url = this.source.url;
 
         this.hierarchy = {
-            nodes: { '0-0-0-0': undefined },
-            pages: { '0-0-0-0': {
-                pageOffset: entryOffset,
-                pageLength: entryLength,
-            } },
+            nodes: {},
+            pages: {},
         };
-
-        this.childrenCreated = false;
 
         this.entryOffset = entryOffset;
         this.entryLength = entryLength;
@@ -77,17 +72,10 @@ class CopcNode extends LasNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        console.log('loadHierarchy', this.id);
         const buffer = await this.fetcher(this.source.url, this.networkOptions);
         this.hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
-        console.log('loadHierarchy', this.hierarchy);
-        return this.hierarchy;
-    }
 
-    override async createChildren(): Promise<void> {
-        await this.loadHierarchy();
-
-        // Update current node entry from loaded subtree
+        // Update current node entry from newly loaded subtree
         const node = this.hierarchy.nodes[this.voxelKey];
         if (!node) {
             return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
@@ -96,20 +84,7 @@ class CopcNode extends LasNodeBase {
         this.entryOffset = node.pointDataOffset;
         this.entryLength = node.pointDataLength;
 
-        const depth = this.depth + 1;
-        const x = this.x * 2;
-        const y = this.y * 2;
-        const z = this.z * 2;
-
-        this.findAndCreateChild(depth, x,     y,     z);
-        this.findAndCreateChild(depth, x + 1, y,     z);
-        this.findAndCreateChild(depth, x,     y + 1, z);
-        this.findAndCreateChild(depth, x + 1, y + 1, z);
-        this.findAndCreateChild(depth, x,     y,     z + 1);
-        this.findAndCreateChild(depth, x + 1, y,     z + 1);
-        this.findAndCreateChild(depth, x,     y + 1, z + 1);
-        this.findAndCreateChild(depth, x + 1, y + 1, z + 1);
-        this.childrenCreated = true;
+        return this.hierarchy;
     }
 
     /**
@@ -123,22 +98,21 @@ class CopcNode extends LasNodeBase {
      * @param stack - Stack of node candidates for traversal
      */
     override findAndCreateChild(
-        depth: number,
-        x: number, y: number, z: number,
+        depth: number, x: number, y: number, z: number,
     ): void {
-        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const childVoxelKey = buildVoxelKey(depth, x, y, z);
 
         let offset: number;
         let byteSize: number;
         let numPoints: number;
 
-        const node = this.hierarchy.nodes[voxelKey];
+        const node = this.hierarchy.nodes[childVoxelKey];
         if (node) {
             offset = node.pointDataOffset;
             byteSize = node.pointDataLength;
             numPoints = node.pointCount;
         } else {
-            const page = this.hierarchy.pages[voxelKey];
+            const page = this.hierarchy.pages[childVoxelKey];
             if (!page) { return; }
             offset = page.pageOffset;
             byteSize = page.pageLength;
@@ -146,8 +120,7 @@ class CopcNode extends LasNodeBase {
         }
 
         const child = new CopcNode(
-            depth,
-            x, y, z,
+            depth, x, y, z,
             offset,
             byteSize,
             this.source,

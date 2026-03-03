@@ -107,18 +107,18 @@ class Potree2Node extends PotreeNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        console.log('loadHierarchy', this.hierarchyKey);
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
         const buffer = await this.fetcher(hierarchyUrl);
         const view = new DataView(buffer);
 
-        // parseHierarchy
+        // update current node from the newly fetched hierarchy buffer
         this.childrenBitField = view.getUint8(1);
         this.numPoints = view.getUint32(2, true);
         // update byteOffset/byteSize from page Info to node Info
         this.byteOffset = view.getBigInt64(6, true);
         this.byteSize = view.getBigInt64(14, true);
 
+        // parse and create Hierarchy
         const stack = [];
         stack.push(this.hierarchyKey);
 

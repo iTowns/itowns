@@ -27,6 +27,8 @@ abstract class LasNodeBase extends PointCloudNode {
 
     crs: string;
 
+    private _childrenCreated: boolean;
+
     constructor(depth: number,
         x: number, y: number, z: number,
         source: PointCloudSource,
@@ -42,10 +44,16 @@ abstract class LasNodeBase extends PointCloudNode {
         this.voxelKey = buildVoxelKey(depth, x, y, z);
 
         this.crs = crs;
+
+        this._childrenCreated = false;
     }
 
     override get networkOptions(): RequestInit {
         return this.source.networkOptions;
+    }
+
+    override get childrenCreated(): boolean {
+        return this._childrenCreated;
     }
 
     override get hierarchyIsLoaded(): boolean {
@@ -61,12 +69,31 @@ abstract class LasNodeBase extends PointCloudNode {
             strX.padStart(pad, '0') + strY.padStart(pad, '0') + strZ.padStart(pad, '0');
     }
 
+    abstract loadHierarchy(): Promise<Record<string, number> | Hierarchy.Subtree>;
+
     abstract findAndCreateChild(
         depth: number,
         x: number, y: number, z: number,
-        hierarchy: Record<string, number> | Hierarchy.Subtree,
-        stack: this[],
     ): void;
+
+    override async createChildren(): Promise<void> {
+        await this.loadHierarchy();
+
+        const depth = this.depth + 1;
+        const x = this.x * 2;
+        const y = this.y * 2;
+        const z = this.z * 2;
+
+        this.findAndCreateChild(depth, x,     y,     z);
+        this.findAndCreateChild(depth, x + 1, y,     z);
+        this.findAndCreateChild(depth, x,     y + 1, z);
+        this.findAndCreateChild(depth, x + 1, y + 1, z);
+        this.findAndCreateChild(depth, x,     y,     z + 1);
+        this.findAndCreateChild(depth, x + 1, y,     z + 1);
+        this.findAndCreateChild(depth, x,     y + 1, z + 1);
+        this.findAndCreateChild(depth, x + 1, y + 1, z + 1);
+        this._childrenCreated = true;
+    }
 
     /**
      * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
