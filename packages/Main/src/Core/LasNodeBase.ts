@@ -6,7 +6,7 @@ const size = new Vector3();
 const position = new Vector3();
 const translation = new Vector3();
 
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
+export function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -59,12 +59,17 @@ abstract class LasNodeBase extends PointCloudNode {
     }
 
     override get id(): string {
-        return `${this.depth}${this.x}${this.y}${this.z}`;
+        const strX = this.x.toString();
+        const strY = this.y.toString();
+        const strZ = this.z.toString();
+        const pad = Math.max(strX.length, strY.length, strZ.length);
+        return this.depth.toString() +
+            strX.padStart(pad, '0') + strY.padStart(pad, '0') + strZ.padStart(pad, '0');
     }
 
     abstract loadHierarchy(): Promise<Record<string, number> | Hierarchy.Subtree>;
 
-    abstract readHierarchy(): void;
+    abstract updateFromHierarchy(): void;
 
     abstract findAndCreateChild(
         depth: number,
@@ -74,7 +79,7 @@ abstract class LasNodeBase extends PointCloudNode {
     override async createChildren(): Promise<void> {
         await this.loadHierarchy();
 
-        this.readHierarchy();
+        this.updateFromHierarchy();
 
         const depth = this.depth + 1;
         const x = this.x * 2;

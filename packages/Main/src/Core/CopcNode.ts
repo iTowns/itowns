@@ -1,10 +1,6 @@
 import { Hierarchy } from 'copc';
-import LasNodeBase from 'Core/LasNodeBase';
+import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
-
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
-    return `${depth}-${x}-${y}-${z}`;
-}
 
 class CopcNode extends LasNodeBase {
     /**  Used to checkout whether this
@@ -83,7 +79,7 @@ class CopcNode extends LasNodeBase {
         return this.hierarchy;
     }
 
-    override readHierarchy() {
+    override updateFromHierarchy() {
         // Update current node entry from loaded subtree
         const node = this.hierarchy.nodes[this.voxelKey];
         if (!node) {

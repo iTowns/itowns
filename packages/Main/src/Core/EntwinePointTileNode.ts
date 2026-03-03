@@ -1,10 +1,6 @@
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import Fetcher from 'Provider/Fetcher';
-import LasNodeBase from 'Core/LasNodeBase';
-
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
-    return `${depth}-${x}-${y}-${z}`;
-}
+import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
 
 class EntwinePointTileNode extends LasNodeBase {
     /** Used to checkout whether this
@@ -67,7 +63,7 @@ class EntwinePointTileNode extends LasNodeBase {
         return this.hierarchy;
     }
 
-    override readHierarchy() {
+    override updateFromHierarchy() {
         this.numPoints = this.hierarchy[this.voxelKey];
     }
 
