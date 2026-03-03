@@ -55,15 +55,15 @@ class PotreeNode extends PotreeNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        console.log('loadHierarchy', this.id);
         const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
         const buffer = await this.fetcher(octreeUrl);
         const view = new DataView(buffer);
 
-        // parseHierarchy
+        // update current node from the newly fetched hierarchy buffer
         this.childrenBitField = view.getUint8(0);
         this.numPoints = view.getUint32(1, true);
 
+        // parse and create Hierarchy
         const stack: NodeInfo[] = [];
         const root = {
             hierarchyKey: 'r',
