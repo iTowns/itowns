@@ -60,7 +60,7 @@ class Tile {
      * @param target - The target to store the projected extent. If this not
      * provided a new extent will be created.
      */
-    toExtent(crs: string, target = new Extent('EPSG:4326')) {
+    toExtent(crs = this.crs, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
         const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
         const countTiles = getCountTiles(this.crs, this.zoom);
@@ -211,10 +211,16 @@ export function tiledCovering(e: Extent, tms: string) {
 }
 
 export class TileMatrixSetLimits {
-    constructor() {
+    constructor(crs) {
         this.limits = {};
 
+        this.crs = crs;
+
         this.size = 0;
+
+        this.extent = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
+
+        this.intersect = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
 
         this.zoom = {
             min: 0,
@@ -224,11 +230,13 @@ export class TileMatrixSetLimits {
     }
 
     static fromCapabilities(json, crs) {
-        const tm = new TileMatrixSetLimits();
+        const tm = new TileMatrixSetLimits(crs);
 
         if (!json) {
             return tm;
         }
+
+        tm.extent.set(Infinity, -Infinity, Infinity, -Infinity);
 
         const arrayLimits = Object.keys(json).map(a => Number(a));
 
@@ -239,11 +247,19 @@ export class TileMatrixSetLimits {
         arrayLimits.forEach((a) => {
             const limit = json[a];
 
-            tm.limits[a] = {
+            const  la = {
                 min: new Tile(crs, a, limit.minTileRow, limit.minTileCol),
 
                 max: new Tile(crs, a, limit.maxTileRow, limit.maxTileCol),
             };
+
+            la.extent = la.min.toExtent().union(la.max.toExtent());
+
+            tm.extent.union(la.extent);
+
+            tm.intersect = tm.intersect.intersect(la.extent);
+
+            tm.limits[a] = la;
         });
 
         return tm;
@@ -260,6 +276,10 @@ export class TileMatrixSetLimits {
         }
 
         return this.size === 0;
+    }
+
+    isInside(extent: Extent) {
+        return this.intersect.strictIntersectsExtent(extent);
     }
 }
 

@@ -173,14 +173,6 @@ class WFSSource extends Source {
             extentOrTile.toExtent(this.crs, _extent);
         return URLBuilder.bbox(extent, this);
     }
-
-    extentInsideLimit(extent) {
-        return this.extent.intersectsExtent(extent);
-    }
-
-    anyVisibleData(e) {
-        return this.extentInsideLimit(e);
-    }
 }
 
 export default WFSSource;
