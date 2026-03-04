@@ -72,15 +72,10 @@ class CopcNode extends LasNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        console.log('loadHierarchy', this.id);
         const buffer = await this.fetcher(this.source.url, this.networkOptions);
         this.hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
-        console.log('loadHierarchy', this.hierarchy);
-        return this.hierarchy;
-    }
 
-    override updateFromHierarchy() {
-        // Update current node entry from loaded subtree
+        // Update current node entry from newly loaded subtree
         const node = this.hierarchy.nodes[this.voxelKey];
         if (!node) {
             return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
@@ -88,6 +83,8 @@ class CopcNode extends LasNodeBase {
         this.numPoints = node.pointCount;
         this.entryOffset = node.pointDataOffset;
         this.entryLength = node.pointDataLength;
+
+        return this.hierarchy;
     }
 
     /**

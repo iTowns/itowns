@@ -69,8 +69,6 @@ abstract class LasNodeBase extends PointCloudNode {
 
     abstract loadHierarchy(): Promise<Record<string, number> | Hierarchy.Subtree>;
 
-    abstract updateFromHierarchy(): void;
-
     abstract findAndCreateChild(
         depth: number,
         x: number, y: number, z: number,
@@ -78,8 +76,6 @@ abstract class LasNodeBase extends PointCloudNode {
 
     override async createChildren(): Promise<void> {
         await this.loadHierarchy();
-
-        this.updateFromHierarchy();
 
         const depth = this.depth + 1;
         const x = this.x * 2;

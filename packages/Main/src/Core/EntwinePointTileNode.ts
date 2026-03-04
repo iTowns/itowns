@@ -55,16 +55,14 @@ class EntwinePointTileNode extends LasNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        console.log('loadHierarchy', this.id);
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
         this.hierarchy =
             await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
-        console.log('loadHierarchy', this.hierarchy);
-        return this.hierarchy;
-    }
 
-    override updateFromHierarchy() {
+        // update current node from the newly fetched hierarchy
         this.numPoints = this.hierarchy[this.voxelKey];
+
+        return this.hierarchy;
     }
 
     override findAndCreateChild(

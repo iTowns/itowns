@@ -6,9 +6,6 @@ import Picking from 'Core/Picking';
 import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
 
 export interface PointCloudSource {
     /** The minimal value for elevation (read from the metadata). */
