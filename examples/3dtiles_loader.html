@@ -11,8 +11,8 @@
                 "GuiTools": "./jsm/GUI/GuiTools.js",
                 "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
                 "itowns_widgets": "../dist/itowns_widgets.js",
-                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
-                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
+                "three": "https://unpkg.com/three@0.180.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.180.0/examples/jsm/"
             }
         }
         </script>
@@ -225,10 +225,10 @@
             }
 
 
-            
+
 
             const readUrlButton = document.getElementById('readURLButton');
-            
+
             const loadLyonButton = document.getElementById('loadLyonButton');
             const loadSeteButton = document.getElementById('loadSeteButton');
             const loadLilleButton = document.getElementById('loadLilleButton');
@@ -245,7 +245,7 @@
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
-            
+
             function loadPassedModel() {
                 const passedUrl = uri.searchParams.get('3dtiles');
                 if (passedUrl) {
