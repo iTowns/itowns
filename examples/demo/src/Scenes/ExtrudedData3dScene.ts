@@ -15,10 +15,11 @@ export const ExtrudedData3dScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     meshes: [],
     ready: false,
     event: function update(/* dt */) {
+        const view = ExtrudedData3dScene.getItownsView();
         if (ExtrudedData3dScene.meshes!.length) {
             for (let i = 0; i < ExtrudedData3dScene.meshes!.length; i++) {
                 const mesh = ExtrudedData3dScene.meshes![i];
@@ -28,10 +29,16 @@ export const ExtrudedData3dScene: SceneType = {
                 }
             }
             ExtrudedData3dScene.meshes = ExtrudedData3dScene.meshes!.filter(m => m.scale.z < 1);
-            ExtrudedData3dScene.view.getView()
-                .notifyChange(ExtrudedData3dScene.view.getView().camera3D, true);
+            view.notifyChange(view.camera3D, true);
         }
     },
+    getView: () => {
+        if (!ExtrudedData3dScene.view) {
+            throw new Error('Extruded Data 3D Scene view is not initialized');
+        }
+        return ExtrudedData3dScene.view;
+    },
+    getItownsView: () => ExtrudedData3dScene.getView().getItownsView(),
     onCreate: async () => {
         if (ExtrudedData3dScene.ready) {
             return;
@@ -46,22 +53,22 @@ export const ExtrudedData3dScene: SceneType = {
             }
         }
 
-        ExtrudedData3dScene.layers.push(await Layers.OrthoLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        ExtrudedData3dScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
         ExtrudedData3dScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
         ExtrudedData3dScene.layers.push(await Layers.ParksLayer.getLayer());
-        ExtrudedData3dScene.layers.push(await Layers.BuildingsLayer3D.getLayer(scaleZ));
+        ExtrudedData3dScene.layers.push(await Layers.Buildings3dLayer.getLayer(scaleZ));
         await ExtrudedData3dScene.view.addLayers(ExtrudedData3dScene.layers);
 
         ExtrudedData3dScene.ready = true;
     },
     onEnter: async () => {
-        ExtrudedData3dScene.view.getView().addFrameRequester(
+        ExtrudedData3dScene.getItownsView().addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
     onExit: async () => {
-        ExtrudedData3dScene.view.getView().removeFrameRequester(
+        ExtrudedData3dScene.getItownsView().removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
 };

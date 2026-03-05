@@ -30,12 +30,12 @@ class View3D extends View {
             placement,
         );
 
-        const view = this.view as itowns.GlobeView & { skyManager: { enabled: boolean } };
+        const view = this.view as itowns.GlobeView &
+        { skyManager: { enable: (on: boolean) => void } };
 
         this.atmosphereFrameRequester = () => {
-            if (view.skyManager && view.skyManager.enabled !== undefined) {
-                view.skyManager.enabled =
-                view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
+            if (view.skyManager && view.skyManager.enable) {
+                view.skyManager.enable(view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD);
             }
         };
         this.view.addFrameRequester(

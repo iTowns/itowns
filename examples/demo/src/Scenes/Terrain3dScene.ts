@@ -14,17 +14,24 @@ export const Terrain3dScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     ready: false,
+    getView: () => {
+        if (!Terrain3dScene.view) {
+            throw new Error('Terrain 3D Scene view is not initialized');
+        }
+        return Terrain3dScene.view;
+    },
+    getItownsView: () => Terrain3dScene.getView().getItownsView(),
     onCreate: async () => {
         if (Terrain3dScene.ready) {
             return;
         }
         Terrain3dScene.view = new View3D();
 
-        Terrain3dScene.layers.push(await Layers.OrthoLayer.getLayer());
-        Terrain3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        Terrain3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        Terrain3dScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
 
         await Terrain3dScene.view.addLayers(Terrain3dScene.layers);
 

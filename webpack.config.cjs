@@ -176,12 +176,6 @@ module.exports = () => {
                 dependOn: 'itowns',
             },
         },
-        output: {
-            ...configESM.output,
-        },
-        resolve: {
-            ...configESM.resolve,
-        },
         plugins: [
             new ESLintPlugin({
                 files: include,
@@ -189,9 +183,6 @@ module.exports = () => {
         ],
         experiments: {
             outputModule: true,
-        },
-        externals: {
-            three: 'three',
         },
     };
 

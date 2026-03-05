@@ -1,20 +1,20 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import type { LayerPromiseType } from '../Types';
+import type { LayerPromiseTypeMeshCallback } from '../Types';
 import { BuildingsSource } from '../Sources';
 
-export const BuildingsLayer3D: LayerPromiseType = {
+export const Buildings3dLayer: LayerPromiseTypeMeshCallback = {
     id: 'VTBuilding3D',
     layerPromise: undefined,
     cachedLayer: undefined,
     getLayer: (meshCallback?: (mesh: THREE.Mesh) => void) => {
-        if (BuildingsLayer3D.cachedLayer) {
-            return Promise.resolve(BuildingsLayer3D.cachedLayer);
+        if (Buildings3dLayer.cachedLayer) {
+            return Promise.resolve(Buildings3dLayer.cachedLayer);
         }
-        if (!BuildingsLayer3D.layerPromise) {
-            BuildingsLayer3D.layerPromise = (async () => {
-                BuildingsLayer3D.cachedLayer = new itowns.FeatureGeometryLayer(
-                    BuildingsLayer3D.id, {
+        if (!Buildings3dLayer.layerPromise) {
+            Buildings3dLayer.layerPromise = (async () => {
+                Buildings3dLayer.cachedLayer = new itowns.FeatureGeometryLayer(
+                    Buildings3dLayer.id, {
                         // @ts-expect-error source property undefined
                         source: await BuildingsSource.getSource(),
                         zoom: { min: 15 },
@@ -27,10 +27,10 @@ export const BuildingsLayer3D: LayerPromiseType = {
                             },
                         },
                     });
-                return BuildingsLayer3D.cachedLayer;
+                return Buildings3dLayer.cachedLayer;
             })();
         }
-        return BuildingsLayer3D.layerPromise;
+        return Buildings3dLayer.layerPromise;
     },
     getPickingInfo(feature) {
         const properties = feature as {

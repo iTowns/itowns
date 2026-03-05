@@ -61,7 +61,9 @@ export const moveCameraTo = (view: itowns.View, placement: SceneType['placement'
  * @returns Promise<void>
  */
 export const transitionToScene = async (currentScene: SceneType, nextScene: SceneType) => {
-    const transitionView = Globe3dScene.view.getView();
+    const globeView = Globe3dScene.getView();
+    const currentView = currentScene.getView();
+    const transitionView = globeView.getItownsView();
 
     updateUIForScene(nextScene);
 
@@ -76,10 +78,12 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 
     await nextScene.onCreate(); // only called once per scene
 
+    const nextView = nextScene.getView();
+
     let cameraPromise: Promise<void>;
 
-    currentScene.view.setVisible(false);
-    Globe3dScene.view.setVisible(true);
+    currentView.setVisible(false);
+    globeView.setVisible(true);
 
     // set transition view camera to current scene location if not already there
     if (!(currentScene.view instanceof View3D)) {
@@ -115,8 +119,8 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     }
 
     cameraPromise.then(() => {
-        Globe3dScene.view.setVisible(false);
-        nextScene.view.setVisible(true);
+        globeView.setVisible(false);
+        nextView.setVisible(true);
     });
 
     const sceneEventPromise = Promise.all([currentScene.onExit?.(), nextScene.onEnter?.()]);
@@ -132,14 +136,16 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
         for (const layer of nextScene.layers) {
             layer.visible = true;
             if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
-            nextScene.view instanceof View3D) {
-                FeaturePickerService.enable(nextScene.view);
+            nextView instanceof View3D) {
+                FeaturePickerService.enable(nextView);
                 featurePickingInScene = true;
             }
         }
 
-        FeaturePickerService.container!.style.display =
-            (featurePickingInScene) ? 'block' : 'none';
+        if (FeaturePickerService.container) {
+            FeaturePickerService.container.style.display =
+                (featurePickingInScene) ? 'block' : 'none';
+        }
 
         resolve();
     });
@@ -169,6 +175,8 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 export const hardResetScene = async (scene: SceneType) => {
     await scene.onExit?.();
 
+    let view = scene.getView();
+
     const layers = Object.values(Layers);
     for (const layer of layers) {
         layer.layerPromise = undefined;
@@ -176,9 +184,9 @@ export const hardResetScene = async (scene: SceneType) => {
     }
 
     for (const s of SceneRepository) {
-        if (s.view.id === scene.view.id) {
-            scene.ready = false;
-            scene.layers = [];
+        if (s.view && s.view.id === view.id) {
+            s.ready = false;
+            s.layers = [];
         }
     }
 
@@ -186,11 +194,15 @@ export const hardResetScene = async (scene: SceneType) => {
     Globe3dScene.ready = false;
     Globe3dScene.layers = [];
 
-    scene.view.clearInstance();
-    Globe3dScene.view.clearInstance();
+    view.clearInstance();
+    if (Globe3dScene.view) {
+        Globe3dScene.view.clearInstance();
+    }
     await scene.onCreate();
     await Globe3dScene.onCreate();
-    scene.view.setVisible(true);
+
+    view = scene.getView();
+    view.setVisible(true);
     await scene.onEnter?.();
 
     // show layers and enable feature picking if applicable
@@ -198,13 +210,13 @@ export const hardResetScene = async (scene: SceneType) => {
         layer.visible = true;
 
         if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
-        scene.view instanceof View3D) {
-            FeaturePickerService.enable(scene.view);
+        view instanceof View3D) {
+            FeaturePickerService.enable(view);
         }
     }
 
-    if (scene.view instanceof View3D) {
-        await moveCameraTo(scene.view.getView(), scene.placement, 0.1);
+    if (view instanceof View3D) {
+        await moveCameraTo(view.getItownsView(), scene.placement, 0.1);
     }
 };
 
@@ -214,15 +226,17 @@ export const hardResetScene = async (scene: SceneType) => {
  * @returns Promise<void>
  */
 export const resetScene = async (scene: SceneType) => {
-    const view = scene.view.getView();
+    const view = scene.getView();
+    const iTownsView = view.getItownsView();
+
     try {
         for (const layer of scene.layers) {
             layer.visible = false;
         }
         await scene.onExit?.();
-        scene.view.setVisible(false);
+        view.setVisible(false);
 
-        scene.view.setVisible(true);
+        view.setVisible(true);
         for (const layer of scene.layers) {
             layer.visible = true;
         }
@@ -233,14 +247,14 @@ export const resetScene = async (scene: SceneType) => {
             return;
         }
 
-        const controls = view.controls as itowns.GlobeControls
+        const controls = iTownsView.controls as itowns.GlobeControls
         & { states: { enabled: boolean }; };
 
         // disable camera controls during transition
         controls.states.enabled = false;
         controls.player.stop();
 
-        await moveCameraTo(view, scene.placement);
+        await moveCameraTo(iTownsView, scene.placement);
 
         controls.states.enabled = true;
     } catch (error) {

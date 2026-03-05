@@ -13,7 +13,7 @@ export const FeaturePickerService = {
     mouseDownPos: null as { x: number; y: number } | null,
     // currently, featureGeometryLayer needs to be passed before ColorLayer
     layers: [
-        Layers.BuildingsLayer3D,
+        Layers.Buildings3dLayer,
         Layers.ParksLayer,
     ] as (LayerPromiseType)[],
     pickingContent: [] as Record<string, unknown>[],
@@ -46,12 +46,15 @@ export const FeaturePickerService = {
         };
 
         const layers = await Promise.all(
-            FeaturePickerService.layers.map(async layerPromise => layerPromise.getLayer()),
+            FeaturePickerService.layers.map(async layerPromise => layerPromise.layerPromise),
         );
 
-        const layerIds = layers
-            .filter(layer => layer.visible)
-            .map(layer => layer.id);
+        const layerIds: string[] = [];
+        for (const layer of layers) {
+            if (layer && layer.visible) {
+                layerIds.push(layer.id);
+            }
+        }
 
         if (layerIds.length === 0) {
             FeaturePickerService.container.innerHTML =
@@ -114,7 +117,7 @@ export const FeaturePickerService = {
         FeaturePickerService.mouseDownPos = { x: event.clientX, y: event.clientY };
     },
     enable: (view: View3D) => {
-        FeaturePickerService.view = view.getView() as itowns.GlobeView;
+        FeaturePickerService.view = view.getItownsView() as itowns.GlobeView;
         const viewerDiv = view.getViewerDiv();
 
         let container = viewerDiv.querySelector<HTMLDivElement>('#feature-picking-info');

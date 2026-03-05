@@ -1,7 +1,8 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types';
+import type { LayerPromiseTypeNoParams } from '../Types';
+import { ParksSource } from '../Sources';
 
-export const ParksLayer: LayerPromiseType = {
+export const ParksLayer: LayerPromiseTypeNoParams = {
     id: 'parks',
     layerPromise: undefined,
     cachedLayer: undefined,
@@ -10,15 +11,9 @@ export const ParksLayer: LayerPromiseType = {
             return Promise.resolve(ParksLayer.cachedLayer);
         }
         if (!ParksLayer.layerPromise) {
-            const parksSource = new itowns.FileSource({
-                url: 'https://data.grandlyon.com/fr/geoserv/ogc/features/v1/collections/metropole-de-lyon:com_donnees_communales.comparcjardin_1_0_0/items?&f=application/geo%2Bjson&crs=EPSG:4326&startIndex=0&sortby=gid',
-                crs: 'EPSG:4326',
-                format: 'application/json',
-            });
-
             ParksLayer.layerPromise = (async () => {
                 ParksLayer.cachedLayer = new itowns.ColorLayer(ParksLayer.id, {
-                    source: parksSource,
+                    source: await ParksSource.getSource(),
                     // @ts-expect-error style property undefined
                     style: {
                         fill: {

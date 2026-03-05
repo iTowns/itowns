@@ -17,9 +17,16 @@ export const InstancedDataScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     meshes: [],
     ready: false,
+    getView: () => {
+        if (!InstancedDataScene.view) {
+            throw new Error('Instanced Data Scene view is not initialized');
+        }
+        return InstancedDataScene.view;
+    },
+    getItownsView: () => InstancedDataScene.getView().getItownsView(),
     event: function update(/* dt */) {
         if (InstancedDataScene.meshes!.length) {
             for (let i = 0; i < InstancedDataScene.meshes!.length; i++) {
@@ -30,8 +37,8 @@ export const InstancedDataScene: SceneType = {
                 }
             }
             InstancedDataScene.meshes = InstancedDataScene.meshes!.filter(m => m.scale.z < 1);
-            InstancedDataScene.view.getView()
-                .notifyChange(InstancedDataScene.view.getView().camera3D, true);
+            InstancedDataScene.getItownsView()
+                .notifyChange(InstancedDataScene.getItownsView().camera3D, true);
         }
     },
     onCreate: async () => {
@@ -40,7 +47,7 @@ export const InstancedDataScene: SceneType = {
         }
         InstancedDataScene.view = new View3D();
 
-        const view = InstancedDataScene.view.getView();
+        const view = InstancedDataScene.getItownsView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
@@ -56,12 +63,12 @@ export const InstancedDataScene: SceneType = {
             });
         }
 
-        InstancedDataScene.layers.push(await Layers.OrthoLayer.getLayer());
-        InstancedDataScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        InstancedDataScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        InstancedDataScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
         InstancedDataScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
         InstancedDataScene.layers.push(await Layers.ParksLayer.getLayer());
-        InstancedDataScene.layers.push(await Layers.BuildingsLayer3D.getLayer(scaleZ));
+        InstancedDataScene.layers.push(await Layers.Buildings3dLayer.getLayer(scaleZ));
         InstancedDataScene.layers.push(await Layers.TreesLayer.getLayer());
 
         await InstancedDataScene.view.addLayers(InstancedDataScene.layers);
@@ -69,11 +76,11 @@ export const InstancedDataScene: SceneType = {
         InstancedDataScene.ready = true;
     },
     onEnter: async () => {
-        InstancedDataScene.view.getView().addFrameRequester(
+        InstancedDataScene.getItownsView().addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
     },
     onExit: async () => {
-        InstancedDataScene.view.getView().removeFrameRequester(
+        InstancedDataScene.getItownsView().removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
     },
 };

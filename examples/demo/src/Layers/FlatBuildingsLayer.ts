@@ -1,8 +1,8 @@
 import * as itowns from 'itowns';
-import type { LayerPromiseType } from '../Types';
+import type { LayerPromiseTypeNoParams } from '../Types';
 import { BuildingsSource } from '../Sources';
 
-export const FlatBuildingsLayer: LayerPromiseType = {
+export const FlatBuildingsLayer: LayerPromiseTypeNoParams = {
     id: 'VTBuilding2D',
     layerPromise: undefined,
     cachedLayer: undefined,

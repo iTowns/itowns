@@ -1,6 +1,7 @@
 import * as itowns from 'itowns';
 import { PlanarView } from '../Views';
 import type { SceneType } from '../Types';
+import * as Layers from '../Layers';
 
 // Define the view geographic extent
 itowns.CRS.defs(
@@ -27,84 +28,34 @@ export const PlanarViewScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new PlanarView(extent),
+    view: undefined,
     cameraPlacement: null,
     ready: false,
+    getView: () => {
+        if (!PlanarViewScene.view) {
+            throw new Error('Planar View Scene view is not initialized');
+        }
+        return PlanarViewScene.view;
+    },
+    getItownsView: () => PlanarViewScene.getView().getItownsView(),
     onCreate: async () => {
         if (PlanarViewScene.ready) {
             return;
         }
         PlanarViewScene.view = new PlanarView(extent);
 
-        const wmsImagerySource = new itowns.WMSSource({
-            extent,
-            name: 'OI.OrthoimageCoverage.HR',
-            version: '1.3.0',
-            url: 'https://data.geopf.fr/wms-r/wms?',
-            crs: 'EPSG:2154',
-            format: 'image/png',
-        });
-        const imageryLayer = new itowns.ColorLayer('WMS Imagery', {
-            // @ts-expect-error updateStrategy undefined
-            updateStrategy: {
-                type: itowns.STRATEGY_DICHOTOMY,
-                options: {},
-            },
-            source: wmsImagerySource,
-        });
-
-        const wmsElevationSource = new itowns.WMSSource({
-            extent,
-            name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
-            version: '1.3.0',
-            url: 'https://data.geopf.fr/wms-r/wms?',
-            format: 'image/x-bil;bits=32',
-            crs: 'EPSG:2154',
-        });
-        const elevationLayer = new itowns.ElevationLayer('WMS Elevation', {
-            // @ts-expect-error source undefined
-            source: wmsElevationSource,
-        });
-
-        const wfsCartoSource = new itowns.WFSSource({
-            url: 'https://data.geopf.fr/wfs/ows?',
-            version: '2.0.0',
-            typeName: 'BDCARTO_V5:zone_d_habitation',
-            crs: 'EPSG:2154',
-            ipr: 'IGN',
-            format: 'application/json',
-        });
-
-        const wfsCartoStyle = {
-            zoom: { min: 0, max: 20 },
-            text: {
-                field: '{toponyme}',
-                color: 'white',
-                transform: 'uppercase',
-                size: 15,
-                haloColor: 'rgba(20,20,20, 0.8)',
-                haloWidth: 3,
-            },
-        };
-
-        const cartoLayer = new itowns.LabelLayer('WFS Carto', {
-            // @ts-expect-error source undefined
-            source: wfsCartoSource,
-            style: wfsCartoStyle,
-        });
-
-        PlanarViewScene.layers.push(imageryLayer);
-        PlanarViewScene.layers.push(elevationLayer);
-        PlanarViewScene.layers.push(cartoLayer);
+        PlanarViewScene.layers.push(await Layers.OrthoImageWMSLayer.getLayer(extent));
+        PlanarViewScene.layers.push(await Layers.ElevationWMSLayer.getLayer(extent));
+        PlanarViewScene.layers.push(await Layers.CartoLabelLayer.getLayer());
 
         await PlanarViewScene.view.addLayers(PlanarViewScene.layers);
 
-        PlanarViewScene.cameraPlacement = PlanarViewScene.view.getView().camera3D.position.clone();
+        PlanarViewScene.cameraPlacement = PlanarViewScene.getItownsView().camera3D.position.clone();
 
         PlanarViewScene.ready = true;
     },
     onEnter: async () => {
-        const view = PlanarViewScene.view.getView();
+        const view = PlanarViewScene.getItownsView();
 
         view.camera3D.position.copy(PlanarViewScene.cameraPlacement!);
         view.camera3D.updateMatrixWorld(true);

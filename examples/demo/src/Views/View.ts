@@ -15,9 +15,9 @@ abstract class View {
         return this.id;
     }
 
-    getView() {
+    getItownsView() {
         if (!this.view) {
-            throw new Error(`view '${this.id}' is not defined`);
+            throw new Error(`iTowns view for '${this.id}' is not defined`);
         }
         return this.view;
     }
@@ -55,16 +55,15 @@ abstract class View {
     }
 
     addLayers(layers: LayerType[]) {
-        if (!this.view) {
-            throw new Error(`view '${this.id}' is not defined`);
-        }
-
         const layerPromises = layers.map(async (layer) => {
-            if (this.view!.getLayerById(layer.id)) {
+            if (!this.view) {
+                throw new Error(`view '${this.id}' is not defined`);
+            }
+            if (this.view.getLayerById(layer.id)) {
                 return Promise.resolve();
             }
             try {
-                return await this.view!.addLayer(layer);
+                return await this.view.addLayer(layer);
             } catch (error) {
                 console.error(`Error adding layer '${layer.id}' to view '${this.id}':`, error);
             }

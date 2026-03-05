@@ -21,10 +21,17 @@ export const ImmersiveViewScene: SceneType = {
     },
     cameraPlacement: null,
     layers: [],
-    view: new ImmersiveView(),
+    view: undefined,
     ready: false,
+    getView: () => {
+        if (!ImmersiveViewScene.view) {
+            throw new Error('Immersive View Scene view is not initialized');
+        }
+        return ImmersiveViewScene.view;
+    },
+    getItownsView: () => ImmersiveViewScene.getView().getItownsView(),
     event: () => {
-        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.getItownsView();
         // set camera to current panoramic
         // @ts-expect-error setCameraToCurrentPosition method undefined
         view.controls!.setCameraToCurrentPosition();
@@ -36,102 +43,41 @@ export const ImmersiveViewScene: SceneType = {
         }
         ImmersiveViewScene.view = new ImmersiveView();
 
-        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.getItownsView();
 
-        ImmersiveViewScene.layers.push(await Layers.OrthoLayer.getLayer());
-        ImmersiveViewScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
-
-        function altitudeBuildings(properties: {
-            altitude_minimale_sol: number,
-        }) {
-            return properties.altitude_minimale_sol - 3;
-        }
-
-        function extrudeBuildings(properties: {
-            hauteur: number,
-        }) {
-            return properties.hauteur + 3;
-        }
+        ImmersiveViewScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        ImmersiveViewScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
 
         // Gate readiness until we get the first pano change
         let resolvePanoReady: (() => void) | null = null;
         const panoReady = new Promise<void>((res) => { resolvePanoReady = res; });
 
-        // Prepare oriented image source
-        const orientedImageSource = new itowns.OrientedImageSource({
-            url: 'http://www.itowns-project.org/itowns-sample-data-small/images/140616/Paris-140616_0740-{cameraId}-00001_0000{panoId}.jpg',
-            orientationsUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/panoramicsMetaDataParis.geojson',
-            calibrationUrl: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/immersive/exampleParis1/cameraCalibration.json',
-        });
-
-        // Create oriented image layer
-        const olayer = new itowns.OrientedImageLayer('demo_orientedImage', {
-            // Radius in meter of the sphere used as a background.
-            backgroundDistance: 1200,
-            source: orientedImageSource,
-            crs: view.referenceCrs,
-            // @ts-expect-error useMask property used
-            // but not defined in OrientedImageLayerOptions
-            useMask: false,
-            onPanoChanged: (e: {
+        const olayer = (await Layers.OrientedImageLayer.getLayer(view.referenceCrs, (e: {
                 previousPanoPosition: THREE.Vector3,
                 currentPanoPosition: THREE.Vector3,
                 nextPanoPosition: THREE.Vector3,
             }) => {
-                // @ts-expect-error setPreviousPosition method undefined
-                view.controls!.setPreviousPosition(e.previousPanoPosition);
-                // @ts-expect-error setCurrentPosition method undefined
-                view.controls!.setCurrentPosition(e.currentPanoPosition);
-                // @ts-expect-error setNextPosition method undefined
-                view.controls!.setNextPosition(e.nextPanoPosition);
+            // @ts-expect-error setPreviousPosition method undefined
+            view.controls!.setPreviousPosition(e.previousPanoPosition);
+            // @ts-expect-error setCurrentPosition method undefined
+            view.controls!.setCurrentPosition(e.currentPanoPosition);
+            // @ts-expect-error setNextPosition method undefined
+            view.controls!.setNextPosition(e.nextPanoPosition);
 
-                if (resolvePanoReady) {
-                    resolvePanoReady();
-                    resolvePanoReady = null;
-                }
-            },
-        });
-
+            if (resolvePanoReady) {
+                resolvePanoReady();
+                resolvePanoReady = null;
+            }
+        })) as itowns.OrientedImageLayer;
         ImmersiveViewScene.layers.push(olayer);
 
-        const wfsBuildingSource = new itowns.WFSSource({
-            url: 'https://data.geopf.fr/wfs/ows?',
-            version: '2.0.0',
-            typeName: 'BDTOPO_V3:batiment',
-            crs: 'EPSG:4326',
-            ipr: 'IGN',
-            format: 'application/json',
-            extent: {
-                west: 2.334,
-                east: 2.335,
-                south: 48.849,
-                north: 48.851,
-            },
-        });
-
-        // create geometry layer for the buildings
-        const wfsBuildingLayer = new itowns.FeatureGeometryLayer('Buildings', {
-            // @ts-expect-error 'style' property used
-            // but not defined in FeatureGeometryLayerOptions
-            style: {
-                fill: {
-                    base_altitude: altitudeBuildings,
-                    extrusion_height: extrudeBuildings,
-                },
-            },
-            // when a building is created,
-            // it get the projective texture mapping,
-            // from oriented image layer.
-            onMeshCreated: (mesh: {
-                traverse: (arg0: (object: {
-                    material: THREE.Material;
-                }) => void) => void;
-            }) => mesh.traverse(object =>
-                object.material = olayer.material),
-            source: wfsBuildingSource,
-            zoom: { min: 15 },
-        });
-
+        const wfsBuildingLayer = await Layers.BuildingsWFSLayer.getLayer(
+            (mesh: THREE.Mesh) => mesh.traverse((object) => {
+                if (object instanceof THREE.Mesh) {
+                    object.material = olayer.material;
+                }
+            }),
+        );
         ImmersiveViewScene.layers.push(wfsBuildingLayer);
 
         await ImmersiveViewScene.view.addLayers(ImmersiveViewScene.layers);
@@ -162,20 +108,20 @@ export const ImmersiveViewScene: SceneType = {
         ImmersiveViewScene.ready = true;
     },
     onEnter: async () => {
-        const view = ImmersiveViewScene.view.getView() as itowns.GlobeView;
+        const view = ImmersiveViewScene.getItownsView();
 
         // Ensure pose is correct on every entry
         view.camera3D.position.copy(ImmersiveViewScene.cameraPlacement!);
         view.camera3D.updateMatrixWorld(true);
         view.notifyChange(view.camera3D);
 
-        ImmersiveViewScene.view.getView()
+        view
             .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
             ImmersiveViewScene.event!);
     },
     onExit: async () => {
-        ImmersiveViewScene.view.getView()
-            .removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
+        const view = ImmersiveViewScene.getItownsView();
+        view.removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
             ImmersiveViewScene.event!);
     },
 };

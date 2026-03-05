@@ -17,16 +17,23 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         heading: 90,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     ready: false,
     model: null,
+    getView: () => {
+        if (!BIMScene.view) {
+            throw new Error('BIM Scene view is not initialized');
+        }
+        return BIMScene.view;
+    },
+    getItownsView: () => BIMScene.getView().getItownsView(),
     onCreate: async () => {
         if (BIMScene.ready) {
             return;
         }
         BIMScene.view = new View3D();
 
-        const view = BIMScene.view.getView();
+        const view = BIMScene.getItownsView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
@@ -35,9 +42,9 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         view.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
-        BIMScene.layers.push(await Layers.OrthoLayer.getLayer());
-        BIMScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        BIMScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        BIMScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        BIMScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        BIMScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
 
         await BIMScene.view.addLayers(BIMScene.layers);
 
@@ -59,10 +66,10 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
                     coord.z = 240; // elevation offset
 
                     // Position in the view CRS
-                    BIMScene.model!.position.copy(coord.as(view.referenceCrs).toVector3());
+                    BIMScene.model.position.copy(coord.as(view.referenceCrs).toVector3());
 
                     // Align glTF's Y-up to the local ground normal
-                    BIMScene.model!.quaternion.setFromUnitVectors(
+                    BIMScene.model.quaternion.setFromUnitVectors(
                         new THREE.Vector3(0, 1, 0),
                         coord.geodesicNormal,
                     );
@@ -73,12 +80,12 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
                         -THREE.MathUtils.degToRad(rotation[1]),
                         -THREE.MathUtils.degToRad(rotation[0]), 'ZYX',
                     );
-                    BIMScene.model!.quaternion.multiply(
+                    BIMScene.model.quaternion.multiply(
                         new THREE.Quaternion().setFromEuler(eulerRot));
 
                     // Notify that the model has been updated
-                    BIMScene.model!.updateMatrixWorld(true);
-                    resolve(BIMScene.model!);
+                    BIMScene.model.updateMatrixWorld(true);
+                    resolve(BIMScene.model);
                 },
 
                 // called while loading is progressing
@@ -96,11 +103,11 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
         BIMScene.ready = true;
     },
     onEnter: async () => {
-        const view = BIMScene.view.getView();
-        view.scene.add(BIMScene.model!);
+        const view = BIMScene.getItownsView();
+        view.scene.add(BIMScene.model);
     },
     onExit: async () => {
-        const view = BIMScene.view.getView();
-        view.scene.remove(BIMScene.model!);
+        const view = BIMScene.getItownsView();
+        view.scene.remove(BIMScene.model);
     },
 };
