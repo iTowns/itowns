@@ -276,7 +276,7 @@ export default {
         styleUI.add(layer, 'opacity', 0, 1).name('Layer opacity').onChange(update);
         styleUI.add(layer, 'pointSize', 0, 15).name('Point size').onChange(update);
         if (layer.material.sizeMode != undefined && view.camera.camera3D.isPerspectiveCamera) {
-            styleUI.add(layer.material, 'sizeAttenuation').name('Size attenuation')
+            styleUI.add(layer.material, 'sizeMode', PNTS_SIZE_MODE).name('Size mode')
                 .onChange(update);
             styleUI.add(layer.material, 'minAttenuatedSize', 0, 15).name('Min size')
                 .onChange((value) => {
