@@ -1,7 +1,7 @@
 import * as itowns from 'itowns';
 import { View3D } from '../Views';
 import * as Layers from '../Layers';
-import type { SceneType } from '../Types';
+import type { LayerType, SceneType } from '../Types';
 import { BlockEventsIfFromPanel } from '../Utils';
 
 const configContainer = document.createElement('div');
@@ -34,42 +34,35 @@ export const PointCloudScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     ready: false,
+    getView: () => {
+        if (!PointCloudScene.view) {
+            throw new Error('Point Cloud Scene view is not initialized');
+        }
+        return PointCloudScene.view;
+    },
+    getItownsView: () => PointCloudScene.getView().getItownsView(),
     onCreate: async () => {
         if (PointCloudScene.ready) {
             return;
         }
         PointCloudScene.view = new View3D();
 
-        const view = PointCloudScene.view.getView();
+        const view = PointCloudScene.getItownsView();
 
-        PointCloudScene.layers.push(await Layers.OrthoLayer.getLayer());
-        PointCloudScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        PointCloudScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        PointCloudScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
 
         await PointCloudScene.view.addLayers(PointCloudScene.layers);
 
-        const source = new itowns.CopcSource({
-            url: 'https://data.geopf.fr/telechargement/download/LiDARHD-NUALID/NUALHD_1-0__LAZ_LAMB93_OL_2025-02-20/LHD_FXX_0844_6520_PTS_LAMB93_IGN69.copc.laz',
-        });
-        const options = {
-            mode: 2,
-            opacity: 0.5,
-        };
-        const config = {
-            source,
-            crs: view.referenceCrs,
-            sseThreshold: 4,
-            pointBudget: 1000000,
-            ...options,
-        };
-        const pointCloudLayer = new itowns.CopcLayer('PointCloudLayer', config);
+        const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(view.referenceCrs)) as
+            LayerType as itowns.CopcLayer;
         PointCloudScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
 
         colorButton.addEventListener('click', () => {
-            // @ts-expect-error material.mode undefined
             pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
             colorButton.classList.add('active');
             classificationButton.classList.remove('active');
@@ -77,7 +70,6 @@ export const PointCloudScene: SceneType = {
         });
 
         classificationButton.addEventListener('click', () => {
-            // @ts-expect-error material.mode undefined
             pointCloudLayer.material.mode = itowns.PNTS_MODE.CLASSIFICATION;
             classificationButton.classList.add('active');
             colorButton.classList.remove('active');

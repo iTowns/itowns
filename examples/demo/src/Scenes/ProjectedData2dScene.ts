@@ -14,17 +14,24 @@ export const ProjectedData2dScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     ready: false,
+    getView: () => {
+        if (!ProjectedData2dScene.view) {
+            throw new Error('Projected Data 2D Scene view is not initialized');
+        }
+        return ProjectedData2dScene.view;
+    },
+    getItownsView: () => ProjectedData2dScene.getView().getItownsView(),
     onCreate: async () => {
         if (ProjectedData2dScene.ready) {
             return;
         }
         ProjectedData2dScene.view = new View3D();
 
-        ProjectedData2dScene.layers.push(await Layers.OrthoLayer.getLayer());
-        ProjectedData2dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        ProjectedData2dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        ProjectedData2dScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
         ProjectedData2dScene.layers.push(await Layers.FlatBuildingsLayer.getLayer());
         ProjectedData2dScene.layers.push(await Layers.ParksLayer.getLayer());
         await ProjectedData2dScene.view.addLayers(ProjectedData2dScene.layers);

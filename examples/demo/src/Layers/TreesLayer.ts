@@ -1,8 +1,9 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
-import type { LayerPromiseType } from '../Types';
+import type { LayerPromiseTypeNoParams } from '../Types';
+import { TreesSource } from '../Sources';
 
-export const TreesLayer: LayerPromiseType = {
+export const TreesLayer: LayerPromiseTypeNoParams = {
     id: 'Trees3D',
     layerPromise: undefined,
     cachedLayer: undefined,
@@ -11,13 +12,6 @@ export const TreesLayer: LayerPromiseType = {
             return Promise.resolve(TreesLayer.cachedLayer);
         }
         if (!TreesLayer.layerPromise) {
-            const treesSource = new itowns.FileSource({
-                url: 'https://data.grandlyon.com/fr/geoserv/ogc/features/v1/collections/metropole-de-lyon:abr_arbres_alignement.abrarbre/items?&f=application/geo%2Bjson&crs=EPSG:4326&startIndex=0&sortby=gid&limit=15000',
-                crs: 'EPSG:4326',
-                fetcher: itowns.Fetcher.json,
-                parser: itowns.GeoJsonParser.parse,
-            });
-
             // Load a glTF resource
             const gltfLoader = new itowns.iGLTFLoader();
 
@@ -27,7 +21,7 @@ export const TreesLayer: LayerPromiseType = {
                     'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/tree/tree.glb',
 
                     // called when the resource is loaded
-                    (gltf: { scene: THREE.Scene }) => {
+                    async (gltf: { scene: THREE.Scene }) => {
                         const model = gltf.scene;
 
                         model.rotateX(Math.PI / 2.0);
@@ -46,7 +40,7 @@ export const TreesLayer: LayerPromiseType = {
                             TreesLayer.id,
                             {
                             // @ts-expect-error source property undefined
-                                source: treesSource,
+                                source: await TreesSource.getSource(),
                                 style: styleModel3D,
                                 zoom: { min: 7, max: 21 },
                             },

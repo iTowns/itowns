@@ -19,16 +19,23 @@ export const TexturedMeshes3dScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     meshes: [],
     ready: false,
+    getView: () => {
+        if (!TexturedMeshes3dScene.view) {
+            throw new Error('Textured Meshes 3D Scene view is not initialized');
+        }
+        return TexturedMeshes3dScene.view;
+    },
+    getItownsView: () => TexturedMeshes3dScene.getView().getItownsView(),
     onCreate: async () => {
         if (TexturedMeshes3dScene.ready) {
             return;
         }
         TexturedMeshes3dScene.view = new View3D();
 
-        const view = TexturedMeshes3dScene.view.getView();
+        const view = TexturedMeshes3dScene.getItownsView();
 
         // Enable various compression support for 3D Tiles tileset:
         itowns.enableDracoLoader('./libs/draco/');
@@ -42,21 +49,10 @@ export const TexturedMeshes3dScene: SceneType = {
         view.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
-        const tiles3DSource = new itowns.OGC3DTilesSource({
-            url: 'https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json',
-        });
-
-        const tiles3DLayer = new itowns.OGC3DTilesLayer('3DTiles', {
-            source: tiles3DSource,
-            // @ts-expect-error PNTS_SIZE_MODE interpreted as type number
-            // assigned to string
-            pntsSizeMode: itowns.PNTS_SIZE_MODE.ATTENUATED,
-        });
-
-        TexturedMeshes3dScene.layers.push(await Layers.OrthoLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
-        TexturedMeshes3dScene.layers.push(tiles3DLayer);
+        TexturedMeshes3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
+        TexturedMeshes3dScene.layers.push(await Layers.Tiles3dLayer.getLayer());
 
         await TexturedMeshes3dScene.view.addLayers(TexturedMeshes3dScene.layers);
 

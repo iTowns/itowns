@@ -14,17 +14,24 @@ export const Globe3dScene: SceneType = {
         heading: 0,
     },
     layers: [],
-    view: new View3D(),
+    view: undefined,
     ready: false,
+    getView: () => {
+        if (!Globe3dScene.view) {
+            throw new Error('Globe 3D Scene view is not initialized');
+        }
+        return Globe3dScene.view;
+    },
+    getItownsView: () => Globe3dScene.getView().getItownsView(),
     onCreate: async () => {
         if (Globe3dScene.ready) {
             return;
         }
         Globe3dScene.view = new View3D();
 
-        Globe3dScene.layers.push(await Layers.OrthoLayer.getLayer());
-        Globe3dScene.layers.push(await Layers.WorldDTMLayer.getLayer());
-        Globe3dScene.layers.push(await Layers.IgnMntHighResLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
+        Globe3dScene.layers.push(await Layers.IgnMntHighResFetcherLayer.getLayer());
 
         await Globe3dScene.view.addLayers(Globe3dScene.layers);
 
