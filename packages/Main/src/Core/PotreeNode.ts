@@ -10,37 +10,34 @@ type NodeInfo = {
 class PotreeNode extends PotreeNodeBase {
     source: PotreeSource;
 
+    hierarchyKey: string;
     hierarchy: Record<string, NodeInfo>;
 
-    private _baseurl: string | undefined;
+    childrenBitField: number;
+
+    private baseurl: string;
 
     constructor(
-        depth: number,
-        index: number,
-        numPoints: number,
-        childrenBitField: number,
+        hierarchyKey: string,
         source: PotreeSource,
         crs: string,
+        hierarchy: Record<string, NodeInfo> = {},
     ) {
-        super(depth, index, numPoints, childrenBitField, source, crs);
+        const depth = hierarchyKey.length - 1;
+        const numPoints = hierarchy[hierarchyKey]?.numPoints ?? -1;
+        super(depth, numPoints, crs);
         this.source = source;
 
-        this.hierarchy = {};
-    }
+        this.baseurl = this.source.baseurl;
+        const hierarchyStepSize = this.source.hierarchyStepSize;
+        if (depth >= hierarchyStepSize) {
+            this.baseurl = `${this.baseurl}/${hierarchyKey.substring(1, hierarchyStepSize + 1)}`;
+        }
 
-    override get baseurl(): string {
-        if (this._baseurl != undefined) { return this._baseurl; }
-        if (this.depth === 0) {
-            this._baseurl = this.source.baseurl;
-            return this._baseurl;
-        }
-        const parent = this.parent as this;
-        if ((this.depth % this.source.hierarchyStepSize) == 0) {
-            this._baseurl = `${parent.baseurl}/${this.hierarchyKey.substring(1)}`;
-        } else {
-            this._baseurl = parent.baseurl;
-        }
-        return this._baseurl;
+        this.hierarchyKey = hierarchyKey;
+        this.hierarchy = hierarchy;
+
+        this.childrenBitField = this.hierarchy[this.hierarchyKey]?.childrenBitField ?? 255;
     }
 
     override get url(): string {
@@ -55,8 +52,8 @@ class PotreeNode extends PotreeNodeBase {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
-        const octreeUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
-        const buffer = await this.fetcher(octreeUrl);
+        const hierarchyUrl = `${this.baseurl}/${this.hierarchyKey}.${this.source.extensionOctree}`;
+        const buffer = await this.fetcher(hierarchyUrl);
         const view = new DataView(buffer);
 
         // update current node from the newly fetched hierarchy buffer
@@ -116,16 +113,14 @@ class PotreeNode extends PotreeNodeBase {
 
             const childHierarchyKey = `${this.hierarchyKey}${childIndex}`;
 
-            const childrenBitField = this.hierarchy[childHierarchyKey].childrenBitField;
-            const numPoints = this.hierarchy[childHierarchyKey].numPoints;
-
             const child = new PotreeNode(
-                this.depth + 1, childIndex,
-                numPoints, childrenBitField,
-                this.source, this.crs);
+                childHierarchyKey,
+                this.source,
+                this.crs,
+                this.hierarchy,
+            );
 
             this.add(child as this, childIndex);
-            child.hierarchy = this.hierarchy;
         }
     }
 }
