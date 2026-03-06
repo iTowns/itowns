@@ -35,18 +35,18 @@ export const TexturedMeshes3dScene: SceneType = {
         }
         TexturedMeshes3dScene.view = new View3D();
 
-        const view = TexturedMeshes3dScene.getItownsView();
+        const itownsView = TexturedMeshes3dScene.getItownsView();
 
         // Enable various compression support for 3D Tiles tileset:
         itowns.enableDracoLoader('./libs/draco/');
-        itowns.enableKtx2Loader('./lib/basis/', view.renderer);
+        itowns.enableKtx2Loader('./lib/basis/', itownsView.renderer);
         itowns.enableMeshoptDecoder(MeshoptDecoder);
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
         const environment = new RoomEnvironment();
-        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
-        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        const pmremGenerator = new THREE.PMREMGenerator(itownsView.renderer);
+        itownsView.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
         TexturedMeshes3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
