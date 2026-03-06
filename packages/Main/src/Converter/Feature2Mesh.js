@@ -696,6 +696,7 @@ export default {
             const meshes = features.map((feature) => {
                 const mesh = featureToMesh(feature, options);
                 mesh.layer = this;
+                // layer may be undefined in some tests
                 mesh.castShadow = this?.castShadow;
                 return mesh;
             });
