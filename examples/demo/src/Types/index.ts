@@ -11,3 +11,4 @@ export type {
 export type { default as LayerType } from './LayerType';
 export type { default as SceneType } from './SceneType';
 export type { default as ViewType } from './ViewType';
+export type { default as ModelLoaderPromiseType } from './ModelLoaderPromiseType';

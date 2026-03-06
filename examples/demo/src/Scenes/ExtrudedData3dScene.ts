@@ -28,7 +28,6 @@ export const ExtrudedData3dScene: SceneType = {
                     mesh.updateMatrixWorld(true);
                 }
             }
-            ExtrudedData3dScene.meshes = ExtrudedData3dScene.meshes!.filter(m => m.scale.z < 1);
             view.notifyChange(view.camera3D, true);
         }
     },
@@ -64,11 +63,19 @@ export const ExtrudedData3dScene: SceneType = {
         ExtrudedData3dScene.ready = true;
     },
     onEnter: async () => {
-        ExtrudedData3dScene.getItownsView().addFrameRequester(
+        const view = ExtrudedData3dScene.getItownsView();
+        for (const mesh of ExtrudedData3dScene.meshes!) {
+            view.scene.add(mesh);
+        }
+        view.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
     onExit: async () => {
-        ExtrudedData3dScene.getItownsView().removeFrameRequester(
+        const view = ExtrudedData3dScene.getItownsView();
+        for (const mesh of ExtrudedData3dScene.meshes!) {
+            view.scene.remove(mesh);
+        }
+        view.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
 };

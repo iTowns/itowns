@@ -1,64 +1,44 @@
 import * as itowns from 'itowns';
-import * as THREE from 'three';
 import type { LayerPromiseTypeNoParams } from '../Types';
 import { TreesSource } from '../Sources';
+import { TreeLoader } from '../ModelLoaders';
 
 export const TreesLayer: LayerPromiseTypeNoParams = {
     id: 'Trees3D',
     layerPromise: undefined,
     cachedLayer: undefined,
-    getLayer: () => {
+    getLayer: async () => {
         if (TreesLayer.cachedLayer) {
             return Promise.resolve(TreesLayer.cachedLayer);
         }
         if (!TreesLayer.layerPromise) {
-            // Load a glTF resource
-            const gltfLoader = new itowns.iGLTFLoader();
+            TreesLayer.layerPromise = (async () => {
+                const model = await TreeLoader.getModel();
 
-            TreesLayer.layerPromise = new Promise((resolve) => {
-                gltfLoader.load(
-                // resource URL
-                    'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/tree/tree.glb',
+                model.rotateX(Math.PI / 2.0);
+                model.position.z = 165;
+                model.scale.set(2, 2, 2);
 
-                    // called when the resource is loaded
-                    async (gltf: { scene: THREE.Scene }) => {
-                        const model = gltf.scene;
-
-                        model.rotateX(Math.PI / 2.0);
-                        gltf.scene.position.z = 165;
-                        model.scale.set(2, 2, 2);
-
-                        const styleModel3D = {
-                            point: {
-                                model: {
-                                    object: model,
-                                },
-                            },
-                        };
-
-                        TreesLayer.cachedLayer = new itowns.FeatureGeometryLayer(
-                            TreesLayer.id,
-                            {
-                            // @ts-expect-error source property undefined
-                                source: await TreesSource.getSource(),
-                                style: styleModel3D,
-                                zoom: { min: 7, max: 21 },
-                            },
-                        );
-
-                        resolve(TreesLayer.cachedLayer);
+                const styleModel3D = {
+                    point: {
+                        model: {
+                            object: model,
+                        },
                     },
+                };
 
-                    // called while loading is progressing
-                    () => {
-                    },
-
-                    (error: Error) => {
-                        console.error(
-                            'An error happened while loading the 3D model of tree.', error);
+                TreesLayer.cachedLayer = new itowns.FeatureGeometryLayer(
+                    TreesLayer.id,
+                    {
+                        // @ts-expect-error source property undefined
+                        source: await TreesSource.getSource(),
+                        style: styleModel3D,
+                        zoom: { min: 7, max: 21 },
                     },
                 );
-            });
+
+                return TreesLayer.cachedLayer as itowns.FeatureGeometryLayer;
+            })();
         }
         return TreesLayer.layerPromise;
     },

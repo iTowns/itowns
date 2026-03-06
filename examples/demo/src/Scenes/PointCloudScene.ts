@@ -29,9 +29,9 @@ export const PointCloudScene: SceneType = {
     + 'Supports EPT, COPC, LAS and 3D Tiles with various rendering styles.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.860377, 45.760213),
-        range: 2000,
-        tilt: 45,
-        heading: 0,
+        range: 2500,
+        tilt: 35,
+        heading: 30,
     },
     layers: [],
     view: undefined,
