@@ -202,7 +202,7 @@
                 { month: Math.min(12, Math.max(1, 1 + date.getMonth())) }, 'month', 1, 12, 1
             ).onChange((v) => {
                 date.setMonth(Math.min(12, Math.max(1, v)) - 1);
-                view.notifyChange();
+                view.notifyChange(view.sunLightLayer);
             }).name('month (1-12)');
             dateFolder.add(
                 { hour: Math.min(21, Math.max(6, date.getHours())) }, 'hour', 6, 21, 0.1
@@ -211,7 +211,7 @@
                 const hours = Math.floor(clampedValue);
                 const minutes = (clampedValue - hours) * 60;
                 date.setHours(hours, minutes);
-                view.notifyChange();
+                view.notifyChange(view.sunLightLayer);
             }).name('hour (6-21)');
 
             function loadLyon() {

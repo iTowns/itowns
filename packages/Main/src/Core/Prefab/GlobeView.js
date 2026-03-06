@@ -11,7 +11,7 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import {
     getSunDirectionECEF,
 } from '@takram/three-atmosphere';
-import SunLight from 'Renderer/SunLight';
+import SunLightLayer from 'Layer/SunLightLayer';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -173,13 +173,9 @@ class GlobeView extends View {
 
         this.date = new Date(); // now
 
-        // Sunlight and shadow
-        this.sunLight = new SunLight(2);
-        this.scene.add(
-            this.sunLight,
-            this.sunLight.target); // to update matrixWorld at each frame
-        this.renderer.shadowMap.enabled = true;
-        this.renderer.shadowMap.type = THREE.PCFShadowMap;
+        // Sunlight and shadow layer
+        this.sunLightLayer = new SunLightLayer(this);
+        View.prototype.addLayer.call(this, this.sunLightLayer);
 
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
@@ -187,20 +183,16 @@ class GlobeView extends View {
 
         this.addFrameRequester(
             MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
-            this.onAfterCameraUpdate.bind(this),
+            () => {
+                this.sunDirection = new THREE.Vector3();
+                getSunDirectionECEF(this.date, this.sunDirection);
+                // This creates a white disk at the Sun's position
+                this.sunDirection.multiplyScalar(1.00002);
+
+                // actually only useful if Sun or Moon direction has changed
+                if (this.skyManager) { this.skyManager.update(this.date, this.sunDirection); }
+            },
         );
-    }
-
-    onAfterCameraUpdate() {
-        const sunDirection = new THREE.Vector3();
-        getSunDirectionECEF(this.date, sunDirection);
-        // This creates a white disk at the Sun's position
-        sunDirection.multiplyScalar(1.00002);
-
-        this.sunLight.update(sunDirection, this.camera3D);
-
-        // actually only useful if Sun or Moon direction has changed
-        if (this.skyManager) { this.skyManager.update(this.date, sunDirection); }
     }
 
     /**
