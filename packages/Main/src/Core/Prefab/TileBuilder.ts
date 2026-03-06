@@ -10,7 +10,7 @@ const cacheBuffer = new Map<string, {
     index: THREE.BufferAttribute,
     uv: THREE.BufferAttribute,
 }>();
-const cacheTile = new LRUCache<string, Promise<TileGeometry>>({ max: 500 });
+const cacheTile = new LRUCache<string, TileGeometry>({ max: 500 });
 
 export type GpuBufferAttributes = {
     index: THREE.BufferAttribute | null;
@@ -87,36 +87,31 @@ export function newTileGeometry(
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
     const key = `s${south}l${params.level}bK${bufferKey}`;
-    let promiseGeometry = cacheTile.get(key);
+    let geometry = cacheTile.get(key);
+
+    if (geometry && !geometry.index) {
+        throw new Error('Geometry found in cache without index buffer');
+    }
 
     // build geometry if doesn't exist
-    if (!promiseGeometry) {
-        let resolve;
-        promiseGeometry = new Promise((r) => { resolve = r; });
-        cacheTile.set(key, promiseGeometry);
-
+    if (!geometry) {
         params.extent = shareableExtent;
         const center = builder.center(params.extent).clone();
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
 
-        let buffers;
-        try {
-            buffers = computeBuffers(
-                builder,
-                { ...params, center },
-                cachedBuffers !== undefined
-                    ? {
-                        index: cachedBuffers.index.array as
-                            Uint8Array | Uint16Array | Uint32Array,
-                        uv: cachedBuffers.uv.array as Float32Array,
-                    }
-                    : undefined,
-            );
-        } catch (e) {
-            return Promise.reject(e);
-        }
+        const buffers = computeBuffers(
+            builder,
+            { ...params, center },
+            cachedBuffers !== undefined
+                ? {
+                    index: cachedBuffers.index.array as
+                        Uint8Array | Uint16Array | Uint32Array,
+                    uv: cachedBuffers.uv.array as Float32Array,
+                }
+                : undefined,
+        );
 
         if (!cachedBuffers) {
             // We know the fields will exist due to the condition
@@ -145,15 +140,15 @@ export function newTileGeometry(
             normal: new THREE.BufferAttribute(buffers.normal, 3),
         };
 
-        const geometry = new TileGeometry(builder, params, gpuBuffers);
+        geometry = new TileGeometry(builder, params, gpuBuffers);
         geometry.OBB =
             new OBB(geometry.boundingBox!.min, geometry.boundingBox!.max);
         geometry.initRefCount(cacheTile, key);
-        resolve!(geometry);
 
-        return Promise.resolve({ geometry, quaternion, position });
+        cacheTile.set(key, geometry);
+
+        return { geometry, quaternion, position };
     }
 
-    return (promiseGeometry as Promise<TileGeometry>)
-        .then(geometry => ({ geometry, quaternion, position }));
+    return { geometry, quaternion, position };
 }

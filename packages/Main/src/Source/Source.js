@@ -8,7 +8,6 @@ import GTXParser from 'Parser/GTXParser';
 import ISGParser from 'Parser/ISGParser';
 import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
-// import Cache from 'Core/Scheduler/Cache';
 import { LRUCache } from 'lru-cache';
 
 /** @private */
@@ -192,16 +191,17 @@ class Source {
         }
     }
 
-    /**
-     * Tests if an extent is inside the source limits.
-     *
-     * @param {Extent} extent - Extent to test.
-
-     * @return {boolean} True if the extent is inside the limit, false otherwise.
-     */
     // eslint-disable-next-line
-    extentInsideLimit(extent) {
-        throw new Error('In extented Source, you have to implement the method extentInsideLimit!');
+    anyVisibleData(w) {
+        if (this.extent) {
+            if (w.isExtent) {
+                return this.extent.intersectsExtent(w);
+            } else if (w.isCoordinates) {
+                return this.extent.isPointInside(w);
+            }
+        }
+
+        return true;
     }
 }
 
