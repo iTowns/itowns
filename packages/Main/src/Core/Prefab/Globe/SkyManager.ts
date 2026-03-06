@@ -134,13 +134,13 @@ class SkyManager {
 
     enable() {
         // Realistic rendering requires a dimmer sunlight
-        this.view.sunLight.intensity *= 0.1;
+        this.view.sunLightLayer.sunLight.intensity *= 0.1;
         this.scene.add(this.sky, this.skyLight);
         this.effectPass.enabled = true;
     }
 
     disable() {
-        this.view.sunLight.intensity *= 10;
+        this.view.sunLightLayer.sunLight.intensity *= 10;
         this.scene.remove(this.sky, this.skyLight);
         this.effectPass.enabled = false;
     }
