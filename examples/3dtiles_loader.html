@@ -199,15 +199,15 @@
             const dateFolder = gui.addFolder('Date/Time');
             const date = view.date;
             dateFolder.add(
-                { month: Math.min(12, Math.max(1, 1 + date.getMonth())) }, 'month', 1, 12, 1
+                { month: THREE.MathUtils.clamp(1 + date.getMonth(), 1, 12) }, 'month', 1, 12, 1
             ).onChange((v) => {
-                date.setMonth(Math.min(12, Math.max(1, v)) - 1);
+                date.setMonth(v);
                 view.notifyChange(view.sunLightLayer);
             }).name('month (1-12)');
             dateFolder.add(
-                { hour: Math.min(21, Math.max(6, date.getHours())) }, 'hour', 6, 21, 0.1
+                { hour: THREE.MathUtils.clamp(date.getHours(), 6, 21) }, 'hour', 6, 21, 0.1
             ).onChange((v) => {
-                const clampedValue = Math.min(21, Math.max(6, v));
+                const clampedValue = v;
                 const hours = Math.floor(clampedValue);
                 const minutes = (clampedValue - hours) * 60;
                 date.setHours(hours, minutes);

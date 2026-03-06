@@ -18,14 +18,14 @@ import {
 import GlobeView from 'Core/Prefab/GlobeView';
 
 class SkyManager {
-    private readonly sky: THREE.Mesh;
-    private readonly skyLight: SkyLightProbe;
-    private readonly aerialPerspective: AerialPerspectiveEffect;
-    private readonly effectPass: EffectPass;
-    private readonly scene: THREE.Scene;
-    private readonly composer: EffectComposer;
-    private readonly fog: THREE.Fog;
-    private readonly view: GlobeView;
+    sky: THREE.Mesh;
+    skyLight: SkyLightProbe;
+    aerialPerspective: AerialPerspectiveEffect;
+    effectPass: EffectPass;
+    scene: THREE.Scene;
+    composer: EffectComposer;
+    fog: THREE.Fog;
+    view: GlobeView;
 
     constructor(view: GlobeView) {
         this.view = view;
