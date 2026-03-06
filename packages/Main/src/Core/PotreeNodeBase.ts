@@ -1,7 +1,5 @@
 import { Vector3, type Box3, type Group } from 'three';
 import PointCloudNode from 'Core/PointCloudNode';
-import type PotreeSource from 'Source/PotreeSource';
-import type Potree2Source from 'Source/Potree2Source';
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
 // of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
 // by applying the same subdivision algo recursively)
@@ -48,31 +46,23 @@ export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
 }
 
 export abstract class PotreeNodeBase extends PointCloudNode {
-    index: number;
-
-    childrenBitField: number;
+    override numPoints: number;
     crs: string;
 
-    private _hierarchyKey: string | undefined;
+    abstract hierarchyKey: string;
+    abstract childrenBitField: number;
 
     constructor(
         depth: number,
-        index: number,
         numPoints: number,
-        childrenBitField: number,
-        source: PotreeSource | Potree2Source,
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth);
 
-        this.childrenBitField = childrenBitField;
-
-        this.index = index;
+        this.numPoints = numPoints;
 
         this.crs = crs;
     }
-
-    abstract baseurl: string;
 
     override get childrenCreated(): boolean {
         return !(this.childrenBitField > 0 && this.children.length === 0);
@@ -84,16 +74,6 @@ export abstract class PotreeNodeBase extends PointCloudNode {
 
     override get id(): string {
         return this.hierarchyKey;
-    }
-
-    get hierarchyKey(): string {
-        if (this._hierarchyKey != undefined) { return this._hierarchyKey; }
-        if (this.depth === 0) {
-            this._hierarchyKey = 'r';
-        } else {
-            this._hierarchyKey = `${this.parent?.hierarchyKey}${this.index}`;
-        }
-        return this._hierarchyKey;
     }
 
     override fetcher(url: string, networkOptions = this.networkOptions): Promise<ArrayBuffer> {
