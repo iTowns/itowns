@@ -19,9 +19,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     depth: number;
 
-    /** The number of points in this node.
-     * '-1' is the node has been loaded yet */
-    numPoints: number;
     /** The children nodes of this node. */
     children: this[];
     parent: this | undefined;
@@ -39,12 +36,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     promise: Promise<unknown> | null;
     obj: THREE.Points | undefined;
 
-    constructor(depth: number, numPoints: number) {
+    abstract numPoints: number;
+
+    constructor(depth: number) {
         super();
 
         this.depth = depth;
-
-        this.numPoints = numPoints;
 
         this.children = [];
         this.parent = undefined;

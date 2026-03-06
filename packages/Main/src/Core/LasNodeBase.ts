@@ -1,6 +1,6 @@
 import { Vector3, Box3, type Group } from 'three';
 import type { Hierarchy } from 'copc';
-import PointCloudNode, { PointCloudSource } from 'Core/PointCloudNode';
+import PointCloudNode from 'Core/PointCloudNode';
 
 const size = new Vector3();
 const position = new Vector3();
@@ -19,29 +19,28 @@ abstract class LasNodeBase extends PointCloudNode {
     y: number;
     /** Z position within the octree */
     z: number;
-    /** The depth of the node in the tree */
 
-    /** The id of the node, constituted of the four
-     * components: `depth-x-y-z`. */
-    voxelKey: string;
+    /** The number of points in this node.
+     * '-1' is the node has been loaded yet */
+    override numPoints: number;
 
     crs: string;
 
     private _childrenCreated: boolean;
 
-    constructor(depth: number,
+    constructor(
+        depth: number,
         x: number, y: number, z: number,
-        source: PointCloudSource,
         numPoints: number,
         crs: string,
     ) {
-        super(depth, numPoints);
+        super(depth);
 
         this.x = x;
         this.y = y;
         this.z = z;
 
-        this.voxelKey = buildVoxelKey(depth, x, y, z);
+        this.numPoints = numPoints;
 
         this.crs = crs;
 
