@@ -1,0 +1,27 @@
+{
+  "name": "@itowns/demo",
+  "version": "0.1.0",
+  "description": "Itowns Demo",
+  "type": "module",
+  "scripts": {
+    "build": "",
+    "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
+    "transpile": "tsc && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir dist --extensions .js,.ts",
+    "watch": "npm run transpile -- --watch"
+  },
+  "files": [
+    "src"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iTowns/itowns.git"
+  },
+  "license": "(CECILL-B OR MIT)",
+  "bugs": {
+    "url": "https://github.com/itowns/itowns/issues"
+  },
+  "homepage": "https://itowns.github.io/",
+  "dependencies": {
+    "itowns": "^2.46.0"
+  }
+}
