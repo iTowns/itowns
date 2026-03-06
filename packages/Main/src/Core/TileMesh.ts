@@ -6,11 +6,24 @@ import type { Extent } from '@itowns/geographic';
 import type { TileGeometry } from 'Core/TileGeometry';
 import type Tile from 'Core/Tile/Tile';
 import OBB from 'Renderer/OBB';
-import type { LayeredMaterial } from 'Renderer/LayeredMaterial';
+import type { LayeredMaterial, LayeredMaterialParameters } from 'Renderer/LayeredMaterial';
 import type LayerUpdateState from 'Layer/LayerUpdateState';
+import { TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
 
-interface TileLayerLike {
+// A simplified interface for TiledGeometryLayer.
+// It is used to avoid a dependency on the full TiledGeometryLayer type.
+export interface TileLayerLike {
+    diffuse: THREE.Color;
+    showOutline: boolean;
+    isGlobeLayer: boolean;
+    segments: number;
+    disableSkirt: boolean;
+    hideSkirt: boolean;
     tileMatrixSets: string[];
+    materialOptions: LayeredMaterialParameters;
+    builder: TileBuilder<TileBuilderParams>;
+    castShadow: boolean;
+    receiveShadow: boolean;
 }
 
 /**
@@ -75,6 +88,8 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
         this.geoidHeight = 0;
 
         this.link = {};
+
+        this.receiveShadow = layer.receiveShadow;
 
         let _visible = true;
         Object.defineProperty(this, 'visible', {
