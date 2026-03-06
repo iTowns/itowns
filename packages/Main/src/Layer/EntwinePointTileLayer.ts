@@ -41,11 +41,11 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
 
         this.isEntwinePointTileLayer = true;
 
-        const loadOctree = this.source.whenReady.then((source) => {
+        const setRootNode = this.source.whenReady.then((source) => {
             this.setElevationRange();
 
             const { bounds } = source;
-            this.root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, this.crs);
+            this.root = new EntwinePointTileNode(0, 0, 0, 0, source, this.crs);
 
             this.root.voxelOBB.setFromArray(bounds).projOBB(source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
@@ -53,10 +53,10 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
             this.obbes.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
-            return this.root.loadOctree();
+            return this.root;
         });
 
-        this._promises.push(loadOctree);
+        this._promises.push(setRootNode);
     }
 }
 

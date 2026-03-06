@@ -1,7 +1,5 @@
 import * as THREE from 'three';
 import OBB from 'Renderer/OBB';
-import proj4 from 'proj4';
-import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 export interface PointCloudSource {
     spacing: number;
@@ -21,8 +19,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     depth: number;
 
-    /** The number of points in this node. */
-    numPoints: number;
     /** The children nodes of this node. */
     children: this[];
     parent: this | undefined;
@@ -40,15 +36,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     promise: Promise<unknown> | null;
     obj: THREE.Points | undefined;
 
-    private _origin: Coordinates | undefined;
-    private _rotation: THREE.Quaternion | undefined;
+    abstract numPoints: number;
 
-    constructor(depth: number, numPoints = 0) {
+    constructor(depth: number) {
         super();
 
         this.depth = depth;
-
-        this.numPoints = numPoints;
 
         this.children = [];
         this.parent = undefined;
@@ -61,11 +54,12 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.promise = null;
     }
 
+    abstract childrenCreated: boolean;
     abstract get networkOptions(): RequestInit;
-    abstract get octreeIsLoaded(): boolean;
+    abstract get hierarchyIsLoaded(): boolean;
     abstract get id(): string;
     abstract get url(): string;
-    abstract loadOctree(): Promise<void>;
+    abstract createChildren(): Promise<void>;
     abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
 
@@ -73,37 +67,9 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this.source.spacing / 2 ** this.depth;
     }
 
-    // the origin is the center of the clamped OBB projected
-    // on the z=O local plan, in the world referential.
-    get origin(): Coordinates {
-        if (this._origin != undefined) { return this._origin; }
-        const center = this.clampOBB.center;
-        const centerCrsIn = CRS.transform(this.crs, this.source.crs).forward(center);
-        this._origin =  new Coordinates(this.crs)
-            .setFromArray(
-                CRS.transform(this.source.crs, this.crs)
-                    .forward([centerCrsIn.x, centerCrsIn.y, 0]));
-        return this._origin;
-    }
-
-    /**
-     * get the rotation between the local referentiel and
-     * the geocentrique one (if appliable).
-     */
-    get rotation(): THREE.Quaternion {
-        if (this._rotation != undefined) { return this._rotation; }
-        this._rotation = new THREE.Quaternion();
-        if (proj4.defs(this.crs).projName === 'geocent') {
-            this._rotation =
-            OrientationUtils.quaternionFromCRSToCRS(this.crs, this.source.crs)(this.origin);
-        }
-        return this._rotation;
-    }
-
     async load(): Promise<THREE.BufferGeometry> {
-        // Query octree/HRC if we don't have children yet.
-        if (!this.octreeIsLoaded) {
-            await this.loadOctree();
+        if (!this.childrenCreated) {
+            await this.createChildren();
         }
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {

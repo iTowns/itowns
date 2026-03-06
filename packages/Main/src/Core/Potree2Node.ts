@@ -34,8 +34,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import type Potree2Source from 'Source/Potree2Source';
-import type { BufferGeometry } from 'three';
 import PotreeNodeBase from 'Core/PotreeNodeBase';
+
+type NodeInfo = {
+    childrenBitField: number, // 0 <= integer <= 255
+    numPoints: number, // integer >= 0
+    byteOffset: bigint,
+    byteSize: bigint,
+}
 
 const NODE_TYPE = {
     NORMAL: 0,
@@ -48,29 +54,38 @@ type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
 
-    loaded: boolean;
-    loading: boolean;
+    hierarchyKey: string;
+    hierarchy: Record<string, NodeInfo>;
 
-    // Properties initialized after loading hierarchy
-    byteOffset!: bigint;
-    byteSize!: bigint;
-    hierarchyByteOffset!: bigint;
-    hierarchyByteSize!: bigint;
-    nodeType!: NodeType;
+    childrenBitField: number;
+
+    private baseurl: string;
+
+    private byteOffset: bigint;
+    private byteSize: bigint;
 
     constructor(
-        depth: number,
-        index: number,
-        numPoints = 0,
-        childrenBitField = 0,
+        hierarchyKey: string,
         source: Potree2Source,
         crs: string,
+        hierarchy: Record<string, NodeInfo> = {},
     ) {
-        super(depth, index, numPoints, childrenBitField, source, crs);
+        const depth = hierarchyKey.length - 1;
+        const numPoints = hierarchy[hierarchyKey]?.numPoints ?? -1;
+        super(depth, numPoints, crs);
         this.source = source;
 
-        this.loaded = false;
-        this.loading = false;
+        this.baseurl = this.source.baseurl;
+
+        this.hierarchyKey = hierarchyKey;
+        this.hierarchy = hierarchy;
+
+        this.childrenBitField = this.hierarchy[this.hierarchyKey]?.childrenBitField ?? 255;
+
+        this.byteOffset = this.hierarchy[hierarchyKey]?.byteOffset ?? 0n;
+
+        this.byteSize = this.hierarchy[hierarchyKey]?.byteSize ??
+            BigInt(this.source.metadata.hierarchy.firstChunkSize);
     }
 
     override get url(): string {
@@ -78,15 +93,10 @@ class Potree2Node extends PotreeNodeBase {
     }
 
     override get networkOptions(): RequestInit {
-        let byteOffset = this.byteOffset;
-        let byteSize = this.byteSize;
-        if (this.nodeType === NODE_TYPE.PROXY) {
-            byteOffset = this.hierarchyByteOffset;
-            byteSize = this.hierarchyByteSize;
-        }
-        const first = byteOffset;
-        const last = first + byteSize - 1n;
+        const first = this.byteOffset;
+        const last = first + this.byteSize - 1n;
 
+        const regex = /^https:\/\/(raw|media)\.githubusercontent\.com/;
         // When we specify 'multipart/byteranges' on headers request it triggers
         // a preflight request. Currently github doesn't support it https://github.com/orgs/community/discussions/24659
         // But if we omit header parameter, github seems to know it's a
@@ -95,7 +105,7 @@ class Potree2Node extends PotreeNodeBase {
             ...this.source.networkOptions,
             headers: {
                 ...this.source.networkOptions.headers,
-                ...(this.url.startsWith('https://raw.githubusercontent.com') ? {} : { 'content-type': 'multipart/byteranges' }),
+                ...(regex.test(this.url) ? {} : { 'content-type': 'multipart/byteranges' }),
                 Range: `bytes=${first}-${last}`,
             },
         };
@@ -103,91 +113,104 @@ class Potree2Node extends PotreeNodeBase {
         return networkOptions;
     }
 
-    override async load(): Promise<BufferGeometry> {
-        return super.load()
-            .then((data) => {
-                this.loaded = true;
-                this.loading = false;
-                return data;
-            });
-    }
-
-    override loadOctree(): Promise<void> {
-        if (this.loaded || this.loading) {
-            return Promise.resolve();
+    async loadHierarchy(): Promise<Record<string, NodeInfo>> {
+        if (this.hierarchyIsLoaded) {
+            return this.hierarchy;
         }
-        this.loading = true;
-        return (this.nodeType === NODE_TYPE.PROXY) ? this.loadHierarchy() : Promise.resolve();
-    }
 
-    async loadHierarchy(): Promise<void> {
         const hierarchyUrl = `${this.baseurl}/hierarchy.bin`;
-        const buffer = await this.fetcher(hierarchyUrl, this.networkOptions);
-        this.parseHierarchy(buffer);
-    }
-
-    parseHierarchy(buffer: ArrayBuffer): void {
+        const buffer = await this.fetcher(hierarchyUrl);
         const view = new DataView(buffer);
+
+        // update current node from the newly fetched hierarchy buffer
+        this.childrenBitField = view.getUint8(1);
+        this.numPoints = view.getUint32(2, true);
+        // update byteOffset/byteSize from page Info to node Info
+        this.byteOffset = view.getBigInt64(6, true);
+        this.byteSize = view.getBigInt64(14, true);
+
+        // parse and create Hierarchy
+        const stack = [];
+        stack.push(this.hierarchyKey);
+
+        const hierarchy: Record<string, NodeInfo> = {
+        };
 
         const bytesPerNode = 22;
         const numNodes = buffer.byteLength / bytesPerNode;
 
-        const stack = [];
-        stack.push(this);
-
         for (let indexNode = 0; indexNode < numNodes; indexNode++) {
-            const current = stack.shift() as Potree2Node;
+            const hierarchyKey: string = stack.shift() as string;
             const offset = indexNode * bytesPerNode;
 
             const type = view.getUint8(offset + 0) as NodeType;
-            const childMask = view.getUint8(offset + 1);
-            const numPoints = view.getUint32(offset + 2, true);
+            let childrenBitField = view.getUint8(offset + 1);
+            let numPoints = view.getUint32(offset + 2, true);
             const byteOffset = view.getBigInt64(offset + 6, true);
             const byteSize = view.getBigInt64(offset + 14, true);
 
-            if (current.nodeType === NODE_TYPE.PROXY) {
-                // replace proxy with real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
-                current.numPoints = numPoints;
-            } else if (type === NODE_TYPE.PROXY) {
+
+            if (type === NODE_TYPE.PROXY) {
                 // load proxy
-                current.hierarchyByteOffset = byteOffset;
-                current.hierarchyByteSize = byteSize;
-                current.numPoints = numPoints;
-            } else {
-                // load real node
-                current.byteOffset = byteOffset;
-                current.byteSize = byteSize;
-                current.numPoints = numPoints;
+                numPoints = -1;
+                childrenBitField = 255;
             }
 
-            if (current.byteSize === 0n) {
-                // workaround for issue potree/potree#1125
+            if (byteSize === 0n) {
+                // workaround for issue potree/potree/issues/1125
                 // some inner nodes erroneously report >0 points even though
                 // have 0 points however, they still report a byteSize of 0,
                 // so based on that we now set node.numPoints to 0.
-                current.numPoints = 0;
+                numPoints = 0;
             }
 
-            current.nodeType = type;
+            hierarchy[hierarchyKey] = {
+                childrenBitField,
+                numPoints,
+                byteOffset,
+                byteSize,
 
-            if (current.nodeType === NODE_TYPE.PROXY) {
+            };
+
+            if (type === NODE_TYPE.PROXY) {
                 continue;
             }
 
             for (let childIndex = 0; childIndex < 8; childIndex++) {
-                const childExists = ((1 << childIndex) & childMask) !== 0;
+                const childExists = ((1 << childIndex) & childrenBitField) !== 0;
 
                 if (!childExists) {
                     continue;
                 }
-
-                const child = new Potree2Node(
-                    current.depth + 1, childIndex, numPoints, childMask, this.source, this.crs);
-                current.add(child, childIndex);
-                stack.push(child);
+                stack.push(`${hierarchyKey}${childIndex}`);
             }
+        }
+        this.hierarchy = hierarchy;
+        return hierarchy;
+    }
+
+    override async createChildren(): Promise<void> {
+        await this.loadHierarchy();
+
+        const childMask = this.hierarchy[this.hierarchyKey].childrenBitField;
+
+        for (let childIndex = 0; childIndex < 8; childIndex++) {
+            const childExists = ((1 << childIndex) & childMask) !== 0;
+
+            if (!childExists) {
+                continue;
+            }
+
+            const childHierarchyKey = `${this.hierarchyKey}${childIndex}`;
+
+            const child = new Potree2Node(
+                childHierarchyKey,
+                this.source,
+                this.crs,
+                this.hierarchy,
+            );
+
+            this.add(child as this, childIndex);
         }
     }
 }

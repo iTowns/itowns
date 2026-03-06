@@ -45,7 +45,7 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
         this.isPotreeLayer = true;
 
-        const loadOctree = this.source.whenReady.then((cloud) => {
+        const setRootNode =  this.source.whenReady.then((cloud) => {
             const normal = Array.isArray(cloud.pointAttributes) &&
                 cloud.pointAttributes.find((elem: string) => elem.startsWith('NORMAL'));
             if (normal) {
@@ -55,19 +55,22 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
             this.setElevationRange();
 
+            console.log(cloud.hierarchyStepSize, this.source.baseurl);
+            // this.source.hierarchyStepSize = 2;
+
             const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
             const bounds = [lx, ly, lz, ux, uy, uz];
-            this.root = new PotreeNode(0, 0, -1, undefined, this.source, this.crs);
+            this.root = new PotreeNode('r', this.source, this.crs);
             this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
             this.obbes.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 
-            return this.root.loadOctree();
+            return this.root;
         });
 
-        this._promises.push(loadOctree);
+        this._promises.push(setRootNode);
     }
 }
 
