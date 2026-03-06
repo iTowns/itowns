@@ -19,7 +19,7 @@ export const ExtrudedData3dScene: SceneType = {
     meshes: [],
     ready: false,
     event: function update(/* dt */) {
-        const view = ExtrudedData3dScene.getItownsView();
+        const itownsView = ExtrudedData3dScene.getItownsView();
         if (ExtrudedData3dScene.meshes!.length) {
             for (let i = 0; i < ExtrudedData3dScene.meshes!.length; i++) {
                 const mesh = ExtrudedData3dScene.meshes![i];
@@ -28,7 +28,7 @@ export const ExtrudedData3dScene: SceneType = {
                     mesh.updateMatrixWorld(true);
                 }
             }
-            view.notifyChange(view.camera3D, true);
+            itownsView.notifyChange(itownsView.camera3D, true);
         }
     },
     getView: () => {
@@ -63,19 +63,19 @@ export const ExtrudedData3dScene: SceneType = {
         ExtrudedData3dScene.ready = true;
     },
     onEnter: async () => {
-        const view = ExtrudedData3dScene.getItownsView();
+        const itownsView = ExtrudedData3dScene.getItownsView();
         for (const mesh of ExtrudedData3dScene.meshes!) {
-            view.scene.add(mesh);
+            itownsView.scene.add(mesh);
         }
-        view.addFrameRequester(
+        itownsView.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
     onExit: async () => {
-        const view = ExtrudedData3dScene.getItownsView();
+        const itownsView = ExtrudedData3dScene.getItownsView();
         for (const mesh of ExtrudedData3dScene.meshes!) {
-            view.scene.remove(mesh);
+            itownsView.scene.remove(mesh);
         }
-        view.removeFrameRequester(
+        itownsView.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
     },
 };

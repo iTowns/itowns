@@ -47,13 +47,13 @@ export const InstancedDataScene: SceneType = {
         }
         InstancedDataScene.view = new View3D();
 
-        const view = InstancedDataScene.getItownsView();
+        const itownsView = InstancedDataScene.getItownsView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
         const environment = new RoomEnvironment();
-        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
-        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        const pmremGenerator = new THREE.PMREMGenerator(itownsView.renderer);
+        itownsView.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
         function scaleZ(mesh: THREE.Mesh) {

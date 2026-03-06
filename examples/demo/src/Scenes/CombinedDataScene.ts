@@ -49,7 +49,7 @@ export const CombinedDataScene: SceneType = {
     },
     getItownsView: () => CombinedDataScene.getView().getItownsView(),
     event: function update(/* dt */) {
-        const view = CombinedDataScene.getItownsView();
+        const itownsView = CombinedDataScene.getItownsView();
         if (CombinedDataScene.meshes!.length) {
             for (let i = 0; i < CombinedDataScene.meshes!.length; i++) {
                 const mesh = CombinedDataScene.meshes![i];
@@ -58,7 +58,7 @@ export const CombinedDataScene: SceneType = {
                     mesh.updateMatrixWorld(true);
                 }
             }
-            view.notifyChange(view.camera3D, true);
+            itownsView.notifyChange(itownsView.camera3D, true);
         }
     },
     onCreate: async () => {
@@ -67,13 +67,13 @@ export const CombinedDataScene: SceneType = {
         }
         CombinedDataScene.view = new View3D();
 
-        const view = CombinedDataScene.getItownsView();
+        const itownsView = CombinedDataScene.getItownsView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
         const environment = new RoomEnvironment();
-        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
-        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        const pmremGenerator = new THREE.PMREMGenerator(itownsView.renderer);
+        itownsView.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
         function scaleZ(mesh: THREE.Mesh) {
@@ -104,23 +104,23 @@ export const CombinedDataScene: SceneType = {
         await CombinedDataScene.view.addLayers(CombinedDataScene.layers);
 
         const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(
-            view.referenceCrs,
+            itownsView.referenceCrs,
         )) as LayerType as itowns.CopcLayer;
         CombinedDataScene.layers.push(pointCloudLayer);
-        await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
+        await itowns.View.prototype.addLayer.call(itownsView, pointCloudLayer);
 
         colorButton.addEventListener('click', () => {
             pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
             colorButton.classList.add('active');
             classificationButton.classList.remove('active');
-            view.notifyChange(pointCloudLayer, true);
+            itownsView.notifyChange(pointCloudLayer, true);
         });
 
         classificationButton.addEventListener('click', () => {
             pointCloudLayer.material.mode = itowns.PNTS_MODE.CLASSIFICATION;
             classificationButton.classList.add('active');
             colorButton.classList.remove('active');
-            view.notifyChange(pointCloudLayer, true);
+            itownsView.notifyChange(pointCloudLayer, true);
         });
 
         classificationButton.classList.add('active');
@@ -139,7 +139,7 @@ export const CombinedDataScene: SceneType = {
         coord.z = 175; // elevation offset
 
         // Position in the view CRS
-        model.position.copy(coord.as(view.referenceCrs).toVector3());
+        model.position.copy(coord.as(itownsView.referenceCrs).toVector3());
 
         // Align glTF's Y-up to the local ground normal
         model.quaternion.setFromUnitVectors(
@@ -166,19 +166,19 @@ export const CombinedDataScene: SceneType = {
         CombinedDataScene.ready = true;
     },
     onEnter: async () => {
-        const view = CombinedDataScene.getItownsView();
+        const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'block';
-        view.scene.add(...CombinedDataScene.meshes!);
-        view.addFrameRequester(
+        itownsView.scene.add(...CombinedDataScene.meshes!);
+        itownsView.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             CombinedDataScene.event,
         );
     },
     onExit: async () => {
-        const view = CombinedDataScene.getItownsView();
+        const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'none';
-        view.scene.remove(...CombinedDataScene.meshes!);
-        view.removeFrameRequester(
+        itownsView.scene.remove(...CombinedDataScene.meshes!);
+        itownsView.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             CombinedDataScene.event,
         );

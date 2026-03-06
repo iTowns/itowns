@@ -49,7 +49,7 @@ export const PointCloudScene: SceneType = {
         }
         PointCloudScene.view = new View3D();
 
-        const view = PointCloudScene.getItownsView();
+        const itownsView = PointCloudScene.getItownsView();
 
         PointCloudScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
         PointCloudScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());
@@ -57,23 +57,23 @@ export const PointCloudScene: SceneType = {
 
         await PointCloudScene.view.addLayers(PointCloudScene.layers);
 
-        const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(view.referenceCrs)) as
+        const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(itownsView.referenceCrs)) as
             LayerType as itowns.CopcLayer;
         PointCloudScene.layers.push(pointCloudLayer);
-        await itowns.View.prototype.addLayer.call(view, pointCloudLayer);
+        await itowns.View.prototype.addLayer.call(itownsView, pointCloudLayer);
 
         colorButton.addEventListener('click', () => {
             pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
             colorButton.classList.add('active');
             classificationButton.classList.remove('active');
-            view.notifyChange(pointCloudLayer, true);
+            itownsView.notifyChange(pointCloudLayer, true);
         });
 
         classificationButton.addEventListener('click', () => {
             pointCloudLayer.material.mode = itowns.PNTS_MODE.CLASSIFICATION;
             classificationButton.classList.add('active');
             colorButton.classList.remove('active');
-            view.notifyChange(pointCloudLayer, true);
+            itownsView.notifyChange(pointCloudLayer, true);
         });
 
         classificationButton.classList.add('active');

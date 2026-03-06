@@ -34,13 +34,13 @@ export const BIMScene: SceneType = {
         }
         BIMScene.view = new View3D();
 
-        const view = BIMScene.getItownsView();
+        const itownsView = BIMScene.getItownsView();
 
         // Set the environment map for all physical materials in the scene.
         // Otherwise, mesh with only diffuse colors will appear black.
         const environment = new RoomEnvironment();
-        const pmremGenerator = new THREE.PMREMGenerator(view.renderer);
-        view.scene.environment = pmremGenerator.fromScene(environment).texture;
+        const pmremGenerator = new THREE.PMREMGenerator(itownsView.renderer);
+        itownsView.scene.environment = pmremGenerator.fromScene(environment).texture;
         pmremGenerator.dispose();
 
         BIMScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
@@ -57,7 +57,7 @@ export const BIMScene: SceneType = {
         coord.z = 240; // elevation offset
 
         // Position in the view CRS
-        model.position.copy(coord.as(view.referenceCrs).toVector3());
+        model.position.copy(coord.as(itownsView.referenceCrs).toVector3());
 
         // Align glTF's Y-up to the local ground normal
         model.quaternion.setFromUnitVectors(
@@ -82,11 +82,11 @@ export const BIMScene: SceneType = {
         BIMScene.ready = true;
     },
     onEnter: async () => {
-        const view = BIMScene.getItownsView();
-        view.scene.add(...BIMScene.meshes!);
+        const itownsView = BIMScene.getItownsView();
+        itownsView.scene.add(...BIMScene.meshes!);
     },
     onExit: async () => {
-        const view = BIMScene.getItownsView();
-        view.scene.remove(...BIMScene.meshes!);
+        const itownsView = BIMScene.getItownsView();
+        itownsView.scene.remove(...BIMScene.meshes!);
     },
 };

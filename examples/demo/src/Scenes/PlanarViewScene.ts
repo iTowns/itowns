@@ -55,10 +55,10 @@ export const PlanarViewScene: SceneType = {
         PlanarViewScene.ready = true;
     },
     onEnter: async () => {
-        const view = PlanarViewScene.getItownsView();
+        const itownsView = PlanarViewScene.getItownsView();
 
-        view.camera3D.position.copy(PlanarViewScene.cameraPlacement!);
-        view.camera3D.updateMatrixWorld(true);
-        view.notifyChange(view.camera3D);
+        itownsView.camera3D.position.copy(PlanarViewScene.cameraPlacement!);
+        itownsView.camera3D.updateMatrixWorld(true);
+        itownsView.notifyChange(itownsView.camera3D);
     },
 };
