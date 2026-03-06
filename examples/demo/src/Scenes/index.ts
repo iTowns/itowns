@@ -8,3 +8,4 @@ export * from './PointCloudScene';
 export * from './ProjectedData2dScene';
 export * from './Terrain3dScene';
 export * from './TexturedMeshes3dScene';
+export * from './CombinedDataScene';

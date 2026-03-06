@@ -4,6 +4,7 @@ import type { SceneType } from '../Types';
 import { View3D } from '../Views';
 import { SceneRepository } from '../Repositories';
 import * as Layers from '../Layers';
+import * as Models from '../ModelLoaders';
 import { Globe3dScene } from '../Scenes';
 import { FeaturePickerService } from '../Services';
 
@@ -102,7 +103,8 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
 
     // if current range is less than minimum range, unzoom first then move
     // to make transition smoother
-    if (currentScene.placement.range < minRange && nextScene.placement.range < minRange) {
+    if (currentScene.placement.range < minRange &&
+        nextScene.placement.range < minRange && distance > Config.MIN_DISTANCE) {
         cameraPromise = moveCameraTo(
             transitionView, {
                 coord: camCoords,
@@ -114,8 +116,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
                 moveCameraTo(transitionView,
                     nextScene.placement, Config.DURATION / 2).catch(console.error));
     } else {
-        cameraPromise = moveCameraTo(transitionView,
-            nextScene.placement).catch(console.error);
+        cameraPromise = moveCameraTo(transitionView, nextScene.placement).catch(console.error);
     }
 
     cameraPromise.then(() => {
@@ -181,6 +182,12 @@ export const hardResetScene = async (scene: SceneType) => {
     for (const layer of layers) {
         layer.layerPromise = undefined;
         layer.cachedLayer = undefined;
+    }
+
+    const models = Object.values(Models);
+    for (const model of models) {
+        model.modelPromise = undefined;
+        model.cachedModel = undefined;
     }
 
     for (const s of SceneRepository) {

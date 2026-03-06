@@ -5,8 +5,9 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as Layers from '../Layers';
 import { View3D } from '../Views';
 import type { SceneType } from '../Types';
+import { BIMLoader } from '../ModelLoaders';
 
-export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
+export const BIMScene: SceneType = {
     title: 'From Building to Territory',
     description: 'Integrate Building Information Models into your geospatial context. '
     + 'Load glTF models to combine architectural and geographic data.',
@@ -19,7 +20,7 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
     layers: [],
     view: undefined,
     ready: false,
-    model: null,
+    meshes: [],
     getView: () => {
         if (!BIMScene.view) {
             throw new Error('BIM Scene view is not initialized');
@@ -48,66 +49,44 @@ export const BIMScene: SceneType & { model: THREE.Object3D | null } = {
 
         await BIMScene.view.addLayers(BIMScene.layers);
 
-        // Load a glTF resource
-        const gltfLoader = new itowns.iGLTFLoader();
+        const model = await BIMLoader.getModel();
 
-        const modelLoaderPromise = new Promise<THREE.Object3D>((resolve) => {
-            gltfLoader.load(
-                // resource URL
-                'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/models/wellness_center/wellness_center.glb',
+        model.scale.set(4, 4, 4);
 
-                // called when the resource is loaded
-                (gltf: { scene: THREE.Scene }) => {
-                    BIMScene.model = gltf.scene;
+        const coord = BIMScene.placement.coord.clone();
+        coord.z = 240; // elevation offset
 
-                    BIMScene.model.scale.set(4, 4, 4);
+        // Position in the view CRS
+        model.position.copy(coord.as(view.referenceCrs).toVector3());
 
-                    const coord = BIMScene.placement.coord.clone();
-                    coord.z = 240; // elevation offset
+        // Align glTF's Y-up to the local ground normal
+        model.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            coord.geodesicNormal,
+        );
 
-                    // Position in the view CRS
-                    BIMScene.model.position.copy(coord.as(view.referenceCrs).toVector3());
+        const rotation = [0, 125, 0];
+        const eulerRot = new THREE.Euler(
+            THREE.MathUtils.degToRad(rotation[2]),
+            -THREE.MathUtils.degToRad(rotation[1]),
+            -THREE.MathUtils.degToRad(rotation[0]), 'ZYX',
+        );
+        model.quaternion.multiply(
+            new THREE.Quaternion().setFromEuler(eulerRot));
 
-                    // Align glTF's Y-up to the local ground normal
-                    BIMScene.model.quaternion.setFromUnitVectors(
-                        new THREE.Vector3(0, 1, 0),
-                        coord.geodesicNormal,
-                    );
+        // Notify that the model has been updated
+        model.updateMatrixWorld(true);
 
-                    const rotation = [0, 125, 0];
-                    const eulerRot = new THREE.Euler(
-                        THREE.MathUtils.degToRad(rotation[2]),
-                        -THREE.MathUtils.degToRad(rotation[1]),
-                        -THREE.MathUtils.degToRad(rotation[0]), 'ZYX',
-                    );
-                    BIMScene.model.quaternion.multiply(
-                        new THREE.Quaternion().setFromEuler(eulerRot));
-
-                    // Notify that the model has been updated
-                    BIMScene.model.updateMatrixWorld(true);
-                    resolve(BIMScene.model);
-                },
-
-                // called while loading is progressing
-                () => {
-                },
-
-                (error: Error) => {
-                    console.error('An error happened while loading the BIM.', error);
-                },
-            );
-        });
-
-        await modelLoaderPromise;
+        BIMScene.meshes?.push(model);
 
         BIMScene.ready = true;
     },
     onEnter: async () => {
         const view = BIMScene.getItownsView();
-        view.scene.add(BIMScene.model);
+        view.scene.add(...BIMScene.meshes!);
     },
     onExit: async () => {
         const view = BIMScene.getItownsView();
-        view.scene.remove(BIMScene.model);
+        view.scene.remove(...BIMScene.meshes!);
     },
 };

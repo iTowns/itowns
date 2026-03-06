@@ -6,9 +6,10 @@ export const SceneRepository = [
     Scenes.ProjectedData2dScene,
     Scenes.ExtrudedData3dScene,
     Scenes.InstancedDataScene,
-    Scenes.PointCloudScene,
-    Scenes.TexturedMeshes3dScene,
     Scenes.BIMScene,
+    Scenes.PointCloudScene,
+    Scenes.CombinedDataScene,
+    Scenes.TexturedMeshes3dScene,
     Scenes.PlanarViewScene,
     Scenes.ImmersiveViewScene,
 ];

@@ -126,7 +126,7 @@ button.active {
 #point-cloud-config {
     position: fixed;
     top: 1vh;
-    right: 1vh;
+    left: 1vh;
     padding: 1vh 1.5vh;
     border-radius: 1vh;
 
