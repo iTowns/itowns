@@ -142,6 +142,7 @@
                 composer.addPass(renderPass);
                 composer.addPass(edlPass);
 
+                /*
                 view.render = function render() {
                     // Render point cloud + EDL to screen
                     withHidden(view, layer => !layer.isPointCloudLayer, () => {
@@ -153,6 +154,7 @@
                         renderer.render(view.scene, view.camera3D);
                     });
                 };
+                */
 
                 layer.crs = source.crs;
                 View.prototype.addLayer.call(view, layer);

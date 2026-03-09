@@ -377,10 +377,6 @@ export function quaternionUnimplemented(
     coordinates?: Coordinates,
     target = new Quaternion(),
 ) {
-    console.warn(
-        'This quaternion function is not implemented for projections of type',
-        proj.projName,
-    );
     return coordinates ? target.set(0, 0, 0, 1) :
         (coordinates: Coordinates, target = new Quaternion()) =>
             quaternionUnimplemented(proj, coordinates, target);
