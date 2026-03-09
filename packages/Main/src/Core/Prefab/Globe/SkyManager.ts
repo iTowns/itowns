@@ -1,18 +1,11 @@
 import * as THREE from 'three';
 import {
-    AerialPerspectiveEffect,
     SkyLightProbe,
     SkyMaterial,
     getMoonDirectionECEF,
     PrecomputedTexturesGenerator,
 } from '@takram/three-atmosphere';
 import {
-    EffectPass,
-    RenderPass,
-    ToneMappingEffect,
-    FXAAEffect,
-    ToneMappingMode,
-    EffectMaterial,
     EffectComposer,
 } from 'postprocessing';
 import GlobeView from 'Core/Prefab/GlobeView';
@@ -20,11 +13,9 @@ import GlobeView from 'Core/Prefab/GlobeView';
 class SkyManager {
     sky: THREE.Mesh;
     skyLight: SkyLightProbe;
-    aerialPerspective: AerialPerspectiveEffect;
-    effectPass: EffectPass;
+    generator: PrecomputedTexturesGenerator;
     scene: THREE.Scene;
     composer: EffectComposer;
-    fog: THREE.Fog;
     view: GlobeView;
 
     constructor(view: GlobeView) {
@@ -46,103 +37,37 @@ class SkyManager {
         this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
 
-        this.aerialPerspective = new AerialPerspectiveEffect(camera);
-        this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
-
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
 
-        composer.addPass(new RenderPass(scene, camera));
-        this.effectPass = new EffectPass(
-            camera,
-            this.aerialPerspective,
-            new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
-        );
-        this.effectPass.enabled = false;
-        composer.addPass(this.effectPass);
-        composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
-
         // Generate precomputed textures.
-        const generator = new PrecomputedTexturesGenerator(renderer);
-        generator.update().catch((error) => { console.error(error); });
+        this.generator = new PrecomputedTexturesGenerator(renderer);
+        this.generator.update().catch((error) => { console.error(error); });
 
-        const textures = generator.textures;
+        const textures = this.generator.textures;
         Object.assign(skyMaterial, textures);
         this.skyLight.irradianceTexture = textures.irradianceTexture;
-        Object.assign(this.aerialPerspective, textures);
-
-        this.fog = scene.fog;
-
-        this.enable();
-
-        scene.onBeforeRender = () => {
-            // disable fog only during render
-            // to let its parameters be modified elsewhere
-            if (this.enabled) { this.scene.fog = null; }
-        };
-        scene.onAfterRender = () => {
-            if (this.enabled) { this.scene.fog = this.fog; }
-        };
 
         this.composer.render();
     }
 
     update(date: Date, sunDirection: THREE.Vector3) {
         const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        if (!this.enabled) { return; }
 
         const moonDirection = new THREE.Vector3();
         getMoonDirectionECEF(date, moonDirection);
 
         this.sky.updateMatrixWorld();
 
-        const skyMaterial = <SkyMaterial> this.sky.material;
+        const skyMaterial = <SkyMaterial>this.sky.material;
         skyMaterial.sunDirection.copy(sunDirection);
         skyMaterial.moonDirection.copy(moonDirection);
-
-        this.aerialPerspective.sunDirection.copy(sunDirection);
-
-        // attenuate aerial perspective when far away.
-        // value determined experimentally
-        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * camera.near, 0);
-
-        // The changes to the camera's near/far must be manually updated
-        // to the uniforms used in post-processing effects
-        (this.effectPass.fullscreenMaterial as EffectMaterial).adoptCameraSettings(camera);
 
         this.skyLight.sunDirection.copy(sunDirection);
         this.skyLight.position.copy(camera.position); // position must not be the origin
         this.skyLight.update();
 
         this.skyLight.updateMatrixWorld();
-    }
-
-    get enabled() {
-        return !!this.sky.parent; // sky has a parent (the scene)
-    }
-
-    set enabled(on: boolean) {
-        if (this.enabled == on) { return; }
-        if (on) { this.enable(); } else { this.disable(); }
-
-        // force internally calling state.buffers.color.setClear
-        // to get a correct background color
-        this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
-
-        this.composer.render();
-    }
-
-    enable() {
-        // Realistic rendering requires a dimmer sunlight
-        this.view.sunLightLayer.sunLight.intensity *= 0.1;
-        this.scene.add(this.sky, this.skyLight);
-        this.effectPass.enabled = true;
-    }
-
-    disable() {
-        this.view.sunLightLayer.sunLight.intensity *= 10;
-        this.scene.remove(this.sky, this.skyLight);
-        this.effectPass.enabled = false;
     }
 }
 

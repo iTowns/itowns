@@ -68,6 +68,7 @@ export { default as OrientedImageLayer } from 'Layer/OrientedImageLayer';
 export { STRATEGY_MIN_NETWORK_TRAFFIC, STRATEGY_GROUP, STRATEGY_PROGRESSIVE, STRATEGY_DICHOTOMY } from 'Layer/LayerUpdateStrategy';
 export { default as ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
+export { default as AtmosphereManager } from 'Core/Prefab/Globe/AtmosphereManager';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 export { default as LabelLayer } from 'Layer/LabelLayer';
 export { default as EntwinePointTileLayer } from 'Layer/EntwinePointTileLayer';

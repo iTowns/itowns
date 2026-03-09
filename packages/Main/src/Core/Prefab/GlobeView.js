@@ -13,6 +13,17 @@ import {
 } from '@takram/three-atmosphere';
 import SunLightLayer from 'Layer/SunLightLayer';
 
+import {
+    EffectPass,
+    RenderPass,
+    ToneMappingEffect,
+    FXAAEffect,
+    ToneMappingMode,
+    EffectMaterial,
+    EffectComposer,
+} from 'postprocessing';
+import { AtmosphereManager } from 'Main';
+
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
  * @event GlobeView#initialized
@@ -66,6 +77,15 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
+const ALTITUDE_MAX = 8849; // altitude of Mount Everest
+
+/**
+ * @typedef SkyOptions
+ * @type {object}
+ * @property {number} sunLightIntensity
+ *
+ */
+
 class GlobeView extends View {
     /**
      * Creates a view of a globe.
@@ -93,10 +113,11 @@ class GlobeView extends View {
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
      * The maximum view distance is this factor times the camera's altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
-     * Between 0 and 1.
+     * Between 0 and 1. (optional)
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
+     * @param {SkyOptions} [options.realisticLightingOptions] - Tweak realistic lighting.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -153,14 +174,11 @@ class GlobeView extends View {
                     this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
                     this.camera3D.updateProjectionMatrix();
 
-                    const fog = this.scene.fog;
-                    if (!fog) { return; }
-                    fog.far = this.camera3D.far;
-                    fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
+                    if (!this.fog) { return; }
+                    this.fog.far = this.camera3D.far;
+                    this.fog.near = this.fog.far - this.fogSpread * (this.fog.far - this.camera3D.near);
                 });
             }
-
-            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
         }
 
         // GlobeView needs this.camera.resize to set perpsective matrix camera
@@ -173,26 +191,86 @@ class GlobeView extends View {
 
         this.date = new Date(); // now
 
+        this.sunDirection = new THREE.Vector3();
+
         // Sunlight and shadow layer
         this.sunLightLayer = new SunLightLayer(this);
         View.prototype.addLayer.call(this, this.sunLightLayer);
 
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
+
+            const composer = this.mainLoop.gfxEngine.composer;
+            composer.addPass(new RenderPass(this.scene, this.camera));
+
+            this.atmosphereManager = new AtmosphereManager(
+                this.camera, composer, this.skyManager.generator.textures,
+            );
+
+            composer.addPass(new EffectPass(this.camera, new FXAAEffect())); // anti-aliasing
+
+            this.enableRealisticLighting();
+
+            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
+            /** @type THREE.Fog */
+            this.fog = this.scene.fog;
+
+            this.addFrameRequester(
+                MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
+                () => {
+                    getSunDirectionECEF(this.date, this.sunDirection);
+                    // This creates a white disk at the Sun's position
+                    this.sunDirection.multiplyScalar(1.00002);
+
+                    if (!this.realisticLightingEnabled) { return; }
+
+                    this.atmosphereManager.update(this.camera, this.sunDirection);
+
+                    // actually only useful if Sun or Moon direction has changed
+                    if (this.skyManager) {
+                        this.skyManager.update(this.date, this.sunDirection);
+                    }
+                },
+            );
         }
+    }
 
-        this.addFrameRequester(
-            MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
-            () => {
-                this.sunDirection = new THREE.Vector3();
-                getSunDirectionECEF(this.date, this.sunDirection);
-                // This creates a white disk at the Sun's position
-                this.sunDirection.multiplyScalar(1.00002);
+    enableRealisticLighting() {
+        this.sunLightLayer.sunLight.intensity *= 0.1;
+        this.scene.add(this.skyManager.sky, this.skyManager.skyLight);
+        this.atmosphereManager.effectPass.enabled = true;
 
-                // actually only useful if Sun or Moon direction has changed
-                if (this.skyManager) { this.skyManager.update(this.date, this.sunDirection); }
-            },
-        );
+        // disable fog only during render
+        // to let its parameters be modified elsewhere
+        if (this.realisticLightingEnabled) {
+            this.fog = this.scene.fog;
+            this.scene.fog = null;
+        }
+    }
+
+    disableRealisticLighting() {
+        this.sunLightLayer.sunLight.intensity *= 10;
+        this.scene.remove(this.skyManager.sky, this.skyManager.skyLight);
+        this.atmosphereManager.effectPass.enabled = false;
+        if (this.realisticLightingEnabled) { this.scene.fog = this.fog; }
+    }
+
+    get realisticLightingEnabled() {
+        return !!this.sky.parent; // sky has a parent (the scene)
+    }
+
+    /**
+     * @param {boolean} on
+     */
+    set realisticLightingEnabled(on) {
+        if (this.enabled == on) { return; }
+        if (on) { this.enableRealisticLighting(); } else { this.disableRealisticLighting(); }
+
+        // force internally calling state.buffers.color.setClear
+        // to get a correct background color
+        this.renderer.setClearAlpha(this.renderer.getClearAlpha());
+
+        this.mainLoop.gfxEngine.composer.render();
     }
 
     /**
