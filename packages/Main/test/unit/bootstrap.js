@@ -247,7 +247,7 @@ global.document = {
 
         return new DOMElement();
     },
-    createElementNS: (_, type) => (global.document.createElement(type)),
+    createElementNS: (_, type) => global.document.createElement(type),
     getElementsByTagName: () => [new DOMElement()],
     events: new Map(),
 };
@@ -403,6 +403,9 @@ class Renderer {
         };
         this.debug = {};
         this.shadowMap = {};
+        this.backend = {
+            hasFeature: () => false,
+        };
     }
 
     getSize() { return new THREE.Vector2(4, 4); } // arbitrary size
