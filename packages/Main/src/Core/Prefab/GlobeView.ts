@@ -21,6 +21,7 @@ import {
     RenderPass,
     FXAAEffect,
 } from 'postprocessing';
+import { skyUtils } from 'Main';
 import PlanarLayer from './Planar/PlanarLayer';
 
 /**
@@ -147,7 +148,7 @@ class GlobeView extends View {
      */
     constructor(
         viewerDiv: HTMLDivElement,
-        placement: CameraTransformOptions|Extent = {},
+        placement: CameraTransformOptions | Extent = {},
         options: Partial<GlobeViewOptions> = {},
     ) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -237,6 +238,12 @@ class GlobeView extends View {
         this.fog = this.scene.fog;
 
         if (options.realisticLighting === true) {
+            this.enableRealisticLighting();
+        }
+    }
+
+    enableRealisticLighting() {
+        if (!this.skyManager || !this.atmosphereManager) {
             this.skyManager = new SkyManager(this);
 
             const composer = this.mainLoop.gfxEngine.composer;
@@ -254,7 +261,7 @@ class GlobeView extends View {
                 MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
                 () => {
                     getSunDirectionECEF(this.date, this.sunDirection);
-                    // This creates a white disk at the Sun's position
+                    // this creates a white disk at the Sun's position
                     this.sunDirection.multiplyScalar(1.00002);
 
                     if (!this.realisticLightingEnabled) { return; }
@@ -267,20 +274,17 @@ class GlobeView extends View {
                     }
                 },
             );
-        }
-    }
+        } else {
+            this.sunLightLayer.sunLight.intensity *= 0.1;
+            this.scene.add(this.skyManager.sky, this.skyManager.skyLight);
+            this.atmosphereManager.effectPass.enabled = true;
 
-    enableRealisticLighting() {
-        if (!this.skyManager || !this.atmosphereManager) { return; }
-        this.sunLightLayer.sunLight.intensity *= 0.1;
-        this.scene.add(this.skyManager.sky, this.skyManager.skyLight);
-        this.atmosphereManager.effectPass.enabled = true;
-
-        // disable fog only during render
-        // to let its parameters be modified elsewhere
-        if (this.realisticLightingEnabled) {
-            this.fog = this.scene.fog;
-            this.scene.fog = null;
+            // disable fog only during render
+            // to let its parameters be modified elsewhere
+            if (this.realisticLightingEnabled) {
+                this.fog = this.scene.fog;
+                this.scene.fog = null;
+            }
         }
     }
 
