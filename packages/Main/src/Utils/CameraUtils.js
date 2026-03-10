@@ -346,21 +346,22 @@ export function getRig(camera) {
 }
 
 /**
+ * @typedef {Object} CameraTransformOptions
+ * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
+ * @property {Number} [tilt=currentTilt] camera's tilt, in degree
+ * @property {Number} [heading=currentHeading] camera's heading, in degree
+ * @property {Number} [range=currentRange] camera distance to target coordinate, in meter
+ * @property {Number} [time=2500] duration of the animation, in ms
+ * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
+ * @property {Number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
+ * @property {function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
+ * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
+ */
+
+/**
  * @module CameraUtils
  */
 export default {
-    /**
-     * @typedef {Object} CameraTransformOptions
-     * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
-     * @property {Number} [tilt=currentTilt] camera's tilt, in degree
-     * @property {Number} [heading=currentHeading] camera's heading, in degree
-     * @property {Number} [range=currentRange] camera distance to target coordinate, in meter
-     * @property {Number} [time=2500] duration of the animation, in ms
-     * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
-     * @property {Number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
-     * @property {function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
-     * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
-     */
     /**
      * Default value for option to stop place target
      * on the ground at animation ending.

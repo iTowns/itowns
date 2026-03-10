@@ -14,9 +14,9 @@ import {
     EffectComposer,
 } from 'postprocessing';
 
-export class AtmosphereManager {
+export default class AtmosphereManager {
     private readonly aerialPerspective: AerialPerspectiveEffect;
-    private readonly effectPass: EffectPass;
+    public readonly effectPass: EffectPass;
 
     constructor(
         camera: THREE.Camera,
@@ -40,7 +40,10 @@ export class AtmosphereManager {
         composer.addPass(this.effectPass);
     }
 
-    update(camera: THREE.PerspectiveCamera, sunDirection: THREE.Vector3) {
+    update(
+        camera: THREE.PerspectiveCamera | THREE.OrthographicCamera,
+        sunDirection: THREE.Vector3,
+    ) {
         this.aerialPerspective.sunDirection.copy(sunDirection);
         // attenuate aerial perspective when far away.
         // value determined experimentally

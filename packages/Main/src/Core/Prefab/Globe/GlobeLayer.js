@@ -14,6 +14,16 @@ let magnitudeSquared = 0.0;
 const scaledHorizonCullingPoint = new THREE.Vector3();
 
 /**
+ * @typedef GlobeLayerOptions
+ * @property {number} [config.minSubdivisionLevel=2] - Minimum subdivision
+ * level for this tiled layer.
+ * @property {number} [config.maxSubdivisionLevel=18] - Maximum subdivision
+ * level for this tiled layer.
+ * @property {number} [config.sseSubdivisionThreshold=1] - Threshold level for
+ * the SSE.
+ */
+
+/**
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
  * GlobeLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
@@ -31,17 +41,11 @@ class GlobeLayer extends TiledGeometryLayer {
      * @param {THREE.Object3D} [object3d=THREE.Group] - The object3d used to
      * contain the geometry of the TiledGeometryLayer. It is usually a
      * `THREE.Group`, but it can be anything inheriting from a `THREE.Object3d`.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {GlobeLayerOptions} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {number} [config.minSubdivisionLevel=2] - Minimum subdivision
-     * level for this tiled layer.
-     * @param {number} [config.maxSubdivisionLevel=18] - Maximum subdivision
-     * level for this tiled layer.
-     * @param {number} [config.sseSubdivisionThreshold=1] - Threshold level for
-     * the SSE.
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.
      */

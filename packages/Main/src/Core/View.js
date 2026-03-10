@@ -120,6 +120,20 @@ let screenMeters;
 let id = 0;
 
 /**
+ * @typedef ViewOptions
+ * @property {Object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
+ * @property {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
+ * @property {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
+ * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
+ * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
+ * added to viewerDiv (mutually exclusive with mainLoop)
+ * @property {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
+ * @property {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
+ * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
+ * @property {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
+ */
+
+/**
  * @property {number} id - The id of the view. It's incremented at each new view instance, starting at 0.
  * @property {HTMLElement} domElement - The domElement holding the canvas where the view is displayed
  * @property {String} referenceCrs - The coordinate reference system of the view
@@ -128,6 +142,8 @@ let id = 0;
  * @property {Camera} camera - itowns camera (that holds a threejs camera that is directly accessible with View.camera3D)
  * @property {THREE.Camera} camera3D - threejs camera that is stored in itowns camera
  * @property {THREE.WebGLRenderer} renderer - threejs webglrenderer rendering this view
+ * @property {TiledGeometryLayer} tileLayer
+ * @property {GlobeControls | PlanarControls | null} controls
  */
 class View extends THREE.EventDispatcher {
     #layers = [];
@@ -151,17 +167,7 @@ class View extends THREE.EventDispatcher {
      *
      * @param {String} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
-     * @param {Object} [options] - Optional properties.
-     * @param {Object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
-     * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
-     * @param {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
-     * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
-     * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
-     * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
-     * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
-     * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
-     * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
+     * @param {ViewOptions} [options] - Optional properties.
      */
     constructor(crs, viewerDiv, options = {}) {
         if (!viewerDiv) {
@@ -170,6 +176,8 @@ class View extends THREE.EventDispatcher {
 
         super();
 
+        this.tileLayer = null;
+        this.controls = null;
         this.domElement = viewerDiv;
         this.id = id++;
 
@@ -280,7 +288,7 @@ class View extends THREE.EventDispatcher {
 
     /**
      * Get the threejs Camera of this view
-     * @returns {THREE.Camera} the threejs camera of this view
+     * @returns {THREE.PerspectiveCamera | THREE.OrthographicCamera} the threejs camera of this view
      */
     get camera3D() {
         return this.camera?.camera3D;
@@ -345,7 +353,7 @@ class View extends THREE.EventDispatcher {
      *
      * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
      * @param {Layer=} parentLayer it's the layer to which the layer will be attached.
-     * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
+     * @return {Promise | void} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
      */
     addLayer(layer, parentLayer) {
         if (!layer || !layer.isLayer) {

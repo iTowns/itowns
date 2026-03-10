@@ -1,12 +1,15 @@
 import * as THREE from 'three';
 
 import View, { VIEW_EVENTS } from 'Core/View';
+import type { ViewOptions } from 'Core/View';
 import GlobeControls from 'Controls/GlobeControls';
-import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
-import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
+import { Coordinates, ellipsoidSizes, Extent } from '@itowns/geographic';
+import GlobeLayer, { type GlobeLayerOptions } from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
+import type { CameraTransformOptions } from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
+import AtmosphereManager from 'Core/Prefab/Globe/AtmosphereManager';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import {
     getSunDirectionECEF,
@@ -16,58 +19,54 @@ import SunLightLayer from 'Layer/SunLightLayer';
 import {
     EffectPass,
     RenderPass,
-    ToneMappingEffect,
     FXAAEffect,
-    ToneMappingMode,
-    EffectMaterial,
-    EffectComposer,
 } from 'postprocessing';
-import { AtmosphereManager } from 'Main';
+import PlanarLayer from './Planar/PlanarLayer';
 
 /**
- * Fires when the view is completely loaded. Controls and view's functions can be called then.
- * @event GlobeView#initialized
- * @property target {view} dispatched on view
- * @property type {string} initialized
+ * Fires when the view is completely loaded. Controls and view's functions can
+ * be called then.
+ *
+ * Event name: `GlobeView#initialized`
+ * Payload: `{ target, type: 'initialized' }`
  */
 /**
- * Fires when a layer is added
- * @event GlobeView#layer-added
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
+ * Fires when a layer is added.
+ *
+ * Event name: `GlobeView#layer-added`
+ * Payload: `{ layerId, target, type: 'layers-added' }`
  */
 /**
- * Fires when a layer is removed
- * @event GlobeView#layer-removed
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
+ * Fires when a layer is removed.
+ *
+ * Event name: `GlobeView#layer-removed`
+ * Payload: `{ layerId, target, type: 'layers-added' }`
  */
 /**
- * Fires when the layers oder has changed
- * @event GlobeView#layers-order-changed
- * @property new {object}
- * @property new.sequence {array}
- * @property new.sequence.0 {number} the new layer at position 0
- * @property new.sequence.1 {number} the new layer at position 1
- * @property new.sequence.2 {number} the new layer at position 2
- * @property previous {object}
- * @property previous.sequence {array}
- * @property previous.sequence.0 {number} the previous layer at position 0
- * @property previous.sequence.1 {number} the previous layer at position 1
- * @property previous.sequence.2 {number} the previous layer at position 2
- * @property target {view} dispatched on view
- * @property type {string} layers-order-changed
+ * Fires when the layers order has changed.
+ *
+ * Event name: `GlobeView#layers-order-changed`
+ * Payload:
+ * ```ts
+ * {
+ *     new: { sequence: number[] },
+ *     previous: { sequence: number[] },
+ *     target,
+ *     type: 'layers-order-changed',
+ * }
+ * ```
  */
 
 
 /**
- * Globe's EVENT
- * @property GLOBE_INITIALIZED {string} Deprecated: emit one time when globe is initialized (use VIEW_EVENTS.INITIALIZED instead).
- * @property LAYER_ADDED {string} Deprecated: emit when layer id added in viewer (use VIEW_EVENTS.LAYER_ADDED instead).
- * @property LAYER_REMOVED {string} Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
- * @property COLOR_LAYERS_ORDER_CHANGED {string} Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
+ * Globe events.
+ *
+ * Deprecated aliases:
+ * - GLOBE_INITIALIZED: use VIEW_EVENTS.INITIALIZED.
+ * - LAYER_ADDED: use VIEW_EVENTS.LAYER_ADDED.
+ * - LAYER_REMOVED: use VIEW_EVENTS.LAYER_REMOVED.
+ * - COLOR_LAYERS_ORDER_CHANGED:
+ *   use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED.
  */
 
 export const GLOBE_VIEW_EVENTS = {
@@ -77,49 +76,80 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
-const ALTITUDE_MAX = 8849; // altitude of Mount Everest
+type GlobeViewOptions = ViewOptions & GlobeLayerOptions & {
+    /** See options of {@link GlobeControls} */
+    controls: object,
+    /** WebXR configuration - its presence alone
+     * enable WebXR to switch on VR visualization. */
+    webXR: {
+        /** WebXR rendering callback. */
+        callback: () => void,
+        /** Enable the webXR controllers handling. */
+        controllers: boolean,
+    }
+    /** The camera's near and far are automatically adjusted. */
+    dynamicCameraNearFar: boolean,
+    /** Controls how far the camera can see.
+     * The maximum view distance is this factor times the camera's altitude
+     * (above sea level). */
+    farFactor: number,
+    /** Proportion of the visible depth range that contains fog.
+     * Between 0 and 1. (optional) */
+    fogSpread: number,
+    /** Enable realistic lighting.
+     * If true, it can later be switched by setting this.skyManager.enabled
+     * to true/false.
+     * If false, it will be impossible to enable it later on. */
+    realisticLighting: boolean,
+    /** Tweak realistic lighting. */
+    realisticLightingOptions: SkyOptions,
+    object3d: THREE.Object3D,
+    noControls: boolean,
+    /** Handle collision between camera and ground or not, i.e. whether
+     * you can zoom underground or not. Default is true. */
+    handleCollision: boolean,
+}
 
-/**
- * @typedef SkyOptions
- * @type {object}
- * @property {number} sunLightIntensity
- *
- */
+type SkyOptions = {
+    sunLightIntensity: number,
+};
 
 class GlobeView extends View {
+    isGlobeView = true as const;
+    farFactor: number;
+    fogSpread: number;
+    webXR?: WebXR;
+    date: Date;
+    sunDirection: THREE.Vector3;
+    sunLightLayer: SunLightLayer;
+    skyManager?: SkyManager;
+    atmosphereManager?: AtmosphereManager;
+    fog: THREE.Fog | null;
+
     /**
      * Creates a view of a globe.
      *
-     * @extends View
-     *
      * @example <caption><b>Instance GlobeView.</b></caption>
-     * var viewerDiv = document.getElementById('viewerDiv');
-     * const placement = {
-     *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
-     *     range: 25000000,
-     * }
-     * var view = new itowns.GlobeView(viewerDiv, placement);
+        * ```ts
+        * const viewerDiv = document.getElementById('viewerDiv');
+        * const placement = {
+        *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+        *     range: 25000000,
+        * };
+        * const view = new itowns.GlobeView(viewerDiv, placement);
+        * ```
      *
-     * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
-     * in the DOM.
-     * @param {CameraTransformOptions|Extent} placement - An object to place view
-     * @param {object} [options] - See options of {@link View}.
-     * @param {Object} [options.controls] - See options of {@link GlobeControls}
-     * @param {Object} [options.webXR] - WebXR configuration - its presence alone
-     * enable WebXR to switch on VR visualization.
-     * @param {function} [options.webXR.callback] - WebXR rendering callback.
-     * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
-     * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
-     * @param {number} [options.farFactor=20] - Controls how far the camera can see.
-     * The maximum view distance is this factor times the camera's altitude (above sea level).
-     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
-     * Between 0 and 1. (optional)
-     * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
-     * If true, it can later be switched by setting this.skyManager.enabled to true/false.
-     * If false, it will be impossible to enable it later on.
-     * @param {SkyOptions} [options.realisticLightingOptions] - Tweak realistic lighting.
+        * @param viewerDiv - Where to attach the view and
+     * display it in the DOM.
+        * @param placement - An object to place
+     * view
+        * @param options - See options of {@link View}.
      */
-    constructor(viewerDiv, placement = {}, options = {}) {
+    constructor(
+        viewerDiv: HTMLDivElement,
+        placement: CameraTransformOptions|Extent = {},
+        options: Partial<GlobeViewOptions> = {},
+    ) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
         // Setup View
         super('EPSG:4978', viewerDiv, options);
@@ -132,8 +162,9 @@ class GlobeView extends View {
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
+        this.fog = null;
 
-        if (!placement.isExtent) {
+        if (!('isExtent' in placement)) {
             placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
             placement.tilt = placement.tilt || 89.5;
             placement.heading = placement.heading || 0;
@@ -147,10 +178,13 @@ class GlobeView extends View {
             CameraUtils.transformCameraToLookAtTarget(this, this.camera3D, placement);
 
             // In this case, since the camera's near and far properties aren't
-            // dynamically computed, the default fog won't be adapted, so don't enable it
+            // dynamically computed, the default fog won't be adapted,
+            // so don't enable it
         } else {
             this.controls = new GlobeControls(this, placement, options.controls);
-            this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
+            this.controls.handleCollision =
+                typeof (options.handleCollision) !== 'undefined' ?
+                    options.handleCollision : true;
 
             const globeRadiusMin = Math.min(ellipsoidSizes.x, ellipsoidSizes.y, ellipsoidSizes.z);
 
@@ -169,14 +203,16 @@ class GlobeView extends View {
                     this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
 
                     // distance from camera to the horizon
-                    const horizonDist = Math.sqrt(Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
+                    const horizonDist = Math.sqrt(
+                        Math.max(0, originToCamSq - globeRadiusMin * globeRadiusMin));
 
                     this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
                     this.camera3D.updateProjectionMatrix();
 
                     if (!this.fog) { return; }
                     this.fog.far = this.camera3D.far;
-                    this.fog.near = this.fog.far - this.fogSpread * (this.fog.far - this.camera3D.near);
+                    this.fog.near =
+                        this.fog.far - this.fogSpread * (this.fog.far - this.camera3D.near);
                 });
             }
         }
@@ -197,23 +233,22 @@ class GlobeView extends View {
         this.sunLightLayer = new SunLightLayer(this);
         View.prototype.addLayer.call(this, this.sunLightLayer);
 
+        this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
+        this.fog = this.scene.fog;
+
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
 
             const composer = this.mainLoop.gfxEngine.composer;
-            composer.addPass(new RenderPass(this.scene, this.camera));
+            composer.addPass(new RenderPass(this.scene, this.camera3D));
 
             this.atmosphereManager = new AtmosphereManager(
-                this.camera, composer, this.skyManager.generator.textures,
+                this.camera3D, composer, this.skyManager.generator.textures,
             );
 
-            composer.addPass(new EffectPass(this.camera, new FXAAEffect())); // anti-aliasing
+            composer.addPass(new EffectPass(this.camera3D, new FXAAEffect())); // anti-aliasing
 
             this.enableRealisticLighting();
-
-            this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
-            /** @type THREE.Fog */
-            this.fog = this.scene.fog;
 
             this.addFrameRequester(
                 MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
@@ -224,7 +259,7 @@ class GlobeView extends View {
 
                     if (!this.realisticLightingEnabled) { return; }
 
-                    this.atmosphereManager.update(this.camera, this.sunDirection);
+                    this.atmosphereManager!.update(this.camera3D, this.sunDirection);
 
                     // actually only useful if Sun or Moon direction has changed
                     if (this.skyManager) {
@@ -236,6 +271,7 @@ class GlobeView extends View {
     }
 
     enableRealisticLighting() {
+        if (!this.skyManager || !this.atmosphereManager) { return; }
         this.sunLightLayer.sunLight.intensity *= 0.1;
         this.scene.add(this.skyManager.sky, this.skyManager.skyLight);
         this.atmosphereManager.effectPass.enabled = true;
@@ -249,21 +285,19 @@ class GlobeView extends View {
     }
 
     disableRealisticLighting() {
+        if (!this.skyManager || !this.atmosphereManager) { return; }
         this.sunLightLayer.sunLight.intensity *= 10;
+        if (this.realisticLightingEnabled) { this.scene.fog = this.fog; }
         this.scene.remove(this.skyManager.sky, this.skyManager.skyLight);
         this.atmosphereManager.effectPass.enabled = false;
-        if (this.realisticLightingEnabled) { this.scene.fog = this.fog; }
     }
 
     get realisticLightingEnabled() {
-        return !!this.sky.parent; // sky has a parent (the scene)
+        return !!this.skyManager?.sky.parent; // sky has a parent (the scene)
     }
 
-    /**
-     * @param {boolean} on
-     */
-    set realisticLightingEnabled(on) {
-        if (this.enabled == on) { return; }
+    set realisticLightingEnabled(on: boolean) {
+        if (this.realisticLightingEnabled == on) { return; }
         if (on) { this.enableRealisticLighting(); } else { this.disableRealisticLighting(); }
 
         // force internally calling state.buffers.color.setClear
@@ -281,30 +315,35 @@ class GlobeView extends View {
      * the layer is done. This promise is also returned by
      * `addLayer` allowing to chain call.
      *
-     * The layer added is attached, by default to `GlobeLayer` (`GlobeView.tileLayer`).
+    * The layer added is attached, by default to `GlobeLayer`
+    * (`GlobeView.tileLayer`).
      * If you want add a unattached layer use `View#addLayer` parent method.
      *
-     * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
-     * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
+    * @param layer - The layer to add in view.
+    * @returns A promise resolved with the new layer object when it is
+    * fully initialized or rejected if any error occurred.
+    * TODO: fix promise return type
      */
-    addLayer(layer) {
+    addLayer(layer: PlanarLayer | GlobeLayer): Promise<Error> | void {
         if (!layer || !layer.isLayer) {
             return Promise.reject(new Error('Add Layer type object'));
         }
-        if (layer.isColorLayer) {
+        if ('isColorLayer' in layer) {
             if (!this.tileLayer.tileMatrixSets.includes(layer.source.crs)) {
-                return layer._reject(`Only ${this.tileLayer.tileMatrixSets} tileMatrixSet are currently supported for color layers`);
+                return layer._reject(`Only ${this.tileLayer.tileMatrixSets} ` +
+                    'tileMatrixSet are currently supported for color layers');
             }
-        } else if (layer.isElevationLayer) {
+        } else if ('isElevationLayer' in layer) {
             if (layer.source.crs !== this.tileLayer.tileMatrixSets[0]) {
-                return layer._reject(`Only ${this.tileLayer.tileMatrixSets[0]} tileMatrixSet is currently supported for elevation layers`);
+                return layer._reject(`Only ${this.tileLayer.tileMatrixSets[0]} ` +
+                    'tileMatrixSet is currently supported for elevation layers');
             }
         }
 
         return super.addLayer(layer, this.tileLayer);
     }
 
-    getPixelsToDegrees(pixels = 1, screenCoord) {
+    getPixelsToDegrees(pixels = 1, screenCoord: THREE.Vector2 | undefined) {
         return this.getMetersToDegrees(this.getPixelsToMeters(pixels, screenCoord));
     }
 
