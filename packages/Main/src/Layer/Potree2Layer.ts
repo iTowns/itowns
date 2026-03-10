@@ -81,7 +81,7 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
         this.isPotree2Layer = true;
 
-        const loadOctree = this.source.whenReady.then((metadata) => {
+        const setRootNode =  this.source.whenReady.then((metadata) => {
             this.metadata = metadata;
 
             const normal = Array.isArray(metadata.attributes) &&
@@ -93,26 +93,19 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.setElevationRange();
 
-            const { boundingBox, hierarchy } = metadata;
+            const { boundingBox } = metadata;
             const bounds = [...boundingBox.min, ...boundingBox.max];
-            const root = new Potree2Node(0, 0, -1, undefined, this.source, this.crs);
-            root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
-            root.clampOBB.copy(root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+            this.root = new Potree2Node('r', this.source, this.crs);
+            this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
-            this.obbes.add(root.clampOBB);
-            root.clampOBB.updateMatrixWorld(true);
+            this.obbes.add(this.root.clampOBB);
+            this.root.clampOBB.updateMatrixWorld(true);
 
-            root.nodeType = 2;
-            root.hierarchyByteOffset = 0n;
-            root.hierarchyByteSize = BigInt(hierarchy.firstChunkSize);
-            root.byteOffset = 0n;
-
-            this.root = root;
-
-            return this.root.loadOctree();
+            return this.root;
         });
 
-        this._promises.push(loadOctree);
+        this._promises.push(setRootNode);
     }
 }
 

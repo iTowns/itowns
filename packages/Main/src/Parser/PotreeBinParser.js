@@ -1,5 +1,5 @@
-import proj4 from 'proj4';
 import * as THREE from 'three';
+import { CRS, OrientationUtils, Coordinates } from '@itowns/geographic';
 
 // See the different constants holding ordinal, name, numElements, byteSize in PointAttributes.cpp in PotreeConverter
 // elementByteSize is byteSize / numElements
@@ -49,6 +49,14 @@ const POINT_ATTRIBUTES = {
         attributeName: 'normal',
     },
 };
+
+function getQuaternion(origin, crsIn, crsOut) {
+    let quaternion = new THREE.Quaternion();
+    if (CRS.defs(crsOut).projName === 'geocent') {
+        quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(origin);
+    }
+    return quaternion;
+}
 
 // Find a way to factor this methode between the different PointCloud Parser
 function _applyQuaternion(v, q) {
@@ -110,17 +118,19 @@ export default {
         const scale = source.scale;
         const pointAttributes = source.pointAttributes;
 
-        // find a methode by recursion to get offset from the node id ?
-        const offset = options.in.offsetBBox.min.toArray();
+        const offset = options.in.voxelOBB.natBox.min.toArray();
 
         const forward = (source.crs !== options.in.crs) ?
-            proj4(source.crs, options.in.crs).forward :
+            CRS.transform(source.crs, options.in.crs).forward :
             (x => x);
         const applyQuaternion = (source.crs !== options.in.crs) ?
             _applyQuaternion : (x => x);
 
-        const origin = options.in.origin.toArray();
-        const quaternion = options.in.rotation.toArray();
+        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+            new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrixWorld),
+        );
+        const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
+        const quaternionArr = quaternion.toArray();
 
         let pointByteSize = 0;
         for (const potreeName of pointAttributes) {
@@ -151,10 +161,10 @@ export default {
                     const [x, y, z] = forward(position);
 
                     const position2 = applyQuaternion([
-                        x - origin[0],
-                        y - origin[1],
-                        z - origin[2],
-                    ], quaternion);
+                        x - centerZ0.x,
+                        y - centerZ0.y,
+                        z - centerZ0.z,
+                    ], quaternionArr);
 
                     array[arrayOffset + 0] = position2[0];
                     array[arrayOffset + 1] = position2[1];
@@ -170,6 +180,8 @@ export default {
         }
 
         geometry.computeBoundingBox();
+        geometry.userData.position = centerZ0.toArray();
+        geometry.userData.quaternion = quaternion.toJSON();
 
         return Promise.resolve(geometry);
     },

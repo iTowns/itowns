@@ -44,6 +44,7 @@ class PotreeSource extends Source {
 
     // Properties initialized after fetching cloud file
     boundsConforming!: [number, number, number, number, number, number];
+    bounds!: [number, number, number, number, number, number];
     pointAttributes!: string[];
     baseurl!: string;
     scale!: number;
@@ -123,7 +124,6 @@ class PotreeSource extends Source {
         }
 
         super({ ...source, url });
-        this.baseurl = new URL('.', url).href;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'hrc';
 
@@ -134,6 +134,8 @@ class PotreeSource extends Source {
                 Promise.resolve(source.cloud) :
             Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
+                const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
+                this.bounds = [lx, ly, lz, ux, uy, uz];
                 this.boundsConforming = [
                     cloud.tightBoundingBox.lx,
                     cloud.tightBoundingBox.ly,
@@ -147,7 +149,7 @@ class PotreeSource extends Source {
                 } else {
                     throw new Error('[PotreeSource] Unsupported LAS/LAZ format');
                 }
-                this.baseurl = new URL(`${cloud.octreeDir}/r`, this.baseurl).href;
+                this.baseurl = new URL(`${cloud.octreeDir}/r`, url).href;
 
                 this.parser = PotreeBinParser.parse;
                 this.scale = cloud.scale;

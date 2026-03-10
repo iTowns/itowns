@@ -101,8 +101,10 @@ describe('Potree', function () {
                 View.prototype.addLayer.call(viewer, potreeLayer)
                     .then(() => {
                         context.camera.camera3D.updateMatrixWorld();
-                        assert.equal(potreeLayer.root.children.length, 6);
-                        potreeLayer.obbes.visible = true;
+                        // loadOctree() is now called during the load
+                        // assert.equal(potreeLayer.root.children.length, 6);
+                        assert.ok(potreeLayer.root instanceof PotreeNode);
+                        assert.ok(potreeLayer.obbes.children.indexOf(potreeLayer.root.clampOBB) >= 0);
                         done();
                     }).catch(done);
             });
@@ -128,38 +130,40 @@ describe('Potree', function () {
         });
 
         describe('potree Node', function () {
+            const crs = 'EPSG:4326';
             const numPoints = 1000;
             const childrenBitField = 5;
             let root;
 
             it('instance', function (done) {
-                root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource);
+                root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
                 assert.equal(root.numPoints, numPoints);
                 assert.equal(root.childrenBitField, childrenBitField);
                 done();
             });
 
             it('construct a correct URL', function () {
+                const source = {
+                    baseurl,
+                    bounds: [0, 0, 0, 100, 100, 100],
+                    crs,
+                };
+                root.voxelOBB.setFromArray(source.bounds);
+
                 const indexChild = 7;
                 const indexGChild = 3;
-                const extension = 'bin';
-                const nodeChild = new PotreeNode(1, indexChild, 0, 0, {
-                    baseurl,
-                    extension,
-                });
-                const nodeGChild = new PotreeNode(2, indexGChild, 0, 0, {
-                    baseurl,
-                    extension,
-                });
+                const nodeChild = new PotreeNode(1, indexChild, 0, 0, source, crs);
+                const nodeGChild = new PotreeNode(2, indexGChild, 0, 0, source, crs);
                 object3d.add(root.clampOBB);
                 root.add(nodeChild);
                 nodeChild.add(nodeGChild);
 
-                assert.equal(nodeGChild.url, `${baseurl}/r${indexChild}${indexGChild}.${extension}`);
+                assert.equal(nodeGChild.url, `${baseurl}/r${indexChild}${indexGChild}.bin`);
             });
 
             it('load octree', function (done) {
-                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource);
+                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
+                root.voxelOBB.setFromArray(potreeSource.bounds);
                 object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => {
@@ -169,7 +173,8 @@ describe('Potree', function () {
             });
 
             it('load child node', function (done) {
-                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, 'EPSG:4978');
+                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
+                root.voxelOBB.setFromArray(potreeSource.bounds);
                 object3d.add(root.clampOBB);
                 root.loadOctree()
                     .then(() => root.children[0].load()

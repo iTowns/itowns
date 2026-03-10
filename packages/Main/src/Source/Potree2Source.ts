@@ -131,6 +131,8 @@ class Potree2Source extends Source {
     baseurl: string;
 
     // Properties initialized after fetching metadata
+    boundsConforming!: [number, number, number, number, number, number];
+    bounds!: [number, number, number, number, number, number];
     metadata!: Potree2Metadata;
     pointAttributes!: Potree2PointAttributes;
     zmin!: number;
@@ -308,6 +310,8 @@ class Potree2Source extends Source {
             Promise.resolve(source.metadata) :
             Fetcher.json(this.url, this.networkOptions) as Promise<Potree2Metadata>)
             .then((metadata) => {
+                const { boundingBox } = metadata;
+                this.bounds = [...boundingBox.min, ...boundingBox.max];
                 this.metadata = metadata;
                 this.pointAttributes = parseAttributes(metadata.attributes);
 
