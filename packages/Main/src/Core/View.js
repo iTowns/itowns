@@ -128,6 +128,7 @@ let id = 0;
  * @property {Camera} camera - itowns camera (that holds a threejs camera that is directly accessible with View.camera3D)
  * @property {THREE.Camera} camera3D - threejs camera that is stored in itowns camera
  * @property {THREE.WebGLRenderer} renderer - threejs webglrenderer rendering this view
+ * @property {undefined | function(): void} render - custom rendering callback
  */
 class View extends THREE.EventDispatcher {
     #layers = [];
@@ -186,6 +187,8 @@ class View extends THREE.EventDispatcher {
         }
 
         this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
+        /** @type undefined | function(): void */
+        this.render = undefined;
 
         this.scene = options.scene3D || new THREE.Scene();
         if (!options.scene3D) {
@@ -485,7 +488,7 @@ class View extends THREE.EventDispatcher {
      * view.getLayers(layer => layer.isGeometryLayer);
      * // get one layer with id
      * view.getLayers(layer => layer.id === 'itt');
-     * @param {function(Layer):boolean} filter
+     * @param {function(Layer, Layer?):boolean} filter
      * @returns {Array<Layer>}
      */
     getLayers(filter) {
