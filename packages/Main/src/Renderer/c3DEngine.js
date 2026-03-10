@@ -85,6 +85,7 @@ class c3DEngine {
             this.fullSizeRenderTarget.setSize(this.width, this.height);
             this.renderer.setSize(this.width, this.height);
             this.label2dRenderer.setSize(this.width, this.height);
+            this.composer.setSize(this.width, this.height);
         }.bind(this);
 
         // Create renderer
