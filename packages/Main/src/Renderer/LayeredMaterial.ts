@@ -301,12 +301,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     public override defines: LayeredMaterialDefines;
 
     constructor(options: LayeredMaterialParameters = {}, crsCount: number) {
-        const lambertUniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.lambert.uniforms);
-        const shaderMaterialParams: THREE.ShaderMaterialParameters = { ...options };
-        shaderMaterialParams.uniforms = shaderMaterialParams.uniforms ?? {};
-        Object.assign(shaderMaterialParams.uniforms, lambertUniforms);
-        super(shaderMaterialParams);
-        if (__DEBUG__) { this.name = 'LayeredMaterial'; }
+        super(options);
+        this.name = 'LayeredMaterial';
 
         nbSamplers ??= [samplersElevationCount, getMaxColorSamplerUnitsCount()];
 
@@ -395,6 +391,13 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             colorTextureCount: 0,
         });
 
+        const lambertUniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.lambert.uniforms);
+        const lambertUniformValues: Record<string, unknown> = {};
+        for (const [name, uniform] of Object.entries(lambertUniforms)) {
+            lambertUniformValues[name] = uniform.value;
+        }
+        this.initUniforms(lambertUniformValues);
+
         // Can't do an ES6 getter/setter here because it would override the
         // Material::visible property with accessors, which is not allowed.
         Object.defineProperty(this, 'visible', {
@@ -416,8 +419,6 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
                 }
             },
         });
-
-        // setTimeout(() => console.log(this), 2);
     }
 
     public get mode(): number {
