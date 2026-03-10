@@ -68,6 +68,7 @@ class c3DEngine {
             this.fullSizeRenderTarget.setSize(this.width, this.height);
             this.renderer.setSize(this.width, this.height);
             this.label2dRenderer.setSize(this.width, this.height);
+            this.pointCloudRenderer.setSize(this.width, this.height);
         }.bind(this);
 
         // Create renderer
@@ -105,17 +106,9 @@ class c3DEngine {
             } else if (this.composer.passes.length) {
                 this.composer.render();
             } else {
-                const layers = view.getLayers(layer => layer.isGeometryLayer);
-                const pointclouds = layers.filter(layer => layer.isPointCloudLayer && layer.visible);
-                const others = layers.filter(layer => !layer.isPointCloudLayer && layer.visible);
-
-                others.forEach((layer) => { layer.object3d.visible = false; });
-                this.pointCloudRenderer.render(view.scene, view.camera3D);
-                others.forEach((layer) => { layer.object3d.visible = true; });
-
-                pointclouds.forEach((layer) => { layer.object3d.visible = false; });
-                this.renderer.render(view.scene, view.camera3D);
-                pointclouds.forEach((layer) => { layer.object3d.visible = true; });
+                // Currently used to render all
+                // Consider refactor to a generic for all post process
+                this.pointCloudRenderer.render(view.scene, view.camera3D, view);
             }
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
@@ -141,6 +134,8 @@ class c3DEngine {
         if (!renderer) {
             this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
             this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+            // need to set pointCloudRenderer size
+            this.pointCloudRenderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             viewerDiv.appendChild(this.renderer.domElement);
         }
 

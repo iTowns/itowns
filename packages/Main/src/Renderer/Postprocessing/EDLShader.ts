@@ -1,14 +1,27 @@
 import {
+    NoBlending,
+    ShaderMaterial,
     Vector2,
 } from 'three';
 
-const vertexShader = /* glsl */ `
-out vec2 vUv;
+// Algorithm by Christian Boucheny. See:
+// - Phd thesis (page 115-127, french):
+//   https://tel.archives-ouvertes.fr/tel-00438464/document
+// - Implementation in Cloud Compare (last update 2022):
+//   https://github.com/CloudCompare/CloudCompare/tree/master/plugins/core/GL/qEDL/shaders/EDL
+// Parameters by Markus Schuetz (Potree). See:
+// - Master thesis (pages 38-41):
+//   https://www.cg.tuwien.ac.at/research/publications/2016/SCHUETZ-2016-POT/SCHUETZ-2016-POT-thesis.pdf
+// - Implementation in Potree (last update 2019):
+//   https://github.com/potree/potree/blob/develop/src/materials/shaders/edl.fs
 
+
+// This is the vertex shader used by CopyMaterial for pmndrs/postprocessing.
+const vertexShader = /* glsl */`
+out vec2 vUv;
 void main() {
-    vUv = uv;
-#include <begin_vertex>
-#include <project_vertex>
+    vUv = position.xy * 0.5 + 0.5;
+    gl_Position = vec4(position.xy, 1.0, 1.0);
 }
 `;
 
@@ -59,7 +72,9 @@ void main() {
     vec4 color = texture2D(tDiffuse, vUv);
 
     if (depth == DEPTH_THRESHOLD) {
-        discard;
+        gl_FragColor = color;
+        gl_FragDepth = depth;
+        return;
     }
 
     float logDepth = getLogDepth(vUv);
@@ -77,22 +92,42 @@ void main() {
     gl_FragColor = vec4(color.rgb * edl, color.a);
     gl_FragDepth = depth;
 }
-
 `;
 
-const EDLShader = {
+/**
+ * Generates a kernel of evenly distributed 2D sample directions around a
+ * circle.
+ * Used for sampling neighbor depths in the EDL algorithm.
+ */
+function generateKernel(kernelSize: number): Float32Array {
+    const kernel = new Float32Array(kernelSize * 2);
+
+    for (let i = 0; i < kernelSize; ++i) {
+        const angle = (2 * Math.PI * i) / kernelSize;
+        kernel[(i * 2) + 0] = Math.cos(angle);
+        kernel[(i * 2) + 1] = Math.sin(angle);
+    }
+
+    return kernel;
+}
+
+const MakeEDLShader = (
+    kernelSize:number,
+    width: number,
+    height: number,
+) => new ShaderMaterial({
     name: 'EDLShader',
 
     defines: {
-        KERNEL_SIZE: 8,
+        KERNEL_SIZE: kernelSize,
         PERSPECTIVE_CAMERA: 1,
     },
 
     uniforms: {
         tDepth: { value: null },
         tDiffuse: { value: null },
-        kernel: { value: null },
-        resolution: { value: new Vector2() },
+        kernel: { value: generateKernel(kernelSize) },
+        resolution: { value: new Vector2(width, height) },
         cameraNear: { value: null },
         cameraFar: { value: null },
         kernelRadius: { value: 1.5 },
@@ -101,6 +136,11 @@ const EDLShader = {
 
     vertexShader,
     fragmentShader,
-};
 
-export { EDLShader };
+    blending: NoBlending,
+    toneMapped: false,
+    depthWrite: false,
+    depthTest: false,
+});
+
+export { MakeEDLShader };
