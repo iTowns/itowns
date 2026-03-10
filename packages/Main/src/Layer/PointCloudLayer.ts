@@ -321,7 +321,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         // slide 17
         context.camera.preSSE =
             context.camera.height /
-                (2 * Math.tan(THREE.MathUtils.degToRad(context.camera.camera3D.fov) * 0.5));
+            (2 * Math.tan(THREE.MathUtils.degToRad(context.camera.camera3D.fov) * 0.5));
 
         if (this.material) {
             this.material.visible = this.visible;
@@ -519,12 +519,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             const p = meta.parent;
             if (p && p.obj) {
                 return {
-                    element: meta.obj,
+                    elements: [meta.obj],
                     parent: p.obj,
                 };
             } else {
                 return {
-                    element: meta.obj,
+                    elements: [meta.obj],
                 };
             }
         }
