@@ -34,6 +34,7 @@ const fragmentShader = /* glsl */ `
 #define DEPTH_THRESHOLD 1.0
 #endif
 
+uniform sampler2D tScene;
 uniform sampler2D tDepth;
 uniform sampler2D tDiffuse;
 
@@ -69,14 +70,14 @@ float getLogDepth(const in vec2 screenPosition) {
 
 void main() {
     float depth = getDepth(vUv);
-    vec4 color = texture2D(tDiffuse, vUv);
-
+    
     if (depth == DEPTH_THRESHOLD) {
-        gl_FragColor = color;
-        gl_FragDepth = depth;
+        gl_FragColor = texture2D(tScene, vUv);
+        gl_FragDepth = DEPTH_THRESHOLD;
         return;
     }
-
+    
+    vec4 color = texture2D(tDiffuse, vUv);
     float logDepth = getLogDepth(vUv);
     vec2 uvRadius = kernelRadius / resolution;
 
@@ -124,6 +125,7 @@ const MakeEDLShader = (
     },
 
     uniforms: {
+        tScene: { value: null },
         tDepth: { value: null },
         tDiffuse: { value: null },
         kernel: { value: generateKernel(kernelSize) },
@@ -139,8 +141,8 @@ const MakeEDLShader = (
 
     blending: NoBlending,
     toneMapped: false,
-    depthWrite: false,
-    depthTest: false,
+    depthWrite: true,
+    depthTest: true,
 });
 
 export { MakeEDLShader };
