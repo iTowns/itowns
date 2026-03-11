@@ -106,6 +106,7 @@ export abstract class PotreeNodeBase extends PointCloudNode {
 
         (this.clampOBB.parent as Group).add(childNode.clampOBB);
         childNode.clampOBB.updateMatrixWorld(true);
+        childNode.voxelOBB.updateMatrixWorld(true);
     }
 }
 
