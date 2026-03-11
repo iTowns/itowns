@@ -1,4 +1,7 @@
 {
+    "Showcase": {
+        "demo/index": "Scene Manager"
+    },
     "View": {
         "view_3d_map": "3D map",
         "view_25d_map": "2.5D map",
