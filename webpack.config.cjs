@@ -61,9 +61,6 @@ module.exports = () => {
             },
         },
         entry: {
-            itowns: [
-                'core-js',
-            ],
             debug: {
                 import: './packages/Debug/src/Main.js',
                 dependOn: 'itowns',
@@ -101,7 +98,6 @@ module.exports = () => {
         entry: {
             ...sharedConfig.entry,
             itowns: [
-                'core-js',
                 './packages/Main/src/MainBundle.js',
             ],
         },
@@ -120,7 +116,6 @@ module.exports = () => {
         entry: {
             ...sharedConfig.entry,
             itowns: [
-                'core-js',
                 './packages/Main/src/Main.js',
             ],
         },
@@ -151,6 +146,7 @@ module.exports = () => {
         plugins: [
             new ESLintPlugin({
                 files: include,
+                configType: 'eslintrc',
             }),
         ],
         experiments: {
