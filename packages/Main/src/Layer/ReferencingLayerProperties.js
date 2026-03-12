@@ -7,7 +7,7 @@ function ReferLayerProperties(material, layer) {
         const getOpacity = (opacity) => {
             const styleOpacity = material.layer.style?.fill?.opacity ?? 1;
             const layerOpacity = material.layer.opacity;
-            return styleOpacity * layerOpacity * (opacity ?? 1);
+            return layerOpacity * (opacity ?? styleOpacity);
         };
 
         let opacity;
