@@ -13,7 +13,7 @@ let style;
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
-const normal = new THREE.Vector3();
+const up = new THREE.Vector3();
 const baseCoord = new THREE.Vector3();
 const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
@@ -38,15 +38,23 @@ class FeatureMesh extends THREE.Group {
         this.#collection = new THREE.Group().add(this.meshes);
         this.#collection.quaternion.copy(collection.quaternion);
         this.#collection.position.copy(collection.position);
-
         this.#collection.scale.copy(collection.scale);
         this.#collection.updateMatrix();
+        this.#collection.matrixWorldInverse = this.#collection.matrixWorld.clone().invert();
+        this.#collection.origMatrixWorld = collection.matrixWorld.clone();
+
+        this.#collection.crs = collection.crs;
 
         this.#originalCrs = collection.crs;
         this.#currentCrs = this.#originalCrs;
         this.extent = collection.extent;
+        this.isFeatureMesh = true;
 
         this.add(this.#place.add(this.#collection));
+    }
+
+    get collection() {
+        return this.#collection;
     }
 
     as(crs) {
@@ -187,47 +195,23 @@ function featureToPoint(feature, options) {
     let featureId = 0;
     const vertices = new Float32Array(ptsIn);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
 
     const pointMaterialSize = [];
-    context.setFeature(feature);
 
     for (const geometry of feature.geometries) {
-        const start = geometry.indices[0].offset;
-        const count = geometry.indices[0].count;
-        const end = start + count;
         const id = batchId(geometry.properties, featureId);
         context.setGeometry(geometry);
 
-        for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
-            if (feature.normals) {
-                normal.fromArray(feature.normals, v).multiply(inverseScale);
-            }
+        const buffers = { vertices, colors, batchIds };
+        updatePointBuffers({ feature }, buffers, id);
 
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-            style.setContext(context);
-            const { base_altitude, color, radius } = style.point;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
-                .toArray(vertices, v);
-
-            toColor(color).multiplyScalar(255).toArray(colors, v);
-
-            if (!pointMaterialSize.includes(radius)) {
-                pointMaterialSize.push(radius);
-            }
-            batchIds[j] = id;
+        // collect point size for this geometry
+        const { radius } = style.point;
+        if (!pointMaterialSize.includes(radius)) {
+            pointMaterialSize.push(radius);
         }
+
         featureId++;
     }
 
@@ -239,10 +223,72 @@ function featureToPoint(feature, options) {
     options.pointMaterial.size = pointMaterialSize[0];
     if (pointMaterialSize.length > 1) {
         // TODO CREATE material for each feature
-        console.warn('Too many differents point.radius, only the first one will be used');
+        console.warn('Too many different point.radius, only the first one will be used');
     }
 
     return new THREE.Points(geom, options.pointMaterial);
+}
+
+/**
+ * Update vertex data for POINT features.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updatePointBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    const { vertices, colors, batchIds } = buffers;
+
+    // geometry range
+    const geometry = context.geometry;
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
+        if (vertices) {
+            if (feature.normals) {
+                up.fromArray(feature.normals, v).multiply(inverseScale);
+            }
+
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.point.base_altitude;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs === 'EPSG:4978') {
+                // altitude conversion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+                .toArray(vertices, v);
+        }
+
+        if (colors) {
+            toColor(style.point.color).multiplyScalar(255).toArray(colors, v);
+        }
+
+        if (batchIds) { batchIds[j] = id; }
+    }
 }
 
 function featureToLine(feature, options) {
@@ -258,78 +304,120 @@ function featureToLine(feature, options) {
     const geom = new THREE.BufferGeometry();
 
     const lineMaterialWidth = [];
-    context.setFeature(feature);
 
-    const countIndices = (count - feature.geometries.length) * 2;
-    const indices = getIntArrayFromSize(countIndices, count);
-
-    let i = 0;
+    // total number of line segments across all geometries
+    let totalSegments = 0;
+    for (const g of feature.geometries) {
+        totalSegments += Math.max(0, g.indices[0].count - 1);
+    }
+    const indices = getIntArrayFromSize(totalSegments * 2, count);
+    const buffers = {
+        vertices,
+        colors,
+        batchIds,
+        indices,
+        vertPtr: 0,
+        indexPtr: 0,
+    };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     // Multi line case
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
-        const id = batchId(geometry.properties, featureId);
+        const id = batchId(geometry.properties, featureId++);
+        updateLineBuffers({ feature }, buffers, id);
 
-        const start = geometry.indices[0].offset;
-        // To avoid integer overflow with indice value (16 bits)
-        if (start > 0xffff) {
-            console.warn('Feature to Line: integer overflow, too many points in lines');
-            break;
+        // collect line width for this geometry
+        const { width } = style.stroke;
+        if (!lineMaterialWidth.includes(width)) {
+            lineMaterialWidth.push(width);
         }
-        const count = geometry.indices[0].count;
-        const end = start + count;
-
-        for (let v = start * 3, j = start; j < end; v += 3, j += 1) {
-            if (j < end - 1) {
-                if (j < 0xffff) {
-                    indices[i++] = j;
-                    indices[i++] = j + 1;
-                } else {
-                    break;
-                }
-            }
-            if (feature.normals) {
-                normal.fromArray(feature.normals, v).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
-            style.setContext(context);
-            const { base_altitude, color, width } = style.stroke;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
-                .toArray(vertices, v);
-
-            toColor(color).multiplyScalar(255).toArray(colors, v);
-
-            if (!lineMaterialWidth.includes(width)) {
-                lineMaterialWidth.push(width);
-            }
-            batchIds[j] = id;
-        }
-        featureId++;
     }
+
     options.lineMaterial.linewidth = lineMaterialWidth[0];
     if (lineMaterialWidth.length > 1) {
         // TODO CREATE material for each feature
-        console.warn('Too many differents stroke.width, only the first one will be used');
+        console.warn('Too many different stroke.width, only the first one will be used');
     }
+
     geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
     geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
     geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
     geom.setIndex(new THREE.BufferAttribute(indices, 1));
 
     return new THREE.LineSegments(geom, options.lineMaterial);
+}
+
+/**
+ * Update vertex and index data for LINE features.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {TypedArray} [buffers.indices] - Target index buffer to write line segment indices to.
+ * @param {number} buffers.indexPtr - Current write position in index buffer (incremented by function).
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateLineBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    const { vertices, colors, batchIds, indices } = buffers;
+
+    // geometry range
+    const geometry = context.geometry;
+    const start = geometry.indices[0].offset;
+    const count = geometry.indices[0].count;
+    const end = start + count;
+
+    // avoid integer overflow with 16-bit index buffers
+    if (indices instanceof Uint16Array && end - 1 > 0xffff) {
+        console.warn('Feature to Line: integer overflow, too many points in lines');
+        return;
+    }
+
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
+        if (vertices) {
+            if (feature.normals) {
+                up.fromArray(feature.normals, v).multiply(inverseScale);
+            }
+
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.stroke.base_altitude;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs == 'EPSG:4978') {
+            // altitude conversion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+                .toArray(vertices, v);
+        }
+
+        if (colors) { toColor(style.stroke.color).multiplyScalar(255).toArray(colors, v); }
+        if (batchIds) { batchIds[j] = id; }
+
+        if (indices && j < end - 1) {
+            indices[buffers.indexPtr++] = j;
+            indices[buffers.indexPtr++] = j + 1;
+        }
+    }
 }
 
 function featureToPolygon(feature, options) {
@@ -339,65 +427,24 @@ function featureToPolygon(feature, options) {
 
     const batchIds = new Uint32Array(vertices.length / 3);
     const batchId = options.batchId || ((p, id) => id);
-    context.setFeature(feature);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     let featureId = 0;
 
     for (const geometry of feature.geometries) {
         const start = geometry.indices[0].offset;
+
         // To avoid integer overflow with index value (32 bits)
         if (start > maxValueUint32) {
             console.warn('Feature to Polygon: integer overflow, too many points in polygons');
             break;
         }
+
         context.setGeometry(geometry);
-
-        const lastIndice = geometry.indices.slice(-1)[0];
-        const end = lastIndice.offset + lastIndice.count;
-        const count = end - start;
-        const startIn = start * 3;
-        const endIn = startIn + count * 3;
-        const id = batchId(geometry.properties, featureId);
-
-        for (let i = startIn, b = start; i < endIn; i += 3, b += 1) {
-            if (feature.normals) {
-                normal.fromArray(feature.normals, i).multiply(inverseScale);
-            }
-
-            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
-            style.setContext(context);
-            const { base_altitude, color } = style.fill;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
-            }
-
-            // Calculate the new coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
-                .toArray(vertices, i);
-
-            toColor(color).multiplyScalar(255).toArray(colors, i);
-            batchIds[b] = id;
-        }
-        featureId++;
-
-        const geomVertices = vertices.slice(start * 3, end * 3);
-        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
-        const triangles = Earcut(geomVertices, holesOffsets, 3);
-
-        const startIndice = indices.length;
-        indices.length += triangles.length;
-
-        for (let i = 0; i < triangles.length; i++) {
-            indices[startIndice + i] = triangles[i] + start;
-        }
+        const id = batchId(geometry.properties, featureId++);
+        const buffers = { vertices, colors, batchIds, indices };
+        updatePolygonBuffers({ feature }, buffers, id);
     }
 
     const geom = new THREE.BufferGeometry();
@@ -407,6 +454,83 @@ function featureToPolygon(feature, options) {
     geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
 
     return new THREE.Mesh(geom, options.polygonMaterial);
+}
+
+/**
+ * Update base (non-extruded) polygon vertex and index data.
+ *
+ * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
+ * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number[]} [buffers.indices] - Target index array to append triangulated indices to.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updatePolygonBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const ptsIn = feature.vertices;
+    if (!ptsIn?.length) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    const { vertices, colors, batchIds, indices } = buffers;
+
+    // geometry range
+    const geometry = context.geometry;
+    const start = geometry.indices[0].offset;
+    const lastIndex = geometry.indices.slice(-1)[0];
+    const end = lastIndex.offset + lastIndex.count;
+
+    for (let v = start * 3, j = start; j < end; v += 3, j++) {
+        if (vertices) {
+            if (feature.normals) {
+                up.fromArray(feature.normals, v).multiply(inverseScale);
+            }
+
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, v);
+            const base_altitude = style.fill.base_altitude;
+
+            coord.copy(localCoord)
+                .applyMatrix4(context.collection.matrixWorld);
+            if (coord.crs === 'EPSG:4978') {
+                // altitude conversion from geocentered to elevation (from ground)
+                coord.as('EPSG:4326', coord);
+            }
+
+            // Calculate the new coordinates using the elevation shift (baseCoord)
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - coord.z).add(localCoord)
+                // and update the geometry buffer (vertices).
+                .toArray(vertices, v);
+        }
+
+        if (colors) {
+            toColor(style.fill.color).multiplyScalar(255).toArray(colors, v);
+        }
+
+        if (batchIds) { batchIds[j] = id; }
+    }
+
+    // triangulate this geometry range and append indices
+    if (indices) {
+        const geomVertices = vertices.slice(start * 3, end * 3);
+        const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
+        const triangles = Earcut(geomVertices, holesOffsets, 3);
+        const startIndice = indices.length;
+        indices.length += triangles.length;
+        for (let i = 0; i < triangles.length; i++) {
+            indices[startIndice + i] = triangles[i] + start;
+        }
+    }
 }
 
 function area(contour, offset, count) {
@@ -424,7 +548,6 @@ function area(contour, offset, count) {
 function featureToExtrudedPolygon(feature, options) {
     const ptsIn = feature.vertices;
     const vertices = new Float32Array(ptsIn.length * 2);
-    const totalVertices = ptsIn.length / 3;
 
     const colors = new Uint8Array(ptsIn.length * 2);
 
@@ -435,73 +558,126 @@ function featureToExtrudedPolygon(feature, options) {
 
     let featureId = 0;
 
-    context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    normal.set(0, 0, 1).multiply(inverseScale);
+    up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
 
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
 
-        const start = geometry.indices[0].offset;
-        const lastIndice = geometry.indices.slice(-1)[0];
-        const end = lastIndice.offset + lastIndice.count;
-        const count = end - start;
-        const isClockWise = geometry.indices[0].ccw ?? (area(ptsIn, start, count) < 0);
+        const id = batchId(geometry.properties, featureId++);
+        const buffers = { vertices, colors, batchIds, indices };
+        updateExtrudedPolygonBuffers({ feature }, buffers, id);
+    }
 
-        const startIn = start * 3;
-        const startTop = start + totalVertices;
-        const endIn = startIn + count * 3;
-        const id = batchId(geometry.properties, featureId);
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
+    geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
 
-        for (let i = startIn, t = startIn + ptsIn.length, b = start; i < endIn; i += 3, t += 3, b += 1) {
+    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
+
+    return new THREE.Mesh(geom, options.polygonMaterial);
+}
+
+/**
+ * Update base and top vertex data for extruded polygons, including indices.
+ *
+ * @param {Object} featureMesh - The feature mesh providing feature and collection context.
+ * @param {Object} buffers - Buffer management object.
+ * @param {Float32Array} [buffers.vertices] - Target positions buffer (xyz) to write into.
+ * @param {Uint8Array} [buffers.colors] - Target colors buffer (rgb, Uint8, normalized) to write into.
+ * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
+ * @param {number[]} [buffers.indices] - Target index array to append triangulated indices and side faces to.
+ * @param {number} [id] - Batch id value to assign to written vertices when batchIds is provided.
+ */
+function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
+    const feature = featureMesh.feature;
+    const numVertices = feature.vertices?.length;
+    if (!numVertices) {
+        console.error('Feature has no vertices');
+        return;
+    }
+
+    // context setup
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+
+    const { vertices, colors, batchIds, indices } = buffers;
+
+    // geometry range
+    const geometry = context.geometry;
+    const start = geometry.indices[0].offset;
+    const lastIndex = geometry.indices.slice(-1)[0];
+    const end = lastIndex.offset + lastIndex.count;
+    const count = end - start;
+    const isClockWise = geometry.indices[0].ccw ?? (area(feature.vertices, start, count) < 0);
+    const totalVertices = numVertices / 3;
+
+    const startIn = start * 3;
+    const startTop = start + numVertices / 3;
+    const endIn = startIn + count * 3;
+    const { color } = style.fill;
+    let topColor;
+    let baseColor;
+    if (colors) {
+        topColor = toColor(color).multiplyScalar(255).clone();
+        baseColor = topColor.clone().multiplyScalar(0.5); // base is half-dark
+    }
+
+    for (let i = startIn; i < endIn; i += 3) {
+        const t = numVertices + i;
+
+        if (vertices) {
             if (feature.normals) {
-                normal.fromArray(feature.normals, i).multiply(inverseScale);
+                up.fromArray(feature.normals, i).multiply(inverseScale);
             }
 
-            const localCoord = context.setLocalCoordinatesFromArray(ptsIn, i);
-            style.setContext(context);
-            const { base_altitude, extrusion_height, color } = style.fill;
-
-            coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
-            if (coord.crs == 'EPSG:4978') {
-            // altitude convertion from geocentered to elevation (from ground)
-                coord.as('EPSG:4326', coord);
+            const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
+            const { base_altitude, extrusion_height } = style.fill;
+            const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrixWorld);
+            if (worldCoord.crs === 'EPSG:4978') {
+                // altitude conversion from geocentered to elevation (from ground)
+                worldCoord.as('EPSG:4326', worldCoord);
             }
-
-            // Calculate the new base coordinates using the elevation shift (baseCoord)
-            baseCoord.copy(normal)
-                .multiplyScalar(base_altitude - coord.z).add(localCoord)
-            // and update the geometry buffer (vertices).
+            baseCoord.copy(up)
+                .multiplyScalar(base_altitude - worldCoord.z).add(localCoord)
+                // and update the geometry buffer (vertices).
                 .toArray(vertices, i);
-            batchIds[b] = id;
 
             // populate top geometry buffers
-            topCoord.copy(normal)
+            topCoord.copy(up)
                 .multiplyScalar(extrusion_height).add(baseCoord)
                 .toArray(vertices, t);
-            batchIds[b + totalVertices] = id;
-
-            // coloring base and top mesh
-            const meshColor = toColor(color).multiplyScalar(255);
-            meshColor.toArray(colors, t); // top
-            meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half dark
         }
 
-        featureId++;
+        if (batchIds) {
+            batchIds[(i / 3) | 0] = id;
+            batchIds[(t / 3) | 0] = id;
+        }
 
+        // coloring base and top mesh
+        if (colors) {
+            topColor.toArray(colors, t);
+            baseColor.toArray(colors, i);
+        }
+    }
+
+    // Triangulate top face and add side faces indices
+    if (indices) {
         const endTop = end + totalVertices;
-
         const geomVertices = vertices.slice(startTop * 3, endTop * 3);
         const holesOffsets = geometry.indices.map(i => i.offset - start).slice(1);
         const triangles = Earcut(geomVertices, holesOffsets, 3);
 
-        const startIndice = indices.length;
+        const startIndex = indices.length;
         indices.length += triangles.length;
 
         for (let i = 0; i < triangles.length; i++) {
-            indices[startIndice + i] = triangles[i] + startTop;
+            indices[startIndex + i] = triangles[i] + startTop;
         }
 
         // add extruded contour
@@ -514,24 +690,15 @@ function featureToExtrudedPolygon(feature, options) {
 
         // add extruded holes
         for (let i = 1; i < geometry.indices.length; i++) {
-            const indice = geometry.indices[i];
+            const index = geometry.indices[i];
             addExtrudedPolygonSideFaces(
                 indices,
                 totalVertices,
-                indice.offset,
-                indice.count,
-                !(indice.ccw ?? isClockWise));
+                index.offset,
+                index.count,
+                !(index.ccw ?? isClockWise));
         }
     }
-
-    const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
-    geom.setAttribute('color', new THREE.BufferAttribute(colors, 3, true));
-    geom.setAttribute('batchId', new THREE.BufferAttribute(batchIds, 1));
-
-    geom.setIndex(new THREE.BufferAttribute(getIntArrayFromSize(indices, vertices.length / 3), 1));
-
-    return new THREE.Mesh(geom, options.polygonMaterial);
 }
 
 /**
@@ -685,7 +852,7 @@ export default {
             // style properties (@link StyleOptions) using options.style.
             // This is usually done in some tests and if you want to use Feature2Mesh.convert()
             // as in examples/source_file_gpx_3d.html.
-            style = this?.style || (options.style ? new Style(options.style) :  defaultStyle);
+            style = this?.style || (options.style ? new Style(options.style) : defaultStyle);
 
             context.setCollection(collection);
 
@@ -701,5 +868,70 @@ export default {
 
             return featureNode;
         };
+    },
+
+    /**
+     * Updates the visual properties of a feature mesh using the given collection context and style.
+     *
+     * @param {THREE.Mesh} featureMesh - The mesh to update.
+     * @param {THREE.Group} collection - The collection providing matrix/world context.
+     * @param {Style} styleIn - The style to apply.
+     */
+    updateStyle(featureMesh, collection, styleIn) {
+        style = styleIn;
+        const feature = featureMesh.feature;
+        if (!collection) {
+            console.error('Cannot update style: collection not provided');
+            return;
+        }
+
+        context.setCollection(collection);
+        collection.updateMatrixWorld(true);
+        collection.matrixWorld.copy(collection.origMatrixWorld);
+
+        // only define attributes that need an update
+        featureMesh.stylePropVersions ||= {};
+        const spv = featureMesh.stylePropVersions;
+        let colorAttr;
+        if ((spv.color ?? 0) < (style.propVersions.color ?? 0)) {
+            spv.color = style.propVersions.color;
+            colorAttr = featureMesh.geometry.getAttribute('color');
+            colorAttr.needsUpdate = true;
+        }
+        const colors = colorAttr?.array;
+        let posAttr;
+        if ((spv.extrusion_height ?? 0) < (style.propVersions.extrusion_height ?? 0) ||
+            (spv.base_altitude ?? 0) < (style.propVersions.base_altitude ?? 0)) {
+            spv.extrusion_height = style.propVersions.extrusion_height;
+            spv.base_altitude = style.propVersions.base_altitude;
+            posAttr = featureMesh.geometry.getAttribute('position');
+            posAttr.needsUpdate = true;
+        }
+        const vertices = posAttr?.array;
+        const buffers = { vertices, colors, vertPtr: 0 };
+        for (const geometry of feature.geometries) {
+            context.setGeometry(geometry);
+            switch (feature.type) {
+                case FEATURE_TYPES.POINT: {
+                    const pointStyle = style.point;
+                    if (pointStyle?.model?.object) { break; } // instanced mesh
+                    updatePointBuffers(featureMesh, buffers);
+                    break;
+                }
+                case FEATURE_TYPES.LINE: {
+                    updateLineBuffers(featureMesh, buffers);
+                    break;
+                }
+                case FEATURE_TYPES.POLYGON: {
+                    if (style.isExtruded()) {
+                        updateExtrudedPolygonBuffers(featureMesh, buffers);
+                    } else {
+                        updatePolygonBuffers(featureMesh, buffers);
+                    }
+                    break;
+                }
+                default: // unreachable (already returned)
+            }
+        }
     },
 };
