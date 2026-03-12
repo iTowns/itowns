@@ -152,18 +152,18 @@
 
             function colorBuildings(properties) {
                 if (properties.usage_1 === 'Résidentiel') {
-                    return color.set(0xFDFDFF);
+                    return '#FDFDFF';
                 } else if (properties.usage_1 === 'Annexe') {
-                    return color.set(0xC6C5B9);
+                    return '#C6C5B9';
                 } else if (properties.usage_1 === 'Commercial et services') {
-                    return color.set(0x62929E);
+                    return '#62929E';
                 } else if (properties.usage_1 === 'Religieux') {
-                    return color.set(0x393D3F);
+                    return '#393D3F';
                 } else if (properties.usage_1 === 'Sportif') {
-                    return color.set(0x546A7B);
+                    return '#546A7B';
                 }
 
-                return color.set(0x555555);
+                return '#555555';
             }
 
             function altitudeBuildings(properties) {
@@ -241,7 +241,7 @@
                 },
                 toggleColor: function () {
                     useFixedColor = !useFixedColor;
-                    wfsBuildingLayer.style.fill.color = useFixedColor ? color.set(0x00cc00) : colorBuildings
+                    wfsBuildingLayer.style.fill.color = useFixedColor ? '#00cc00' : colorBuildings
                     view.notifyChange(wfsBuildingLayer);
                 }
             };
