@@ -6,9 +6,6 @@ import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
 
 import type { Extent, ProjectionLike } from '@itowns/geographic';
 
-// import from OrientationUtils ?
-type QuaternionFunction = (coords: Coordinates, target?: THREE.Quaternion) => THREE.Quaternion;
-
 // get oriented bounding box of tile
 const builder = new GlobeTileBuilder({ uvCount: 1 });
 const size = new THREE.Vector3();
@@ -16,19 +13,6 @@ const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 let _obb: OBB;
-
-const orientUtilsCache: Record<ProjectionLike, Record<ProjectionLike, QuaternionFunction>> = {};
-function quaternionFromCRSToCRS(crsIn: ProjectionLike, crsOut: ProjectionLike): QuaternionFunction {
-    if (!orientUtilsCache[crsIn]) {
-        orientUtilsCache[crsIn] = {};
-    }
-
-    if (!orientUtilsCache[crsIn][crsOut]) {
-        orientUtilsCache[crsIn][crsOut] = OrientationUtils.quaternionFromCRSToCRS(crsIn, crsOut);
-    }
-
-    return orientUtilsCache[crsIn][crsOut];
-}
 
 // it could be considered to remove THREE.Object3D extend.
 /**
@@ -236,7 +220,7 @@ class OBB extends THREE.Object3D {
         let quaternion = new THREE.Quaternion();
         if (isGeocentric) {
             const coordOrigin = new Coordinates(crsOut).setFromArray(origin);
-            quaternion = quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
+            quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
         }
 
         // project corners in local referentiel
