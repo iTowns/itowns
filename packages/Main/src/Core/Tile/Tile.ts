@@ -60,7 +60,7 @@ class Tile {
      * @param target - The target to store the projected extent. If this not
      * provided a new extent will be created.
      */
-    toExtent(crs: string, target = new Extent('EPSG:4326')) {
+    toExtent(crs = this.crs, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
         const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
         const countTiles = getCountTiles(this.crs, this.zoom);
@@ -207,6 +207,79 @@ export function tiledCovering(e: Extent, tms: string) {
         _tmsCoord.divide(globalDimension).multiply(countTiles).floor();
         target.set(zoom, _tmsCoord.y, _tmsCoord.x);
         return [target];
+    }
+}
+
+export class TileMatrixSetLimits {
+    constructor(crs) {
+        this.limits = {};
+
+        this.crs = crs;
+
+        this.size = 0;
+
+        this.extent = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
+
+        this.intersect = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
+
+        this.zoom = {
+            min: 0,
+
+            max: Infinity,
+        };
+    }
+
+    static fromCapabilities(json, crs) {
+        const tm = new TileMatrixSetLimits(crs);
+
+        if (!json) {
+            return tm;
+        }
+
+        tm.extent.set(Infinity, -Infinity, Infinity, -Infinity);
+
+        const arrayLimits = Object.keys(json).map(a => Number(a));
+
+        tm.zoom.min = Math.min(...arrayLimits);
+
+        tm.zoom.max = Math.max(...arrayLimits);
+
+        arrayLimits.forEach((a) => {
+            const limit = json[a];
+
+            const  la = {
+                min: new Tile(crs, a, limit.minTileRow, limit.minTileCol),
+
+                max: new Tile(crs, a, limit.maxTileRow, limit.maxTileCol),
+            };
+
+            la.extent = la.min.toExtent().union(la.max.toExtent());
+
+            tm.extent.union(la.extent);
+
+            tm.intersect = tm.intersect.intersect(la.extent);
+
+            tm.limits[a] = la;
+        });
+
+        return tm;
+    }
+
+    isInside(tile: Tile) {
+        const limit = this.limits[tile.zoom];
+
+        if (limit) {
+            return  tile.row >= limit.min.row &&
+                    tile.col >= limit.min.col &&
+                    tile.row <= limit.max.row &&
+                    tile.col <= limit.max.col;
+        }
+
+        return this.size === 0;
+    }
+
+    isInside(extent: Extent) {
+        return this.intersect.strictIntersectsExtent(extent);
     }
 }
 
