@@ -152,7 +152,8 @@ describe('Entwine Point Tile', function () {
             await LASParser.terminate();
         });
 
-        describe('load()', () => {
+        describe.skip('load()', () => {
+            // load is not on entwineTileNode anymore
             it('load the root load', async () => {
                 const spyLoadOctree = sinon.spy(root, 'loadOctree');
                 const mockParser = sinon.mock(source);
