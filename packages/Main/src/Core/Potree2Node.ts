@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 import type Potree2Source from 'Source/Potree2Source';
 import PotreeNodeBase from 'Core/PotreeNodeBase';
 
-type NodeInfo = {
+export type Potree2NodeInfo = {
     childrenBitField: number, // 0 <= integer <= 255
     numPoints: number, // integer >= 0
     byteOffset: bigint,
@@ -55,7 +55,7 @@ class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
 
     hierarchyKey: string;
-    hierarchy: Record<string, NodeInfo>;
+    hierarchy: Record<string, Potree2NodeInfo>;
 
     childrenBitField: number;
 
@@ -68,7 +68,7 @@ class Potree2Node extends PotreeNodeBase {
         hierarchyKey: string,
         source: Potree2Source,
         crs: string,
-        hierarchy: Record<string, NodeInfo> = {},
+        hierarchy: Record<string, Potree2NodeInfo> = {},
     ) {
         const depth = hierarchyKey.length - 1;
         const numPoints = hierarchy[hierarchyKey]?.numPoints ?? -1;
@@ -113,7 +113,7 @@ class Potree2Node extends PotreeNodeBase {
         return networkOptions;
     }
 
-    async loadHierarchy(): Promise<Record<string, NodeInfo>> {
+    async loadHierarchy(): Promise<Record<string, Potree2NodeInfo>> {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
@@ -133,14 +133,14 @@ class Potree2Node extends PotreeNodeBase {
         const stack = [];
         stack.push(this.hierarchyKey);
 
-        const hierarchy: Record<string, NodeInfo> = {
+        const hierarchy: Record<string, Potree2NodeInfo> = {
         };
 
         const bytesPerNode = 22;
         const numNodes = buffer.byteLength / bytesPerNode;
 
         for (let indexNode = 0; indexNode < numNodes; indexNode++) {
-            const hierarchyKey: string = stack.shift() as string;
+            const hierarchyKey = stack.shift() as string;
             const offset = indexNode * bytesPerNode;
 
             const type = view.getUint8(offset + 0) as NodeType;
