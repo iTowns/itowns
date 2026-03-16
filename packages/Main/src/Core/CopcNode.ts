@@ -75,7 +75,7 @@ class CopcNode extends LasNodeBase {
         });
     }
 
-    async loadHierarchy(): Promise<Hierarchy.Subtree> {
+    override async loadHierarchy(): Promise<Hierarchy.Subtree> {
         if (this.hierarchyIsLoaded) { return this.hierarchy; }
 
         const buffer = await this.fetcher(this.source.url, this.networkOptions);

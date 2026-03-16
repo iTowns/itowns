@@ -56,7 +56,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     abstract childrenCreated: boolean;
     abstract get networkOptions(): RequestInit;
-    abstract get hierarchyIsLoaded(): boolean;
     abstract get id(): string;
     abstract get url(): string;
     abstract createChildren(): Promise<void>;
@@ -65,6 +64,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
+    }
+
+    get hierarchyIsLoaded(): boolean {
+        return this.numPoints >= 0;
     }
 
     async load(): Promise<THREE.BufferGeometry> {
