@@ -1,8 +1,7 @@
 import PotreeNodeBase from 'Core/PotreeNodeBase';
 import type PotreeSource from 'Source/PotreeSource';
 
-type NodeInfo = {
-    hierarchyKey: string,
+export type PotreeNodeInfo = {
     childrenBitField: number, // 0 <= integer <= 255
     numPoints: number, // integer >= 0
 }
@@ -11,7 +10,7 @@ class PotreeNode extends PotreeNodeBase {
     source: PotreeSource;
 
     hierarchyKey: string;
-    hierarchy: Record<string, NodeInfo>;
+    hierarchy: Record<string, PotreeNodeInfo>;
 
     childrenBitField: number;
 
@@ -21,7 +20,7 @@ class PotreeNode extends PotreeNodeBase {
         hierarchyKey: string,
         source: PotreeSource,
         crs: string,
-        hierarchy: Record<string, NodeInfo> = {},
+        hierarchy: Record<string, PotreeNodeInfo> = {},
     ) {
         const depth = hierarchyKey.length - 1;
         const numPoints = hierarchy[hierarchyKey]?.numPoints ?? -1;
@@ -48,7 +47,7 @@ class PotreeNode extends PotreeNodeBase {
         return this.source.networkOptions;
     }
 
-    async loadHierarchy(): Promise<Record<string, NodeInfo>> {
+    async loadHierarchy(): Promise<Record<string, PotreeNodeInfo>> {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
@@ -61,39 +60,48 @@ class PotreeNode extends PotreeNodeBase {
         this.numPoints = view.getUint32(1, true);
 
         // parse and create Hierarchy
-        const stack: NodeInfo[] = [];
-        const root = {
-            hierarchyKey: 'r',
-            childrenBitField: this.childrenBitField,
-            numPoints: this.numPoints,
-        };
-        stack.push(root);
+        const stack = [];
+        stack.push(this.hierarchyKey);
+
+        const hierarchy: Record<string, PotreeNodeInfo> = {};
+
+        let offset = 0;
         const byteLength = view.byteLength;
-
-        const hierarchy: Record<string, NodeInfo> = {
-            r: { ...root },
-        };
-
-        let offset = 5;
-
         while (stack.length && offset < byteLength) {
-            const snode = stack.shift() as NodeInfo;
+            const hierarchyKey = stack.shift() as string;
+            let childrenBitField = view.getUint8(offset);
+            let numPoints = view.getUint32(offset + 1, true);
+
+            // In potree 1.7 there is a bug with the numPoints
+            // (set to 0 even if there is point in the associated bin)
+            // of the last level when we reach source.hierarchyStepSize.
+            // It can be the last level of the hierarchy, or in the
+            // sub-hierarchy if there is children or grand-children (and
+            // only these will be impacted)
+
+            if (hierarchyKey.length - this.hierarchyKey.length === this.source.hierarchyStepSize) {
+                numPoints = -1;// to load the subHierarchy when needed
+                childrenBitField = childrenBitField || 255; // for bug v1.7
+            }
+
+            if (hierarchyKey.length > this.source.hierarchyStepSize) {
+                // for bug v1.7
+                numPoints = numPoints || 9999;
+            }
+
+            hierarchy[hierarchyKey] = {
+                childrenBitField,
+                numPoints,
+            };
+
             // look up 8 children
             for (let childIndex = 0; childIndex < 8; childIndex++) {
                 // does snode have a #childIndex child ?
-                if ((snode.childrenBitField as number) &
-                        (1 << childIndex) && (offset + 5) <= byteLength) {
-                    const child: NodeInfo = {
-                        hierarchyKey: `${snode.hierarchyKey}${childIndex}`,
-                        childrenBitField: view.getUint8(offset),
-                        numPoints: view.getUint32(offset + 1, true),
-                    };
-
-                    stack.push(child);
-                    hierarchy[child.hierarchyKey] = { ...child };
-                    offset += 5;
+                if (childrenBitField & (1 << childIndex)) {
+                    stack.push(`${hierarchyKey}${childIndex}`);
                 }
             }
+            offset += 5;
         }
         this.hierarchy = hierarchy;
         return hierarchy;
