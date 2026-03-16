@@ -90,10 +90,15 @@
             const crs = 'EPSG:4978';
             */
 
-            itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
-            name = 'Sagrada Familia';
-            const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
-            const crs = 'EPSG:25831';
+            // itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+            // name = 'Sagrada Familia';
+            // const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
+            // const crs = 'EPSG:25831';
+
+            itowns.CRS.defs("EPSG:32755","+proj=utm +zone=55 +south +datum=WGS84 +units=m +no_defs +type=crs");
+            const name = 'Melbourne';
+            const url = 'https://raw.githubusercontent.com/masonproco/melbournePotree/f1a32efa243bd3c7a61f975e3c1155078ecf73d5/pointcloud/cloud.js';
+            const crs = 'EPSG:32755';
 
             // Configure Point Cloud layer
             const potreeSource = new itowns.PotreeSource({
