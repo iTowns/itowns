@@ -59,7 +59,7 @@ class SkyManager {
 
         this.sky.updateMatrixWorld();
 
-        const skyMaterial = <SkyMaterial>this.sky.material;
+        const skyMaterial = this.sky.material as SkyMaterial;
         skyMaterial.sunDirection.copy(sunDirection);
         skyMaterial.moonDirection.copy(moonDirection);
 

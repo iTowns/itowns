@@ -54,7 +54,7 @@
 
         // Create a GlobeView
         const view = new itowns.GlobeView(viewerDiv, placement, {
-            realisticLighting: false,
+            // realisticLightingOptions: {enable: true},
         });
 
         // Setup loading screen and debug menu
@@ -148,11 +148,10 @@
         });
 
 
-
         // ---------- INIT ATMOSPHERIC LIGHTING : ----------
 
-        view.enableRealisticLighting();
-        view.realisticLightingEnabled = !view.isDebugMode;
+        // view.realisticLightingManager.enable();
+        view.realisticLightingManager.enabled = !view.isDebugMode;
 
         view.mainLoop.gfxEngine.composer.addPass(new pp.EffectPass(view.scene.camera3D, new pp.BloomEffect({
             luminanceThreshold: 0.1,
@@ -163,7 +162,7 @@
 
         // Toggle atmospheric lighting on/off.
         const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
-            view.realisticLightingEnabled = v;
+            view.realisticLightingManager.enabled = v;
         });
 
         debug.createTileDebugUI(debugMenu.gui, view);

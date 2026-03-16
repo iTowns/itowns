@@ -8,56 +8,10 @@ import GlobeLayer, { type GlobeLayerOptions } from 'Core/Prefab/Globe/GlobeLayer
 import CameraUtils from 'Utils/CameraUtils';
 import type { CameraTransformOptions } from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
-import SkyManager from 'Core/Prefab/Globe/SkyManager';
-import AtmosphereManager from 'Core/Prefab/Globe/AtmosphereManager';
-import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import {
-    getSunDirectionECEF,
-} from '@takram/three-atmosphere';
-import SunLightLayer from 'Layer/SunLightLayer';
-
-import {
-    EffectPass,
-    RenderPass,
-    FXAAEffect,
-} from 'postprocessing';
-import { skyUtils } from 'Main';
-import PlanarLayer from './Planar/PlanarLayer';
-
-/**
- * Fires when the view is completely loaded. Controls and view's functions can
- * be called then.
- *
- * Event name: `GlobeView#initialized`
- * Payload: `{ target, type: 'initialized' }`
- */
-/**
- * Fires when a layer is added.
- *
- * Event name: `GlobeView#layer-added`
- * Payload: `{ layerId, target, type: 'layers-added' }`
- */
-/**
- * Fires when a layer is removed.
- *
- * Event name: `GlobeView#layer-removed`
- * Payload: `{ layerId, target, type: 'layers-added' }`
- */
-/**
- * Fires when the layers order has changed.
- *
- * Event name: `GlobeView#layers-order-changed`
- * Payload:
- * ```ts
- * {
- *     new: { sequence: number[] },
- *     previous: { sequence: number[] },
- *     target,
- *     type: 'layers-order-changed',
- * }
- * ```
- */
-
+import type PlanarLayer from './Planar/PlanarLayer';
+import RealisticLightingManager, {
+    type RealisticLightingOptions,
+} from './Globe/RealisticLightingManager';
 
 /**
  * Globe events.
@@ -69,11 +23,43 @@ import PlanarLayer from './Planar/PlanarLayer';
  * - COLOR_LAYERS_ORDER_CHANGED:
  *   use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED.
  */
-
 export const GLOBE_VIEW_EVENTS = {
+    /**
+     * Fires when the view is completely loaded. Controls and view's functions
+     * can be called then.
+     *
+     * Event name: `GlobeView#initialized`
+     * Payload: `{ target, type: 'initialized' }`
+     */
     GLOBE_INITIALIZED: VIEW_EVENTS.INITIALIZED,
+    /**
+     * Fires when a layer is added.
+     *
+     * Event name: `GlobeView#layer-added`
+     * Payload: `{ layerId, target, type: 'layers-added' }`
+     */
     LAYER_ADDED: VIEW_EVENTS.LAYER_ADDED,
+    /**
+     * Fires when a layer is removed.
+     *
+     * Event name: `GlobeView#layer-removed`
+     * Payload: `{ layerId, target, type: 'layers-added' }`
+     */
     LAYER_REMOVED: VIEW_EVENTS.LAYER_REMOVED,
+    /**
+     * Fires when the layers order has changed.
+     *
+     * Event name: `GlobeView#layers-order-changed`
+     * Payload:
+     * ```ts
+     * {
+     *     new: { sequence: number[] },
+     *     previous: { sequence: number[] },
+     *     target,
+     *     type: 'layers-order-changed',
+     * }
+     * ```
+     */
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
@@ -90,6 +76,8 @@ type GlobeViewOptions = ViewOptions & GlobeLayerOptions & {
     }
     /** The camera's near and far are automatically adjusted. */
     dynamicCameraNearFar: boolean,
+    /** Tweak realistic lighting. */
+    realisticLightingOptions: RealisticLightingOptions,
     /** Controls how far the camera can see.
      * The maximum view distance is this factor times the camera's altitude
      * (above sea level). */
@@ -97,13 +85,6 @@ type GlobeViewOptions = ViewOptions & GlobeLayerOptions & {
     /** Proportion of the visible depth range that contains fog.
      * Between 0 and 1. (optional) */
     fogSpread: number,
-    /** Enable realistic lighting.
-     * If true, it can later be switched by setting this.skyManager.enabled
-     * to true/false.
-     * If false, it will be impossible to enable it later on. */
-    realisticLighting: boolean,
-    /** Tweak realistic lighting. */
-    realisticLightingOptions: SkyOptions,
     object3d: THREE.Object3D,
     noControls: boolean,
     /** Handle collision between camera and ground or not, i.e. whether
@@ -111,9 +92,6 @@ type GlobeViewOptions = ViewOptions & GlobeLayerOptions & {
     handleCollision: boolean,
 }
 
-type SkyOptions = {
-    sunLightIntensity: number,
-};
 
 class GlobeView extends View {
     isGlobeView = true as const;
@@ -121,11 +99,7 @@ class GlobeView extends View {
     fogSpread: number;
     webXR?: WebXR;
     date: Date;
-    sunDirection: THREE.Vector3;
-    sunLightLayer: SunLightLayer;
-    skyManager?: SkyManager;
-    atmosphereManager?: AtmosphereManager;
-    fog: THREE.Fog | null;
+    realisticLightingManager: RealisticLightingManager;
 
     /**
      * Creates a view of a globe.
@@ -163,7 +137,6 @@ class GlobeView extends View {
 
         this.addLayer(tileLayer);
         this.tileLayer = tileLayer;
-        this.fog = null;
 
         if (!('isExtent' in placement)) {
             placement.coord = placement.coord || new Coordinates('EPSG:4326', 0, 0);
@@ -210,10 +183,10 @@ class GlobeView extends View {
                     this.camera3D.far = Math.min(this.farFactor * camToSeaLevel, horizonDist);
                     this.camera3D.updateProjectionMatrix();
 
-                    if (!this.fog) { return; }
-                    this.fog.far = this.camera3D.far;
-                    this.fog.near =
-                        this.fog.far - this.fogSpread * (this.fog.far - this.camera3D.near);
+                    const fog = this.realisticLightingManager.fog;
+                    if (!fog) { return; }
+                    fog.far = this.camera3D.far;
+                    fog.near = fog.far - this.fogSpread * (fog.far - this.camera3D.near);
                 });
             }
         }
@@ -228,87 +201,10 @@ class GlobeView extends View {
 
         this.date = new Date(); // now
 
-        this.sunDirection = new THREE.Vector3();
-
-        // Sunlight and shadow layer
-        this.sunLightLayer = new SunLightLayer(this);
-        View.prototype.addLayer.call(this, this.sunLightLayer);
-
         this.scene.fog = new THREE.Fog(0xe2edff, 1, 1000); // default fog
-        this.fog = this.scene.fog;
 
-        if (options.realisticLighting === true) {
-            this.enableRealisticLighting();
-        }
-    }
-
-    enableRealisticLighting() {
-        if (!this.skyManager || !this.atmosphereManager) {
-            this.skyManager = new SkyManager(this);
-
-            const composer = this.mainLoop.gfxEngine.composer;
-            composer.addPass(new RenderPass(this.scene, this.camera3D));
-
-            this.atmosphereManager = new AtmosphereManager(
-                this.camera3D, composer, this.skyManager.generator.textures,
-            );
-
-            composer.addPass(new EffectPass(this.camera3D, new FXAAEffect())); // anti-aliasing
-
-            this.enableRealisticLighting();
-
-            this.addFrameRequester(
-                MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
-                () => {
-                    getSunDirectionECEF(this.date, this.sunDirection);
-                    // this creates a white disk at the Sun's position
-                    this.sunDirection.multiplyScalar(1.00002);
-
-                    if (!this.realisticLightingEnabled) { return; }
-
-                    this.atmosphereManager!.update(this.camera3D, this.sunDirection);
-
-                    // actually only useful if Sun or Moon direction has changed
-                    if (this.skyManager) {
-                        this.skyManager.update(this.date, this.sunDirection);
-                    }
-                },
-            );
-        } else {
-            this.sunLightLayer.sunLight.intensity *= 0.1;
-            this.scene.add(this.skyManager.sky, this.skyManager.skyLight);
-            this.atmosphereManager.effectPass.enabled = true;
-
-            // disable fog only during render
-            // to let its parameters be modified elsewhere
-            if (this.realisticLightingEnabled) {
-                this.fog = this.scene.fog;
-                this.scene.fog = null;
-            }
-        }
-    }
-
-    disableRealisticLighting() {
-        if (!this.skyManager || !this.atmosphereManager) { return; }
-        this.sunLightLayer.sunLight.intensity *= 10;
-        if (this.realisticLightingEnabled) { this.scene.fog = this.fog; }
-        this.scene.remove(this.skyManager.sky, this.skyManager.skyLight);
-        this.atmosphereManager.effectPass.enabled = false;
-    }
-
-    get realisticLightingEnabled() {
-        return !!this.skyManager?.sky.parent; // sky has a parent (the scene)
-    }
-
-    set realisticLightingEnabled(on: boolean) {
-        if (this.realisticLightingEnabled == on) { return; }
-        if (on) { this.enableRealisticLighting(); } else { this.disableRealisticLighting(); }
-
-        // force internally calling state.buffers.color.setClear
-        // to get a correct background color
-        this.renderer.setClearAlpha(this.renderer.getClearAlpha());
-
-        this.mainLoop.gfxEngine.composer.render();
+        this.realisticLightingManager =
+            new RealisticLightingManager(this, options.realisticLightingOptions);
     }
 
     /**
