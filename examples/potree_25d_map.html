@@ -80,11 +80,27 @@
                 => crs unknown. Most probaly a projection centered on the center of acquisition... 
                 */
 
-                itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+                // itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+                // const name = 'Sagrada Familia';
+                // const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
+                // const crs = 'EPSG:25831';
 
-                const name = 'Sagrada Familia';
-                const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
-                const crs = 'EPSG:25831';
+
+                // itowns.CRS.defs("EPSG:3947","+proj=lcc +lat_0=47 +lon_0=3 +lat_1=46.25 +lat_2=47.75 +x_0=1700000 +y_0=6200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+                // const name = 'Orvault-Potree1_7-3947';
+                // const url = 'https://raw.githubusercontent.com/bloc-in-bloc/sample-datas/main/Orvault-Potree1_7-3947/cloud.js';
+                // const crs = 'EPSG:3947';
+
+                // const name = 'archeodev';
+                // const url = 'https://www.wild-lights.com/archeodev/Cotencher/pointclouds/index/cloud.js';
+                // const crs = 'EPSG:3857';// => crs unknown...
+
+
+                itowns.CRS.defs("EPSG:32755","+proj=utm +zone=55 +south +datum=WGS84 +units=m +no_defs +type=crs");
+                const name = 'Melbourne';
+                const url = 'https://raw.githubusercontent.com/masonproco/melbournePotree/f1a32efa243bd3c7a61f975e3c1155078ecf73d5/pointcloud/cloud.js';
+                const crs = 'EPSG:32755';
+
 
                 viewerDiv = document.getElementById('viewerDiv');
                 viewerDiv.style.display = 'block';
