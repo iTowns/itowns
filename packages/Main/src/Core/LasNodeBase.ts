@@ -47,6 +47,11 @@ abstract class LasNodeBase extends PointCloudNode {
         this._childrenCreated = false;
     }
 
+    abstract get url(): string;
+    abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
+    abstract loadHierarchy(): Promise<Record<string, number> | Hierarchy.Subtree>;
+    abstract findAndCreateChild(depth: number, x: number, y: number, z: number): void;
+
     override get networkOptions(): RequestInit {
         return this.source.networkOptions;
     }
@@ -55,20 +60,9 @@ abstract class LasNodeBase extends PointCloudNode {
         return this._childrenCreated;
     }
 
-    override get hierarchyIsLoaded(): boolean {
-        return this.numPoints >= 0;
-    }
-
     override get id(): string {
         return this.voxelKey;
     }
-
-    abstract loadHierarchy(): Promise<Record<string, number> | Hierarchy.Subtree>;
-
-    abstract findAndCreateChild(
-        depth: number,
-        x: number, y: number, z: number,
-    ): void;
 
     override async createChildren(): Promise<void> {
         await this.loadHierarchy();

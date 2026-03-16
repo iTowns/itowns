@@ -58,7 +58,7 @@ class EntwinePointTileNode extends LasNodeBase {
         return this.source.fetcher(url, networkOptions);
     }
 
-    async loadHierarchy(): Promise<Record<string, number>> {
+    override async loadHierarchy(): Promise<Record<string, number>> {
         if (this.hierarchyIsLoaded) { return this.hierarchy; }
 
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
