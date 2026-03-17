@@ -219,8 +219,8 @@ const launchBrowserWithGL = async () => {
     }
 
     if (!process.env.DEBUG) {
-        // use GPU acceleration to make tests faster in headless mode
-        args.push('--use-angle=default');
+        // Use SwiftShader (software renderer) so WebGL works in CI without a GPU
+        args.push('--use-angle=swiftshader');
     }
 
     const headless = !process.env.DEBUG && 'new';
@@ -280,8 +280,8 @@ export const mochaHooks = {
         }
 
         if (!process.env.DEBUG) {
-            // use GPU acceleration to make tests faster in headless mode
-            args.push('--use-angle=default');
+            // Use SwiftShader (software renderer) so WebGL works in CI without a GPU
+            args.push('--use-angle=swiftshader');
 
             // disable GL when actual rendering is not needed,
             // to make tests even faster
