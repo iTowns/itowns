@@ -23,8 +23,24 @@ import PointsMaterial, {
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
 import { VIEW_EVENTS } from 'Core/View';
+// eslint-disable-next-line no-unused-vars
+import Style from 'Core/Style';
+import C3DTFeature from 'Core/3DTiles/C3DTFeature';
+import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
 
 const _raycaster = new THREE.Raycaster();
+
+/**
+ * Returns the feature ID buffer attribute from a geometry, checking 3D Tiles
+ * 1.1 attribute names first, then falling back to 1.0.
+ * @param {THREE.BufferGeometry} geometry
+ * @returns {THREE.BufferAttribute|undefined}
+ */
+function getFeatureIdAttribute(geometry) {
+    return geometry?.getAttribute('_FEATURE_ID_0')
+        ?? geometry?.getAttribute('_feature_id_0')
+        ?? geometry?.getAttribute('_batchid');
+}
 
 // Stores lruCache, downloadQueue and parseQueue for each id of view {@link View}
 // every time a tileset has been added
@@ -430,6 +446,16 @@ class OGC3DTilesLayer extends GeometryLayer {
             this.sseThreshold = config.sseThreshold;
         }
 
+        // Per-feature styling state
+        /** @type {Map<THREE.Object3D, Map<number, C3DTFeature>>} */
+        this._tileFeatures = new Map();
+        /** @type {Map<string, THREE.Material>} */
+        this._fillColorMaterials = new Map();
+        /** @type {Style|null} */
+        this._style = null;
+        /** @type {Map<THREE.Object3D, Map<THREE.Mesh, THREE.Material>>} */
+        this._originalMaterials = new Map();
+
         // Used for custom schedule callbacks (VR)
         this.tasks = [];
         this.tilesSchedulingCB = (func) => {
@@ -524,7 +550,19 @@ class OGC3DTilesLayer extends GeometryLayer {
                 this._assignFinalMaterial(obj);
                 this._assignFinalAttributes(obj);
             });
+            try {
+                this._initFeatures(scene);
+                if (this._style) {
+                    this.updateStyle();
+                }
+            } catch (err) {
+                console.warn('[OGC3DTilesLayer] Feature init error:', err);
+            }
             view.notifyChange(this);
+        });
+
+        this.tilesRenderer.addEventListener('dispose-model', (e) => {
+            this._cleanupTileFeatures(e.scene);
         });
 
         this._setupCacheAndQueues(view);
@@ -586,6 +624,280 @@ class OGC3DTilesLayer extends GeometryLayer {
         }
     }
 
+    /**
+     * Initialize C3DTFeature objects from a loaded tile scene. Scans meshes
+     * for feature ID attributes (_FEATURE_ID_0 for 3D Tiles 1.1, _batchid
+     * for 1.0) and groups vertices by feature ID.
+     * @param {THREE.Object3D} scene - tile content root
+     * @private
+     */
+    _initFeatures(scene) {
+        const featuresMap = new Map();
+        const originalMats = new Map();
+
+        scene.traverse((child) => {
+            if (!child.isMesh) { return; }
+
+            const featureIdAttr = getFeatureIdAttribute(child.geometry);
+            if (!featureIdAttr) { return; }
+
+            // Save original material for later restore
+            originalMats.set(child, child.material);
+
+            const indexAttr = child.geometry.getIndex();
+
+            const registerGroup = (currentFeatureId, start, count) => {
+                if (featuresMap.has(currentFeatureId)) {
+                    featuresMap.get(currentFeatureId).groups.push({ start, count });
+                } else {
+                    const feature = new C3DTFeature(
+                        scene.uuid,
+                        currentFeatureId,
+                        [{ start, count }],
+                        {},
+                        child,
+                    );
+                    featuresMap.set(currentFeatureId, feature);
+                }
+            };
+
+            if (indexAttr) {
+                // Indexed geometry: groups must be in index-buffer space
+                // for addGroup() to work correctly.
+                const indexCount = indexAttr.count;
+                if (indexCount === 0) { return; }
+
+                let currentFeatureId = featureIdAttr.getX(indexAttr.getX(0));
+                let start = 0;
+                let count = 0;
+
+                for (let i = 0; i < indexCount; i++) {
+                    const vertexIdx = indexAttr.getX(i);
+                    const featureId = featureIdAttr.getX(vertexIdx);
+                    if (featureId !== currentFeatureId) {
+                        registerGroup(currentFeatureId, start, count);
+                        currentFeatureId = featureId;
+                        start = i;
+                        count = 0;
+                    }
+                    count++;
+                    if (i === indexCount - 1) {
+                        registerGroup(currentFeatureId, start, count);
+                    }
+                }
+            } else {
+                // Non-indexed geometry: groups in vertex space
+                const positionAttr = child.geometry.getAttribute('position');
+                const vertexCount = positionAttr.count;
+                if (vertexCount === 0) { return; }
+
+                let currentFeatureId = featureIdAttr.getX(0);
+                let start = 0;
+                let count = 0;
+
+                for (let i = 0; i < vertexCount; i++) {
+                    const featureId = featureIdAttr.getX(i);
+                    if (featureId !== currentFeatureId) {
+                        registerGroup(currentFeatureId, start, count);
+                        currentFeatureId = featureId;
+                        start = i;
+                        count = 0;
+                    }
+                    count++;
+                    if (i === vertexCount - 1) {
+                        registerGroup(currentFeatureId, start, count);
+                    }
+                }
+            }
+        });
+
+        if (featuresMap.size > 0) {
+            this._tileFeatures.set(scene, featuresMap);
+            this._originalMaterials.set(scene, originalMats);
+            this._populateFeatureMetadata(scene, featuresMap);
+        }
+    }
+
+    /**
+     * Populate C3DTFeature userData from EXT_structural_metadata property
+     * tables. This makes per-feature properties (e.g. CityObjectType)
+     * available in style callbacks via feature.userData.
+     * @param {THREE.Object3D} scene - tile content root
+     * @param {Map<number, C3DTFeature>} featuresMap - feature map
+     * @private
+     */
+    _populateFeatureMetadata(scene, featuresMap) {
+        scene.traverse((child) => {
+            if (!child.isMesh) { return; }
+
+            const { meshFeatures, structuralMetadata } = child.userData;
+            if (!meshFeatures || !structuralMetadata) { return; }
+
+            const featureInfo = meshFeatures.getFeatureInfo();
+            if (!featureInfo || featureInfo.length === 0) { return; }
+
+            const tableIndex = featureInfo[0].propertyTable;
+            if (tableIndex === undefined) { return; }
+
+            for (const [featureId, feature] of featuresMap) {
+                if (feature.object3d !== child) { continue; }
+
+                const data = structuralMetadata.getPropertyTableData(
+                    tableIndex, featureId,
+                );
+                if (data) {
+                    Object.assign(feature.userData, data);
+                }
+            }
+        });
+    }
+
+    /**
+     * Update style of the C3DTFeatures. Evaluates the style callbacks for each
+     * feature and assigns materials via geometry groups.
+     * @returns {boolean} true if style was applied, false otherwise
+     */
+    updateStyle() {
+        if (!this._style) {
+            return false;
+        }
+
+        const currentMaterials = [];
+
+        for (const [, featuresMap] of this._tileFeatures) {
+            // Group features by their object3d
+            const meshFeatures = new Map();
+            for (const [, feature] of featuresMap) {
+                if (!meshFeatures.has(feature.object3d)) {
+                    meshFeatures.set(feature.object3d, []);
+                }
+                meshFeatures.get(feature.object3d).push(feature);
+            }
+
+            for (const [object3d, features] of meshFeatures) {
+                object3d.geometry.clearGroups();
+                object3d.material = [];
+
+                for (const feature of features) {
+                    this._style.context.setGeometry({
+                        properties: feature,
+                    });
+
+                    const color = new THREE.Color(this._style.fill.color);
+                    const opacity = this._style.fill.opacity;
+                    const materialId = color.getHexString() + opacity;
+
+                    let material;
+                    if (this._fillColorMaterials.has(materialId)) {
+                        material = this._fillColorMaterials.get(materialId);
+                    } else {
+                        material = new THREE.MeshStandardMaterial({
+                            color,
+                            opacity,
+                            transparent: opacity < 1,
+                            alphaTest: 0.09,
+                        });
+                        this._fillColorMaterials.set(materialId, material);
+                    }
+
+                    // Find or add material in object3d.material array
+                    let materialIndex = object3d.material.indexOf(material);
+                    if (materialIndex < 0) {
+                        object3d.material.push(material);
+                        materialIndex = object3d.material.length - 1;
+                    }
+
+                    feature.groups.forEach((group) => {
+                        object3d.geometry.addGroup(
+                            group.start, group.count, materialIndex,
+                        );
+                    });
+                }
+
+                optimizeGeometryGroups(object3d);
+
+                // Record materials in use
+                if (Array.isArray(object3d.material)) {
+                    object3d.material.forEach((m) => {
+                        if (!currentMaterials.includes(m)) {
+                            currentMaterials.push(m);
+                        }
+                    });
+                } else if (!currentMaterials.includes(object3d.material)) {
+                    currentMaterials.push(object3d.material);
+                }
+            }
+        }
+
+        // Remove unused cached materials
+        for (const [id, material] of this._fillColorMaterials) {
+            if (!currentMaterials.includes(material)) {
+                material.dispose();
+                this._fillColorMaterials.delete(id);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Restore original materials on all styled meshes. Called when style is
+     * set to null.
+     * @private
+     */
+    _restoreOriginalMaterials() {
+        for (const [, originalMats] of this._originalMaterials) {
+            for (const [mesh, material] of originalMats) {
+                mesh.geometry.clearGroups();
+                mesh.material = material;
+            }
+        }
+
+        // Dispose all cached style materials
+        this._fillColorMaterials.forEach(m => m.dispose());
+        this._fillColorMaterials.clear();
+    }
+
+    /**
+     * Remove features and original materials for a disposed tile scene.
+     * @param {THREE.Object3D} scene - tile content root
+     * @private
+     */
+    _cleanupTileFeatures(scene) {
+        this._tileFeatures.delete(scene);
+        this._originalMaterials.delete(scene);
+    }
+
+    /**
+     * Sets the style for per-feature coloring. Accepts a Style instance, a
+     * plain object with fill.color / fill.opacity callbacks, or null to
+     * restore original materials.
+     * @param {Style|Object|null} value - the style to apply
+     */
+    set style(value) {
+        if (value instanceof Style) {
+            this._style = value;
+        } else if (!value) {
+            this._style = null;
+            this._restoreOriginalMaterials();
+        } else {
+            this._style = new Style(value);
+        }
+        this.updateStyle();
+    }
+
+    get style() {
+        return this._style;
+    }
+
+    /**
+     * Number of cached fill-color materials currently in use.
+     * @type {number}
+     */
+    get materialCount() {
+        return this._fillColorMaterials.size;
+    }
+
     handleTasks() {
         for (let t = 0, l = this.tasks.length; t < l; t++) {
             this.tasks[t]();
@@ -619,6 +931,12 @@ class OGC3DTilesLayer extends GeometryLayer {
         }
 
         this.tilesRenderer.dispose();
+
+        // Clean up styling state
+        this._tileFeatures.clear();
+        this._fillColorMaterials.forEach(m => m.dispose());
+        this._fillColorMaterials.clear();
+        this._originalMaterials.clear();
 
         // Clean up references
         this.tilesSchedulingCB = null;
@@ -662,24 +980,35 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         const { face, index, object, instanceId } = intersects[0];
 
+        const featureIdAttr = getFeatureIdAttribute(object.geometry);
+
         /** @type{number|null} */
         let batchId;
         if (object.isPoints && index != null) {
-            batchId = object.geometry.getAttribute('_batchid')?.getX(index) ?? index;
+            batchId = featureIdAttr?.getX(index) ?? index;
         } else if (object.isMesh && face) {
-            batchId = object.geometry.getAttribute('_batchid')?.getX(face.a) ?? instanceId;
+            batchId = featureIdAttr?.getX(face.a) ?? instanceId;
         }
 
         if (batchId === undefined) {
             return null;
         }
 
+        // Look up in feature map first (works for both 1.0 and 1.1)
+        for (const [, featuresMap] of this._tileFeatures) {
+            const feature = featuresMap.get(batchId);
+            if (feature && feature.object3d === object) {
+                return feature;
+            }
+        }
+
+        // Fall back to batch table lookup (original behavior)
         let tileObject = object;
-        while (!tileObject.batchTable) {
+        while (tileObject && !tileObject.batchTable) {
             tileObject = tileObject.parent;
         }
 
-        return tileObject.batchTable.getDataFromId(batchId);
+        return tileObject?.batchTable?.getDataFromId(batchId) ?? null;
     }
 
     /**
