@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-describe('source_stream_wfs_25d', function _() {
+describe.only('source_stream_wfs_25d', function _() {
     let result;
     before(async () => {
         await enableGLForTest();

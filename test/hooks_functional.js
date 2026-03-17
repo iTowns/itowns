@@ -269,12 +269,7 @@ export const mochaHooks = {
         // for more information on developing with the SUID sandbox.
         // If you want to live dangerously and need an immediate workaround, you can try
         // using --no-sandbox.
-        const args = [
-            '--no-sandbox',
-            '--disable-gpu',
-            '--enable-features=AllowSwiftShaderFallback,AllowSoftwareGLFallbackDueToCrashes',
-            '--enable-unsafe-swiftshader',
-        ];
+        const args = ['--no-sandbox'];
 
         if (process.env.HTTPS_PROXY) {
             args.push(`--proxy-server=${process.env.HTTPS_PROXY}`);
@@ -282,6 +277,15 @@ export const mochaHooks = {
 
         if (process.env.REMOTE_DEBUGGING) {
             args.push(`--remote-debugging-port=${process.env.REMOTE_DEBUGGING}`);
+        }
+
+        if (!process.env.DEBUG) {
+            // use GPU acceleration to make tests faster in headless mode
+            args.push('--use-angle=default');
+
+            // disable GL when actual rendering is not needed,
+            // to make tests even faster
+            args.push('--disable-gl-drawing-for-tests');
         }
 
         // https://developer.chrome.com/articles/new-headless/
