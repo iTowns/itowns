@@ -59,7 +59,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract get id(): string;
     abstract get url(): string;
     abstract createChildren(): Promise<void>;
-    abstract createChildAABB(node: PointCloudNode, indexChild: number): void;
+    abstract setOBBes(): void;
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
 
     get pointSpacing(): number {
@@ -80,10 +80,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
             }));
     }
 
-    add(node: this, indexChild: number): void {
+    add(node: this): void {
         this.children.push(node);
         node.parent = this;
-        this.createChildAABB(node, indexChild);
+        node.setOBBes();
     }
 
     findCommonAncestor(node: this): this | undefined {

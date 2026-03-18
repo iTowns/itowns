@@ -3,15 +3,15 @@ import PointCloudNode from 'Core/PointCloudNode';
 import type { PotreeNodeInfo } from 'Core/PotreeNode';
 import type { Potree2NodeInfo } from 'Core/Potree2Node';
 
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
-// of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
-// by applying the same subdivision algo recursively)
+// Compute the Bounding Box for the child `childIndex` from
+// his parent. (PotreeConverter protocol builds implicit octree
+// hierarchy by applying the same subdivision algo recursively)
 const dHalfLength = new Vector3();
-export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
+function computeBBoxFromParent(parentVoxelBBox: Box3, childIndex: number) {
     // Code inspired from potree
-    const childVoxelBBox = voxelBBox.clone();
-    voxelBBox.getCenter(childVoxelBBox.max);
-    dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
+    const childVoxelBBox = parentVoxelBBox.clone();
+    parentVoxelBBox.getCenter(childVoxelBBox.max);
+    dHalfLength.copy(childVoxelBBox.max).sub(parentVoxelBBox.min);
 
     if (childIndex === 1) {
         childVoxelBBox.min.z += dHalfLength.z;
@@ -86,12 +86,19 @@ export abstract class PotreeNodeBase extends PointCloudNode {
         return this.source.fetcher(url, networkOptions);
     }
 
-    override createChildAABB(childNode: this, childIndex: number): void {
-        const childVoxelBBox = computeChildBBox(this.voxelOBB.natBox, childIndex);
-        childNode.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
+    // Compute the voxelOBB and the clampOBB for this node
+    override setOBBes(): void {
+        const parent = this.parent as this;
 
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        childNode.clampOBB.clampZ(this.source.zmin, this.source.zmax);
+        const index = Number(this.hierarchyKey.charAt(this.depth));
+        const voxelBBox = computeBBoxFromParent(parent.voxelOBB.natBox, index);
+
+        // set the voxelOBB
+        this.voxelOBB.setFromBox3(voxelBBox).projOBB(this.source.crs, this.crs);
+
+        // get the clamped bbox from the voxel bbox
+        this.clampOBB.copy(this.voxelOBB)
+            .clampZ(this.source.zmin, this.source.zmax);
     }
 }
 

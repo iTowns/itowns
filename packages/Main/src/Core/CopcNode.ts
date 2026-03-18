@@ -117,7 +117,7 @@ class CopcNode extends LasNodeBase {
             this.hierarchy,
         );
 
-        this.add(child as this, 0);
+        this.add(child as this);
     }
 }
 
