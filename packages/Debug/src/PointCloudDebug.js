@@ -49,18 +49,23 @@ function setupControllerVisibily(gui, displayMode, sizeMode) {
     }
 }
 
-function createOBBHelper(node) {
-    return new OBBHelper(node.voxelOBB, new THREE.Color(THREE.Color.NAMES.darkred));
+function createVoxelOBBHelper(node) {
+    const helper = new OBBHelper(node.voxelOBB, new THREE.Color(THREE.Color.NAMES.darkred));
+    helper.name = node.id;
+    return helper;
 }
 
 function createClampOBBHelper(node) {
-    return new OBBHelper(node.clampOBB, new THREE.Color(THREE.Color.NAMES.red));
+    const helper = new OBBHelper(node.clampOBB, new THREE.Color(THREE.Color.NAMES.red));
+    helper.name = node.id;
+    return helper;
 }
 
 function createBoxHelper(node) {
     // point data OBBes
     const pointsOBBes = new THREE.Group();
-    pointsOBBes.name = 'tightBBox';
+    pointsOBBes.name = node.id;
+
     if (node.obj) {
         const pointsOBB = {
             position: node.obj.position.clone(),
@@ -84,32 +89,14 @@ function createBoxHelper(node) {
         });
     }
     return pointsOBBes;
-
-
-    /*
-    const bboxHelper = new THREE.BoxHelper(undefined, new THREE.Color(THREE.Color.NAMES.blue));
-    if (node.obj) {
-        bboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-        bboxHelper.applyMatrix4(node.obj.matrixWorld);
-    } else if (node.promise) {
-        // TODO rethink architecture of node.obj/node.promise ?
-        node.promise.then(() => {
-            if (node.obj) {
-                bboxHelper.geometry.attributes.position.array = getCornerPosition(node.obj.geometry.boundingBox);
-                bboxHelper.applyMatrix4(node.obj.matrixWorld);
-            }
-        });
-    }
-    return bboxHelper;
-    */
 }
 
 const NODE_BOXES_SYMBOL = Symbol('PointCloudNode.boxes');
 
 class PointCloudDebug {
     constructor() {
-        this.displayBoxBounds = false;
-        this.displayOBBBounds = false;
+        this.displayPointsBounds = false;
+        this.displayVoxelBounds = false;
         this.displayClampBounds = false;
 
         this.layer = null;
@@ -119,20 +106,20 @@ class PointCloudDebug {
 
         this.group = new THREE.Group();
 
-        this.obbGroup = new THREE.Group();
-        this.obbGroup.name = 'PointCloudDebug.obbGroup';
-        this.group.add(this.obbGroup);
-        this.obbGroup.updateMatrixWorld();
+        this.voxelOBBGroup = new THREE.Group();
+        this.voxelOBBGroup.name = 'PointCloudDebug.voxelOBBGroup';
+        this.group.add(this.voxelOBBGroup);
+        this.voxelOBBGroup.updateMatrixWorld();
 
         this.clampOBBGroup = new THREE.Group();
         this.clampOBBGroup.name = 'PointCloudDebug.clampOBBGroup';
         this.group.add(this.clampOBBGroup);
         this.clampOBBGroup.updateMatrixWorld();
 
-        this.boxGroup = new THREE.Group();
-        this.boxGroup.name = 'PointCloudDebug.boxGroup';
-        this.group.add(this.boxGroup);
-        this.boxGroup.updateMatrixWorld();
+        this.pointsOBBGroup = new THREE.Group();
+        this.pointsOBBGroup.name = 'PointCloudDebug.pointsOBBGroup';
+        this.group.add(this.pointsOBBGroup);
+        this.pointsOBBGroup.updateMatrixWorld();
     }
 
     init(layer) {
@@ -150,9 +137,9 @@ class PointCloudDebug {
     onDisposeModel({ tile }) {
         const helpers = tile[NODE_BOXES_SYMBOL]; // Group of OBB helpers?
         if (helpers) {
-            helpers.obb.dispose();
+            helpers.voxelOBB.dispose();
             helpers.clampOBB.dispose();
-            helpers.bbox.children.forEach(child => child.dispose());
+            helpers.pointsOBB.children.forEach(child => child.dispose());
             delete tile[NODE_BOXES_SYMBOL];
         }
     }
@@ -161,43 +148,43 @@ class PointCloudDebug {
         let helpers = tile[NODE_BOXES_SYMBOL];
         if (visible && !helpers) {
             helpers = {
-                obb: createOBBHelper(tile),
+                voxelOBB: createVoxelOBBHelper(tile),
                 clampOBB: createClampOBBHelper(tile),
-                bbox: createBoxHelper(tile),
+                pointsOBB: createPointsOBBHelper(tile),
             };
             tile[NODE_BOXES_SYMBOL] = helpers;
         }
 
         if (helpers) {
             if (!visible) {
-                this.obbGroup.remove(helpers.obb);
+                this.voxelOBBGroup.remove(helpers.voxelOBB);
                 this.clampOBBGroup.remove(helpers.clampOBB);
-                this.boxGroup.remove(helpers.bbox);
+                this.pointsOBBGroup.remove(helpers.pointsOBB);
             } else {
-                this.obbGroup.add(helpers.obb);
-                helpers.obb.updateMatrixWorld(true);
+                this.voxelOBBGroup.add(helpers.voxelOBB);
+                helpers.voxelOBB.updateMatrixWorld(true);
                 this.clampOBBGroup.add(helpers.clampOBB);
                 helpers.clampOBB.updateMatrixWorld(true);
-                this.boxGroup.add(helpers.bbox);
-                helpers.bbox.updateMatrixWorld(true);
+                this.pointsOBBGroup.add(helpers.pointsOBB);
+                helpers.pointsOBB.updateMatrixWorld(true);
             }
         }
     }
 
     update() {
-        this.obbGroup.visible = this.displayOBBBounds;
+        this.voxelOBBGroup.visible = this.displayVoxelBounds;
         this.clampOBBGroup.visible = this.displayClampBounds;
-        this.boxGroup.visible = this.displayBoxBounds;
+        this.pointsOBBGroup.visible = this.displayPointsBounds;
     }
 
     dispose() {
-        const { layer, obbGroup } = this;
+        const { layer, voxelOBBGroup } = this;
 
         layer?.removeEventListener('dispose-model', this._onDisposeModel);
         layer?.removeEventListener('update-after', this._update);
         layer?.removeEventListener('node-visibility-change', this._onTileVisibilityChange);
 
-        obbGroup?.removeFromParent();
+        voxelOBBGroup?.removeFromParent();
     }
 }
 
@@ -343,13 +330,13 @@ export default {
         debugBoxes.init(layer);
         view.scene.add(debugBoxes.group);
 
-        debugUI.add(debugBoxes, 'displayOBBBounds').name('Node OBB').onChange(() => {
+        debugUI.add(debugBoxes, 'displayVoxelBounds').name('Node OBB (voxel)').onChange(() => {
             view.notifyChange(layer, true);
         });
         debugUI.add(debugBoxes, 'displayClampBounds').name('Node OBB (clamp)').onChange(() => {
             view.notifyChange(layer, true);
         });
-        debugUI.add(debugBoxes, 'displayBoxBounds').name('Geometry Box').onChange(() => {
+        debugUI.add(debugBoxes, 'displayPointsBounds').name('Points OBB').onChange(() => {
             view.notifyChange(layer, true);
         });
 
