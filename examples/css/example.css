@@ -49,6 +49,29 @@ body {
     }
 }
 
+#description {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    overflow: hidden;
+}
+
+#description,
+.text {
+    z-index: 1;
+    color: #eee;
+    font: 16px 'Lucida Grande', sans-serif;
+    max-width: 40%;
+    background: #1a1a1a;
+    opacity: 0.8;
+    padding: 10px;
+}
+
+#description p,
+#description ul {
+    margin: 0px;
+}
+
 /* MAIN SECTION (RIGHT) */
 #main {
     width: calc(100% * 9 / 16);
