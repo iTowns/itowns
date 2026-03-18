@@ -6,8 +6,27 @@ import { Coordinates, Extent, CameraUtils } from 'itowns';
 import { createHTMLListFromObject } from './GUI/GuiTools.js';
 
 /**
+ * Extract the CityJSON Building id from metadata returned by getMetadataFromIntersections.
+ * Prefer BuildingId (Tyler), then id. Returns the first non-null value found in the metadata array.
+ * @param {Array<Object>|null} metadata
+ * @returns {string|null}
+ */
+export function extractBuildingId(metadata) {
+    if (!Array.isArray(metadata)) { return null; }
+    for (const m of metadata) {
+        if (m && typeof m === 'object') {
+            if (m.BuildingId != null && m.BuildingId !== '') { return String(m.BuildingId); }
+            if (m.id != null && m.id !== '') { return String(m.id); }
+        }
+    }
+    return null;
+}
+
+/**
  * Function allowing picking on a given 3D tiles layer and filling an html div
- * with information on the picked feature.
+ * with information on the picked feature. Displays only the BuildingId (the id
+ * that links to the CityJSON building) when present, so users can report e.g.
+ * "Building 253 is missing a wall".
  * @param {MouseEvent} event
  * @param {Object} pickingArg
  * @param {HTMLDivElement} pickingArg.htmlDiv - div element which contains the
@@ -26,20 +45,37 @@ export function fillHTMLWithPickingInfo(event, pickingArg) {
 
     // Get intersected objects
     const intersects = view.pickObjectsAt(event, 5, layer);
-
-    // Get information from intersected objects (from the batch table and
-    // eventually the 3D Tiles extensions
     const closestC3DTileFeature =
         layer.getC3DTileFeatureFromIntersectsArray(intersects);
 
-    if (closestC3DTileFeature) {
-        // eslint-disable-next-line
-        htmlDiv.appendChild(createHTMLListFromObject(closestC3DTileFeature));
-    }
-
+    // Resolve metadata first; show only BuildingId when present (CityJSON building id)
     layer.getMetadataFromIntersections(intersects).then((metadata) => {
-        // eslint-disable-next-line
-        metadata?.forEach(m => htmlDiv.appendChild(createHTMLListFromObject(m)));
+        const buildingId = extractBuildingId(metadata);
+        if (buildingId != null) {
+            htmlDiv.appendChild(createHTMLListFromObject({ BuildingId: buildingId }));
+        } else {
+            // No BuildingId in tile (e.g. old tiles); show batchId as fallback with a note
+            const batchId = closestC3DTileFeature?.batchId ?? closestC3DTileFeature?.batchid ?? '—';
+            htmlDiv.appendChild(createHTMLListFromObject({
+                BuildingId: '(not in tile)',
+                batchId,
+                note: 'Tile has no BuildingId; batchId is the feature index in this tile.',
+            }));
+        }
+    }).catch((err) => {
+        console.warn('getMetadataFromIntersections failed (e.g. missing EXT_structural_metadata):', err?.message ?? err);
+        const i0 = intersects?.[0];
+        const batchId = closestC3DTileFeature?.batchId ?? closestC3DTileFeature?.batchid ?? '—';
+        const fallback = {
+            BuildingId: '(unavailable)',
+            note: 'Metadata unavailable (no property table or error)',
+            batchId,
+        };
+        if (i0?.distance != null) { fallback.distance = Number(i0.distance).toFixed(2); }
+        if (i0?.point) {
+            fallback.point = { x: i0.point.x?.toFixed(2), y: i0.point.y?.toFixed(2), z: i0.point.z?.toFixed(2) };
+        }
+        htmlDiv.appendChild(createHTMLListFromObject(fallback));
     });
 }
 

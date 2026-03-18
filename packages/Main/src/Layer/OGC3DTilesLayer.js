@@ -23,7 +23,6 @@ import PointsMaterial, {
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
 import { VIEW_EVENTS } from 'Core/View';
-// eslint-disable-next-line no-unused-vars
 import Style from 'Core/Style';
 import C3DTFeature from 'Core/3DTiles/C3DTFeature';
 import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
@@ -785,7 +784,7 @@ class OGC3DTilesLayer extends GeometryLayer {
 
                     const color = new THREE.Color(this._style.fill.color);
                     const opacity = this._style.fill.opacity;
-                    const materialId = color.getHexString() + opacity;
+                    const materialId = `${color.getHexString()}_${opacity}`;
 
                     let material;
                     if (this._fillColorMaterials.has(materialId)) {
@@ -880,6 +879,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         } else if (!value) {
             this._style = null;
             this._restoreOriginalMaterials();
+            return;
         } else {
             this._style = new Style(value);
         }

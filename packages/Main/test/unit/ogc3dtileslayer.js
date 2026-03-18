@@ -322,6 +322,64 @@ describe('OGC3DTilesLayer', function () {
         assert.ok(featuresMap.has(7));
     });
 
+    // Helper: create a mock indexed tile scene with _FEATURE_ID_0
+    function createMockScene11Indexed(featureIds, indices) {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(featureIds.length * 3);
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute(
+            '_FEATURE_ID_0',
+            new THREE.BufferAttribute(new Uint16Array(featureIds), 1),
+        );
+        geometry.setIndex(new THREE.BufferAttribute(new Uint16Array(indices), 1));
+
+        const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.isMesh = true;
+
+        const scene = new THREE.Group();
+        scene.add(mesh);
+        return { scene, mesh, material };
+    }
+
+    it('should initialize features from indexed geometry', function () {
+        const layer = new OGC3DTilesLayer('3dtiles', { source });
+        // 4 vertices with feature IDs: [0, 0, 1, 1]
+        // Index buffer references them: [0, 1, 2,  2, 3, 0] (6 indices, 2 triangles)
+        // Indices 0-2 map to vertices 0,1,2 => feature IDs 0,0,1
+        //   index 0 -> vertex 0 -> fid 0
+        //   index 1 -> vertex 1 -> fid 0
+        //   index 2 -> vertex 2 -> fid 1 (different => split)
+        // Indices 3-5 map to vertices 2,3,0 => feature IDs 1,1,0
+        //   index 3 -> vertex 2 -> fid 1
+        //   index 4 -> vertex 3 -> fid 1
+        //   index 5 -> vertex 0 -> fid 0 (different => split)
+        const { scene } = createMockScene11Indexed(
+            [0, 0, 1, 1],
+            [0, 1, 2, 2, 3, 0],
+        );
+
+        layer._initFeatures(scene);
+
+        const featuresMap = layer._tileFeatures.get(scene);
+        assert.ok(featuresMap);
+        assert.equal(featuresMap.size, 2);
+
+        const f0 = featuresMap.get(0);
+        assert.equal(f0.batchId, 0);
+        // Feature 0 appears in two non-contiguous runs in the index buffer:
+        // indices [0,1] (start=0, count=2) and index [5] (start=5, count=1)
+        assert.deepEqual(f0.groups, [
+            { start: 0, count: 2 },
+            { start: 5, count: 1 },
+        ]);
+
+        const f1 = featuresMap.get(1);
+        assert.equal(f1.batchId, 1);
+        // Feature 1: indices [2,3,4] (start=2, count=3)
+        assert.deepEqual(f1.groups, [{ start: 2, count: 3 }]);
+    });
+
     it('should apply style to features and create materials', function () {
         const layer = new OGC3DTilesLayer('3dtiles', { source });
         const { scene } = createMockScene11([0, 0, 1, 1]);

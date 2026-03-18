@@ -135,6 +135,7 @@
             // ── Current layer state ───────────────────────────────────────────────────
             let currentLayer = null;
             let layerCounter = 0;
+            let rebuildTimer = null;
 
             const uri = new URL(location);
 
@@ -187,8 +188,10 @@
 
             function removeCurrentLayer() {
                 if (!currentLayer) return;
-                try { view.removeLayer(currentLayer.layerId); } catch {}
-                try { currentLayer.layer.delete(); } catch {}
+                clearTimeout(rebuildTimer);
+                rebuildTimer = null;
+                try { view.removeLayer(currentLayer.layerId); } catch (e) { console.warn('removeLayer:', e); }
+                try { currentLayer.layer.delete(); } catch (e) { console.warn('layer.delete:', e); }
                 currentLayer = null;
                 document.getElementById('featureColors').innerHTML =
                     '<em>Load a tileset to see feature types</em>';
@@ -209,7 +212,6 @@
                 // ── Feature Colors ───────────────────────────────────────
                 const typeColors = new Map();
                 const originalColors = new Map();
-                let rebuildTimer = null;
                 const featureColorsDiv = document.getElementById('featureColors');
 
                 function getFeatureType(feature) {
@@ -222,9 +224,10 @@
                             if (bt) {
                                 type = bt.surface_type || bt.CityObjectType || bt.type;
                             }
-                        } catch {}
+                        } catch (e) { console.warn('getFeatureType batch table lookup:', e); }
                     }
                     if (!type) return 'Unknown';
+                    type = type.replace(/\0/g, '');
                     if (type === 'BuildingPart') return 'Building';
                     return type;
                 }
