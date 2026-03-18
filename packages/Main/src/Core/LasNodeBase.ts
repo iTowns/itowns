@@ -88,19 +88,15 @@ abstract class LasNodeBase extends PointCloudNode {
         this._childrenCreated = true;
     }
 
-    /**
-     * Create an (A)xis (A)ligned (B)ounding (B)ox for the given node given
-     * `this` is its parent.
-     * @param childNode - The child node
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    override createChildAABB(childNode: this, _indexChild: number): void {
+    override setOBBes(): void {
+        const parent = this.parent as this;
+
         // initialize the child node obb
-        const voxelBBox = this.voxelOBB.natBox;
+        const voxelBBox = parent.voxelOBB.natBox;
         const childVoxelBBox = box3.copy(voxelBBox);
 
         // factor to apply, based on the depth difference (can be > 1)
-        const f = 2 ** (childNode.depth - this.depth);
+        const f = 2 ** (this.depth - parent.depth);
 
         // size of the child node bbox (Vector3), based on the size of the
         // parent node, and divided by the factor
@@ -108,11 +104,11 @@ abstract class LasNodeBase extends PointCloudNode {
 
         // position of the parent node, if it was at the same depth as the
         // child, found by multiplying the tree position by the factor
-        position.copy(this).multiplyScalar(f);
+        position.copy(parent).multiplyScalar(f);
 
         // difference in position between the two nodes, at child depth, and
         // scale it using the size
-        translation.subVectors(childNode, position).multiply(size);
+        translation.subVectors(this, position).multiply(size);
 
         // apply the translation to the child node bbox
         childVoxelBBox.min.add(translation);
@@ -120,10 +116,12 @@ abstract class LasNodeBase extends PointCloudNode {
         // use the size computed above to set the max
         childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
 
-        childNode.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
+        // set the voxelOBB
+        this.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
 
-        // get a clamped bbox from the voxel bbox
-        childNode.clampOBB.copy(childNode.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+        // get the clamped bbox from the voxel bbox
+        this.clampOBB.copy(this.voxelOBB)
+            .clampZ(this.source.zmin, this.source.zmax);
     }
 }
 
