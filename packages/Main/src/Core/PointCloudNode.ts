@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import type { Box3, Group } from 'three';
 import OBB from 'Renderer/OBB';
 
 export interface PointCloudSource {
@@ -58,9 +59,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract get networkOptions(): RequestInit;
     abstract get id(): string;
     abstract get url(): string;
-    abstract createChildren(): Promise<void>;
-    abstract setOBBes(): void;
+
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
+    abstract computeBBoxFromParent(): Box3;
+    abstract createChildren(): Promise<void>;
 
     get pointSpacing(): number {
         return this.source.spacing / 2 ** this.depth;
@@ -84,6 +86,19 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.children.push(node);
         node.parent = this;
         node.setOBBes();
+    }
+
+    // Compute the voxelOBB and the clampOBB for this node
+    setOBBes(): void {
+        const parent = this.parent as this;
+
+        // set the voxelOBB
+        const childVoxelBBox = this.computeBBoxFromParent();
+        this.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
+
+        // get the clamped bbox from the voxel bbox
+        this.clampOBB.copy(this.voxelOBB)
+            .clampZ(this.source.zmin, this.source.zmax);
     }
 
     findCommonAncestor(node: this): this | undefined {
