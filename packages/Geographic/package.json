@@ -36,7 +36,7 @@
   },
   "peerDependencies": {
     "proj4": ">=2.20.0",
-    "three": ">=0.182.0"
+    "three": "mrdoob/three.js#dev"
   },
   "homepage": "https://itowns.github.io/"
 }
