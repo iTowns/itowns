@@ -10,14 +10,13 @@ import {
 } from '@takram/three-atmosphere';
 import {
     EffectPass,
-    RenderPass,
     ToneMappingEffect,
-    FXAAEffect,
     ToneMappingMode,
     EffectMaterial,
-    EffectComposer,
+    FXAAEffect,
 } from 'postprocessing';
 import View from 'Core/View';
+import PostProcessManager from 'Renderer/PostProcessManager';
 
 class SkyManager {
     sky: THREE.Mesh;
@@ -26,7 +25,7 @@ class SkyManager {
     aerialPerspective: AerialPerspectiveEffect;
     effectPass: EffectPass;
     scene: THREE.Scene;
-    composer: EffectComposer;
+    composer: PostProcessManager;
     fog: THREE.Fog;
     view: View;
 
@@ -37,7 +36,7 @@ class SkyManager {
         const scene = view.scene;
         this.scene = scene;
         const camera = view.camera3D;
-        const composer = view.mainLoop.gfxEngine.composer;
+        const composer = view.mainLoop.gfxEngine.postProcessManager;
         this.composer = composer;
 
         // SkyMaterial disables projection.
@@ -67,7 +66,6 @@ class SkyManager {
         const renderer = view.renderer;
         renderer.toneMappingExposure = 10;
 
-        composer.addPass(new RenderPass(scene, camera));
         this.effectPass = new EffectPass(
             camera,
             this.aerialPerspective,
@@ -102,7 +100,7 @@ class SkyManager {
             if (this.enabled) { this.scene.fog = this.fog; }
         };
 
-        this.composer.render();
+        this.composer.render(this.view.scene, this.view.camera3D, this.view);
     }
 
     update(camera: THREE.Camera) {
@@ -156,9 +154,9 @@ class SkyManager {
 
         // force internally calling state.buffers.color.setClear
         // to get a correct background color
-        this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
+        // this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
 
-        this.composer.render();
+        this.composer.render(this.view.scene, this.view.camera3D, this.view);
     }
 
     enable() {
@@ -167,12 +165,20 @@ class SkyManager {
             this.sunLight,
             this.sunLight.target, // to update matrixWorld at each frame
             this.skyLight);
-        this.composer.addPass(this.effectPass, 1);
+
+        // if (this.composer.hasPass(this.effectPass)) {
+        //     this.composer.enablePass(this.effectPass);
+        //     return;
+        // }
+        // this.composer.addPass(this.effectPass);
     }
 
     disable() {
         this.scene.remove(this.sky, this.sunLight, this.sunLight.target, this.skyLight);
-        this.composer.removePass(this.effectPass);
+
+        if (this.composer.hasPass(this.effectPass)) {
+            this.composer.disablePass(this.effectPass);
+        }
     }
 }
 

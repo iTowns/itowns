@@ -12,7 +12,7 @@ import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import WEBGL from 'three/addons/capabilities/WebGL.js';
 import { EffectComposer } from 'postprocessing';
-import PointCloudRenderer from 'Renderer/PointCloudRenderer';
+import PostProcessManager from 'Renderer/PostProcessManager';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -68,7 +68,7 @@ class c3DEngine {
             this.fullSizeRenderTarget.setSize(this.width, this.height);
             this.renderer.setSize(this.width, this.height);
             this.label2dRenderer.setSize(this.width, this.height);
-            this.pointCloudRenderer.setSize(this.width, this.height);
+            this.postProcessManager.setSize(this.width, this.height);
         }.bind(this);
 
         // Create renderer
@@ -93,7 +93,7 @@ class c3DEngine {
             throw ex;
         }
 
-        this.pointCloudRenderer = new PointCloudRenderer(this.renderer, this.width, this.height);
+        this.postProcessManager = new PostProcessManager(this.renderer, this.width, this.height);
 
         this.renderView = function _(view) {
             // force internally calling state.buffers.color.setClear
@@ -104,11 +104,13 @@ class c3DEngine {
             if (view._camXR) {
                 this.renderer.render(view.scene, view._camXR);
             } else if (this.composer.passes.length) {
-                this.composer.render();
+                // this.composer.render();
+                // TODO :
+                this.postProcessManager.render(view.scene, view.camera3D, view);
             } else {
                 // Currently used to render all
                 // Consider refactor to a generic for all post process
-                this.pointCloudRenderer.render(view.scene, view.camera3D, view);
+                this.postProcessManager.render(view.scene, view.camera3D, view);
             }
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
@@ -135,7 +137,7 @@ class c3DEngine {
             this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
             this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             // need to set pointCloudRenderer size
-            this.pointCloudRenderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
+            this.postProcessManager.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             viewerDiv.appendChild(this.renderer.domElement);
         }
 

@@ -9,6 +9,8 @@ import {
     Scene,
     DepthTexture,
     UnsignedShortType,
+    HalfFloatType,
+    LinearSRGBColorSpace,
 } from 'three';
 import { Pass } from 'postprocessing';
 import { MakeEDLShader } from './EDLShader';
@@ -30,7 +32,10 @@ class EDLPass extends Pass {
 
         this.fullscreenMaterial = MakeEDLShader(kernelSize, width, height);
 
-        this._pointCloudRenderTarget = new WebGLRenderTarget(width, height);
+        this._pointCloudRenderTarget = new WebGLRenderTarget(width, height, {
+            type: HalfFloatType,
+        });
+        this._pointCloudRenderTarget.texture.colorSpace = LinearSRGBColorSpace;
         this._pointCloudRenderTarget.depthBuffer = true;
         this._pointCloudRenderTarget.depthTexture = new DepthTexture(width, height);
         this._pointCloudRenderTarget.depthTexture.type = UnsignedShortType;
@@ -109,6 +114,7 @@ class EDLPass extends Pass {
         u.tDiffuse.value = this._pointCloudRenderTarget.texture;
         u.tDepth.value = this._pointCloudRenderTarget.depthTexture;
         u.tScene.value = inputBuffer.texture; // background from previous passes
+        u.tSceneDepth.value = inputBuffer.depthTexture;
 
         this.copyCameraSettings();
 

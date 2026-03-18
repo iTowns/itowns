@@ -126,21 +126,22 @@
                 const view = new GlobeView(viewerDiv, {}, {
                     controls: {
                         minDistance: 5,
-                    }
+                    },
+                    realisticLighting: true,
                 });
 
-                const gfxEngine = view.mainLoop.gfxEngine;
-                const renderer = gfxEngine.renderer;
-                const size = gfxEngine.getWindowSize();
+                // const gfxEngine = view.mainLoop.gfxEngine;
+                // const renderer = gfxEngine.renderer;
+                // const size = gfxEngine.getWindowSize();
 
-                const renderTarget = new WebGLRenderTarget(size.x, size.y);
-                renderTarget.depthTexture = new DepthTexture(size.x, size.y, FloatType);
+                // const renderTarget = new WebGLRenderTarget(size.x, size.y);
+                // renderTarget.depthTexture = new DepthTexture(size.x, size.y, FloatType);
 
-                const composer = new EffectComposer(renderer, renderTarget);
-                const renderPass = new RenderPass(view.scene, view.camera3D);
-                const edlPass = new EDLPass(view.camera3D, size.x, size.y);
-                composer.addPass(renderPass);
-                composer.addPass(edlPass);
+                // const composer = new EffectComposer(renderer, renderTarget);
+                // const renderPass = new RenderPass(view.scene, view.camera3D);
+                // const edlPass = new EDLPass(view.camera3D, size.x, size.y);
+                // composer.addPass(renderPass);
+                // composer.addPass(edlPass);
 
                 /*
                 view.render = function render() {
@@ -202,9 +203,9 @@
                 PointCloudDebug.initTools(view, layer, gui);
 
                 const edlFolder = gui.addFolder('Eye-Dome Lighting');
-                edlFolder.add(edlPass, 'enabled').name('Enabled').onChange(() => view.notifyChange());
-                edlFolder.add(edlPass, 'strength', 0, 10, 0.1).name('Strength').onChange(() => view.notifyChange());
-                edlFolder.add(edlPass, 'kernelRadius', 0.1, 5, 0.1).name('Radius').onChange(() => view.notifyChange());
+                // edlFolder.add(edlPass, 'enabled').name('Enabled').onChange(() => view.notifyChange());
+                // edlFolder.add(edlPass, 'strength', 0, 10, 0.1).name('Strength').onChange(() => view.notifyChange());
+                // edlFolder.add(edlPass, 'kernelRadius', 0.1, 5, 0.1).name('Radius').onChange(() => view.notifyChange());
                 edlFolder.open();
             }
             const params = new URLSearchParams(window.location.search);
