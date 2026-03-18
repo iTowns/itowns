@@ -1,5 +1,5 @@
 <html>
-   <head>
+    <head>
         <title>Itowns - 3D Tiles loader</title>
 
         <script type="importmap">
@@ -27,7 +27,6 @@
             #description {
                 z-index: 2;
                 left: 10px;
-                max-width: 420px;
             }
 
             #featureInfoText {
@@ -37,131 +36,19 @@
             #description .marg {
                 margin: 10px;
             }
-
-            /* ---- tileset rows ---- */
-            #tilesets-container {
-                margin: 6px 0 4px 0;
-            }
-
-            .tileset-row {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                margin-bottom: 4px;
-            }
-
-            .layer-url {
-                flex: 1;
-                min-width: 0;
-                font-size: 11px;
-                padding: 2px 4px;
-                height: 22px;
-                box-sizing: border-box;
-            }
-
-            .load-btn, .remove-btn {
-                flex-shrink: 0;
-                font-size: 12px;
-                padding: 2px 6px;
-                height: 22px;
-                cursor: pointer;
-            }
-
-            .remove-btn {
-                color: #c00;
-                font-weight: bold;
-            }
-
-            #addTilesetBtn {
-                font-size: 12px;
-                padding: 2px 8px;
-                margin-bottom: 4px;
-                cursor: pointer;
-            }
-
-            /* ---- tooltip ---- */
-            #tooltip {
-                position: fixed;
-                left: 0;
-                top: 0;
-                background-color: rgba(0, 0, 0, 0.9);
-                color: white;
-                padding: 8px 12px;
-                border-radius: 4px;
-                font-size: 12px;
-                pointer-events: none;
-                z-index: 2147483647;
-                max-width: 400px;
-                max-height: 300px;
-                overflow-y: auto;
-                display: none;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-            }
-
-            #tooltip.visible {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-            }
-
-            #tooltip .tooltip-content {
-                margin: 0;
-            }
-
-            /* ---- feature color panel ---- */
-            .color-row {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                margin-bottom: 4px;
-                font-size: 12px;
-            }
-
-            .color-row label {
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-
-            .color-row input[type="color"] {
-                width: 30px;
-                height: 22px;
-                padding: 0;
-                border: 1px solid #999;
-                cursor: pointer;
-                background: none;
-            }
-
-            .color-reset-btn {
-                font-size: 11px;
-                padding: 3px 10px;
-                margin-bottom: 6px;
-                cursor: pointer;
-            }
         </style>
 
     </head>
     <body>
         <div id="viewerDiv"></div>
-        <div id="tooltip">
-            <div class="tooltip-content"></div>
-        </div>
-        <div id="description">
-            <b>Tilesets</b>
-            <div id="tilesets-container"></div>
-            <button id="addTilesetBtn">+ Add tileset</button>
+        <div id="description">Specify the URL of a tileset to load:
+            <input type="text" id="url" />
+            <button id="readURLButton">Load</button>
             <div class="marg">
                 <button id="loadLyonButton">Load Lyon 1 (Mesh)</button>
                 <button id="loadSeteButton">Load Sete (Point Cloud)</button>
                 <button id="loadLilleButton">Load Lille (Mesh)</button>
                 <div id="share"></div>
-            </div>
-            <hr />
-            <p><b>Feature Colors</b></p>
-            <div id="featureColors" class="marg">
-                <em>Load a tileset to see feature types</em>
             </div>
             <hr />
             <p id="featureInfoText" class="marg"><em>Display feature information by clicking on it</em></p>
@@ -188,9 +75,7 @@
             import {
                 zoomToLayer,
                 fillHTMLWithPickingInfo,
-                extractBuildingId,
             } from './jsm/OGC3DTilesHelper.js';
-            import { createHTMLListFromObject } from './jsm/GUI/GuiTools.js';
 
             const {
                 TMSSource, WMTSSource, OGC3DTilesSource,
@@ -198,45 +83,57 @@
                 GlobeView, Coordinates, Fetcher,
             } = itowns;
 
-            // ── Layer registry ────────────────────────────────────────────────────────
-            // layerRegistry: rowId → { layerId, layer, guiFolder, state }
-            const layerRegistry = new Map();
-            let layerCounter = 0;
-            let rowCounter    = 0;
+            window.layer = null; // 3D Tiles layer
 
             const uri = new URL(location);
 
             window.gui = new dat.GUI();
 
-            // ── GlobeView ─────────────────────────────────────────────────────────────
+            // ---- Create a GlobeView ----
 
+            // Define camera initial position
             const placement = {
                 coord: new Coordinates('EPSG:4326', 2.351323, 48.856712),
                 range: 12500000,
             };
 
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('viewerDiv');
 
+            // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
-                controls: { minDistance: 100 },
+                controls: {
+                    minDistance: 100,
+                }
             });
 
+            // Enable various compression support for 3D Tiles tileset:
+            // - `KHR_draco_mesh_compression` mesh compression extension
+            // - `KHR_texture_basisu` texture compression extension
+            // - `EXT_meshopt_compression` data compression extension
             itowns.enableDracoLoader('./libs/draco/');
             itowns.enableKtx2Loader('./lib/basis/', view.renderer);
             itowns.enableMeshoptDecoder(MeshoptDecoder);
 
+            // Add ambient light to globally illuminates all objects
             const light = new AmbientLight(0x404040, 40);
             view.scene.add(light);
 
+            // Set the environment map for all physical materials in the scene.
+            // Otherwise, mesh with only diffuse colors will appear black.
             const environment = new RoomEnvironment();
             const pmremGenerator = new PMREMGenerator(view.renderer);
             view.scene.environment = pmremGenerator.fromScene(environment).texture;
             pmremGenerator.dispose();
 
+            // Setup loading screen
             setupLoadingScreen(viewerDiv, view);
 
-            // ── Basemap ───────────────────────────────────────────────────────────────
+            // ---- Add a basemap ----
 
+            // Add one imagery layer to the scene. This layer's properties are
+            // defined in a json file, but it cou   ld be defined as a plain js
+            // object. See `Layer` documentation for more info.
             Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
                 const colorLayer = new ColorLayer('Ortho', {
                     ...config,
@@ -245,6 +142,10 @@
                 view.addLayer(colorLayer);
             });
 
+            // ---- Add 3D terrain ----
+
+            // Add two elevation layers: world terrain and a more precise terrain for france
+            // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var elevationLayer = new itowns.ElevationLayer(config.id, config);
@@ -253,455 +154,105 @@
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
 
-            // ── Helpers ───────────────────────────────────────────────────────────────
+            // ---------- 3D Tiles loading
 
-            /** Return a short label from a URL string (parent dir, or hostname). */
-            function shortName(url) {
-                try {
-                    const u = new URL(url);
-                    const parts = u.pathname.replace(/\/tileset\.json$/i, '').split('/').filter(Boolean);
-                    return parts[parts.length - 1] || u.hostname || url;
-                } catch {
-                    return url.split('/').filter(Boolean).pop() || url;
-                }
-            }
-
-            /** Push the current set of loaded URLs into the address bar. */
-            function syncUrlParams() {
-                uri.searchParams.delete('3dtiles');
-                for (const entry of layerRegistry.values()) {
-                    uri.searchParams.append('3dtiles', entry.url);
-                }
-                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
-            }
-
-            // ── Tileset rows (HTML) ───────────────────────────────────────────────────
-
-            /**
-             * Create a new URL-input row in the panel.
-             * If `url` is supplied the text field is pre-filled but not loaded yet.
-             */
-            function addTilesetRow(url = '') {
-                const rowId = ++rowCounter;
-
-                const row = document.createElement('div');
-                row.className = 'tileset-row';
-                row.dataset.rowId = rowId;
-
-                const urlInput = document.createElement('input');
-                urlInput.type = 'text';
-                urlInput.className = 'layer-url';
-                urlInput.placeholder = 'Enter tileset URL…';
-                urlInput.value = url;
-
-                const loadBtn = document.createElement('button');
-                loadBtn.className = 'load-btn';
-                loadBtn.textContent = 'Load';
-
-                const removeBtn = document.createElement('button');
-                removeBtn.className = 'remove-btn';
-                removeBtn.textContent = '×';
-                removeBtn.title = 'Remove this tileset';
-
-                row.appendChild(urlInput);
-                row.appendChild(loadBtn);
-                row.appendChild(removeBtn);
-                document.getElementById('tilesets-container').appendChild(row);
-
-                loadBtn.addEventListener('click', () => {
-                    const u = urlInput.value.trim();
-                    if (u) addTileset(rowId, u);
-                });
-
-                urlInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        const u = urlInput.value.trim();
-                        if (u) addTileset(rowId, u);
-                    }
-                });
-
-                removeBtn.addEventListener('click', () => removeTileset(rowId, row));
+            function readURL() {
+                const url = document.getElementById('url').value;
 
                 if (url) {
-                    addTileset(rowId, url);
+                    setUrl(url);
                 }
-
-                return row;
             }
 
-            // ── Load / remove tilesets ────────────────────────────────────────────────
+            function setUrl(url) {
+                if (!url) return;
 
-            /**
-             * Load a tileset URL and associate it with the given panel row.
-             * If the row already has a loaded layer, remove it first.
-             */
-            function addTileset(rowId, url) {
-                if (layerRegistry.has(rowId)) {
-                    _removeRegistryEntry(rowId);
-                }
+                const input_url = document.getElementById('url');
+                if (!input_url) return;
 
-                const layerId = '3DTiles_' + (++layerCounter);
+                uri.searchParams.set('3dtiles', url);
+                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
 
-                // Single-tileset mode: disable load buttons
-                document.getElementById('addTilesetBtn').disabled = true;
-                document.getElementById('loadLyonButton').disabled = true;
-                document.getElementById('loadSeteButton').disabled = true;
-                document.getElementById('loadLilleButton').disabled = true;
+                input_url.value = url;
+                load(url);
+            }
 
+
+            function load(url) {
                 const source = new OGC3DTilesSource({ url });
 
-                const layer = new OGC3DTilesLayer(layerId, {
+                if (window.layer) {
+                    gui.removeFolder('Layer 3DTiles');
+                    view.removeLayer('3DTiles');
+                    view.notifyChange();
+                    window.layer.delete();
+                }
+
+                window.layer = new OGC3DTilesLayer('3DTiles', {
                     source,
                     pntsSizeMode: PNTS_SIZE_MODE.ATTENUATED,
                 });
 
-                const state = { visible: true, opacity: 1.0 };
+                // Add an event for picking the 3D Tiles layer and displaying
+                // information about the picked feature in an html div
+                const pickingArgs = {
+                    htmlDiv: document.getElementById('featureInfo'),
+                    view,
+                    layer: window.layer,
+                };
 
-                const label = shortName(url) + ' (#' + layerCounter + ')';
-                const folder = window.gui.addFolder(label);
-
-                folder.add(state, 'visible').name('Visible').onChange(v => {
-                    layer.visible = v;
-                    view.notifyChange();
+                // Add the layer to our view
+                view.addLayer(window.layer).then((layer) => {
+                    zoomToLayer(view, layer);
+                    window.addEventListener('click',
+                        (event) => fillHTMLWithPickingInfo(event, pickingArgs), false);
                 });
 
-                folder.add(state, 'opacity', 0, 1, 0.01).name('Opacity').onChange(v => {
-                    layer.opacity = v;
-                    view.notifyChange();
-                });
-
-                folder.open();
-
-                // ── Feature Colors (in #description panel) ─────────────
-                const typeColors = new Map();
-                const originalColors = new Map();
-                let rebuildTimer = null;
-                const featureColorsDiv = document.getElementById('featureColors');
-
-                function getFeatureType(feature) {
-                    let type;
-                    if (feature.userData?.CityObjectType) {
-                        type = feature.userData.CityObjectType;
-                    } else {
-                        try {
-                            const bt = feature.getInfo?.()?.batchTable;
-                            if (bt) {
-                                type = bt.surface_type || bt.CityObjectType || bt.type;
-                            }
-                        } catch {}
-                    }
-                    if (!type) return 'Unknown';
-                    type = type.replace(/\0/g, '');
-                    // Group sub-types with their parent
-                    if (type === 'BuildingPart') return 'Building';
-                    return type;
-                }
-
-                function applyTypeColors() {
-                    if (typeColors.size === 0) {
-                        layer.style = null;
-                    } else {
-                        layer.style = {
-                            fill: {
-                                color: (feature) => {
-                                    const t = getFeatureType(feature);
-                                    return typeColors.get(t) || originalColors.get(t) || '#ffffff';
-                                },
-                                opacity: 1.0,
-                            },
-                        };
-                    }
-                    view.notifyChange();
-                }
-
-                function getColorForType(typeName) {
-                    for (const [, featuresMap] of layer._tileFeatures) {
-                        for (const [, feature] of featuresMap) {
-                            if (getFeatureType(feature) !== typeName) continue;
-                            const geom = feature.object3d.geometry;
-                            const colorAttr = geom?.getAttribute('color');
-                            if (colorAttr && feature.groups?.length) {
-                                // groups are in index-buffer space; look up actual vertex
-                                const indexAttr = geom.getIndex();
-                                const startIdx = feature.groups[0].start;
-                                const vertexIdx = indexAttr ? indexAttr.getX(startIdx) : startIdx;
-                                const r = colorAttr.getX(vertexIdx);
-                                const g = colorAttr.getY(vertexIdx);
-                                const b = colorAttr.getZ(vertexIdx);
-                                const c = new THREE.Color(r, g, b);
-                                return '#' + c.getHexString();
-                            }
-                        }
-                    }
-                    return '#ffffff';
-                }
-
-                // Track which types already have DOM rows to avoid
-                // destroying elements while the user interacts with them
-                const knownTypes = new Set();
-
-                function rebuildColorList() {
-                    const types = new Set();
-                    for (const [, featuresMap] of layer._tileFeatures) {
-                        for (const [, feature] of featuresMap) {
-                            types.add(getFeatureType(feature));
-                        }
-                    }
-
-                    if (types.size === 0) {
-                        featureColorsDiv.innerHTML = '<em>No features loaded</em>';
-                        knownTypes.clear();
-                        return;
-                    }
-
-                    // Only add new types; never destroy existing rows
-                    const newTypes = [...types].filter(t => !knownTypes.has(t)).sort();
-                    if (newTypes.length === 0) return;
-
-                    // Add Reset button on first population
-                    if (knownTypes.size === 0) {
-                        featureColorsDiv.innerHTML = '';
-                        const resetBtn = document.createElement('button');
-                        resetBtn.className = 'color-reset-btn';
-                        resetBtn.textContent = 'Reset All';
-                        resetBtn.addEventListener('click', () => {
-                            typeColors.clear();
-                            originalColors.clear();
-                            knownTypes.clear();
-                            rebuildColorList();
-                            applyTypeColors();
-                        });
-                        featureColorsDiv.appendChild(resetBtn);
-                    }
-
-                    for (const typeName of newTypes) {
-                        knownTypes.add(typeName);
-
-                        if (!originalColors.has(typeName)) {
-                            originalColors.set(typeName, getColorForType(typeName));
-                        }
-
-                        const row = document.createElement('div');
-                        row.className = 'color-row';
-
-                        const lbl = document.createElement('label');
-                        lbl.textContent = typeName;
-                        lbl.title = typeName;
-
-                        const picker = document.createElement('input');
-                        picker.type = 'color';
-                        picker.value = typeColors.get(typeName) || originalColors.get(typeName);
-                        picker.title = 'Click to open color picker';
-
-                        function onPickerChange() {
-                            typeColors.set(typeName, picker.value);
-                            applyTypeColors();
-                        }
-                        picker.addEventListener('change', onPickerChange);
-
-                        row.appendChild(lbl);
-                        row.appendChild(picker);
-                        featureColorsDiv.appendChild(row);
-                    }
-                }
-
-                layer.addEventListener('load-model', () => {
-                    clearTimeout(rebuildTimer);
-                    rebuildTimer = setTimeout(rebuildColorList, 500);
-                });
-
-                layerRegistry.set(rowId, { layerId, layer, guiFolder: folder, state, url });
-
-                view.addLayer(layer).then((_layer) => {
-                    zoomToLayer(view, _layer);
-                });
-
-                syncUrlParams();
+                window.layer.whenReady
+                    .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
             }
-
-            /** Remove the loaded layer for rowId (but keep the HTML row). */
-            function _removeRegistryEntry(rowId) {
-                const entry = layerRegistry.get(rowId);
-                if (!entry) return;
-
-                try { window.gui.removeFolder(entry.guiFolder); } catch {}
-                try { view.removeLayer(entry.layerId); } catch {}
-                try { entry.layer.delete(); } catch {}
-
-                layerRegistry.delete(rowId);
-                syncUrlParams();
-
-                // Re-enable load buttons if no tilesets remain
-                if (layerRegistry.size === 0) {
-                    document.getElementById('addTilesetBtn').disabled = false;
-                    document.getElementById('loadLyonButton').disabled = false;
-                    document.getElementById('loadSeteButton').disabled = false;
-                    document.getElementById('loadLilleButton').disabled = false;
-                    document.getElementById('featureColors').innerHTML =
-                        '<em>Load a tileset to see feature types</em>';
-                }
-            }
-
-            /** Remove both the HTML row and its loaded layer. */
-            function removeTileset(rowId, rowEl) {
-                _removeRegistryEntry(rowId);
-                rowEl.remove();
-            }
-
-            // ── Preset buttons ────────────────────────────────────────────────────────
 
             function loadLyon() {
-                const row = addTilesetRow("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
             }
 
             function loadSete() {
-                const row = addTilesetRow("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json");
+                setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/pointclouds/pnts-sete-2021-0756_6256/tileset.json");
             }
 
             function loadLille() {
-                const row = addTilesetRow("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
+                setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
             }
 
-            document.getElementById('loadLyonButton').addEventListener('click', loadLyon);
-            document.getElementById('loadSeteButton').addEventListener('click', loadSete);
-            document.getElementById('loadLilleButton').addEventListener('click', loadLille);
-            document.getElementById('addTilesetBtn').addEventListener('click', () => addTilesetRow());
 
-            // ── Picking / feature info ────────────────────────────────────────────────
+            
 
-            // Click: fill the feature info panel from whichever layer is hit
-            window.addEventListener('click', (event) => {
-                const activeLayers = [...layerRegistry.values()].map(e => e.layer);
-                if (!activeLayers.length) return;
-                // Pick against all active layers; use the first hit
-                for (const layer of activeLayers) {
-                    const intersects = view.pickObjectsAt(event, 5, layer);
-                    if (intersects && intersects.length > 0) {
-                        fillHTMLWithPickingInfo(event, {
-                            htmlDiv: document.getElementById('featureInfo'),
-                            view,
-                            layer,
-                        });
-                        break;
-                    }
-                }
-            }, false);
+            const readUrlButton = document.getElementById('readURLButton');
+            
+            const loadLyonButton = document.getElementById('loadLyonButton');
+            const loadSeteButton = document.getElementById('loadSeteButton');
+            const loadLilleButton = document.getElementById('loadLilleButton');
 
-            // ── Tooltip ───────────────────────────────────────────────────────────────
+            loadLyonButton.addEventListener('click', loadLyon);
+            loadSeteButton.addEventListener('click', loadSete);
+            loadLilleButton.addEventListener('click', loadLille);
+            readUrlButton.addEventListener('click', readURL);
 
-            window.tooltipEnabled = false;
-
-            let tooltip = null;
-            let tooltipContent = null;
-
-            function initTooltip() {
-                tooltip = document.getElementById('tooltip');
-                tooltipContent = tooltip && tooltip.querySelector('.tooltip-content');
-                return !!(tooltip && tooltipContent);
-            }
-
-            setTimeout(initTooltip, 0);
-
-            function showTooltip(event, featureInfo) {
-                if (!window.tooltipEnabled || !tooltip || !tooltipContent) return;
-                if (!featureInfo || !featureInfo.hasChildNodes()) return;
-
-                while (tooltipContent.firstChild) tooltipContent.removeChild(tooltipContent.firstChild);
-                tooltipContent.appendChild(featureInfo.cloneNode(true));
-
-                tooltip.classList.add('visible');
-                tooltip.style.display = 'block';
-
-                const offset = 15;
-                let left = event.clientX + offset;
-                let top  = event.clientY + offset;
-                tooltip.style.left = `${left}px`;
-                tooltip.style.top  = `${top}px`;
-
-                void tooltip.offsetHeight;
-                const rect = tooltip.getBoundingClientRect();
-                if (rect.right  > window.innerWidth)  left = event.clientX - rect.width  - offset;
-                if (rect.bottom > window.innerHeight)  top  = event.clientY - rect.height - offset;
-                if (left < 0) left = offset;
-                if (top  < 0) top  = offset;
-                tooltip.style.left = `${left}px`;
-                tooltip.style.top  = `${top}px`;
-            }
-
-            function hideTooltip() {
-                if (!tooltip || !tooltipContent) return;
-                tooltip.classList.remove('visible');
-                tooltip.style.display = 'none';
-                while (tooltipContent.firstChild) tooltipContent.removeChild(tooltipContent.firstChild);
-            }
-
-            function onMouseMove(event) {
-                if (!window.tooltipEnabled) return;
-                if (!tooltip || !tooltipContent) { initTooltip(); hideTooltip(); return; }
-
-                const canvas = viewerDiv.querySelector('canvas');
-                const target = event.target;
-                const isOverViewer = target === canvas || target === viewerDiv || viewerDiv.contains(target);
-                if (!isOverViewer) { hideTooltip(); return; }
-
-                // Pick from all loaded layers; use first hit
-                const activeLayers = [...layerRegistry.values()].map(e => e.layer);
-                const pickEl = canvas || viewerDiv;
-                const pickRect = pickEl.getBoundingClientRect();
-                const viewCoords = { x: event.clientX - pickRect.left, y: event.clientY - pickRect.top };
-
-                for (const layer of activeLayers) {
-                    try {
-                        const intersects = view.pickObjectsAt(viewCoords, 5, layer);
-                        const closest = layer.getC3DTileFeatureFromIntersectsArray(intersects);
-                        if (closest) {
-                            const tempDiv = document.createElement('div');
-                            layer.getMetadataFromIntersections(intersects).then((meta) => {
-                                if (!window.tooltipEnabled) return;
-                                const buildingId = extractBuildingId(meta);
-                                if (buildingId != null) {
-                                    tempDiv.appendChild(createHTMLListFromObject({ BuildingId: buildingId }));
-                                } else {
-                                    tempDiv.appendChild(createHTMLListFromObject({
-                                        BuildingId: '(not in tile)',
-                                        batchId: closest.batchId ?? closest.batchid ?? '—',
-                                    }));
-                                }
-                                showTooltip(event, tempDiv);
-                            }).catch(() => {
-                                if (window.tooltipEnabled) {
-                                    tempDiv.appendChild(createHTMLListFromObject({
-                                        BuildingId: '(unavailable)',
-                                        batchId: closest.batchId ?? closest.batchid ?? '—',
-                                    }));
-                                    showTooltip(event, tempDiv);
-                                }
-                            });
-                            return;
-                        }
-                    } catch {}
-                }
-                hideTooltip();
-            }
-
-            viewerDiv.addEventListener('mousemove', onMouseMove, { passive: true });
-            viewerDiv.addEventListener('mouseleave', hideTooltip);
-            window.addEventListener('mousemove', onMouseMove, { passive: true });
-
-            // ── Expose globals ────────────────────────────────────────────────────────
-
-            window.layerRegistry = layerRegistry;
+            window.readURL = readURL;
+            window.loadLyon = loadLyon;
+            window.loadSete = loadSete;
+            window.loadLille = loadLille;
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
-            window.tooltipEnabled = false;
-
-            // ── Load URLs from query string ───────────────────────────────────────────
-
-            (function loadFromQueryString() {
-                const passedUrls = uri.searchParams.getAll('3dtiles');
-                passedUrls.forEach(u => { if (u) addTilesetRow(u); });
-            })();
+            
+            function loadPassedModel() {
+                const passedUrl = uri.searchParams.get('3dtiles');
+                if (passedUrl) {
+                    setUrl(passedUrl);
+                }
+            }
+            loadPassedModel();
 
         </script>
     </body>
