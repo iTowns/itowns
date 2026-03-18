@@ -210,7 +210,7 @@ class Potree2Node extends PotreeNodeBase {
                 this.hierarchy,
             );
 
-            this.add(child as this, childIndex);
+            this.add(child as this);
         }
     }
 }
