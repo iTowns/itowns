@@ -1,4 +1,4 @@
-import { Vector3, Box3, type Group } from 'three';
+import { Vector3, Box3 } from 'three';
 import type { Hierarchy } from 'copc';
 import PointCloudNode from 'Core/PointCloudNode';
 
@@ -88,7 +88,7 @@ abstract class LasNodeBase extends PointCloudNode {
         this._childrenCreated = true;
     }
 
-    override setOBBes(): void {
+    override computeBBoxFromParent(): Box3 {
         const parent = this.parent as this;
 
         // initialize the child node obb
@@ -116,12 +116,7 @@ abstract class LasNodeBase extends PointCloudNode {
         // use the size computed above to set the max
         childVoxelBBox.max.copy(childVoxelBBox.min).add(size);
 
-        // set the voxelOBB
-        this.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
-
-        // get the clamped bbox from the voxel bbox
-        this.clampOBB.copy(this.voxelOBB)
-            .clampZ(this.source.zmin, this.source.zmax);
+        return childVoxelBBox;
     }
 }
 
