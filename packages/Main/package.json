@@ -1,6 +1,6 @@
 {
   "name": "itowns",
-  "version": "2.46.1-next.35",
+  "version": "2.46.1-next.36",
   "description": "A JS/WebGL framework for 3D geospatial data visualization",
   "type": "module",
   "main": "lib/Main.js",
@@ -50,7 +50,7 @@
     "url": "https://github.com/iTowns/itowns/issues"
   },
   "dependencies": {
-    "@itowns/geographic": "^2.46.1-next.35",
+    "@itowns/geographic": "^2.46.1-next.36",
     "@mapbox/vector-tile": "^2.0.4",
     "@maplibre/maplibre-gl-style-spec": "^24.7.0",
     "@takram/three-atmosphere": "^0.17.0",
