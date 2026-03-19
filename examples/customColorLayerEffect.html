@@ -82,17 +82,17 @@
                     return result;
                 }
 
-                float edge(sampler2D textu, float stepx, float stepy, vec2 center){
+                float edge(sampler2DArray textu, float stepx, float stepy, vec2 center, float layerIndex){
                     // get samples around pixel
-                    mat3 image = mat3(length(texture2D(textu,center + vec2(-stepx,stepy)).rgb),
-                                      length(texture2D(textu,center + vec2(0,stepy)).rgb),
-                                      length(texture2D(textu,center + vec2(stepx,stepy)).rgb),
-                                      length(texture2D(textu,center + vec2(-stepx,0)).rgb),
-                                      length(texture2D(textu,center).rgb),
-                                      length(texture2D(textu,center + vec2(stepx,0)).rgb),
-                                      length(texture2D(textu,center + vec2(-stepx,-stepy)).rgb),
-                                      length(texture2D(textu,center + vec2(0,-stepy)).rgb),
-                                      length(texture2D(textu,center + vec2(stepx,-stepy)).rgb));
+                    mat3 image = mat3(length(texture(textu, vec3(center + vec2(-stepx,stepy), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(0,stepy), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(stepx,stepy), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(-stepx,0), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center, layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(stepx,0), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(-stepx,-stepy), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(0,-stepy), layerIndex)).rgb),
+                                      length(texture(textu, vec3(center + vec2(stepx,-stepy), layerIndex)).rgb));
                     vec2 result;
                     result.x = convolve(sobelKernelX, image);
                     result.y = convolve(sobelKernelY, image);
@@ -103,14 +103,14 @@
             `);
 
             itowns.ShaderChunk.customBodyColorLayer(`
-                ivec2 textureSize2d = textureSize(tex,0);
-                vec2 resolution = vec2(float(textureSize2d.x), float(textureSize2d.y));
+                ivec3 textureSize3d = textureSize(tex, 0);
+                vec2 resolution = vec2(float(textureSize3d.x), float(textureSize3d.y));
 
                 float step = layer.effect_parameter;
 
                 vec2 cuv = pitUV(uv.xy, offsetScale);
 
-                float value = edge(tex, step/resolution.x, step/resolution.y, cuv);
+                float value = edge(tex, step/resolution.x, step/resolution.y, cuv, float(textureOffset));
 
                 color = vec4(vec3(value * 0.8, 0.0, 0.0), value);
             `);

@@ -75,7 +75,27 @@
             const crsInput = document.getElementById('crs');
             const errorMessage = document.getElementById('error-message');
 
-            async function load(url, options = {}) {
+            window.getFormat = getFormat;
+
+            const isEmbedded = window.self !== window.top;
+
+            function updateUrlParams(params) {
+                if (!isEmbedded) {
+                    history.replaceState(null, '', '?' + params.toString());
+                }
+            }
+            window.updateUrlParams = updateUrlParams;
+
+            let currentView = null;
+
+            window.load = async function load(url, options = {}) {
+                // Cleanup previous view
+                if (currentView) {
+                    currentView.dispose();
+                    currentView = null;
+                    viewerDiv.innerHTML = '';
+                }
+
                 const { format = 'auto', crs } = options;
                 const { Source, Layer } = getPointCloudClass(format);
 
@@ -93,6 +113,7 @@
                 layer.crs = source.crs;
 
                 const view = new View(layer.crs, viewerDiv);
+                currentView = view;
                 view.renderer.setClearColor(0xdddddd);
                 view.addLayer(layer);
                 const stats = new Stats();
@@ -114,27 +135,52 @@
                 PointCloudDebug.initTools(view, layer, gui);
             }
 
-            const params = new URLSearchParams(window.location.search);
-            const url = params.get('url');
-            if (url) {
+            if (!isEmbedded) {
+                const params = new URLSearchParams(window.location.search);
+                const url = params.get('url');
+                if (url) {
+                    try {
+                        const format = getFormat(url, params.get('format'));
+                        const crs = params.get('crs') || undefined;
+                        urlInput.value = url;
+                        formatSelect.value = format ?? 'auto';
+                        crsInput.value = crs ?? '';
+                        await window.load(url, { format, crs });
+                    } catch (error) {
+                        console.error(error);
+                    }
+                }
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const formUrl = urlInput.value;
+                const formFormat = window.getFormat(formUrl, formatSelect.value);
+                const formCrs = crsInput.value || undefined;
                 try {
-                    const format = getFormat(url, params.get('format'));
-                    const crs = params.get('crs') || undefined;
-                    urlInput.value = url;
-                    formatSelect.value = format ?? 'auto';
-                    crsInput.value = crs ?? '';
-                    await load(url, { format, crs });
+                    form.classList.toggle('error', false);
+                    errorMessage.textContent = '';
+
+                    const params = new URLSearchParams();
+                    params.set('url', formUrl);
+                    params.set('format', formFormat);
+                    if (formCrs) {
+                        params.set('crs', formCrs);
+                    }
+                    updateUrlParams(params);
+
+                    await window.load(formUrl, { format: formFormat, crs: formCrs });
                 } catch (error) {
                     console.error(error);
                     const message = error?.message ?? 'Failed to load the point cloud.';
                     form.classList.toggle('error', true);
                     errorMessage.textContent = message;
                 }
-            }
+            });
         </script>
 
         <script type="module">
-            function loadShowcase(input) {
+            async function loadShowcase(input) {
                 const showcase = typeof input === 'string' ? input : input?.target?.value;
                 if (!showcase) {
                     return;
@@ -154,13 +200,23 @@
                         crs = '';
                         break;
                 }
+
+                document.getElementById('showcase').value = showcase;
+                const urlInput = document.getElementById('url');
+                const formatSelect = document.getElementById('format');
+                const crsInput = document.getElementById('crs');
+                urlInput.value = url;
+                formatSelect.value = format ?? 'auto';
+                crsInput.value = crs ?? '';
+
                 const params = new URLSearchParams();
                 params.set('url', url);
                 params.set('format', format);
                 if (crs) {
                     params.set('crs', crs);
                 }
-                window.location.search = params.toString();
+                window.updateUrlParams(params);
+                await window.load(url, { format, crs: crs || undefined });
             }
 
             document.getElementById('showcase').addEventListener('change', loadShowcase);
