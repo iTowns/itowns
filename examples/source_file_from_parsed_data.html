@@ -9,6 +9,7 @@
             "debug": "../dist/debug.js",
             "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
             "GuiTools": "./jsm/GUI/GuiTools.js",
+            "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
             "itowns_widgets": "../dist/itowns_widgets.js",
             "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
             "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
@@ -23,7 +24,6 @@
 </head>
 <body>
 <div id="viewerDiv" class="viewer"></div>
-<script src="js/GUI/LoadingScreen.js"></script>
 <script type="module">
 
     import GuiTools from 'GuiTools';
@@ -31,6 +31,7 @@
     import * as itowns from 'itowns';
     import * as debug from 'debug';
     import * as itowns_widgets from 'itowns_widgets';
+    import setupLoadingScreen from 'LoadingScreen';
     /* global itowns, setupLoadingScreen, GuiTools, ToolTip */
 
 
