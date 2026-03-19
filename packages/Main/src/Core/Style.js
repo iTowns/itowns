@@ -1,7 +1,7 @@
 import { Coordinates } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
-import { Color } from 'three';
+import { Color, EventDispatcher } from 'three';
 import { deltaE } from 'Renderer/Color';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
@@ -138,7 +138,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
-                style.propVersions[parameter] = (style.propVersions[parameter] ?? 0) + 1;
+                style.dispatchEvent({ type: 'style-property-changed', style, parameter });
             },
         });
 }
@@ -442,13 +442,15 @@ function _addIcon(icon, domElement, opt) {
  * view.addLayer(layer);
  */
 
-class Style {
+class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
+        super();
+
         this.isStyle = true;
         this.context = new StyleContext();
 
@@ -458,8 +460,6 @@ class Style {
         params.point = params.point || {};
         params.text = params.text || {};
         params.icon = params.icon || {};
-
-        this.propVersions = {};
 
         this.zoom = {};
         defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
@@ -488,7 +488,11 @@ class Style {
                 },
                 set: (v) => {
                     this._extrusionHeight = v;
-                    this.propVersions.extrusion_height = (this.propVersions.extrusion_height ?? 0) + 1;
+                    this.dispatchEvent({
+                        type: 'style-property-changed',
+                        style: this,
+                        parameter: 'extrusion_height',
+                    });
                 },
             },
         );

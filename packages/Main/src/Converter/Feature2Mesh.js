@@ -865,73 +865,78 @@ export default {
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);
+            if (style !== defaultStyle) {
+                // defaultStyle is a shared singleton never mutated.
+                // Subscribing to it would leak a listener per convert() call.
+                style.addEventListener('style-property-changed', (event) => {
+                    style = event.style;
+                    for (const mesh of featureNode.meshes.children) {
+                        _applyStyle(mesh, featureNode.collection, event.parameter);
+                    }
+                });
+            }
 
             return featureNode;
         };
     },
-
-    /**
-     * Updates the visual properties of a feature mesh using the given collection context and style.
-     *
-     * @param {THREE.Mesh} featureMesh - The mesh to update.
-     * @param {THREE.Group} collection - The collection providing matrix/world context.
-     * @param {Style} styleIn - The style to apply.
-     */
-    updateStyle(featureMesh, collection, styleIn) {
-        style = styleIn;
-        const feature = featureMesh.feature;
-        if (!collection) {
-            console.error('Cannot update style: collection not provided');
-            return;
-        }
-
-        context.setCollection(collection);
-        collection.updateMatrixWorld(true);
-        collection.matrixWorld.copy(collection.origMatrixWorld);
-
-        // only define attributes that need an update
-        featureMesh.stylePropVersions ||= {};
-        const spv = featureMesh.stylePropVersions;
-        let colorAttr;
-        if ((spv.color ?? 0) < (style.propVersions.color ?? 0)) {
-            spv.color = style.propVersions.color;
-            colorAttr = featureMesh.geometry.getAttribute('color');
-            colorAttr.needsUpdate = true;
-        }
-        const colors = colorAttr?.array;
-        let posAttr;
-        if ((spv.extrusion_height ?? 0) < (style.propVersions.extrusion_height ?? 0) ||
-            (spv.base_altitude ?? 0) < (style.propVersions.base_altitude ?? 0)) {
-            spv.extrusion_height = style.propVersions.extrusion_height;
-            spv.base_altitude = style.propVersions.base_altitude;
-            posAttr = featureMesh.geometry.getAttribute('position');
-            posAttr.needsUpdate = true;
-        }
-        const vertices = posAttr?.array;
-        const buffers = { vertices, colors, vertPtr: 0 };
-        for (const geometry of feature.geometries) {
-            context.setGeometry(geometry);
-            switch (feature.type) {
-                case FEATURE_TYPES.POINT: {
-                    const pointStyle = style.point;
-                    if (pointStyle?.model?.object) { break; } // instanced mesh
-                    updatePointBuffers(featureMesh, buffers);
-                    break;
-                }
-                case FEATURE_TYPES.LINE: {
-                    updateLineBuffers(featureMesh, buffers);
-                    break;
-                }
-                case FEATURE_TYPES.POLYGON: {
-                    if (style.isExtruded()) {
-                        updateExtrudedPolygonBuffers(featureMesh, buffers);
-                    } else {
-                        updatePolygonBuffers(featureMesh, buffers);
-                    }
-                    break;
-                }
-                default: // unreachable (already returned)
-            }
-        }
-    },
 };
+
+/**
+ * Updates the visual properties of a single feature mesh from the current
+ * module-level style. Only the geometry buffers affected by `parameter` are
+ * marked as needing an update.
+ *
+ * @param {THREE.Mesh} featureMesh - The mesh to update.
+ * @param {THREE.Group} collection - The collection providing matrix/world context.
+ * @param {string} parameter - Name of the style property that changed
+ */
+function _applyStyle(featureMesh, collection, parameter) {
+    const feature = featureMesh.feature;
+    if (!collection) {
+        console.error('Cannot update style: collection not provided');
+        return;
+    }
+
+    context.setCollection(collection);
+    collection.updateMatrixWorld(true);
+    collection.matrixWorld.copy(collection.origMatrixWorld);
+
+    // only define attributes that need an update
+    let colorAttr;
+    if (parameter === 'color') {
+        colorAttr = featureMesh.geometry.getAttribute('color');
+        colorAttr.needsUpdate = true;
+    }
+    const colors = colorAttr?.array;
+    let posAttr;
+    if (parameter === 'extrusion_height' || parameter === 'base_altitude') {
+        posAttr = featureMesh.geometry.getAttribute('position');
+        posAttr.needsUpdate = true;
+    }
+    const vertices = posAttr?.array;
+    const buffers = { vertices, colors, vertPtr: 0 };
+    for (const geometry of feature.geometries) {
+        context.setGeometry(geometry);
+        switch (feature.type) {
+            case FEATURE_TYPES.POINT: {
+                const pointStyle = style.point;
+                if (pointStyle?.model?.object) { break; } // instanced mesh
+                updatePointBuffers(featureMesh, buffers);
+                break;
+            }
+            case FEATURE_TYPES.LINE: {
+                updateLineBuffers(featureMesh, buffers);
+                break;
+            }
+            case FEATURE_TYPES.POLYGON: {
+                if (style.isExtruded()) {
+                    updateExtrudedPolygonBuffers(featureMesh, buffers);
+                } else {
+                    updatePolygonBuffers(featureMesh, buffers);
+                }
+                break;
+            }
+            default: // unreachable (already returned)
+        }
+    }
+}
