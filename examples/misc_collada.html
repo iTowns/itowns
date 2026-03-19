@@ -61,6 +61,9 @@
             setupLoadingScreen(viewerDiv, view);
             const debugMenu = new GuiTools('menuDiv', view);
 
+            // Add ambient light to globally illuminates all objects
+            const light = new THREE.AmbientLight(0x404040, 40);
+            view.scene.add(light);
 
 
             // ---------- DISPLAY CONTEXTUAL DATA : ----------
@@ -95,7 +98,15 @@
 
             const loader = new ColladaLoader();
             loader.load(url, function (collada) {
-                const model = collada.scene;
+                // collada.scene is a THREE.Scene object; adding it directly
+                // to view.scene can break the iTowns rendering (black
+                // screen) if it contains a light source
+                const model = new THREE.Group();
+                for(const child of collada.scene.children) {
+                    if (child.type !== "PointLight") {
+                        model.add(child);
+                    }
+                }
 
                 // building coordinate
                 const coord = new itowns.Coordinates(

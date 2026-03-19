@@ -116,6 +116,8 @@
                 .setAttribute("checked", "");
         }
 
+        const isLocal = baseURI.includes("localhost");
+
         /**
          * UTF-8 fix to btoa.
          * @param {string} string - A valid UTF-8 string.
@@ -217,7 +219,9 @@
 
         /** @param {string} slug - An example's slug */
         function cacheExample(slug) {
-            const src = `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
+            const src = isLocal
+                ? `${new URL(baseURI).origin}/examples/${slug}.html`
+                : `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
             return fetch(src)
                 .then((response) => response.text())
                 .then((text) => {
@@ -307,7 +311,7 @@
                     const localCode = localStorage.getItem("code");
 
                     if (!urlCode) {
-                        if (!localCode) {
+                        if (!localCode || isLocal) {
                             loadExample(
                                 window.location.hash.replace("#", "") ||
                                 "view_3d_map",
