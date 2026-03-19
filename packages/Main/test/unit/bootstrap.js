@@ -370,6 +370,8 @@ class Renderer {
 
         this.xr.getSession = () => {};
 
+        this.backend = this;
+
         this.context = {
             getParameter: () => 16,
             createProgram: () => { },

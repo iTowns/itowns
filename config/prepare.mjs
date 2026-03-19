@@ -12,7 +12,7 @@ only needed for testing. Read CODING.md for more information.\n`));
 
 // Check node version to prevent error in THREE examples installation
 const nodeMajorVersion = process.versions.node.split('.')[0];
-const minNodeMajorVersion = 10;
+const minNodeMajorVersion = 20;
 
 if (nodeMajorVersion < minNodeMajorVersion) {
     console.log(chalk.red('Node.js version :', process.versions.node));
