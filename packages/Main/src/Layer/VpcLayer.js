@@ -10,12 +10,11 @@ function _instantiateSubRoot(source, crs) {
         let bounds;
         if (src.isCopcSource) {
             const { info } = src;
-            const { pageOffset, pageLength } = info.rootHierarchyPage;
             bounds = info.cube;
-            root = new CopcNode(0, 0, 0, 0, pageOffset, pageLength, src, -1, crs);
+            root = new CopcNode(0, 0, 0, 0, src, crs);
         } else if (src.isEntwinePointTileSource) {
             bounds = src.bounds;
-            root = new EntwinePointTileNode(0, 0, 0, 0, src, -1, crs);
+            root = new EntwinePointTileNode(0, 0, 0, 0, src, crs);
         } else {
             const msg = '[VPCLayer]: stack point cloud format not supporter';
             console.warn(msg);
@@ -74,9 +73,10 @@ class VpcLayer extends PointCloudLayer {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
-            this.root = new PointCloudNode(0, 0);
+            this.root = new PointCloudNode(0);
+            this.root.numPoints = 0;
             this.root.source = this.source;
-            this.root.crs = this.crs;
+
             this.root.voxelOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
             this.object3d.add(this.root.clampOBB);
@@ -100,8 +100,6 @@ class VpcLayer extends PointCloudLayer {
 
                 const mockSubRoot = new PointCloudNode(0, 0);
                 mockSubRoot.source = src;
-                mockSubRoot.crs = this.crs;
-                mockSubRoot.loadOctree = promisedRoot.then(root => root.loadOctree());
                 // when load() is called on the mockSubRoot, we need the associated source to be loaded
                 // as well as the octree, before calling load() on the real root.
                 mockSubRoot.load = promisedRoot.then(root => root.load);
@@ -136,7 +134,7 @@ class VpcLayer extends PointCloudLayer {
             };
             context.scheduler.execute(cmd);
 
-            elt.loadOctree
+            elt.load
                 .then(() => {
                     // after the octree is loaded we need to recall update
                     context.view.notifyChange(layer);
