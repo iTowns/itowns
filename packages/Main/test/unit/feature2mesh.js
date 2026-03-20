@@ -138,7 +138,6 @@ describe('Feature2Mesh', function () {
 
                 layer.style.fill.color = 'red';
                 layer.style.fill.base_altitude = 100;
-                Feature2Mesh.updateStyle(featureMesh, featureNode.collection, layer.style);
 
                 assert.equal(colorAttr.array[0], 255);
                 assert.equal(colorAttr.array[1], 0);
@@ -172,7 +171,6 @@ describe('Feature2Mesh', function () {
                 const topZ = posAttr.array[halfCount * 3 + 2];
 
                 layer.style.fill.extrusion_height = 150;
-                Feature2Mesh.updateStyle(featureMesh, featureNode.collection, layer.style);
 
                 const updatedTopZ = posAttr.array[halfCount * 3 + 2];
                 assert.equal(updatedTopZ - topZ, 100);
@@ -206,11 +204,9 @@ describe('Feature2Mesh', function () {
 
                 layer.style.point.color = 'lime'; // not 'green'
                 layer.style.point.base_altitude = 50;
-                Feature2Mesh.updateStyle(pointMesh, featureNode.collection, layer.style);
 
                 layer.style.stroke.color = 'blue';
                 layer.style.stroke.base_altitude = 75;
-                Feature2Mesh.updateStyle(lineMesh, featureNode.collection, layer.style);
 
                 assert.equal(pointColorAttr.array[0], 0);
                 assert.equal(pointColorAttr.array[1], 255);
