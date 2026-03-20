@@ -67,7 +67,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     if (node.layerUpdateState[layer.id] === undefined) {
         node.layerUpdateState[layer.id] = new LayerUpdateState();
 
-        if (!layer.source.extentInsideLimit(node.extent, zoom)) {
+        if (!extentsDestination.some(t => layer.source.hasData(t))) {
             // we also need to check that tile's parent doesn't have a texture for this layer,
             // because even if this tile is outside of the layer, it could inherit it's
             // parent texture
@@ -134,7 +134,7 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
             node.layerUpdateState[layer.id].noMoreUpdatePossible();
         }
         return;
-    } else if (!layer.source.extentInsideLimit(node.extent, targetLevel)) {
+    } else if (!extentsDestination.some(t => layer.source.hasData(t))) {
         node.layerUpdateState[layer.id].noData({ targetLevel });
         context.view.notifyChange(node, false);
         return;
@@ -209,7 +209,7 @@ export function updateLayeredMaterialNodeElevation(context, layer, node, parent)
     if (targetLevel <= nodeLayer.level || targetLevel > extentsDestination[0].zoom) {
         node.layerUpdateState[layer.id].noMoreUpdatePossible();
         return;
-    } else if (!layer.source.extentInsideLimit(node.extent, targetLevel)) {
+    } else if (!extentsDestination.some(t => layer.source.hasData(t))) {
         node.layerUpdateState[layer.id].noData({ targetLevel });
         context.view.notifyChange(node, false);
         return;

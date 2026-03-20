@@ -23,7 +23,6 @@ describe('Abstract Source', function () {
 
         it('testing abstract methods', function () {
             assert.throws(source.urlFromExtent, Error);
-            assert.throws(source.extentInsideLimit, Error);
         });
 
         it("method 'onLayerRemoved'", function () {
