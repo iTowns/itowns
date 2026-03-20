@@ -183,10 +183,6 @@ class FileSource extends Source {
     loadData(extent, out) {
         return this._featuresCaches[out.crs].get(0);
     }
-
-    extentInsideLimit(extent) {
-        return this.extent.intersectsExtent(extent);
-    }
 }
 
 export default FileSource;

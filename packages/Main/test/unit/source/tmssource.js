@@ -17,7 +17,7 @@ describe('TMSSource', function () {
         const extent = new Tile('TMS:3857', 5, 0, 0);
         assert.ok(source.isTMSSource);
         assert.ok(source.urlFromExtent(extent));
-        assert.ok(source.extentInsideLimit(extent, extent.zoom));
+        assert.ok(source.hasData(extent, extent.zoom));
     });
 });
 

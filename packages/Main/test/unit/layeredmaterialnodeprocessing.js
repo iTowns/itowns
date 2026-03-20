@@ -67,9 +67,9 @@ describe('updateLayeredMaterialNodeImagery', function () {
         };
         layer.visible = true;
 
-        source.extentInsideLimit = () => true;
+        source.hasData = () => true;
         source.zoom = { min: 0, max: 10 };
-        source.extent = { crs: 'EPSG:4326' };
+        source.extent = new Extent('EPSG:4326');
     });
 
 
