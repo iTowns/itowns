@@ -60,7 +60,7 @@ class Tile {
      * @param target - The target to store the projected extent. If this not
      * provided a new extent will be created.
      */
-    toExtent(crs: string, target = new Extent('EPSG:4326')) {
+    toExtent(crs = this.crs, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
         const { epsg, globalExtent, globalDimension } = getInfoTms(this.crs);
         const countTiles = getCountTiles(this.crs, this.zoom);
@@ -207,6 +207,166 @@ export function tiledCovering(e: Extent, tms: string) {
         _tmsCoord.divide(globalDimension).multiply(countTiles).floor();
         target.set(zoom, _tmsCoord.y, _tmsCoord.x);
         return [target];
+    }
+}
+
+/**
+ * Represents a set of limits for a Tile Matrix Set (TMS).
+ */
+type TileLimit = {
+    /** Minimum tile (top-left in the matrix) */
+    min: Tile;
+
+    /** Maximum tile (bottom-right in the matrix) */
+    max: Tile;
+
+    /** Geographic extent covered by the tile range */
+    extent: Extent;
+};
+
+type TileLimitJson = {
+    maxTileRow: number;
+
+    minTileRow: number;
+
+    minTileCol: number;
+
+    maxTileCol: number;
+};
+
+
+/**
+ * Represents a set of limits for a Tile Matrix Set (TMS).
+ *
+ * This class stores tile boundaries per zoom level, along with
+ * global extent information and intersection constraints.
+ */
+export class TileMatrixSetLimits {
+    /**
+     * Tile limits indexed by zoom level.
+     * Each entry defines the min/max tiles and their corresponding extent.
+     */
+    limits: Record<number, TileLimit>;
+
+    /** Coordinate reference system (CRS) of the tile matrix set */
+    crs: string;
+
+    /** Global extent (union) of all tile limits */
+    extent: Extent;
+
+    /** Common intersection extent across all tile limits */
+    intersect: Extent;
+
+    /** Zoom level range covered by the limits */
+    zoom: {
+        min: number;
+
+        max: number;
+    };
+    /**
+     * Creates a new TileMatrixSetLimits instance.
+     *
+     * @param crs - The coordinate reference system of the tile matrix set.
+     */
+    constructor(crs: string) {
+        this.limits = {};
+
+        this.crs = crs;
+
+        this.extent = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
+
+        this.intersect = new Extent(crs, -Infinity, Infinity, -Infinity, Infinity);
+
+        this.zoom = {
+            min: 0,
+
+            max: Infinity,
+        };
+    }
+
+    /**
+     * Builds a TileMatrixSetLimits instance from capabilities JSON.
+     *
+     * The input JSON is expected to contain tile limits per zoom level.
+     * Each zoom level entry must define min/max tile rows and columns.
+     *
+     * @param json - Capabilities object describing tile matrix limits.
+     * @param crs - The coordinate reference system.
+     *
+     * @returns A populated TileMatrixSetLimits instance.
+     */
+
+    static fromCapabilities(json: Record<number, TileLimitJson>, crs: string) {
+        const tileMatrix = new TileMatrixSetLimits(crs);
+
+        if (!json) {
+            return tileMatrix;
+        }
+
+        tileMatrix.extent.set(Infinity, -Infinity, Infinity, -Infinity);
+
+        const zooms = Object.keys(json).map(zoom => Number(zoom));
+
+        tileMatrix.zoom.min = Math.min(...zooms);
+
+        tileMatrix.zoom.max = Math.max(...zooms);
+
+        zooms.forEach((zoom) => {
+            const limit = json[zoom];
+
+            const min = new Tile(crs, zoom, limit.minTileRow, limit.minTileCol);
+
+            const max = new Tile(crs, zoom, limit.maxTileRow, limit.maxTileCol);
+
+            const extent = min.toExtent().union(max.toExtent());
+
+            const tileLimit : TileLimit = { min, max, extent };
+
+            tileMatrix.extent.union(tileLimit.extent);
+
+            tileMatrix.intersect = tileMatrix.intersect.intersect(tileLimit.extent);
+
+            tileMatrix.limits[zoom] = tileLimit;
+        });
+
+        return tileMatrix;
+    }
+
+
+    /**
+     * Tests whether a tile or extent is inside the defined limits.
+     * If there are no limits at this zoom level,
+     * the tile is always considered as inside
+     *
+     * - If a {@link Tile} is provided, checks whether it falls within the
+     *   min/max bounds for its zoom level.
+     * - If an {@link Extent} is provided, checks whether it intersects
+     *   the common intersection extent of all limits.
+     *
+     * @param extentOrTile - The tile or extent to test.
+     *
+     * @returns `true` if inside the limits, `false` otherwise.
+     */
+    isInside(extentOrTile: Tile | Extent) {
+        if (extentOrTile instanceof Tile) {
+            if (extentOrTile.zoom < this.zoom.min || extentOrTile.zoom > this.zoom.max) {
+                return false;
+            }
+            const limit = this.limits[extentOrTile.zoom];
+
+            if (limit) {
+                return  extentOrTile.row >= limit.min.row &&
+                        extentOrTile.col >= limit.min.col &&
+                        extentOrTile.row <= limit.max.row &&
+                        extentOrTile.col <= limit.max.col;
+            } else {
+                // if there are no limits at this zoom level,
+                // the tile is always considered as inside
+                return true;
+            }
+        } else {
+            return this.intersect.intersectsExtent(extentOrTile);
+        }
     }
 }
 
