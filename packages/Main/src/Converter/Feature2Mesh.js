@@ -620,13 +620,6 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     const startIn = start * 3;
     const startTop = start + numVertices / 3;
     const endIn = startIn + count * 3;
-    const { color } = style.fill;
-    let topColor;
-    let baseColor;
-    if (colors) {
-        topColor = toColor(color).multiplyScalar(255).clone();
-        baseColor = topColor.clone().multiplyScalar(0.5); // base is half-dark
-    }
 
     for (let i = startIn; i < endIn; i += 3) {
         const t = numVertices + i;
@@ -661,8 +654,10 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
 
         // coloring base and top mesh
         if (colors) {
-            topColor.toArray(colors, t);
-            baseColor.toArray(colors, i);
+            const { color } = style.fill;
+            const meshColor = toColor(color).multiplyScalar(255);
+            meshColor.toArray(colors, t);
+            meshColor.multiplyScalar(0.5).toArray(colors, i); // base is half-dark
         }
     }
 
