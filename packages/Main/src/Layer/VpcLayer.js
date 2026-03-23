@@ -73,8 +73,7 @@ class VpcLayer extends PointCloudLayer {
             this.setElevationRange();
 
             const boundsConforming = this.source.boundsConforming;
-            this.root = new PointCloudNode(0);
-            this.root.numPoints = 0;
+            this.root = new PointCloudNode(0, 0);
             this.root.source = this.source;
 
             this.root.voxelOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
@@ -98,7 +97,7 @@ class VpcLayer extends PointCloudLayer {
                     this.root.children[i] = r;
                 });
 
-                const mockSubRoot = new PointCloudNode(0, 0);
+                const mockSubRoot = new PointCloudNode(0);
                 mockSubRoot.source = src;
                 // when load() is called on the mockSubRoot, we need the associated source to be loaded
                 // as well as the octree, before calling load() on the real root.
