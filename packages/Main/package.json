@@ -68,7 +68,7 @@
     "threads": "^1.7.0"
   },
   "peerDependencies": {
-    "postprocessing": "^6.38.3",
+    "postprocessing": "6.38.2",
     "proj4": "^2.20.4",
     "three": "^0.182.0"
   },
