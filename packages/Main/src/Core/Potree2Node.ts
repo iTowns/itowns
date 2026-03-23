@@ -34,11 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 import type Potree2Source from 'Source/Potree2Source';
-import PotreeNodeBase from 'Core/PotreeNodeBase';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import PotreeNodeBase, { getChildVoxelKey, type NodeKeyInfo } from 'Core/PotreeNodeBase';
 
-export type Potree2NodeInfo = {
-    childrenBitField: number, // 0 <= integer <= 255
-    numPoints: number, // integer >= 0
+export type Potree2NodeHierarchy = {
+    numPoints: number, // uint32
     byteOffset: bigint,
     byteSize: bigint,
 }
@@ -51,13 +51,80 @@ const NODE_TYPE = {
 
 type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 
+function parseHierarchy(view: DataView, nodeInfo: NodeKeyInfo)
+        : Record<string, Potree2NodeHierarchy> {
+    // parse and create Hierarchy
+    const stack = [];
+
+    const hierarchy: Record<string, Potree2NodeHierarchy> = {
+    };
+
+    const bytesPerNode = 22;
+    const numNodes = view.byteLength / bytesPerNode;
+
+    stack.push(nodeInfo);
+
+    for (let indexNode = 0; indexNode < numNodes; indexNode++) {
+        const cNodeInfo = stack.shift() as NodeKeyInfo;
+        const offset = indexNode * bytesPerNode;
+
+        const type = view.getUint8(offset + 0) as NodeType;
+        const childrenBitField = view.getUint8(offset + 1);
+        let numPoints = view.getUint32(offset + 2, true);
+        const byteOffset = view.getBigInt64(offset + 6, true);
+        const byteSize = view.getBigInt64(offset + 14, true);
+
+        if (type === NODE_TYPE.PROXY) {
+            // load proxy
+            numPoints = -1;
+        }
+
+        if (byteSize === 0n) {
+            // workaround for issue potree/potree/issues/1125
+            // some inner nodes erroneously report >0 points even though
+            // have 0 points however, they still report a byteSize of 0,
+            // so based on that we now set node.numPoints to 0.
+            numPoints = 0;
+        }
+
+        const voxelKey = buildVoxelKey(cNodeInfo.depth, cNodeInfo.x, cNodeInfo.y, cNodeInfo.z);
+        hierarchy[voxelKey] = {
+            numPoints,
+            byteOffset,
+            byteSize,
+        };
+
+        if (type === NODE_TYPE.PROXY) {
+            continue;
+        }
+
+        for (let childIndex = 0; childIndex < 8; childIndex++) {
+            const childExists = ((1 << childIndex) & childrenBitField) !== 0;
+
+            if (!childExists) {
+                continue;
+            }
+
+            const { depth, x, y, z } = getChildVoxelKey(nodeInfo, childIndex);
+            stack.push({
+                depth,
+                x,
+                y,
+                z,
+            });
+        }
+    }
+    return hierarchy;
+}
+
 class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;
 
-    hierarchyKey: string;
-    hierarchy: Record<string, Potree2NodeInfo>;
+    override url: string;
 
-    childrenBitField: number;
+    hierarchy: Record<string, Potree2NodeHierarchy>;
+
+    override voxelKey: string;
 
     private baseurl: string;
 
@@ -65,31 +132,28 @@ class Potree2Node extends PotreeNodeBase {
     private byteSize: bigint;
 
     constructor(
-        hierarchyKey: string,
+        depth: number,
+        x: number, y: number, z: number,
         source: Potree2Source,
         crs: string,
-        hierarchy: Record<string, Potree2NodeInfo> = {},
+        hierarchy: Record<string, Potree2NodeHierarchy>,
     ) {
-        const depth = hierarchyKey.length - 1;
-        const numPoints = hierarchy[hierarchyKey]?.numPoints ?? -1;
-        super(depth, numPoints, crs);
+        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const numPoints = hierarchy[voxelKey]?.numPoints ?? -1;
+        super(depth, x, y, z, numPoints, crs);
+
         this.source = source;
+
+        this.voxelKey = voxelKey;
 
         this.baseurl = this.source.baseurl;
 
-        this.hierarchyKey = hierarchyKey;
         this.hierarchy = hierarchy;
 
-        this.childrenBitField = this.hierarchy[this.hierarchyKey]?.childrenBitField ?? 255;
-
-        this.byteOffset = this.hierarchy[hierarchyKey]?.byteOffset ?? 0n;
-
-        this.byteSize = this.hierarchy[hierarchyKey]?.byteSize ??
-            BigInt(this.source.metadata.hierarchy.firstChunkSize);
-    }
-
-    override get url(): string {
-        return `${this.baseurl}/octree.bin`;
+        // potree v2.x
+        this.url = `${this.baseurl}/octree.bin`;
+        this.byteOffset = this.hierarchy[voxelKey]?.byteOffset;
+        this.byteSize = this.hierarchy[voxelKey]?.byteSize;
     }
 
     override get networkOptions(): RequestInit {
@@ -112,7 +176,7 @@ class Potree2Node extends PotreeNodeBase {
         return networkOptions;
     }
 
-    async loadHierarchy(): Promise<Record<string, Potree2NodeInfo>> {
+    async loadHierarchy(): Promise<Record<string, Potree2NodeHierarchy>> {
         if (this.hierarchyIsLoaded) {
             return this.hierarchy;
         }
@@ -121,96 +185,32 @@ class Potree2Node extends PotreeNodeBase {
         const buffer = await this.fetcher(hierarchyUrl);
         const view = new DataView(buffer);
 
+        this.hierarchy = parseHierarchy(view, this);
+
         // update current node from the newly fetched hierarchy buffer
-        this.childrenBitField = view.getUint8(1);
         this.numPoints = view.getUint32(2, true);
         // update byteOffset/byteSize from page Info to node Info
         this.byteOffset = view.getBigInt64(6, true);
         this.byteSize = view.getBigInt64(14, true);
 
-        // parse and create Hierarchy
-        const stack = [];
-        stack.push(this.hierarchyKey);
-
-        const hierarchy: Record<string, Potree2NodeInfo> = {
-        };
-
-        const bytesPerNode = 22;
-        const numNodes = buffer.byteLength / bytesPerNode;
-
-        for (let indexNode = 0; indexNode < numNodes; indexNode++) {
-            const hierarchyKey = stack.shift() as string;
-            const offset = indexNode * bytesPerNode;
-
-            const type = view.getUint8(offset + 0) as NodeType;
-            let childrenBitField = view.getUint8(offset + 1);
-            let numPoints = view.getUint32(offset + 2, true);
-            const byteOffset = view.getBigInt64(offset + 6, true);
-            const byteSize = view.getBigInt64(offset + 14, true);
-
-
-            if (type === NODE_TYPE.PROXY) {
-                // load proxy
-                numPoints = -1;
-                childrenBitField = 255;
-            }
-
-            if (byteSize === 0n) {
-                // workaround for issue potree/potree/issues/1125
-                // some inner nodes erroneously report >0 points even though
-                // have 0 points however, they still report a byteSize of 0,
-                // so based on that we now set node.numPoints to 0.
-                numPoints = 0;
-            }
-
-            hierarchy[hierarchyKey] = {
-                childrenBitField,
-                numPoints,
-                byteOffset,
-                byteSize,
-
-            };
-
-            if (type === NODE_TYPE.PROXY) {
-                continue;
-            }
-
-            for (let childIndex = 0; childIndex < 8; childIndex++) {
-                const childExists = ((1 << childIndex) & childrenBitField) !== 0;
-
-                if (!childExists) {
-                    continue;
-                }
-                stack.push(`${hierarchyKey}${childIndex}`);
-            }
-        }
-        this.hierarchy = hierarchy;
-        return hierarchy;
+        return this.hierarchy;
     }
 
-    override async createChildren(): Promise<void> {
-        await this.loadHierarchy();
+    findAndCreateChild(
+        depth: number, x: number, y: number, z: number,
+    ): void {
+        const childVoxelKey = buildVoxelKey(depth, x, y, z);
 
-        const childMask = this.hierarchy[this.hierarchyKey].childrenBitField;
+        if (!this.hierarchy[childVoxelKey]) { return; }
 
-        for (let childIndex = 0; childIndex < 8; childIndex++) {
-            const childExists = ((1 << childIndex) & childMask) !== 0;
+        const child = new Potree2Node(
+            depth, x, y, z,
+            this.source,
+            this.crs,
+            this.hierarchy,
+        );
 
-            if (!childExists) {
-                continue;
-            }
-
-            const childHierarchyKey = `${this.hierarchyKey}${childIndex}`;
-
-            const child = new Potree2Node(
-                childHierarchyKey,
-                this.source,
-                this.crs,
-                this.hierarchy,
-            );
-
-            this.add(child as this);
-        }
+        this.add(child as this);
     }
 }
 

@@ -93,9 +93,17 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.setElevationRange();
 
-            const { boundingBox } = metadata;
+            const { boundingBox, hierarchy } = metadata;
             const bounds = [...boundingBox.min, ...boundingBox.max];
-            this.root = new Potree2Node('r', this.source, this.crs);
+            const rootHierarchy = {
+                '0-0-0-0': {
+                    numPoints: -1,
+                    byteOffset: 0n,
+                    byteSize: BigInt(hierarchy.firstChunkSize),
+                },
+            };
+            this.root = new Potree2Node(0, 0, 0, 0, this.source, this.crs, rootHierarchy);
+
             this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 

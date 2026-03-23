@@ -1,11 +1,7 @@
-import { Hierarchy } from 'copc';
-import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
-
-const defaultHierarchy: Hierarchy.Subtree = {
-    nodes: {},
-    pages: {},
-};
+import { Hierarchy } from 'copc';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 
 class CopcNode extends LasNodeBase {
     /**  Used to checkout whether this
@@ -15,14 +11,14 @@ class CopcNode extends LasNodeBase {
 
     source: CopcSource;
 
-    url: string;
+    override url: string;
 
     /** Octree's subtree */
     hierarchy: Hierarchy.Subtree;
 
     /** The string id of the node, constituted of the four
     * components: `depth-x-y-z`. */
-    voxelKey: string;
+    override voxelKey: string;
 
     /** Offset from the beginning of the file of
      * the node entry */
@@ -46,7 +42,7 @@ class CopcNode extends LasNodeBase {
         x: number, y: number, z: number,
         source: CopcSource,
         crs: string,
-        hierarchy: Hierarchy.Subtree = defaultHierarchy,
+        hierarchy: Hierarchy.Subtree,
     ) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const hNode = hierarchy.nodes[voxelKey];
@@ -61,7 +57,7 @@ class CopcNode extends LasNodeBase {
         this.hierarchy = hierarchy;
 
         // copc
-        const hPage = this.hierarchy.pages[this.voxelKey] || this.source.info.rootHierarchyPage;
+        const hPage = this.hierarchy.pages[this.voxelKey] as Hierarchy.Page;
         this.entryOffset = hNode?.pointDataOffset ?? hPage.pageOffset;
         this.entryLength = hNode?.pointDataLength ?? hPage.pageLength;
     }
@@ -80,7 +76,7 @@ class CopcNode extends LasNodeBase {
         if (this.hierarchyIsLoaded) { return this.hierarchy; }
 
         const buffer = await this.fetcher(this.source.url, this.networkOptions);
-        this.hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
+        this.hierarchy = Hierarchy.parse(new Uint8Array(buffer));
 
         // Update current node entry from newly loaded subtree
         const node = this.hierarchy.nodes[this.voxelKey];
