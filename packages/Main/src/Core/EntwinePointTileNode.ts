@@ -1,22 +1,18 @@
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import Fetcher from 'Provider/Fetcher';
-import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 
 class EntwinePointTileNode extends LasNodeBase {
-    /** Used to checkout whether this
-    * node is a EntwinePointTileNode. Default is `true`. You should not change
-    * this, as it is used internally for optimisation. */
-    readonly isEntwinePointTileNode: true;
-
     source: EntwinePointTileSource;
 
-    url: string;
+    override url: string;
 
     hierarchy: Record<string, number>;
 
     /** The string id of the node, constituted of the four
     * components: `depth-x-y-z`. */
-    voxelKey: string;
+    override voxelKey: string;
 
     /**
      * Constructs a new instance of EntwinePointTileNode.
@@ -45,7 +41,7 @@ class EntwinePointTileNode extends LasNodeBase {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const numPoints = hierarchy[voxelKey];
         super(depth, x, y, z, numPoints, crs);
-        this.isEntwinePointTileNode = true;
+
         this.source = source;
 
         this.voxelKey = voxelKey;
