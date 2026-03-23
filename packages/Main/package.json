@@ -53,8 +53,7 @@
     "@itowns/geographic": "^2.46.0",
     "@mapbox/vector-tile": "^2.0.4",
     "@maplibre/maplibre-gl-style-spec": "^24.7.0",
-    "@takram/three-atmosphere": "^0.17.0",
-    "@takram/three-geospatial": "^0.7.0",
+    "@takram/three-atmosphere": "^0.17.1",
     "@tmcw/togeojson": "^7.1.2",
     "@tweenjs/tween.js": "^25.0.0",
     "3d-tiles-renderer": "^0.4.22",
@@ -65,11 +64,11 @@
     "js-priority-queue": "^0.1.5",
     "lru-cache": "^11.2.6",
     "pbf": "^4.0.1",
-    "postprocessing": "^6.38.3",
     "shpjs": "^6.2.0",
     "threads": "^1.7.0"
   },
   "peerDependencies": {
+    "postprocessing": "6.38.2",
     "proj4": "^2.20.4",
     "three": "^0.182.0"
   },
