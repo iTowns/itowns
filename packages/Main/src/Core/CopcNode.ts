@@ -1,6 +1,8 @@
-import { Hierarchy } from 'copc';
-import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
+import { Hierarchy } from 'copc';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
+
 
 const defaultHierarchy: Hierarchy.Subtree = {
     nodes: {},
@@ -15,7 +17,7 @@ class CopcNode extends LasNodeBase {
 
     source: CopcSource;
 
-    url: string;
+    override url: string;
 
     /** Octree's subtree */
     hierarchy: Hierarchy.Subtree;
@@ -60,6 +62,7 @@ class CopcNode extends LasNodeBase {
         this.url = this.source.url;
         this.hierarchy = hierarchy;
 
+        // copc
         const hPage = this.hierarchy?.pages[this.voxelKey] || this.source.info.rootHierarchyPage;
         this.entryOffset = hNode?.pointDataOffset ?? hPage.pageOffset;
         this.entryLength = hNode?.pointDataLength ?? hPage.pageLength;
