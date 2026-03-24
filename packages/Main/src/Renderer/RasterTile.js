@@ -20,7 +20,7 @@ function refinementCommandCancellationFn(cmd) {
     const child = requester.children[0];
 
     // to do remove useless
-    return !cmd.force && (!view || !requester.parent || !requester.material || !requester.material.visible || child?.visible);
+    return !cmd.force && !requester.visible && (!view || !requester.parent || !requester.material || !requester.material.visible || child?.visible);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -28,14 +28,14 @@ function buildCommand(tile, extentsSource, requester, view) {
     return {
         view,
         layer: tile.layer,
-        extentsSource,
+        extentsSource: extentsSource.map(t => (tile.layer.source.hasData(t) ? t : undefined)),
         extentsDestination: tile.tiles,
         requester,
         priority: materialCommandQueuePriorityFunction(requester.material),
         earlyDropFunction: refinementCommandCancellationFn,
         partialLoading: true,
         // TODO : on force Clean or refacto or remove
-        force: tile.level == EMPTY_TEXTURE_ZOOM,
+        force: false, // tile.level == EMPTY_TEXTURE_ZOOM,
     };
 }
 
@@ -198,9 +198,9 @@ export class RasterTile extends THREE.EventDispatcher {
     }
 
     setTexture(index, texture, offsetScale) {
-        if (this.shouldWriteTextureAtIndex(index, texture)) {
-            this.level = (texture && texture.extent) ? texture.extent.zoom : this.level;
-            this.textures[index] = texture || null;
+        if (texture && this.shouldWriteTextureAtIndex(index, texture)) {
+            this.level = texture.extent ? texture.extent.zoom : this.level;
+            this.textures[index] = texture;
             this.offsetScales[index] = offsetScale;
             this.needsUpdate = true;
             return texture;
