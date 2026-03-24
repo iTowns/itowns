@@ -81,7 +81,7 @@ function _applyQuaternion(v, q) {
 }
 
 export default function load(buffer, options) {
-    const { pointAttributes, scale, size, offset, numPoints } = options;
+    const { pointAttributes, scale, offset, numPoints } = options;
 
     const view = new DataView(buffer);
 
@@ -102,24 +102,6 @@ export default function load(buffer, options) {
         bytesPerPoint += pointAttribute.byteSize;
     }
 
-    const gridSize = 32;
-    const grid = new Uint32Array(gridSize ** 3);
-    const toIndex = (x, y, z) => {
-        // min is already subtracted
-        const dx = gridSize * x / size.x;
-        const dy = gridSize * y / size.y;
-        const dz = gridSize * z / size.z;
-
-        const ix = Math.min(parseInt(dx, 10), gridSize - 1);
-        const iy = Math.min(parseInt(dy, 10), gridSize - 1);
-        const iz = Math.min(parseInt(dz, 10), gridSize - 1);
-
-        const index = ix + iy * gridSize + iz * gridSize * gridSize;
-
-        return index;
-    };
-
-    let numOccupiedCells = 0;
     for (const pointAttribute of pointAttributes.attributes) {
         if (['POSITION_CARTESIAN', 'position'].includes(pointAttribute.name)) {
             const buff = new ArrayBuffer(numPoints * 4 * 3);
@@ -141,14 +123,6 @@ export default function load(buffer, options) {
                     y - origin[1],
                     z - origin[2],
                 ], quaternion);
-
-                // Ask what is it doign exactly ?
-                // const index = toIndex(x, y, z);
-                const index = toIndex(position.x, position.y, position.z);
-                const count = grid[index]++;
-                if (count === 0) {
-                    numOccupiedCells++;
-                }
 
                 positions[3 * j + 0] = position[0];
                 positions[3 * j + 1] = position[1];
@@ -221,8 +195,6 @@ export default function load(buffer, options) {
         attributeOffset += pointAttribute.byteSize;
     }
 
-    const occupancy = parseInt(numPoints / numOccupiedCells, 10);
-
     { // add indices
         const buff = new ArrayBuffer(numPoints * 4);
         const indices = new Uint32Array(buff);
@@ -270,9 +242,13 @@ export default function load(buffer, options) {
         }
     }
 
+    const userData = {
+        position: origin,
+        quaternion,
+    };
+
     return {
-        buffer,
         attributeBuffers,
-        density: occupancy,
+        userData,
     };
 }
