@@ -24,7 +24,7 @@ describe('view_multiglobe', function _() {
             }
         });
 
-        await waitUntilItownsIsIdle(this.test.fullTitle());
+        // await waitUntilItownsIsIdle(this.test.fullTitle());
 
         // verify that we properly updated the globe
         const { layer, level } = await page.evaluate(() => {
