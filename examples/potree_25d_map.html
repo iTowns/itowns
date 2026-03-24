@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Point Cloud Viewer</title>
+        <title>iTowns - Potree simple loader</title>
 
         <script type="importmap">
         {
@@ -57,6 +57,7 @@
                 import * as itowns from 'itowns';
                 import * as debug from 'debug';
                 import * as itowns_widgets from 'itowns_widgets';
+                import { zoomToLayer } from './jsm/PointCloudHelper.js';
 
                 var potreeLayer;
                 var oldPostUpdate;
@@ -80,6 +81,8 @@
                 */
 
                 itowns.CRS.defs("EPSG:25831","+proj=utm +zone=31 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs");
+
+                const name = 'Sagrada Familia';
                 const url = 'https://betaserver.icgc.cat/potree12/resources/pointclouds/templesagradafamilia/cloud.js';
                 const crs = 'EPSG:25831';
 
@@ -99,7 +102,7 @@
                     crs,
                 });
 
-                potreeLayer = new itowns.PotreeLayer('eglise_saint_blaise_arles', {
+                potreeLayer = new itowns.PotreeLayer(name, {
                     source: potreeSource,
                 });
 
@@ -117,31 +120,9 @@
                 }
                 view.domElement.addEventListener('dblclick', dblClickHandler);
 
-                function placeCamera(position, lookAt) {
-                    view.camera3D.position.copy(position);
-                    view.camera3D.lookAt(lookAt);
-                    view.camera3D.updateProjectionMatrix();
-
-                    view.notifyChange(view.camera3D);
-                }
-
                 // add potreeLayer to scene
                 function onLayerReady() {
-                    var lookAt = potreeLayer.root.origin.toVector3();
-
-                    var size = new THREE.Vector3();
-                    potreeLayer.root.voxelOBB.box3D.getSize(size);
-
-                    lookAt.z = potreeLayer.root.voxelOBB.box3D.min.z;
-
-                    view.camera3D.far = 5.0 * size.length();
-
-                    var corner = new THREE.Vector3(...potreeLayer.source.boundsConforming.slice(0, 3));
-                    var position = corner.clone().add(
-                        size.multiply({ x: 0, y: 0, z: (size.x / size.z) })
-                    );
-
-                    placeCamera(position, lookAt);
+                    zoomToLayer(view, potreeLayer);
 
                     debug.PointCloudDebug.initTools(view, potreeLayer, debugGui);
 
