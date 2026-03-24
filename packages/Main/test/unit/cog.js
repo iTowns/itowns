@@ -144,8 +144,8 @@ describe('CogParser', function () {
                 extent: targetExtent,
             },
         );
-        assert.equal(texture.source.data.width, 1);
-        assert.equal(texture.source.data.height, 1);
+        assert.equal(texture.source.data.width, 256);
+        assert.equal(texture.source.data.height, 256);
         assert.equal(texture.format, RedFormat);
     });
 });

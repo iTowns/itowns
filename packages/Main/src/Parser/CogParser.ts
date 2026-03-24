@@ -111,9 +111,9 @@ async function parse(data: any, options: any) {
             + ` properties to at least ${extent.zoom + 1}.`,
         );
         texture = <TextureWithExtent> new DataTexture(
-            new Uint8Array(1),
-            1,
-            1,
+            new Uint8Array(tileRasterDimensions.x * tileRasterDimensions.y),
+            tileRasterDimensions.x,
+            tileRasterDimensions.y,
             RedFormat,
         );
     } else {
