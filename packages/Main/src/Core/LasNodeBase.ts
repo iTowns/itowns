@@ -104,9 +104,6 @@ abstract class LasNodeBase extends PointCloudNode {
 
         // get a clamped bbox from the voxel bbox
         childNode.clampOBB.copy(childNode.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
-
-        (this.clampOBB.parent as Group).add(childNode.clampOBB);
-        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 

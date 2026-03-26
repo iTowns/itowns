@@ -37,7 +37,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     sse: number;
     notVisibleSince: number | undefined;
     promise: Promise<unknown> | null;
-    obj: THREE.Points | undefined;
+    obj: THREE.Points & { matrixWorldInverse?: THREE.Matrix4 } | undefined;
 
     constructor(depth: number, numPoints: number) {
         super();
