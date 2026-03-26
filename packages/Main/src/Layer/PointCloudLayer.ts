@@ -378,8 +378,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
+            this._candidateNodes.push(elt);
             if (elt.obj) {
-                this._candidateNodes.push(elt);
+                // this._candidateNodes.push(elt);
             } else if (!elt.promise) {
                 const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of greatest node on screen
@@ -459,6 +460,13 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         const distanceToCamera = bbox.distanceToPoint(point);
 
+        elt.sse = computeScreenSpaceError(
+            context,
+            layer.pointSize,
+            elt.pointSpacing,
+            distanceToCamera,
+        ) / this.sseThreshold;
+
         this.loadData(elt, context, layer, distanceToCamera);
 
         if (elt.children && elt.children.length) {
@@ -497,26 +505,35 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             this._visibleNodes.add(node);
             node.visible = true;
             if (node.obj) { node.obj.visible = true; }
+            if (!visibleLastUpdate.has(node)) {
+                this.setNodeVisible(node, true);
+            }
         }
 
+        const nonVisibleNodes = new Set<PointCloudNode>();
         // Hide remaining visible nodes that didn't fit in the budget
         while (this._candidateNodes.length > 0) {
             const node = this._candidateNodes.pop() as PointCloudNode;
             node.visible = false;
             if (node.obj) { node.obj.visible = false; }
+            nonVisibleNodes.add(node);
         }
 
         // Set symmetric difference between visible nodes from last
         // update and current update. Unfortunatelly the standard operation
         // is only available on browsers baseline since june 2024.
-        for (const n of this._visibleNodes) {
-            if (!visibleLastUpdate.has(n)) {
-                this.setNodeVisible(n, true);
-            }
-        }
         for (const n of visibleLastUpdate) {
             if (!this._visibleNodes.has(n)) {
                 this.setNodeVisible(n, false);
+            }
+        }
+
+        for (const n of this._visibleNodes) {
+            if (n.parent && !this._visibleNodes.has(n.parent)) {
+                console.error('Node', n.id, 'has no parent in the set of visible nodes', n.sse, n.parent.sse);
+                if (!nonVisibleNodes.has(n.parent)) {
+                    console.error('Node', n.parent.id, 'is not in the set of non visible nodes', n.parent.sse);
+                }
             }
         }
 

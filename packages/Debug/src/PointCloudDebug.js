@@ -150,7 +150,7 @@ class PointCloudDebug {
             helpers = {
                 voxelOBB: createVoxelOBBHelper(tile),
                 clampOBB: createClampOBBHelper(tile),
-                pointsOBB: createPointsOBBHelper(tile),
+                pointsOBB: createBoxHelper(tile),
             };
             tile[NODE_BOXES_SYMBOL] = helpers;
         }
