@@ -1,6 +1,6 @@
 import {
     DataTexture,
-    RedFormat,
+    RGBAFormat,
     Vector2,
 } from 'three';
 
@@ -111,10 +111,10 @@ async function parse(data: any, options: any) {
             + ` properties to at least ${extent.zoom + 1}.`,
         );
         texture = <TextureWithExtent> new DataTexture(
-            new Uint8Array(tileRasterDimensions.x * tileRasterDimensions.y),
+            new Uint8Array(1),
             tileRasterDimensions.x,
             tileRasterDimensions.y,
-            RedFormat,
+            RGBAFormat,
         );
     } else {
         texture = <TextureWithExtent> await overview.extractTexture({
