@@ -1,11 +1,10 @@
 import assert from 'assert';
-import { Vector3, Object3D } from 'three';
+import { Vector3 } from 'three';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
-import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
@@ -137,104 +136,6 @@ describe('Entwine Point Tile', function () {
 
         it('post updates', function () {
             layer.postUpdate(context, layer);
-        });
-    });
-
-    describe('Entwine Point Tile Node', function () {
-        let root;
-        const object3d = new Object3D();
-        before(function () {
-            root = new EntwinePointTileNode(0, 0, 0, 0, source, -1, 'EPSG:3857');
-            object3d.add(root.clampOBB);
-        });
-
-        after(async function () {
-            await LASParser.terminate();
-        });
-
-        describe.skip('load()', () => {
-            // load is not on entwineTileNode anymore
-            it('load the root load', async () => {
-                const spyLoadOctree = sinon.spy(root, 'loadOctree');
-                const mockParser = sinon.mock(source);
-                mockParser.expects('parser')
-                    .once();
-                await root.load();
-                mockParser.verify();
-                mockParser.restore();
-                assert.ok(spyLoadOctree.calledOnce);
-            });
-
-            it('load a sub-node not yet loaded', async () => {
-                const node = root.children.filter(node => node.numPoints === -1)[0];
-
-                const spyLoadOctree = sinon.spy(node, 'loadOctree');
-                const mockParser = sinon.mock(source);
-                mockParser.expects('parser')
-                    .once();
-                await node.load();
-                mockParser.verify();
-                mockParser.restore();
-                assert.ok(spyLoadOctree.calledOnce);
-            });
-        });
-
-        describe.skip('finds the common ancestor of two nodes', () => {
-            // done in pointcloudnode.js
-            let root;
-            const crs = 'EPSG:4978';
-            before('create octree', function () {
-                const source = {
-                    url: 'http://server.geo',
-                    extension: 'laz',
-                    crs,
-                };
-                root = new EntwinePointTileNode(0, 0, 0, 0, source, 4000, crs);
-                root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
-                object3d.add(root.clampOBB);
-
-                root.add(new EntwinePointTileNode(1, 0, 0, 0, source, 3000, crs));
-                root.add(new EntwinePointTileNode(1, 0, 0, 1, source, 3000, crs));
-                root.add(new EntwinePointTileNode(1, 0, 1, 1, source, 3000, crs));
-
-                root.children[0].add(new EntwinePointTileNode(2, 0, 0, 0, source, 2000, crs));
-                root.children[0].add(new EntwinePointTileNode(2, 0, 1, 0, source, 2000, crs));
-                root.children[1].add(new EntwinePointTileNode(2, 0, 1, 3, source, 2000, crs));
-                root.children[2].add(new EntwinePointTileNode(2, 0, 2, 2, source, 2000, crs));
-                root.children[2].add(new EntwinePointTileNode(2, 0, 3, 3, source, 2000, crs));
-
-                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 0, 0, source, 1000, crs));
-                root.children[0].children[0].add(new EntwinePointTileNode(3, 0, 1, 0, source, 1000, crs));
-                root.children[1].children[0].add(new EntwinePointTileNode(3, 0, 2, 7, source, 1000, crs));
-                root.children[2].children[0].add(new EntwinePointTileNode(3, 0, 5, 4, source, 1000, crs));
-                root.children[2].children[1].add(new EntwinePointTileNode(3, 1, 6, 7, source, 10, crs));
-            });
-
-            let ancestor;
-            it('cousins => grand parent', () => {
-                ancestor = root.children[2].children[1].children[0].findCommonAncestor(root.children[2].children[0].children[0]);
-                assert.deepStrictEqual(ancestor, root.children[2]);
-            });
-
-            it('brothers => parent', () => {
-                ancestor = root.children[0].children[0].children[0].findCommonAncestor(root.children[0].children[0].children[1]);
-                assert.deepStrictEqual(ancestor, root.children[0].children[0]);
-            });
-
-            it('grand child and grand grand child => root', () => {
-                ancestor = root.children[0].children[1].findCommonAncestor(root.children[2].children[1].children[0]);
-                assert.deepStrictEqual(ancestor, root);
-            });
-
-            it('parent and child => parent', () => {
-                ancestor = root.children[1].findCommonAncestor(root.children[1].children[0].children[0]);
-                assert.deepStrictEqual(ancestor, root.children[1]);
-            });
-
-            it('child and parent => parent', () => {
-                ancestor = root.children[2].children[0].findCommonAncestor(root.children[2]);
-                assert.deepStrictEqual(ancestor, root.children[2]);
-            });
         });
     });
 });
