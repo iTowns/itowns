@@ -99,9 +99,6 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
             root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
             root.clampOBB.copy(root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
-            this.obbes.add(root.clampOBB);
-            root.clampOBB.updateMatrixWorld(true);
-
             root.byteSize = BigInt(hierarchy.firstChunkSize);
             root.byteOffset = 0n;
 

@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { Vector3, Object3D } from 'three';
+import { Vector3, Object3D, Box3 } from 'three';
 import View from 'Core/View';
 import Potree2Layer from 'Layer/Potree2Layer';
 import Potree2Source from 'Source/Potree2Source';
@@ -59,10 +59,8 @@ describe('Potree2', function () {
         View.prototype.addLayer.call(viewer, potree2Layer)
             .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
-                // loadOctree() is now called during the load
-                // assert.equal(potree2Layer.root.children.length, 6);
                 assert.ok(potree2Layer.root instanceof Potree2Node);
-                assert.ok(potree2Layer.obbes.children.indexOf(potree2Layer.root.clampOBB) >= 0);
+                assert.deepStrictEqual(potree2Layer.root.voxelOBB.natBox, new Box3().setFromArray(potree2Source.bounds));
                 done();
             }).catch(done);
     });
