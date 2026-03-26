@@ -6,7 +6,7 @@ const size = new Vector3();
 const position = new Vector3();
 const translation = new Vector3();
 
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
+export function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -51,7 +51,7 @@ abstract class LasNodeBase extends PointCloudNode {
     }
 
     override get id(): string {
-        return `${this.depth}${this.x}${this.y}${this.z}`;
+        return this.voxelKey;
     }
 
     abstract findAndCreateChild(
