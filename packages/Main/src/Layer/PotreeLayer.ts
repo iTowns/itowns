@@ -61,9 +61,6 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
             this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
-            this.obbes.add(this.root.clampOBB);
-            this.root.clampOBB.updateMatrixWorld(true);
-
             return this.root;
         });
 
