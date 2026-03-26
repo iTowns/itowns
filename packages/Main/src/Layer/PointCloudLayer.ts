@@ -428,6 +428,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         } else {
             object3d = elt.clampOBB;
             bbox = object3d.box3D;
+            if (!object3d.parent) {
+                this.obbes.add(object3d);
+                object3d.updateMatrixWorld(true);
+            }
         }
 
         elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);

@@ -50,9 +50,6 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
             this.root.voxelOBB.setFromArray(bounds).projOBB(source.crs, this.crs);
             this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
 
-            this.obbes.add(this.root.clampOBB);
-            this.root.clampOBB.updateMatrixWorld(true);
-
             return this.root;
         });
 
