@@ -18,7 +18,7 @@ export interface PointCloudSource {
 }
 
 export interface PointCloudLayerParameters {
-    /** Description and options of the source See @Layer. */
+    /** Description and options of the source {@link Layer}. */
     source: PointCloudSource;
     object3d?: THREE.Group;
     group?: THREE.Group;
