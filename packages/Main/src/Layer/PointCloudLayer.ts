@@ -324,9 +324,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     setNodeVisible(node: PointCloudNode, visible: boolean) {
         this.dispatchEvent({
-                type: 'node-visibility-change',
-                tile: node,
-                visible,
+            type: 'node-visibility-change',
+            tile: node,
+            visible,
         });
         node.visible = visible;
     }
@@ -379,9 +379,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
             this._candidateNodes.push(elt);
-            if (elt.obj) {
-                // this._candidateNodes.push(elt);
-            } else if (!elt.promise) {
+            if (!elt.promise) {
                 const distance = Math.max(0.001, distanceToCamera);
                 // Increase priority of greatest node on screen
                 const priority = computeScreenSpaceError(
@@ -455,6 +453,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             return [];
         }
 
+        // TODO: See if we can limit the calcul of the matrixWorlInverse.
         point.copy(context.camera.camera3D.position)
             .applyMatrix4(object3d.matrixWorld.clone().invert());
 
@@ -525,15 +524,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         for (const n of visibleLastUpdate) {
             if (!this._visibleNodes.has(n)) {
                 this.setNodeVisible(n, false);
-            }
-        }
-
-        for (const n of this._visibleNodes) {
-            if (n.parent && !this._visibleNodes.has(n.parent)) {
-                console.error('Node', n.id, 'has no parent in the set of visible nodes', n.sse, n.parent.sse);
-                if (!nonVisibleNodes.has(n.parent)) {
-                    console.error('Node', n.parent.id, 'is not in the set of non visible nodes', n.parent.sse);
-                }
             }
         }
 

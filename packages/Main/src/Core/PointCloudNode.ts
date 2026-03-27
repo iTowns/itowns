@@ -33,8 +33,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
 
     /** Property used internally by PointCloud layer. */
     visible: boolean;
-    /** Property used internally by PointCloud layer. */
-    _wasVisible: boolean;
 
     /** The sse of the node set at an nitial value of -1. */
     sse: number;
@@ -57,7 +55,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         this.sse = -1;
 
         this.visible = false;
-        this._wasVisible = false;
         this.promise = null;
     }
 
