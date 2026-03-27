@@ -4,6 +4,7 @@
  * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
  */
 
+import { EventDispatcher } from 'three';
 import PriorityQueue from 'js-priority-queue';
 import DataSourceProvider from 'Provider/DataSourceProvider';
 import $3dTilesProvider from 'Provider/3dTilesProvider';
@@ -104,8 +105,9 @@ function _instanciateQueue() {
  *
  * @constructor
  */
-class Scheduler {
+class Scheduler extends EventDispatcher {
     constructor() {
+        super();
         // Constructor
         this.defaultQueue = _instanciateQueue();
         this.hostQueues = new Map();
@@ -131,7 +133,7 @@ class Scheduler {
             throw new Error(`No known provider for layer ${command.layer.id}`);
         }
 
-        queue.execute(command, provider, executingCounterUpToDate).then(() => {
+        return queue.execute(command, provider, executingCounterUpToDate).then(() => {
             // notify view that one command ended.
             command.view.notifyChange(command.requester, command.redraw);
 
@@ -139,7 +141,7 @@ class Scheduler {
             if (queue.counters.executing < this.maxCommandsPerHost) {
                 const cmd = this.deQueue(queue);
                 if (cmd) {
-                    this.runCommand(cmd, queue);
+                    return this.runCommand(cmd, queue);
                 }
             }
         });
@@ -179,11 +181,21 @@ class Scheduler {
                 if (q.counters.executing < this.maxCommandsPerHost) {
                     const cmd = this.deQueue(q);
                     if (cmd) {
-                        this.runCommand(cmd, q);
+                        this.runCommand(cmd, q).then(() => {
+                            if (this.commandsWaitingExecutionCount() === 0) {
+                                this.dispatchEvent({ type: 'command-queue-empty' });
+                            }
+                        });
                     }
                 }
             });
         }
+
+        Promise.resolve().then(() => {
+            if (this.commandsWaitingExecutionCount() === 0) {
+                this.dispatchEvent({ type: 'command-queue-empty' });
+            }
+        });
 
         return command.promise;
     }
