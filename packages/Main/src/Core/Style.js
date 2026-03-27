@@ -1,7 +1,7 @@
 import { Coordinates } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
-import { Color } from 'three';
+import { Color, EventDispatcher } from 'three';
 import { deltaE } from 'Renderer/Color';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
@@ -83,9 +83,9 @@ function replaceWhitePxl(imgd, color, id) {
         const colorToChange = new Color('white');
         for (let i = 0, n = pix.length; i < n; i += 4) {
             const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-            pix[i] = (pix[i] * d +  newColor.r * 255 * (1 - d));
-            pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
-            pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
+            pix[i] = (pix[i] * d + newColor.r * 255 * (1 - d));
+            pix[i + 1] = (pix[i + 1] * d + newColor.g * 255 * (1 - d));
+            pix[i + 2] = (pix[i + 2] * d + newColor.b * 255 * (1 - d));
         }
         cachedImg.set(`${id}_${color}`, imgd);
         return imgd;
@@ -127,7 +127,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
         {
             enumerable: true,
             get: () => {
-                // != to check for 'undefined' and 'null' value)
+                // != to check for 'undefined' and 'null' value
                 if (property != undefined) { return readExpression(property, style.context); }
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
@@ -138,6 +138,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
+                style.dispatchEvent({ type: 'style-property-changed', style, parameter });
             },
         });
 }
@@ -190,6 +191,10 @@ export class StyleContext {
     setLocalCoordinatesFromArray(vertices, offset) {
         this.#worldCoordsComputed = false;
         return this.#localCoordinates.setFromArray(vertices, offset);
+    }
+
+    get geometry() {
+        return this.#geometry;
     }
 
     get properties() {
@@ -437,13 +442,15 @@ function _addIcon(icon, domElement, opt) {
  * view.addLayer(layer);
  */
 
-class Style {
+class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
+        super();
+
         this.isStyle = true;
         this.context = new StyleContext();
 
@@ -481,6 +488,11 @@ class Style {
                 },
                 set: (v) => {
                     this._extrusionHeight = v;
+                    this.dispatchEvent({
+                        type: 'style-property-changed',
+                        style: this,
+                        parameter: 'extrusion_height',
+                    });
                 },
             },
         );
@@ -651,7 +663,7 @@ class Style {
             icon = document.createElement('img');
         }
 
-        const iconPromise  = new Promise((resolve, reject) => {
+        const iconPromise = new Promise((resolve, reject) => {
             const opt = {
                 size: this.icon.size,
                 color: this.icon.color,
