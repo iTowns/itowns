@@ -61,7 +61,7 @@ function createClampOBBHelper(node) {
     return helper;
 }
 
-function createBoxHelper(node) {
+function createPointsOBBHelper(node) {
     // point data OBBes
     const pointsOBBes = new THREE.Group();
     pointsOBBes.name = node.id;
@@ -150,7 +150,7 @@ class PointCloudDebug {
             helpers = {
                 voxelOBB: createVoxelOBBHelper(tile),
                 clampOBB: createClampOBBHelper(tile),
-                pointsOBB: createBoxHelper(tile),
+                pointsOBB: createPointsOBBHelper(tile),
             };
             tile[NODE_BOXES_SYMBOL] = helpers;
         }
