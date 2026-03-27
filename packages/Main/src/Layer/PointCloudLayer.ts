@@ -6,9 +6,6 @@ import Picking from 'Core/Picking';
 import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
 
 export interface PointCloudSource {
     /** The minimal value for elevation (read from the metadata). */
@@ -428,6 +425,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         } else {
             object3d = elt.clampOBB;
             bbox = object3d.box3D;
+            if (!object3d.parent) {
+                this.obbes.add(object3d);
+                object3d.updateMatrixWorld(true);
+            }
         }
 
         elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);

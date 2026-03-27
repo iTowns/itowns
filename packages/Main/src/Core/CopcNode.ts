@@ -1,10 +1,13 @@
-import { Hierarchy } from 'copc';
-import LasNodeBase from 'Core/LasNodeBase';
 import type CopcSource from 'Source/CopcSource';
+import { Hierarchy } from 'copc';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
-    return `${depth}-${x}-${y}-${z}`;
-}
+
+const defaultHierarchy: Hierarchy.Subtree = {
+    nodes: {},
+    pages: {},
+};
 
 class CopcNode extends LasNodeBase {
     /**  Used to checkout whether this
@@ -14,13 +17,21 @@ class CopcNode extends LasNodeBase {
 
     source: CopcSource;
 
-    crs: string;
-    url: string;
+    override url: string;
+
+    /** Octree's subtree */
+    hierarchy: Hierarchy.Subtree;
+
+    /** The string id of the node, constituted of the four
+    * components: `depth-x-y-z`. */
+    voxelKey: string;
+
     /** Offset from the beginning of the file of
      * the node entry */
-    entryOffset: number;
+    private entryOffset: number;
     /** Size of the node entry */
-    entryLength: number;
+    private entryLength: number;
+
     /**
      * Constructs a new instance of a COPC Octree node
      *
@@ -28,33 +39,33 @@ class CopcNode extends LasNodeBase {
      * @param x - X position within the octree.
      * @param y - Y position within the octree.
      * @param z - Z position with the octree.
-     * @param entryOffset - Offset from the beginning of the file to
-     * the node entry.
-     * @param entryLength - Size of the node entry.
      * @param source - Data source (COPC) of the node.
-     * @param numPoints - Number of points of the node.
      * Set to -1 when we don't have the information yet.
      * @param crs - The crs of the node.
      */
     constructor(
         depth: number,
         x: number, y: number, z: number,
-        entryOffset: number,
-        entryLength: number,
         source: CopcSource,
-        numPoints: number,
         crs: string,
+        hierarchy: Hierarchy.Subtree = defaultHierarchy,
     ) {
-        super(depth, x, y, z, source, numPoints, crs);
+        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const hNode = hierarchy.nodes[voxelKey];
+        const numPoints = hNode?.pointCount ?? -1;
+        super(depth, x, y, z, numPoints, crs);
         this.isCopcNode = true;
         this.source = source;
 
+        this.voxelKey = voxelKey;
+
         this.url = this.source.url;
+        this.hierarchy = hierarchy;
 
-        this.crs = crs;
-
-        this.entryOffset = entryOffset;
-        this.entryLength = entryLength;
+        // copc
+        const hPage = this.hierarchy?.pages[this.voxelKey] || this.source.info.rootHierarchyPage;
+        this.entryOffset = hNode?.pointDataOffset ?? hPage.pageOffset;
+        this.entryLength = hNode?.pointDataLength ?? hPage.pageLength;
     }
 
     override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
@@ -67,12 +78,14 @@ class CopcNode extends LasNodeBase {
         });
     }
 
-    override async loadOctree(): Promise<void> {
-        const buffer = await this.fetcher(this.source.url, this.networkOptions);
-        const hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
+    override async loadHierarchy(): Promise<Hierarchy.Subtree> {
+        if (this.hierarchyIsLoaded) { return this.hierarchy; }
 
-        // Update current node entry from loaded subtree
-        const node = hierarchy.nodes[this.voxelKey];
+        const buffer = await this.fetcher(this.source.url, this.networkOptions);
+        this.hierarchy = await Hierarchy.parse(new Uint8Array(buffer));
+
+        // Update current node entry from newly loaded subtree
+        const node = this.hierarchy.nodes[this.voxelKey];
         if (!node) {
             return Promise.reject('[CopcNode]: Ill-formed data, entry not found in hierarchy.');
         }
@@ -80,25 +93,7 @@ class CopcNode extends LasNodeBase {
         this.entryOffset = node.pointDataOffset;
         this.entryLength = node.pointDataLength;
 
-        // Load subtree entries
-        const stack = [];
-        stack.push(this);
-        while (stack.length) {
-            const node = stack.shift() as CopcNode;
-            const depth = node.depth + 1;
-            const x = node.x * 2;
-            const y = node.y * 2;
-            const z = node.z * 2;
-
-            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
-        }
+        return this.hierarchy;
     }
 
     /**
@@ -108,45 +103,24 @@ class CopcNode extends LasNodeBase {
      * @param x - Child node x position in the octree
      * @param y - Child node y position in the octree
      * @param z - Child node z position in the octree
-     * @param hierarchy - Octree's subtree
-     * @param stack - Stack of node candidates for traversal
      */
     override findAndCreateChild(
-        depth: number,
-        x: number, y: number, z: number,
-        hierarchy: Hierarchy.Subtree,
-        stack: CopcNode[],
+        depth: number, x: number, y: number, z: number,
     ): void {
-        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const childVoxelKey = buildVoxelKey(depth, x, y, z);
 
-        let numPoints: number;
-        let offset: number;
-        let byteSize: number;
-
-        const node = hierarchy.nodes[voxelKey];
-        if (node) {
-            numPoints = node.pointCount;
-            offset = node.pointDataOffset;
-            byteSize = node.pointDataLength;
-        } else {
-            const page = hierarchy.pages[voxelKey];
-            if (!page) { return; }
-            numPoints = -1;
-            offset = page.pageOffset;
-            byteSize = page.pageLength;
+        if (!(this.hierarchy.nodes[childVoxelKey] || this.hierarchy.pages[childVoxelKey])) {
+            return;
         }
 
         const child = new CopcNode(
-            depth,
-            x, y, z,
-            offset,
-            byteSize,
+            depth, x, y, z,
             this.source,
-            numPoints,
             this.crs,
+            this.hierarchy,
         );
-        this.add(child as this, 0);
-        stack.push(child);
+
+        this.add(child as this);
     }
 }
 

@@ -45,11 +45,6 @@ describe('COPC', function () {
                     done();
                 }).catch(done);
         });
-
-        it('loadOctree()', async function _it() {
-            await layer.root.loadOctree();
-            assert.ok(layer.root.children.length > 0);
-        });
     });
 
     describe('COPC Node', function () {
@@ -61,26 +56,27 @@ describe('COPC', function () {
                 url: 'http://server.geo',
                 extension: 'laz',
                 crs,
+                info: { rootHierarchyPage: { pageOffset: 10, pageLength: 3680 } },
             };
-            root = new CopcNode(0, 0, 0, 0, 0, 1000, source, 4000, crs);
+            root = new CopcNode(0, 0, 0, 0, source, crs);
             object3d.add(root.clampOBB);
             root.voxelOBB.box3D.setFromArray([1000, 1000, 1000, 0, 0, 0]);
 
-            root.add(new CopcNode(1, 0, 0, 0, 0, 1000, source, 3000, crs));
-            root.add(new CopcNode(1, 0, 0, 1, 0, 1000, source, 3000, crs));
-            root.add(new CopcNode(1, 0, 1, 1, 0, 1000, source, 3000, crs));
+            root.add(new CopcNode(1, 0, 0, 0, source, crs));
+            root.add(new CopcNode(1, 0, 0, 1, source, crs));
+            root.add(new CopcNode(1, 0, 1, 1, source, crs));
 
-            root.children[0].add(new CopcNode(2, 0, 0, 0, 0, 1000, source, 2000, crs));
-            root.children[0].add(new CopcNode(2, 0, 1, 0, 0, 1000, source, 2000, crs));
-            root.children[1].add(new CopcNode(2, 0, 1, 3, 0, 1000, source, 2000, crs));
-            root.children[2].add(new CopcNode(2, 0, 2, 2, 0, 1000, source, 2000, crs));
-            root.children[2].add(new CopcNode(2, 0, 3, 3, 0, 1000, source, 2000, crs));
+            root.children[0].add(new CopcNode(2, 0, 0, 0, source, crs));
+            root.children[0].add(new CopcNode(2, 0, 1, 0, source, crs));
+            root.children[1].add(new CopcNode(2, 0, 1, 3, source, crs));
+            root.children[2].add(new CopcNode(2, 0, 2, 2, source, crs));
+            root.children[2].add(new CopcNode(2, 0, 3, 3, source, crs));
 
-            root.children[0].children[0].add(new CopcNode(3, 0, 0, 0, 0, 1000, source, 1000, crs));
-            root.children[0].children[0].add(new CopcNode(3, 0, 1, 0, 0, 1000, source, 1000, crs));
-            root.children[1].children[0].add(new CopcNode(3, 0, 2, 7, 0, 1000, source, 1000, crs));
-            root.children[2].children[0].add(new CopcNode(3, 0, 5, 4, 0, 1000, source, 1000, crs));
-            root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, 0, 1000, source, 10, crs));
+            root.children[0].children[0].add(new CopcNode(3, 0, 0, 0, source, crs));
+            root.children[0].children[0].add(new CopcNode(3, 0, 1, 0, source, crs));
+            root.children[1].children[0].add(new CopcNode(3, 0, 2, 7, source, crs));
+            root.children[2].children[0].add(new CopcNode(3, 0, 5, 4, source, crs));
+            root.children[2].children[1].add(new CopcNode(3, 1, 6, 7, source, crs));
         });
 
         describe.skip('finds the common ancestor of two nodes', () => {
