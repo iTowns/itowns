@@ -5,7 +5,6 @@ import { CRS, Extent } from '@itowns/geographic';
 
 import {
     UnsignedByteType,
-    RedFormat,
     RGBAFormat,
 } from 'three';
 
@@ -146,7 +145,7 @@ describe('CogParser', function () {
         );
         assert.equal(texture.source.data.width, 256);
         assert.equal(texture.source.data.height, 256);
-        assert.equal(texture.format, RedFormat);
+        assert.equal(texture.format, RGBAFormat);
     });
 });
 
