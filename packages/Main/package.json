@@ -65,7 +65,8 @@
     "lru-cache": "^11.2.6",
     "pbf": "^4.0.1",
     "shpjs": "^6.2.0",
-    "threads": "^1.7.0"
+    "threads": "^1.7.0",
+    "tinyqueue": "^3.0.0"
   },
   "peerDependencies": {
     "postprocessing": "6.38.2",
