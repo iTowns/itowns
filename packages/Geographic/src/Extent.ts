@@ -299,6 +299,27 @@ class Extent {
         return Extent.intersectsExtent(this, extent);
     }
 
+    /**
+     * Tests whether two extents strictly intersect (non-zero overlap).
+     *
+     * This method checks if the geographic extents `extentA` and `extentB`
+     * overlap. If their coordinate reference systems (CRS) differ, `extentB`
+     * is reprojected into the CRS of `extentA` before performing the test.
+     *
+     * The intersection is considered "strict": extents that only touch at an
+     * edge or a corner are treated as intersecting according
+     * to this implementation.
+     *
+     * @param extentA - The reference extent.
+     * @param extentB - The extent to test against.
+     *
+     * @returns `true` if the extents intersect, `false` otherwise.
+     */
+
+    strictIntersectsExtent(extent: Extent) {
+        return Extent.strictIntersectsExtent(this, extent);
+    }
+
     static intersectsExtent(extentA: Extent, extentB: Extent) {
         // TODO don't work when is on limit
         const other = extentB.crs == extentA.crs ? extentB : extentB.as(extentA.crs, _extent);
@@ -309,17 +330,43 @@ class Extent {
     }
 
     /**
+     * Tests whether two extents strictly intersect (non-zero overlap).
+     *
+     * This method checks if the geographic extents `extentA` and `extentB`
+     * overlap. If their coordinate reference systems (CRS) differ, `extentB`
+     * is reprojected into the CRS of `extentA` before performing the test.
+     *
+     * The intersection is considered "strict": extents that only touch at an
+     * edge or a corner are treated as intersecting according
+     * to this implementation.
+     *
+     * @param extentA - The reference extent.
+     * @param extentB - The extent to test against.
+     *
+     * @returns `true` if the extents intersect, `false` otherwise.
+     */
+
+    static strictIntersectsExtent(extentA: Extent, extentB: Extent) {
+        const other = extentB.crs == extentA.crs ? extentB : extentB.as(extentA.crs, _extent);
+        return !(extentA.west > other.east ||
+            extentA.east < other.west ||
+            extentA.south > other.north ||
+            extentA.north < other.south);
+    }
+
+    /**
      * Returns the intersection of this extent with another one.
      * @param extent - extent to intersect
      */
-    intersect(extent: Extent) {
+    intersect(extent: Extent, target = new Extent(this.crs)) {
         if (!this.intersectsExtent(extent)) {
-            return new Extent(this.crs);
+            return target;
         }
         if (extent.crs != this.crs) {
             extent = extent.as(this.crs, _extent);
         }
-        return new Extent(this.crs,
+
+        return target.set(
             Math.max(this.west, extent.west),
             Math.min(this.east, extent.east),
             Math.max(this.south, extent.south),
@@ -432,6 +479,8 @@ class Extent {
                 this.north = north;
             }
         }
+
+        return this;
     }
 
     /**
