@@ -7,6 +7,11 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import {
+    getSunDirectionECEF,
+} from '@takram/three-atmosphere';
+import SunLightLayer from 'Layer/SunLightLayer';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -166,9 +171,28 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
+        this.date = new Date(); // now
+
+        // Sunlight and shadow layer
+        this.sunLightLayer = new SunLightLayer(this);
+        View.prototype.addLayer.call(this, this.sunLightLayer);
+
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
         }
+
+        this.addFrameRequester(
+            MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
+            () => {
+                this.sunDirection = new THREE.Vector3();
+                getSunDirectionECEF(this.date, this.sunDirection);
+                // This creates a white disk at the Sun's position
+                this.sunDirection.multiplyScalar(1.00002);
+
+                // actually only useful if Sun or Moon direction has changed
+                if (this.skyManager) { this.skyManager.update(this.date, this.sunDirection); }
+            },
+        );
     }
 
     /**
