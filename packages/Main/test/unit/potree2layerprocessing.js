@@ -6,7 +6,7 @@ import Potree2Node from 'Core/Potree2Node';
 describe('preUpdate Potree2Layer', function () {
     const crs = 'EPSG:4326';
     const context = { camera: { height: 1, camera3D: { fov: 1 } } };
-    const source = { baseurl: 'server.geo', crs };
+    const source = { baseurl: 'server.geo', crs, metadata: { hierarchy: { firstChunkSize: 1000n } } };
     const layer = {
         id: 'a',
         source,
