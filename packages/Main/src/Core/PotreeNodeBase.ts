@@ -1,4 +1,4 @@
-import { Vector3, type Box3, type Group } from 'three';
+import { Vector3, type Box3 } from 'three';
 import PointCloudNode from './PointCloudNode';
 
 // Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
@@ -102,9 +102,6 @@ export abstract class PotreeNodeBase extends PointCloudNode {
 
         childNode.clampOBB.copy(childNode.voxelOBB);
         childNode.clampOBB.clampZ(this.source.zmin, this.source.zmax);
-
-        (this.clampOBB.parent as Group).add(childNode.clampOBB);
-        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 

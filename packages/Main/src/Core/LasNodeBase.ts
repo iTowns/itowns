@@ -1,4 +1,4 @@
-import { Vector3, type Group } from 'three';
+import { Vector3, Box3 } from 'three';
 import type { Hierarchy } from 'copc';
 import PointCloudNode, { PointCloudSource } from 'Core/PointCloudNode';
 
@@ -6,7 +6,9 @@ const size = new Vector3();
 const position = new Vector3();
 const translation = new Vector3();
 
-function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
+const box3 = new Box3();
+
+export function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
 
@@ -51,7 +53,12 @@ abstract class LasNodeBase extends PointCloudNode {
     }
 
     override get id(): string {
-        return `${this.depth}${this.x}${this.y}${this.z}`;
+        const strX = this.x.toString();
+        const strY = this.y.toString();
+        const strZ = this.z.toString();
+        const pad = Math.max(strX.length, strY.length, strZ.length);
+        return this.depth.toString() +
+            strX.padStart(pad, '0') + strY.padStart(pad, '0') + strZ.padStart(pad, '0');
     }
 
     abstract findAndCreateChild(
@@ -70,7 +77,7 @@ abstract class LasNodeBase extends PointCloudNode {
     override createChildAABB(childNode: this, _indexChild: number): void {
         // initialize the child node obb
         const voxelBBox = this.voxelOBB.natBox;
-        const childVoxelBBox = voxelBBox.clone();
+        const childVoxelBBox = box3.copy(voxelBBox);
 
         // factor to apply, based on the depth difference (can be > 1)
         const f = 2 ** (childNode.depth - this.depth);
@@ -97,9 +104,6 @@ abstract class LasNodeBase extends PointCloudNode {
 
         // get a clamped bbox from the voxel bbox
         childNode.clampOBB.copy(childNode.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
-
-        (this.clampOBB.parent as Group).add(childNode.clampOBB);
-        childNode.clampOBB.updateMatrixWorld(true);
     }
 }
 

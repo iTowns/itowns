@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { Object3D } from 'three';
+import { Object3D, Box3 } from 'three';
 import CopcSource from 'Source/CopcSource';
 import CopcLayer from 'Layer/CopcLayer';
 import CopcNode from 'Core/CopcNode';
@@ -39,9 +39,7 @@ describe('COPC', function () {
                 .then(() => {
                     assert.equal(source.zmin, source.header.min[2]);
                     assert.ok(layer.root.isCopcNode);
-                    // loadOctree() is now called during the load
-                    // assert.ok(layer.root.children.length > 0);
-                    assert.ok(layer.obbes.children.indexOf(layer.root.clampOBB) >= 0);
+                    assert.deepStrictEqual(layer.root.voxelOBB.natBox, new Box3().setFromArray(source.info.cube));
                     done();
                 }).catch(done);
         });
