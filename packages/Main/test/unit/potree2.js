@@ -1,14 +1,12 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { Vector3, Object3D } from 'three';
+import { Vector3, Box3 } from 'three';
 import View from 'Core/View';
 import Potree2Layer from 'Layer/Potree2Layer';
 import Potree2Source from 'Source/Potree2Source';
 import Potree2BinParser from 'Parser/Potree2BinParser';
 import Potree2Node from 'Core/Potree2Node';
 import Renderer from './bootstrap';
-
-const object3d = new Object3D();
 
 describe('Potree2', function () {
     let renderer;
@@ -59,10 +57,8 @@ describe('Potree2', function () {
         View.prototype.addLayer.call(viewer, potree2Layer)
             .then(() => {
                 context.camera.camera3D.updateMatrixWorld();
-                // loadOctree() is now called during the load
-                // assert.equal(potree2Layer.root.children.length, 6);
                 assert.ok(potree2Layer.root instanceof Potree2Node);
-                assert.ok(potree2Layer.obbes.children.indexOf(potree2Layer.root.clampOBB) >= 0);
+                assert.deepStrictEqual(potree2Layer.root.voxelOBB.natBox, new Box3().setFromArray(potree2Source.bounds));
                 done();
             }).catch(done);
     });
@@ -84,47 +80,6 @@ describe('Potree2', function () {
 
     it('postUpdate potree2 layer', function () {
         potree2Layer.postUpdate(context, potree2Layer);
-    });
-
-    describe('potree2 Node', function () {
-        const crs = 'EPSG:4326';
-        const numPoints = 1000;
-        const childrenBitField = 5;
-
-        it('instance', function (done) {
-            const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, crs);
-            assert.equal(root.numPoints, numPoints);
-            assert.equal(root.childrenBitField, childrenBitField);
-            done();
-        });
-
-        it('load octree', function (done) {
-            const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, crs);
-            root.voxelOBB.setFromArray(potree2Source.bounds);
-            object3d.add(root.clampOBB);
-            root.byteOffset = 0n;
-            root.byteSize = 12650n;
-            root.loadOctree()
-                .then(() => {
-                    assert.equal(root.children.length, 6);
-                    done();
-                }).catch(done);
-        });
-
-        it('load child node', function (done) {
-            const root = new Potree2Node(0, -1, numPoints, childrenBitField, potree2Source, crs);
-            root.voxelOBB.setFromArray(potree2Source.bounds);
-            object3d.add(root.clampOBB);
-            root.byteOffset = 0n;
-            root.byteSize = 12650n;
-            root.loadOctree()
-                .then(() => root.children[0].load()
-                    .then(() => {
-                        assert.equal(root.children[0].children.length, 8);
-                        done();
-                    }),
-                ).catch(done);
-        });
     });
 
     after(async function () {

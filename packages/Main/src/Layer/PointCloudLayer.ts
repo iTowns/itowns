@@ -6,9 +6,7 @@ import Picking from 'Core/Picking';
 import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
-const bboxMesh = new THREE.Mesh();
-const box3 = new THREE.Box3();
-bboxMesh.geometry.boundingBox = box3;
+const matrix4 = new THREE.Matrix4();
 
 export interface PointCloudSource {
     /** The minimal value for elevation (read from the metadata). */
@@ -387,6 +385,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
+                    elt.obj.matrixWorldInverse = matrix4.copy(elt.obj.matrixWorld).invert();
                     context.view.notifyChange(this);
                     this.dispatchEvent({ type: 'load-model', scene: pts, tile: elt });
                 }).catch((err: { isCancelledCommandException: boolean }) => {
@@ -428,6 +427,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         } else {
             object3d = elt.clampOBB;
             bbox = object3d.box3D;
+            if (!object3d.parent) {
+                this.obbes.add(object3d);
+                object3d.updateMatrixWorld(true);
+                object3d.matrixWorldInverse = matrix4.copy(object3d.matrixWorld).invert();
+            }
         }
 
         elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
@@ -437,9 +441,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             return [];
         }
 
-        // TODO: See if we can limit the calcul of the matrixWorlInverse.
         point.copy(context.camera.camera3D.position)
-            .applyMatrix4(object3d.matrixWorld.clone().invert());
+            .applyMatrix4(object3d.matrixWorldInverse as THREE.Matrix4);
 
         const distanceToCamera = bbox.distanceToPoint(point);
 
