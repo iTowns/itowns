@@ -40,8 +40,7 @@ class FeatureMesh extends THREE.Group {
         this.#collection.position.copy(collection.position);
         this.#collection.scale.copy(collection.scale);
         this.#collection.updateMatrix();
-        this.#collection.matrixWorldInverse = this.#collection.matrixWorld.clone().invert();
-        this.#collection.origMatrixWorld = collection.matrixWorld.clone();
+        this.#collection.matrixWorldInverse = collection.matrixWorldInverse.clone();
 
         this.#collection.crs = collection.crs;
 
@@ -272,7 +271,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
             const base_altitude = style.point.base_altitude;
 
             coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
+                .applyMatrix4(context.collection.matrix);
             if (coord.crs === 'EPSG:4978') {
                 // altitude conversion from geocentered to elevation (from ground)
                 coord.as('EPSG:4326', coord);
@@ -399,7 +398,7 @@ function updateLineBuffers(featureMesh, buffers, id) {
             const base_altitude = style.stroke.base_altitude;
 
             coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
+                .applyMatrix4(context.collection.matrix);
             if (coord.crs == 'EPSG:4978') {
             // altitude conversion from geocentered to elevation (from ground)
                 coord.as('EPSG:4326', coord);
@@ -500,7 +499,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
             const base_altitude = style.fill.base_altitude;
 
             coord.copy(localCoord)
-                .applyMatrix4(context.collection.matrixWorld);
+                .applyMatrix4(context.collection.matrix);
             if (coord.crs === 'EPSG:4978') {
                 // altitude conversion from geocentered to elevation (from ground)
                 coord.as('EPSG:4326', coord);
@@ -631,7 +630,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
 
             const localCoord = context.setLocalCoordinatesFromArray(feature.vertices, i);
             const { base_altitude, extrusion_height } = style.fill;
-            const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrixWorld);
+            const worldCoord = coord.copy(localCoord).applyMatrix4(context.collection.matrix);
             if (worldCoord.crs === 'EPSG:4978') {
                 // altitude conversion from geocentered to elevation (from ground)
                 worldCoord.as('EPSG:4326', worldCoord);
@@ -904,7 +903,6 @@ export function applyStyle(featureMesh, collection, styleIn, buffersToUpdate = [
     }
 
     context.setCollection(collection);
-    collection.matrixWorld.copy(collection.origMatrixWorld);
 
     // only define attributes that need an update
     const shouldUpdateColor = buffersToUpdate.includes('color');

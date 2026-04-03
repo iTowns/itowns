@@ -25,7 +25,7 @@ export default {
             node.link[layer.id]?.forEach((f) => {
                 f.layer.object3d.add(f);
                 f.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
-                f.updateMatrixWorld(true);
+                f.meshes.updateMatrixWorld();
                 const updateColor = f.styleColorVersion !== (layer._styleColorVersion ?? 0);
                 const updatePosition = f.stylePositionVersion !== (layer._stylePositionVersion ?? 0);
                 if (updateColor || updatePosition) {

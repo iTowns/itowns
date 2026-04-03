@@ -183,6 +183,9 @@ export class StyleContext {
         this.#geometry = g;
     }
 
+    /**
+     * @param {Object} c - The collection object.
+     */
     setCollection(c) {
         this.collection = c;
         this.#localCoordinates.setCrs(c.crs);
@@ -215,7 +218,7 @@ export class StyleContext {
     get coordinates() {
         if (!this.#worldCoordsComputed) {
             this.#worldCoordsComputed = true;
-            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrixWorld);
+            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrix);
             if (this.#localCoordinates.crs == 'EPSG:4978') {
                 return this.#worldCoord.as('EPSG:4326', this.#worldCoord);
             }
