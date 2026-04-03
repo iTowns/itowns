@@ -860,13 +860,22 @@ export default {
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);
-            if (style !== defaultStyle) {
+            featureNode.styleColorVersion = this?._styleColorVersion ?? 0;
+            featureNode.stylePositionVersion = this?._stylePositionVersion ?? 0;
+            if (this && style !== defaultStyle) {
                 // defaultStyle is a shared singleton never mutated.
                 // Subscribing to it would leak a listener per convert() call.
+                // MVT feature meshes follow terrain tile subdivision. Track style
+                // changes at layer level so current tiles can be restyled safely
+                // from FeatureProcessing revisits.
+                this._styleColorVersion = this._styleColorVersion ?? 0;
+                this._stylePositionVersion = this._stylePositionVersion ?? 0;
                 style.addEventListener('style-property-changed', (event) => {
-                    style = event.style;
-                    for (const mesh of featureNode.meshes.children) {
-                        _applyStyle(mesh, featureNode.collection, event.parameter);
+                    if (event.parameter === 'color') {
+                        this._styleColorVersion++;
+                    }
+                    if (event.parameter === 'extrusion_height' || event.parameter === 'base_altitude') {
+                        this._stylePositionVersion++;
                     }
                 });
             }
@@ -883,9 +892,11 @@ export default {
  *
  * @param {THREE.Mesh} featureMesh - The mesh to update.
  * @param {THREE.Group} collection - The collection providing matrix/world context.
- * @param {string} parameter - Name of the style property that changed
+ * @param {Style} styleIn - The style to apply.
+ * @param {string[]} buffersToUpdate - Buffer names to update (e.g. ['color', 'position']).
  */
-function _applyStyle(featureMesh, collection, parameter) {
+export function applyStyle(featureMesh, collection, styleIn, buffersToUpdate = []) {
+    style = styleIn;
     const feature = featureMesh.feature;
     if (!collection) {
         console.error('Cannot update style: collection not provided');
@@ -893,18 +904,20 @@ function _applyStyle(featureMesh, collection, parameter) {
     }
 
     context.setCollection(collection);
-    collection.updateMatrixWorld(true);
     collection.matrixWorld.copy(collection.origMatrixWorld);
 
     // only define attributes that need an update
+    const shouldUpdateColor = buffersToUpdate.includes('color');
+    const shouldUpdatePosition = buffersToUpdate.includes('position');
+
     let colorAttr;
-    if (parameter === 'color') {
+    if (shouldUpdateColor) {
         colorAttr = featureMesh.geometry.getAttribute('color');
         colorAttr.needsUpdate = true;
     }
     const colors = colorAttr?.array;
     let posAttr;
-    if (parameter === 'extrusion_height' || parameter === 'base_altitude') {
+    if (shouldUpdatePosition) {
         posAttr = featureMesh.geometry.getAttribute('position');
         posAttr.needsUpdate = true;
     }
