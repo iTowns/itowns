@@ -38,6 +38,12 @@ export { default as Capabilities } from 'Core/System/Capabilities';
 export { CAMERA_TYPE } from 'Renderer/Camera';
 export { default as OBB } from 'Renderer/OBB';
 
+export { default as PointCloudNode } from 'Core/PointCloudNode';
+export { default as PotreeNode } from 'Core/PotreeNode';
+export { default as Potree2Node } from 'Core/Potree2Node';
+export { default as CopcNode } from 'Core/CopcNode';
+export { default as EntwinePointTileNode } from 'Core/EntwinePointTileNode';
+
 // Internal itowns format
 export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { default as Style } from 'Core/Style';
