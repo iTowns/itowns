@@ -6,7 +6,7 @@
         "declaration": true,
         "emitDeclarationOnly": true,
         "outDir": "lib",
-        "rootDir": ".",
+        "rootDir": "src",
         "baseUrl": "src"
     }
 }
