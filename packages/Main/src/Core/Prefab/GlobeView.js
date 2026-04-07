@@ -174,20 +174,27 @@ class GlobeView extends View {
         this.horizonScaleFactor = this.computeHorizonScaleFactor(camToSeaLevel);
         const behindGlobeDistance = (this.camera3D.position.length() + globeRadiusMin);
 
-        // Set the far plane to scaled horizon distance
-        if (this.horizonScaleFactor < 1 && (!this.skyManager || !this.skyManager.enabled)) {
-            // camera's position and magnitude in worldToScaledEllipsoid system
-            const cameraPosition = new THREE.Vector3();
-            cameraPosition.copy(this.camera3D.position).applyMatrix4(this.tileLayer.worldToScaledEllipsoid);
+        // camera's position and magnitude in worldToScaledEllipsoid system
+        const cameraPosition = new THREE.Vector3().copy(this.camera3D.position);
+        const scaleCullingHorizon = this.horizonScaleFactor < 1;
 
-            // Minimum distance from camera to the horizon (The globe is not a perfect sphere, this is not constant)
+        // Applying dynamic camera far when scale the factor is 1 or when realistic lighting is enabled.
+        // Three-geospatial aerial-perspective is not working well with closer far-plane while being dense
+        // enough to hide tile culling.
+        const applyDynamicFar = scaleCullingHorizon && !this.skyManager?.enabled;
+
+        if (scaleCullingHorizon) {
+            // Set the far plane to scaled horizon distance
+            cameraPosition.applyMatrix4(this.tileLayer.worldToScaledEllipsoid);
+        }
+
+        if (applyDynamicFar) {
+            // Minimum distance from camera to the horizon (Taking smallest ellipsoid dimension)
             const horizonDistance = Math.sqrt(Math.max(0, cameraPosition.lengthSq() - 1)) * globeRadiusMin;
+            // Reduced horizon distance considering scale factor
             const reducedHorizonDist = horizonDistance * this.horizonScaleFactor;
             this.camera3D.far = Math.max(this.minFarDistance, reducedHorizonDist);
         } else {
-            // Setting the far plane behind the globe when scale factor is 1 or when realistic lighting is enabled.
-            // Three-geospatial aerial-perspective is not working well with closer far-plane while being dense
-            // enough to hide tile culling.
             this.camera3D.far = behindGlobeDistance;
         }
 
