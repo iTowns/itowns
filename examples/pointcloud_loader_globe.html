@@ -60,14 +60,15 @@
         <div id="viewerDiv"></div>
 
         <script type="module">
-            import { Vector3 } from 'three';
+            import { WebGLRenderTarget, DepthTexture, FloatType } from 'three';
             import Stats from 'stats-gl';
             import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
             import { getFormat, getPointCloudClass, getDefaultAttribute, zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
 
+            import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+            import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
             import {
                 CRS, MAIN_LOOP_EVENTS, PNTS_MODE,
-                Coordinates,
                 View,
                 GlobeView,
                 Fetcher,
@@ -75,6 +76,7 @@
                 ColorLayer,
                 WMTSSource,
                 ElevationLayer,
+                EDLPass,
             } from 'itowns';
             import { PointCloudDebug } from 'debug';
 
@@ -85,7 +87,24 @@
             const crsInput = document.getElementById('crs');
             const errorMessage = document.getElementById('error-message');
 
-            window.getFormat = getFormat;
+            function withHidden(view, predicate, func) {
+                const visibilitySet = new Set();
+                const layers = view.getLayers(layer => {
+                    return layer.isGeometryLayer && predicate(layer) && layer.visible
+                });
+
+                layers.forEach(layer => {
+                    layer.object3d.visible = false;
+                    visibilitySet.add(layer.object3d);
+                });
+
+                func(view);
+
+                visibilitySet.forEach(object => {
+                    object.visible = true;
+                });
+            }
+
 
             const isEmbedded = window.self !== window.top;
 
@@ -94,11 +113,10 @@
                     history.replaceState(null, '', '?' + params.toString());
                 }
             }
-            window.updateUrlParams = updateUrlParams;
 
             let currentView = null;
 
-            window.load = async function load(url, options = {}) {
+            async function load(url, options = {}) {
                 // Cleanup previous view
                 if (currentView) {
                     currentView.dispose();
@@ -128,6 +146,33 @@
                     }
                 });
                 currentView = view;
+
+                const gfxEngine = view.mainLoop.gfxEngine;
+                const renderer = gfxEngine.renderer;
+                const size = gfxEngine.getWindowSize();
+
+                const renderTarget = new WebGLRenderTarget(size.x, size.y);
+                renderTarget.depthTexture = new DepthTexture(size.x, size.y, FloatType);
+
+                const composer = new EffectComposer(renderer, renderTarget);
+                const renderPass = new RenderPass(view.scene, view.camera3D);
+                const edlPass = new EDLPass(view.camera3D, size.x, size.y);
+                composer.addPass(renderPass);
+                composer.addPass(edlPass);
+
+                view.render = function render() {
+                    // Render point cloud + EDL to screen
+                    withHidden(view, layer => !layer.isPointCloudLayer, () => {
+                        composer.render();
+                    });
+
+                    // Render globe with depth test
+                    withHidden(view, layer => layer.isPointCloudLayer, () => {
+                        renderer.render(view.scene, view.camera3D);
+                    });
+                };
+
+                layer.crs = source.crs;
                 View.prototype.addLayer.call(view, layer);
 
                 const openSMJSON = await Fetcher.json('./layers/JSONLayers/OPENSM.json');
@@ -145,6 +190,14 @@
                         source: new WMTSSource(worldDTMJSON.source),
                     }),
                 );
+
+                await layer.whenReady;
+                zoomToLayerGlobe(view, layer);
+
+                window.addEventListener('resize', () => {
+                    const newSize = gfxEngine.getWindowSize();
+                    composer.setSize(newSize.x, newSize.y);
+                });
 
                 const stats = new Stats();
                 stats.init(view.renderer);
@@ -164,6 +217,12 @@
 
                 const gui = new GUI();
                 PointCloudDebug.initTools(view, layer, gui);
+
+                const edlFolder = gui.addFolder('Eye-Dome Lighting');
+                edlFolder.add(edlPass, 'enabled').name('Enabled').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'strength', 0, 10, 0.1).name('Strength').onChange(() => view.notifyChange());
+                edlFolder.add(edlPass, 'kernelRadius', 0.1, 5, 0.1).name('Radius').onChange(() => view.notifyChange());
+                edlFolder.open();
             }
 
             if (!isEmbedded) {
@@ -176,7 +235,7 @@
                         urlInput.value = url;
                         formatSelect.value = format ?? 'auto';
                         crsInput.value = crs ?? '';
-                        await window.load(url, { format, crs });
+                        await load(url, { format, crs });
                     } catch (error) {
                         console.error(error);
                     }
@@ -208,6 +267,10 @@
                     errorMessage.textContent = message;
                 }
             });
+
+            window.load = load;
+            window.getFormat = getFormat;
+            window.updateUrlParams = updateUrlParams;
         </script>
 
         <script type="module">
