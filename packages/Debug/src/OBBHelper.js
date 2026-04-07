@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 class OBBHelper extends THREE.Box3Helper {
-    constructor(OBB, text, color) {
+    constructor(OBB, color) {
         color = color || new THREE.Color(Math.random(), Math.random(), Math.random());
 
         super(OBB.box3D, color.getHex());

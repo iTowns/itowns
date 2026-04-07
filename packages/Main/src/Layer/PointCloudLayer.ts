@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import TinyQueue from 'tinyqueue';
 import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
@@ -18,7 +19,7 @@ export interface PointCloudSource {
 }
 
 export interface PointCloudLayerParameters {
-    /** Description and options of the source See @Layer. */
+    /** Description and options of the source. @see {@link Layer}. */
     source: PointCloudSource;
     object3d?: THREE.Group;
     group?: THREE.Group;
@@ -121,6 +122,7 @@ function computeScreenSpaceError(
 }
 
 function markForDeletion(elt: PointCloudNode) {
+    elt.visible = false;
     if (elt.obj) {
         elt.obj.visible = false;
     }
@@ -227,6 +229,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * Be default it is a new `PointsMaterial`. */
     material: THREE.PointsMaterial;
 
+    private _candidateNodes: TinyQueue<PointCloudNode>;
+    private _visibleNodes: Set<PointCloudNode> = new Set();
+
     /**
      * Constructs a new instance of point cloud layer.
      * Constructs a new instance of a Point Cloud Layer. This should not be used
@@ -309,6 +314,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.root = undefined;
 
         this.displayedCount = 0;
+
+        this._candidateNodes = new TinyQueue<PointCloudNode>([], (a, b) => b.sse - a.sse);
     }
 
     setElevationRange() {
@@ -316,7 +323,18 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         this.maxElevationRange = this.maxElevationRange ?? this.source.zmax;
     }
 
+    setNodeVisible(node: PointCloudNode, visible: boolean) {
+        this.dispatchEvent({
+            type: 'node-visibility-change',
+            tile: node,
+            visible,
+        });
+        node.visible = visible;
+    }
+
     preUpdate(context: Context) {
+        this._candidateNodes = new TinyQueue<PointCloudNode>([], (a, b) => b.sse - a.sse);
+
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
         context.camera.preSSE =
@@ -357,21 +375,17 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     loadData(
         elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number,
     ): void {
-        elt.notVisibleSince = undefined;
-
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
-            if (elt.obj) {
-                elt.obj.visible = true;
-            } else if (!elt.promise) {
+            if (!elt.obj && !elt.promise) {
                 const distance = Math.max(0.001, distanceToCamera);
-                // Increase priority of nearest node
+                // Increase priority of greatest node on screen
                 const priority = computeScreenSpaceError(
                     context,
                     layer.pointSize,
                     elt.pointSpacing,
                     distance,
-                ) / distance;
+                );
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
@@ -412,8 +426,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * @returns The child nodes to update or [] if there is none.
      */
     update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
-        elt.visible = false;
-
         if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
             markForDeletion(elt);
             return [];
@@ -430,9 +442,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             bbox = object3d.box3D;
         }
 
-        elt.visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+        const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
 
-        if (!elt.visible) {
+        if (!visible) {
             markForDeletion(elt);
             return [];
         }
@@ -443,15 +455,21 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         const distanceToCamera = bbox.distanceToPoint(point);
 
+        elt.sse = computeScreenSpaceError(
+            context,
+            layer.pointSize,
+            elt.pointSpacing,
+            distanceToCamera,
+        ) / this.sseThreshold;
+
+        // The visibility here is not definitive, as it will be updated
+        // in the postUpdate phase
+        elt.visible = visible;
+        elt.notVisibleSince = undefined;
+        this._candidateNodes.push(elt);
         this.loadData(elt, context, layer, distanceToCamera);
 
         if (elt.children && elt.children.length) {
-            elt.sse = computeScreenSpaceError(
-                context,
-                layer.pointSize,
-                elt.pointSpacing,
-                distanceToCamera,
-            ) / this.sseThreshold;
             if (elt.sse >= 1) {
                 return elt.children;
             } else {
@@ -466,48 +484,58 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     }
 
     postUpdate() {
+        const visibleLastUpdate = this._visibleNodes;
+        this._visibleNodes = new Set();
         this.displayedCount = 0;
-        for (const pts of this.group.children as THREE.Points[]) {
-            if (pts.visible) {
-                const count = pts.geometry.attributes.position.count;
-                pts.geometry.setDrawRange(0, count);
-                this.displayedCount += count;
+
+        // Push visible nodes until the point budget is reached
+        while (this._candidateNodes.length > 0) {
+            const node = this._candidateNodes.pop() as PointCloudNode;
+            if (this.displayedCount + node.numPoints > this.pointBudget) {
+                this._candidateNodes.push(node);
+                break;
+            }
+            this.displayedCount += node.numPoints;
+            this._visibleNodes.add(node);
+            node.visible = true;
+            if (node.obj) { node.obj.visible = true; }
+            if (!visibleLastUpdate.has(node)) {
+                this.setNodeVisible(node, true);
             }
         }
 
-        if (this.displayedCount > this.pointBudget) {
-            // This format doesn't require points to be evenly distributed,
-            // so we're going to sort the nodes by "importance"
-            // (= on screen size) and display only the first N nodes
-            this.group.children.sort((p1, p2) => p2.userData.node.sse - p1.userData.node.sse);
+        const nonVisibleNodes = new Set<PointCloudNode>();
+        // Hide remaining visible nodes that didn't fit in the budget
+        while (this._candidateNodes.length > 0) {
+            const node = this._candidateNodes.pop() as PointCloudNode;
+            node.visible = false;
+            if (node.obj) { node.obj.visible = false; }
+            nonVisibleNodes.add(node);
+        }
 
-            let limitHit = false;
-            this.displayedCount = 0;
-            for (const pts of this.group.children as THREE.Points[]) {
-                const count = pts.geometry.attributes.position.count;
-                if (limitHit || (this.displayedCount + count) > this.pointBudget) {
-                    pts.visible = false;
-                    limitHit = true;
-                } else {
-                    this.displayedCount += count;
-                }
+        // Set symmetric difference between visible nodes from last
+        // update and current update. Unfortunatelly the standard operation
+        // is only available on browsers baseline since june 2024.
+        for (const n of visibleLastUpdate) {
+            if (!this._visibleNodes.has(n)) {
+                this.setNodeVisible(n, false);
             }
         }
 
+        // Garbage-collect geometry of invisible nodes that have been hidden for
+        // more than 10 seconds
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as THREE.Points;
-            if (!obj.visible && (now - obj.userData.node.notVisibleSince) > 10000) {
-                // remove from group
-                this.group.children.splice(i, 1);
-
-                // no need to dispose obj.material, as it is shared by all
-                // objects of this layer
+            if (!obj.visible && (now - obj.userData.node.notVisibleSince > 10000)) {
+                this.group.remove(obj);
                 obj.geometry.dispose();
                 obj.userData.node.obj = null;
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
         }
+
+        this.dispatchEvent({ type: 'post-update' });
     }
 
     // @ts-expect-error Layer and Picking are not typed yet
