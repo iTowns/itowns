@@ -94,6 +94,8 @@ body {
 }
 
 /* EDITOR (LEFT) */
+
+/* OLD */
 #editor-panel {
     background-color: light-dark(white, #202030);
     width: calc(100% * 7 / 16);
@@ -103,6 +105,16 @@ body {
     flex-direction: column;
     justify-content: start;
     /* Drawer-style animation on resize */
+    transition-duration: 200ms;
+}
+
+
+/* REVAMP */
+#editor-panel {
+    background-color: light-dark(white, #202030);
+    display: flex;
+    flex-direction: row; 
+    height: 100%;
     transition-duration: 200ms;
 }
 
@@ -141,6 +153,18 @@ body {
     width: 5em;
     height: 5em;
 }
+
+
+.sidebar {
+    display:flex;
+    flex-direction: column;
+}
+
+.sidebar-tabs {
+    display:flex;
+    flex-direction: column;
+}
+
 
 .switch input {
     opacity: 0;

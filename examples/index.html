@@ -43,20 +43,37 @@
     </div>
 
     <div id="editor-panel">
-        <div id="editor-header">
+        <div class="sidebar">
+            <a href="https://www.itowns-project.org/">
+                <img src="images/itowns_icon.svg" alt="">
+            </a>
+            <nav class="sidebar-tabs">
+                <button>    
+                    <img src="images/dashboard.svg" alt="Example gallery" />
+                </button>
+                <button >
+                    <img src="images/code.svg" alt="Code editor />
+                </button>
+                <button >
+                    <img src="images/itowns_icon.svg" alt="iTowns icon" />
+                </button>
+            </nav>
+        </div>
+        <!--
+        <div id="editor-header">    
             <div>
                 <a href="/">
                     <picture id="itowns-logo">
                         <source media="(width <= 1700px)" srcset="./images/itowns_logo.svg" width="245" />
                         <source media="(width > 1700px)" srcset="images/itowns_logo.png" width="245" />
-                        <!-- Fallback Image -->
+                        /* Fallback Image */
                         <img src="images/itowns_logo.png" width="245px" />
                     </picture>
                 </a>
                 <label class="switch">
                     <input id="version-switch" type="checkbox" name="version-switch" />
                     <span class="checkmark"></span>
-                    Latest
+                    Development version
                 </label>
             </div>
             <hr />
@@ -69,11 +86,14 @@
                 </div>
             </div>
         </div>
+        -->
         <hr />
         <div style="display: flex; padding: 1em; height: 100%">
             <textarea id="code-editor"></textarea>
         </div>
     </div>
+
+
     <button id="editor-collapse">
         <svg viewBox="0 0 10 10">
             <polygon points="0,5 10,0 10,10" style="fill:white" />
@@ -199,7 +219,7 @@
             }
             editorHidden = !editorHidden;
         };
-        editorCollapse.onhover = () => console.log("toto");
+        editorCollapse.onhover = () => console.log("toto");         // DEBUG, TO REMOVE
         const searchParams = new URL(
             document.location.toString(),
         ).searchParams;
@@ -305,7 +325,7 @@
 
                     const searchParams = new URL(
                         document.location.toString(),
-                    ).searchParams;
+                    ).searchParams; 
                     const urlCode = searchParams.get("code");
 
                     const localCode = localStorage.getItem("code");
