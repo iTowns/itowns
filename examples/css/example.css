@@ -305,9 +305,12 @@ p {
 .slider:before {
     position: absolute;
     content: "";
-    height: 13px;
-    width: 13px;
-    bottom: -1px;
+    height: 17px;
+    width: 17px;
+    /*bottom: -1px;*/
+    top: 50%;
+    margin-top:-0.3px;
+    transform: translateY(-50%);
     left: -2px;
     background-color: white;
     transition: .3s;
@@ -316,6 +319,7 @@ p {
     border-width: 2px;
     border-color: light-dark(#1565c1, white);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-sizing: border-box;
 }
 
 input:checked + .slider {
@@ -324,7 +328,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-    transform: translateX(20px);
+    transform: translateX(20px) translateY(-50%);
     background-color: light-dark(white, #333);
     border-color: light-dark(#1565c1, #333);
 }
