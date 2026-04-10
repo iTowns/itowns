@@ -16,7 +16,7 @@
     <link cype="text/css" rel="stylesheet" href="css/example.css" />
 </head>
 
-<body data-spy="scroll" data-target="nav" onload="onLoad()">
+<body data-spy="scroll" data-target="nav">
     <!-- Code Mirror Main -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.js"
         integrity="sha512-tXHFLFVaasTvIEFYN8K6UlGvb6Sh1ealAA8YxjpezWMio6u0vU9KfGFzKVth49xh2affuBfmLGY8t2G5pZH+zg=="
@@ -98,15 +98,15 @@
             </div>
 
             <div id="example-list"> 
-                liste d'exempleaaaaaaaaaaaaaaaaaaaaaa   aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbaaaaaaaaccccccccccccccccccccdddddddddddddaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaas
+                <!--content added dynamically in JS--> 
             </div>
 
             
 
-            <div class="panel-footer">
-                <div class="switch-box">
+            <div class="panel-footer">  <!--Is the version switch really relevant here ?-->
+                <div class="switch-box">    
                     <label class="switch">
-                        <input type="checkbox" id="version-switch">
+                        <input type="checkbox" class="switch-input" id="switch-input-gallery">
                         <span class="slider"></span>
                     </label>
                     <p>Development version</p>
@@ -128,7 +128,7 @@
             <div class="panel-footer">
                 <div class="switch-box">
                     <label class="switch">
-                        <input type="checkbox" id="version-switch">
+                        <input type="checkbox" class="switch-input"  id="switch-input-code">
                         <span class="slider"></span>
                     </label>
                     <p>Development version</p>
@@ -164,7 +164,8 @@
         const sidebarTabs = document.getElementById("sidebar-tabs");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn");
         const panels = document.querySelectorAll(".panel");
-
+        const versionSwitches = document.querySelectorAll(".switch");
+        const exampleList = document.getElementById("example-list");
 
         /**
          * @param {boolean} isDark - Which theme name to get
@@ -354,6 +355,87 @@
 
         */
 
+
+        function initNavigation(list) {
+            const nav = document.getElementById("editor-header");
+
+            /*
+            const versionSwitch = document.getElementById("version-switch");
+            if (!baseURI.includes("/itowns/")) {
+                versionSwitch.setAttribute("disabled", "");
+            } else {
+                versionSwitch.onchange = (event) => {
+                    window.location.href = document.location.href.replace();
+                    const isDev = baseURI.includes("/itowns/dev/");
+                    const options = ["/itowns/", "/itowns/dev/"];
+                    window.location.href = document.location.href.replace(
+                        options[isDev],
+                        options[!isDev],
+                    );
+                };
+                if (baseURI.includes("/itowns/dev/")) {
+                    versionSwitch.setAttribute("checked", "");
+                }
+            }
+            */
+
+            // Dynamic example generation
+            const examples = [
+                ...Object.entries(list).flatMap(
+                    ([sectionName, section]) => {
+                        return [
+                            `<div class="category">`,
+                                `<button type='button' class="category-header">
+                                    <img src="images/down_arrow.svg" alt="Collapse/expand category"/>
+                                    <h3> ${sectionName} </h3>
+                                </button>`,
+                                `<div class="category-grid-wrapper">`,
+                                    `<div class="category-content">`,
+                                        `<ul>`, 
+                                        ...Object.entries(section).map(
+                                            ([slug, name]) =>
+                                                `<li class="example-item">
+                                                    <img src="images/thumbnails/default.png" alt="${name}"/>
+                                                    <div class="example-info">
+                                                        <h3 class="example-title">${name}</h3>
+                                                        <p class="example-desc">This is the description of the example. hi i am the description i hope you are good blablalblalbal</p>
+                                                    </div>
+                                                </li>`,
+                                        ),
+                                        `</ul>`,
+                                    `</div>`,
+                                `</div>`,
+                                '<hr/>',
+                            `</div>`,
+                        ];
+                    },
+                ),
+            ];
+                    /*
+            const exampleSelector =
+                document.getElementById("example-selector");
+                    */
+            console.log("test");
+            console.log(exampleList);
+            exampleList.insertAdjacentHTML(
+                "afterbegin",
+                examples.join("\n"),
+            );
+            /*
+            exampleList.onchange = (event) =>
+                loadExample(event.target.value);
+            */
+            const hash = window.location.hash;
+            const currentExample = hash.slice(1) || "custom";
+            /*exampleSelector.value = currentExample;*/
+        }
+
+
+
+
+
+
+
         /** @param {Record<string, Record<string, string>>} list - List of examples */
         /*
         function initNavigation(list) {
@@ -406,21 +488,22 @@
             const currentExample = hash.slice(1) || "custom";
             exampleSelector.value = currentExample;
         }
-
         */
+        
+        
 
         function onLoad() {
         
             // Get the configuration
 
-            /*
+            
             fetch("./config.json")
                 .then(function _(response) {
                     return response.json();
                 })
                 .then(function _(config) {
                     initNavigation(config);
-
+                    /*
                     const searchParams = new URL(
                         document.location.toString(),
                     ).searchParams; 
@@ -443,9 +526,24 @@
                         codeEditor.setValue(fromBase64(decodeURIComponent(urlCode)));
                         alert('Please check foreign code before running it!');
                     }
+                        */
                 });
-                */
+                
         }
+
+        // collapsing categories
+        exampleList.addEventListener('click', (event) => {
+            const header = event.target.closest('.category-header');
+            if (!header) return;
+
+            const parent = header.closest('.category');
+            parent.classList.toggle('collapsed');
+        });
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            onLoad(); 
+        });
 
         
     </script>
