@@ -3,7 +3,7 @@
     "include": [ "src/index.ts" ],
     "exclude": [ "lib" ],
     "compilerOptions": {
-        "declaration": false,
+        "declaration": true,
         "outDir": "lib"
     }
 }
