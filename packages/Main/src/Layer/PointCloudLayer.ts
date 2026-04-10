@@ -228,6 +228,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
     private _visibleNodes: Set<PointCloudNode> = new Set();
+    private _visibilityTextureNeedsUpdate: boolean = true;
+    private _visibilityTextureData: { data: Uint8Array; offsets: Map<string, number> } | undefined;
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -327,6 +329,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             visible,
         });
         node.visible = visible;
+        this._visibilityTextureNeedsUpdate = true;
     }
 
     preUpdate(context: Context) {
@@ -538,12 +541,20 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         // @ts-expect-error PointsMaterial is not typed yet
         if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
-            const visibilityTextureData = this.computeVisibilityTextureData(Array.from(this._visibleNodes));
+            if (this._visibilityTextureNeedsUpdate) {
+                this._visibilityTextureData =
+                    this.computeVisibilityTextureData(Array.from(this._visibleNodes));
+                this._visibilityTextureNeedsUpdate = false;
+            }
+
+            if (this._visibilityTextureData === undefined) {
+                return;
+            }
 
             // @ts-expect-error PointsMaterial is not typed yet
             const vnt = this.material.visibleNodes;
             const data = vnt.image.data;
-            data.set(visibilityTextureData.data);
+            data.set(this._visibilityTextureData.data);
             vnt.needsUpdate = true;
 
             // Use natBox (native octree space) for octreeSize, as the
@@ -554,7 +565,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             for (const pts of this.group.children) {
                 const node = pts.userData.node;
                 const depth = node.depth;
-                const nodeStartOffset = visibilityTextureData.offsets.get(node.voxelKey);
+                const nodeStartOffset = this._visibilityTextureData.offsets.get(node.voxelKey);
                 const octreeSpacing = node.source.spacing;
 
                 // Compute the bounding box min of the node's octree cell
