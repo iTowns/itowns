@@ -38,6 +38,8 @@ export { default as Capabilities } from 'Core/System/Capabilities';
 export { CAMERA_TYPE } from 'Renderer/Camera';
 export { default as OBB } from 'Renderer/OBB';
 
+export { default as PointCloudNode } from 'Core/PointCloudNode';
+
 // Internal itowns format
 export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { default as Style } from 'Core/Style';
