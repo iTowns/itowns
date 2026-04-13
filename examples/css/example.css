@@ -122,6 +122,7 @@ body {
     height: 100%;
     /* Drawer-style animation on resize */
     transition-duration: 200ms;
+    overflow: visible;
 }
 
 #editor-panel>* {
@@ -133,6 +134,7 @@ body {
 }
 
 #editor-collapse {
+    /*               OLD VERSION, TO BE REMOVED
     display: flex;
     position: absolute;
     background-color: white;
@@ -140,7 +142,6 @@ body {
     top: 18%;
     left: calc(100% * 6 / 16 - 1em);
     width: 1em;
-    aspect-ratio: 1 / 2;
     flex-direction: row;
     flex: 0;
     align-items: center;
@@ -148,6 +149,24 @@ body {
     user-select: none;
     transition-duration: 200ms;
     padding: 1px;
+    */
+
+    display: flex;
+    position: absolute;
+    background-color: light-dark(white,#242525);
+    border-width: 0;
+    top: 22%;
+
+    left: 100%;
+    width: 1.5em; 
+    aspect-ratio: 1 / 2;
+    border-radius: 0 8px 8px 0; 
+    box-shadow: 2px 0px 5px rgba(0,0,0,0.1);
+    
+    z-index: 10;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
 #editor-collapse:hover {
@@ -720,7 +739,7 @@ input:checked + .slider:before {
     }
     
 */
-    .sidebar-btn img, .category-header img { 
+    .sidebar-btn img, .category-header img, #editor-collapse img { 
         filter: brightness(0) invert(1);
     }
 

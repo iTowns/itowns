@@ -148,12 +148,17 @@
             </div>
         </div>
 
+        <button id="editor-collapse">
+            <img src="images/collapse.svg" alt="Collapse" />
+        </button>
+
     </div>
 
-
+    <!--
     <button id="editor-collapse">
         <img src="images/collapse.svg" alt="Collapse" />
     </button>
+    -->
 
     <script type="text/javascript">
         const iframe = document.getElementById("content");
@@ -296,6 +301,28 @@
         
         let editorHidden = false;
         const editorCollapse = document.getElementById("editor-collapse");
+        
+
+
+        editorCollapse.onclick = () => {
+            if (!editorHidden) {
+                editorPanel.style.left = "calc(-100% * 6 / 16)";
+                editorCollapse.style.transform = "scaleX(-1)";
+                editorCollapse.style.borderRadius = "8px 0 0 8px";
+                
+                iframe.style.left = "0";
+                iframe.style.width = "100%";
+            } else {
+                editorPanel.style.left = "0";
+                editorCollapse.style.transform = "scaleX(1)";
+                editorCollapse.style.borderRadius = "0 8px 8px 0";
+                
+                iframe.style.left = "";
+                iframe.style.width = "calc(100% * 10 / 16)";
+            }
+            editorHidden = !editorHidden;
+        };
+        /*
         editorCollapse.onclick = () => {
             if (!editorHidden) {
                 editorCollapse.style.left = "0";
@@ -314,7 +341,8 @@
             }
             editorHidden = !editorHidden;
         };
-        editorCollapse.onhover = () => console.log("toto");         // DEBUG, TO REMOVE
+        */
+        
         const searchParams = new URL(
             document.location.toString(),
         ).searchParams;
@@ -407,7 +435,7 @@
                                                     <img src="images/thumbnails/default.png" alt="${name}"/>
                                                     <div class="example-info">
                                                         <h3 class="example-title">${name}</h3>
-                                                        <p class="example-desc">This is the description of the example. hi i am the description i hope you are good blablalblalbal</p>
+                                                        <p class="example-desc">This is the description of the example. Hi, I am the description and I provide some context.    </p>
                                                     </div>
                                                 </li>`,
                                         ),
