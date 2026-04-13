@@ -5,7 +5,7 @@ import C3DTilesSource from 'Source/C3DTilesSource';
 import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 

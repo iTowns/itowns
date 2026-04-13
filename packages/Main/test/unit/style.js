@@ -2,7 +2,7 @@ import Style from 'Core/Style';
 import assert from 'assert';
 import { TextureLoader } from 'three';
 import Fetcher from 'Provider/Fetcher';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 
 describe('Style', function () {
     const textureLoader = new TextureLoader();

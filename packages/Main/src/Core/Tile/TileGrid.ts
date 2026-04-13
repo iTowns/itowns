@@ -5,8 +5,8 @@ const _countTiles = new THREE.Vector2();
 const _dim = new THREE.Vector2();
 
 export const globalDefaultExtentCRS = ['EPSG:4326', 'EPSG:3857'];
-export const globalExtentTMS: Map<string, Extent> = new Map();
-export const schemeTiles: Map<string, THREE.Vector2> = new Map();
+export const globalExtentTMS = new Map<string, Extent>();
+export const schemeTiles = new Map<string, THREE.Vector2>();
 
 const extent4326 = new Extent('EPSG:4326', -180, 180, -90, 90);
 globalExtentTMS.set('EPSG:4326', extent4326);

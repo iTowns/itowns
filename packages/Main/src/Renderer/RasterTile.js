@@ -148,7 +148,7 @@ export class RasterTile extends THREE.EventDispatcher {
 
     shouldWriteTextureAtIndex(index, texture) {
         // Do not apply noData texture if current texture is valid
-        return !this.textures[index] || texture && texture.isTexture;
+        return !this.textures[index] || (texture && texture.isTexture);
     }
 }
 

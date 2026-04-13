@@ -49,6 +49,7 @@ class Tile {
 
     /**
      * Returns a new tile with the same bounds and crs as this one.
+     * @returns
      */
     clone() {
         return new Tile(this.crs, this.zoom, this.row, this.col);
@@ -59,6 +60,7 @@ class Tile {
      * @param crs - target's projection.
      * @param target - The target to store the projected extent. If this not
      * provided a new extent will be created.
+     * @returns
      */
     toExtent(crs = this.crs, target = new Extent('EPSG:4326')) {
         CRS.isValid(crs);
@@ -81,7 +83,8 @@ class Tile {
     /**
      * Checks whether another tile is inside this tile.
      *
-     * @param extent - the tile to check.
+     * @param tile - the tile to check.
+     * @returns
      */
     isInside(tile: Tile) {
         if (this.zoom == tile.zoom) {
@@ -101,6 +104,7 @@ class Tile {
      *
      * @param tile - the input tile.
      * @param target - copy the result to target.
+     * @returns
      */
     offsetToParent(tile: Tile, target = new THREE.Vector4()) {
         if (this.crs != tile.crs) {
@@ -118,6 +122,7 @@ class Tile {
      * Returns the parent tile at the given level.
      *
      * @param levelParent - the level of the parent tile.
+     * @returns
      */
     tiledExtentParent(levelParent: number) {
         if (levelParent && levelParent < this.zoom) {
@@ -134,6 +139,7 @@ class Tile {
      * @param zoom - zoom value.
      * @param row - row value.
      * @param col - column value.
+     * @returns
      */
     set(zoom = 0, row = 0, col = 0) {
         this.zoom = zoom;
@@ -146,6 +152,7 @@ class Tile {
     /**
      * Copies the passed tile to this tile.
      * @param tile - tile to copy.
+     * @returns
      */
     copy(tile: Tile): this {
         this.crs = tile.crs;
@@ -155,6 +162,7 @@ class Tile {
     /**
      * Return values of tile in string, separated by the separator input.
      * @param separator - string separator
+     * @returns
      */
     toString(separator = '') {
         return `${this.zoom}${separator}${this.row}${separator}${this.col}`;
@@ -213,7 +221,7 @@ export function tiledCovering(e: Extent, tms: string) {
 /**
  * Represents a set of limits for a Tile Matrix Set (TMS).
  */
-type TileLimit = {
+interface TileLimit {
     /** Minimum tile (top-left in the matrix) */
     min: Tile;
 
@@ -222,9 +230,9 @@ type TileLimit = {
 
     /** Geographic extent covered by the tile range */
     extent: Extent;
-};
+}
 
-type TileLimitJson = {
+interface TileLimitJson {
     maxTileRow: number;
 
     minTileRow: number;
@@ -232,7 +240,7 @@ type TileLimitJson = {
     minTileCol: number;
 
     maxTileCol: number;
-};
+}
 
 
 /**
@@ -320,7 +328,7 @@ export class TileMatrixSetLimits {
 
             const extent = min.toExtent().union(max.toExtent());
 
-            const tileLimit : TileLimit = { min, max, extent };
+            const tileLimit: TileLimit = { min, max, extent };
 
             tileMatrix.extent.union(tileLimit.extent);
 
@@ -356,9 +364,9 @@ export class TileMatrixSetLimits {
 
             if (limit) {
                 return  extentOrTile.row >= limit.min.row &&
-                        extentOrTile.col >= limit.min.col &&
-                        extentOrTile.row <= limit.max.row &&
-                        extentOrTile.col <= limit.max.col;
+                    extentOrTile.col >= limit.min.col &&
+                    extentOrTile.row <= limit.max.row &&
+                    extentOrTile.col <= limit.max.col;
             } else {
                 // if there are no limits at this zoom level,
                 // the tile is always considered as inside

@@ -21,9 +21,9 @@ class C3DTBatchTable {
     /**
      * @param {ArrayBuffer} [buffer=new ArrayBuffer()] - batch table buffer to parse
      * @param {number} [jsonLength=0] - batch table json part length
-    * @param {number} [binaryLength=0] - batch table binary part length
+     * @param {number} [binaryLength=0] - batch table binary part length
      * @param {number} [batchLength=0] - the length of the batch.
-     * @param {Object} [registeredExtensions] - extensions registered to the layer
+     * @param {object} [registeredExtensions] - extensions registered to the layer
      */
     constructor(buffer = new ArrayBuffer(), jsonLength = 0, binaryLength = 0, batchLength = 0, registeredExtensions) {
         if (arguments.length === 4 &&
@@ -34,7 +34,7 @@ class C3DTBatchTable {
         }
         if (jsonLength + binaryLength !== buffer.byteLength) {
             console.error('3DTiles batch table json length and binary length are not consistent with total buffer' +
-            ' length. The batch table may be wrong.');
+                ' length. The batch table may be wrong.');
         }
 
         this.type = C3DTilesTypes.batchtable;
@@ -63,7 +63,7 @@ class C3DTBatchTable {
                         propVal.componentType, propVal.type);
                 } else {
                     console.error('Invalid 3D Tiles batch table property that is neither a JSON array nor a valid ' +
-                    'accessor to a binary body');
+                        'accessor to a binary body');
                 }
             }
         }
@@ -88,7 +88,7 @@ class C3DTBatchTable {
      * information from the batch table and from extensions of the batch table,
      * for a given feature (identified with its batchID).
      * @param {integer} batchID - id of the feature
-     * @returns {Object} - displayable information relative to the batch
+     * @returns {object} - displayable information relative to the batch
      * table and its extensions. Object is formatted as follow:
      * {batchTable:
      *      {property1: value1

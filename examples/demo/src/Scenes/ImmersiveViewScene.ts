@@ -12,7 +12,7 @@ itowns.CRS.defs('EPSG:2154',
 export const ImmersiveViewScene: SceneType = {
     title: 'Walk Your Data',
     description: 'Experience your data at ground level with first-person navigation. '
-    + 'Perfect for street-level visualization and immersive exploration.',
+        + 'Perfect for street-level visualization and immersive exploration.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.33481381, 48.85060296),
         range: 25,
@@ -34,7 +34,7 @@ export const ImmersiveViewScene: SceneType = {
         const itownsView = ImmersiveViewScene.getItownsView();
         // set camera to current panoramic
         // @ts-expect-error setCameraToCurrentPosition method undefined
-        itownsView.controls!.setCameraToCurrentPosition();
+        itownsView.controls?.setCameraToCurrentPosition();
         itownsView.notifyChange(itownsView.camera3D);
     },
     onCreate: async () => {
@@ -55,16 +55,16 @@ export const ImmersiveViewScene: SceneType = {
         const panoReady = new Promise<void>((res) => { resolvePanoReady = res; });
 
         const olayer = (await Layers.OrientedImageLayer.getLayer(itownsView.referenceCrs, (e: {
-                previousPanoPosition: THREE.Vector3,
-                currentPanoPosition: THREE.Vector3,
-                nextPanoPosition: THREE.Vector3,
-            }) => {
+            previousPanoPosition: THREE.Vector3;
+            currentPanoPosition: THREE.Vector3;
+            nextPanoPosition: THREE.Vector3;
+        }) => {
             // @ts-expect-error setPreviousPosition method undefined
-            itownsView.controls!.setPreviousPosition(e.previousPanoPosition);
+            itownsView.controls?.setPreviousPosition(e.previousPanoPosition);
             // @ts-expect-error setCurrentPosition method undefined
-            itownsView.controls!.setCurrentPosition(e.currentPanoPosition);
+            itownsView.controls?.setCurrentPosition(e.currentPanoPosition);
             // @ts-expect-error setNextPosition method undefined
-            itownsView.controls!.setNextPosition(e.nextPanoPosition);
+            itownsView.controls?.setNextPosition(e.nextPanoPosition);
 
             if (resolvePanoReady) {
                 resolvePanoReady();
@@ -84,25 +84,29 @@ export const ImmersiveViewScene: SceneType = {
 
         await ImmersiveViewScene.view.addLayers(ImmersiveViewScene.layers);
 
-        // @ts-expect-error buildingsLayer property undefined
-        itownsView.controls!.buildingsLayer = wfsBuildingLayer.id;
+        if (itownsView.controls) {
+            // @ts-expect-error buildingsLayer property undefined
+            itownsView.controls.buildingsLayer = wfsBuildingLayer.id;
+        }
 
         const altitude = new THREE.Vector3();
 
-        // @ts-expect-error transformationPositionPickOnTheGround
-        // property undefined
-        itownsView!.controls!.transformationPositionPickOnTheGround =
-            (position: THREE.Vector3) => {
-                position.copy(olayer.mostNearPano(position).position);
-                altitude.copy(position).normalize().multiplyScalar(3);
-                return position.sub(altitude);
-            };
+        if (itownsView.controls) {
+            // @ts-expect-error transformationPositionPickOnTheGround
+            // property undefined
+            itownsView.controls.transformationPositionPickOnTheGround =
+                (position: THREE.Vector3) => {
+                    position.copy(olayer.mostNearPano(position).position);
+                    altitude.copy(position).normalize().multiplyScalar(3);
+                    return position.sub(altitude);
+                };
+        }
 
         // Wait until we have a current pano, then set the camera
         await panoReady;
 
         // @ts-expect-error setCameraToCurrentPosition method undefined
-        itownsView.controls!.setCameraToCurrentPosition();
+        itownsView.controls?.setCameraToCurrentPosition();
         itownsView.notifyChange(itownsView.camera3D);
 
         ImmersiveViewScene.cameraPlacement = itownsView.camera3D.position.clone();
@@ -113,17 +117,23 @@ export const ImmersiveViewScene: SceneType = {
         const itownsView = ImmersiveViewScene.getItownsView();
 
         // Ensure pose is correct on every entry
-        itownsView.camera3D.position.copy(ImmersiveViewScene.cameraPlacement!);
+        if (ImmersiveViewScene.cameraPlacement) {
+            itownsView.camera3D.position.copy(ImmersiveViewScene.cameraPlacement);
+        }
         itownsView.camera3D.updateMatrixWorld(true);
         itownsView.notifyChange(itownsView.camera3D);
 
-        itownsView
-            .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
-            ImmersiveViewScene.event!);
+        if (ImmersiveViewScene.event) {
+            itownsView
+                .addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
+                    ImmersiveViewScene.event);
+        }
     },
     onExit: async () => {
         const itownsView = ImmersiveViewScene.getItownsView();
-        itownsView.removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
-            ImmersiveViewScene.event!);
+        if (ImmersiveViewScene.event) {
+            itownsView.removeEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED,
+                ImmersiveViewScene.event);
+        }
     },
 };

@@ -8,9 +8,11 @@ interface EntwinePointTileLayerParameters extends PointCloudLayerParameters {
 }
 
 class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
-    /** Used to checkout whether this
-     * layer is a EntwinePointTileLayer. Default is `true`. You should not
-     * change this, as it is used internally for optimisation. */
+    /**
+     * Used to checkout whether this layer is a EntwinePointTileLayer.
+     * Default is `true`. You should not change this, as it is used internally
+     * for optimisation.
+     */
     readonly isEntwinePointTileLayer: true;
 
     /**

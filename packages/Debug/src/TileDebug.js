@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import TWEEN from '@tweenjs/tween.js';
+import * as TWEEN from '@tweenjs/tween.js';
 import { MAIN_LOOP_EVENTS, GeometryLayer, ObjectRemovalHelper } from 'itowns';
 import TileObjectChart from './charts/TileObjectChart';
 import TileVisibilityChart from './charts/TileVisibilityChart';
@@ -21,10 +21,10 @@ let selectedNode;
  * Select tile
  *
  * @param      {View} view
- * @param      {Object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
+ * @param      {object} mouseOrEvt - mouse position in window coordinates (0, 0 = top-left)
  * or MouseEvent or TouchEvent.
  * @param      {boolean}  [showInfo=true] Show tile information in console.
- * @return     {TileMesh} Selected tile.
+ * @returns     {TileMesh} Selected tile.
  */
 function selectTileAt(view, mouseOrEvt, showInfo = true) {
     if (selectedNode) {

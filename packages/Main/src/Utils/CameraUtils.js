@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import TWEEN from '@tweenjs/tween.js';
+import * as TWEEN from '@tweenjs/tween.js';
 import DEMUtils from 'Utils/DEMUtils';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import { Coordinates, Ellipsoid } from '@itowns/geographic';
@@ -350,15 +350,15 @@ export function getRig(camera) {
  */
 export default {
     /**
-     * @typedef {Object} CameraTransformOptions
+     * @typedef {object} CameraTransformOptions
      * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
-     * @property {Number} [tilt=currentTilt] camera's tilt, in degree
-     * @property {Number} [heading=currentHeading] camera's heading, in degree
-     * @property {Number} [range=currentRange] camera distance to target coordinate, in meter
-     * @property {Number} [time=2500] duration of the animation, in ms
+     * @property {number} [tilt=currentTilt] camera's tilt, in degree
+     * @property {number} [heading=currentHeading] camera's heading, in degree
+     * @property {number} [range=currentRange] camera distance to target coordinate, in meter
+     * @property {number} [time=2500] duration of the animation, in ms
      * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
-     * @property {Number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
-     * @property {function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
+     * @property {number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
+     * @property {Function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
      * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
      */
     /**
@@ -383,7 +383,7 @@ export default {
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to get transform
      * @param      {THREE.Vector3} [target] - The optional target
-     * @return     {CameraUtils~CameraTransformOptions}  The transform camera looking at target
+     * @returns     {CameraTransformOptions}  The transform camera looking at target
      */
     getTransformCameraLookingAtTarget(view, camera, target) {
         const rig = getRig(camera);
@@ -395,8 +395,8 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to transform
-     * @param      {CameraUtils~CameraTransformOptions|Extent}  params  The parameters
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @param      {CameraTransformOptions|Extent}  params  The parameters
+     * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
     transformCameraToLookAtTarget(view, camera, params = {}) {
         if (params.isExtent) {
@@ -424,7 +424,7 @@ export default {
      * @param   {THREE.Camera}  camera  The camera to get the CameraTransformOptions from
      * @param   {Extent}  extent  The extent the camera must display
      *
-     * @return  {CameraUtils~CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.
+     * @returns  {CameraTransformOptions}   The CameraTransformOptions allowing camera to display the extent.
      */
     getCameraTransformOptionsFromExtent(view, camera, extent) {
         const cameraTransformOptions = {
@@ -479,8 +479,8 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to animate
-     * @param      {CameraUtils~CameraTransformOptions}  params  The parameters
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @param      {CameraTransformOptions}  params  The parameters
+     * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
     animateCameraToLookAtTarget(view, camera, params = {}) {
         params.proxy = params.proxy === undefined || params.proxy;
@@ -506,8 +506,8 @@ export default {
      *
      * @param      {View}  view    The camera view
      * @param      {Camera}  camera  The camera to animate
-     * @param      {CameraUtils~CameraTransformOptions[]}  params  array parameters, each parameters transforms are apply to camera, in serial
-     * @return     {Promise} promise with resolve final CameraUtils~CameraTransformOptions
+     * @param      {CameraTransformOptions[]}  params  array parameters, each parameters transforms are apply to camera, in serial
+     * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
     sequenceAnimationsToLookAtTarget(view, camera, params = [{}]) {
         const promiseSerial = funcs =>
@@ -531,9 +531,9 @@ export default {
     /**
      * Gets the difference camera transformation
      *
-     * @param      {CameraUtils~CameraTransformOptions}  first  param to compare with the second
-     * @param      {CameraUtils~CameraTransformOptions}  second param to compare with the first
-     * @return     {object} The difference parameters
+     * @param      {CameraTransformOptions}  first  param to compare with the second
+     * @param      {CameraTransformOptions}  second param to compare with the first
+     * @returns     {object} The difference parameters
      */
     getDiffParams(first, second) {
         if (!first || !second) {

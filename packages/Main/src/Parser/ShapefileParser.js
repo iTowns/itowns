@@ -47,7 +47,7 @@ export default {
     /**
      * Parse a bunch of Shapefile files and return a {@link FeatureCollection}.
      *
-     * @param {Object} data - All the data that can be specified in a shapefile.
+     * @param {object} data - All the data that can be specified in a shapefile.
      * @param {ArrayBuffer} data.shp - Data from the shapefile itself,
      * containing the feature geometry itself.
      * @param {ArrayBuffer} data.shx - A positional index of the feature
@@ -58,7 +58,7 @@ export default {
      * information.
      * @param {ParsingOptions} [options]
      *
-     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
+     * @returns {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(data, options = {}) {
         options = deprecatedParsingOptionsToNewOne(options);

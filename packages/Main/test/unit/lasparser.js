@@ -43,7 +43,7 @@ describe('LASParser', function () {
         it('parses a las file to a THREE.BufferGeometry (with reprojection)', async function () {
             if (!lasData) { this.skip(); }
             proj4.defs('EPSG:2994', '+proj=lcc +lat_0=41.75 +lon_0=-120.5 +lat_1=43 +lat_2=45.5 +x_0=399999.9999984 +y_0=0 ' +
-                '+ellps=GRS80 +towgs84=-0.991,1.9072,0.5129,-1.25033e-07,-4.6785e-08,-5.6529e-08,0 +units=ft +no_defs +type=crs');
+            '+ellps=GRS80 +towgs84=-0.991,1.9072,0.5129,-1.25033e-07,-4.6785e-08,-5.6529e-08,0 +units=ft +no_defs +type=crs');
 
             const boundsConforming = [
                 635616, 848977, 407,

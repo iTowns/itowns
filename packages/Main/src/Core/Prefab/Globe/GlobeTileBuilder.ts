@@ -14,19 +14,23 @@ const quatToAlignLongitude = new THREE.Quaternion();
 const quatToAlignLatitude = new THREE.Quaternion();
 const quatNormalToZ = new THREE.Quaternion();
 
-/** Transforms a WGS84 latitude into a usable texture offset. */
+/**
+ * Transforms a WGS84 latitude into a usable texture offset.
+ * @param latitude
+ * @returns
+ */
 function WGS84ToOneSubY(latitude: number): number {
     return 1.0 - (0.5 - Math.log(Math.tan(
         PI_OV_FOUR + THREE.MathUtils.degToRad(latitude) * 0.5,
     )) * INV_TWO_PI);
 }
 
-type Transform = {
+interface Transform {
     /** Buffers for 2-part coordinate mapping operations. */
     coords: [Coordinates, Coordinates];
     position: THREE.Vector3;
     dimension: THREE.Vector2;
-};
+}
 
 /** Specialized parameters for the [GlobeTileBuilder]. */
 export interface GlobeTileBuilderParams extends TileBuilderParams {
@@ -44,7 +48,7 @@ export interface GlobeTileBuilderParams extends TileBuilderParams {
  */
 export class GlobeTileBuilder
 implements TileBuilder<GlobeTileBuilderParams> {
-    private static _crs: string = 'EPSG:4978';
+    private static _crs = 'EPSG:4978';
     private static _computeExtraOffset(params: GlobeTileBuilderParams): number {
         const t = WGS84ToOneSubY(params.coordinates.latitude) * params.nbRow;
         return (!isFinite(t) ? 0 : t) - params.deltaUV1;
@@ -64,7 +68,7 @@ implements TileBuilder<GlobeTileBuilderParams> {
 
     public constructor(options: {
         /** Number of unaligned texture sets. */
-        uvCount: number,
+        uvCount: number;
     }) {
         this._transform = {
             coords: [

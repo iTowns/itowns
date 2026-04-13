@@ -16,17 +16,21 @@ type RenderMode = typeof MODES[keyof typeof MODES];
  */
 export interface ModalObject extends THREE.Object3D {
     mode: RenderMode;
-    material: THREE.Material & { mode: RenderMode }
+    material: THREE.Material & { mode: RenderMode };
 }
 
 /**
  * Sets the rendering mode of all the `objects` and their children to `mode`,
  * runs the `callback`, reverts the rendering mode and returns the result.
+ * @param objects
+ * @param mode
+ * @param callback
+ * @returns
  */
 function scope<T>(
-    objects: Array<ModalObject>,
+    objects: ModalObject[],
     mode: RenderMode,
-    callback: (objects: Array<ModalObject>) => T,
+    callback: (objects: ModalObject[]) => T,
 ): T {
     const oldModes = objects.map(obj => obj.mode ?? MODES.FINAL);
     for (const obj of objects) {

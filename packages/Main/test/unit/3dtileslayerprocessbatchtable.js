@@ -9,7 +9,7 @@ import View from 'Core/View';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import Fetcher from 'Provider/Fetcher';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Renderer from './bootstrap';
 
 const url = 'https://raw.githubusercontent.com/AnalyticalGraphicsInc/cesium/master/Apps/SampleData/Cesium3DTiles/Hierarchy/BatchTableHierarchy';

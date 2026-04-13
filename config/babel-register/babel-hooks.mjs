@@ -20,9 +20,10 @@ const cwdRE = escapeRegExp(cwd);
 
 /**
  * @param {string | SharedArrayBuffer | Uint8Array} source
- * @param {Object} context
+ * @param {object} context
  * @param {string} context.url
  * @param {string} context.format
+ * @returns {Promise}
  */
 async function transpile(source, context) {
     const { url, format } = context;
@@ -60,15 +61,16 @@ async function transpile(source, context) {
 
 /**
  * @param {string} specifier
- * @param {Object} context
+ * @param {object} context
  * @param {string[]} context.conditions - Export conditions of the relevant
  * package.json
- * @param {Object} context.importAttributes - An object whose key-value pairs
+ * @param {object} context.importAttributes - An object whose key-value pairs
  * represent the attributes for the module to import
  * @param {string | undefined} context.parentURL - The module importing this
  * one, or undefined if this is the Node.js entry point
  * @param {Function} nextResolve - The subsequent resolve hook in the chain, or
  * the Node.js default resolve hook after the last user-supplied resolve hook
+ * @returns {Promise}
  */
 export async function resolve(specifier, context, nextResolve) {
     // Try to resolve the path of an imported module.
@@ -87,15 +89,16 @@ export async function resolve(specifier, context, nextResolve) {
 
 /**
  * @param {string} url - The URL returned by the resolve chain
- * @param {Object} context
+ * @param {object} context
  * @param {string[]} context.conditions - Export conditions of the relevant
  * package.json
  * @param {string | null | undefined} context.format - The format optionally
  * supplied by the resolve hook chain
- * @param {Object} context.importAttributes
+ * @param {object} context.importAttributes
  * @param {function(string, object): Promise<{ format: string, shortCircuit: boolean, source: string }>} nextLoad -
  * The subsequent load hook in the chain, or the Node.js default load hook after
  * the last user-supplied load hook
+ * @returns {Promise}
  */
 export async function load(url, context, nextLoad) {
     // Try to load the file using the default loader (which supports both

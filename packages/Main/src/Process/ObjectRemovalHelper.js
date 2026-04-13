@@ -47,7 +47,7 @@ export default {
      * Neither obj nor its children will be disposed!
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
      * @param {Object3D} obj The Object3D we want to clean
-     * @return {Array} an array of removed Object3D from obj (not including the recursive removals)
+     * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildren(layer, obj) {
         const toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
@@ -60,7 +60,7 @@ export default {
      * obj will be disposed but its children **won't**!
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
      * @param {Object3D} obj The Object3D we want to clean
-     * @return {Array} an array of removed Object3D from obj (not including the recursive removals)
+     * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildrenAndCleanup(layer, obj) {
         const toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
@@ -77,7 +77,7 @@ export default {
      * All removed obj will have their geometry/material disposed.
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
      * @param {Object3D} obj The Object3D we want to clean
-     * @return {Array} an array of removed Object3D from obj (not including the recursive removals)
+     * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildrenAndCleanupRecursively(layer, obj) {
         // Objects are filtered by id because the obj hierarchy may also contain labels that have been added as childs

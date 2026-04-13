@@ -37,18 +37,22 @@ import PointCloudLayer, { type PointCloudLayerParameters } from 'Layer/PointClou
 import Potree2Node from 'Core/Potree2Node';
 import type Potree2Source from 'Source/Potree2Source';
 
-interface Potree2LayerParameters extends PointCloudLayerParameters{
-    /** The CRS of the View this layer will be attached to.
-     * This is used to determine the extent of this
-     * layer.  Default to `EPSG:4326`. */
+interface Potree2LayerParameters extends PointCloudLayerParameters {
+    /**
+     * The CRS of the View this layer will be attached to.
+     * This is used to determine the extent of this layer.
+     * Default to `EPSG:4326`.
+     */
     crs?: string;
     source: Potree2Source;
 }
 
 class Potree2Layer extends PointCloudLayer<Potree2Source> {
-    /** Used to checkout whether this layer is a Potree2Layer.
-     * Default is `true`. You should not change this,
-     * as it is used internally for optimisation. */
+    /**
+     * Used to checkout whether this layer is a Potree2Layer.
+     * Default is `true`. You should not change this, as it is used internally
+     * for optimisation.
+     */
     readonly isPotree2Layer: true;
     metadata?: unknown;
 
@@ -83,9 +87,10 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
         const setRootNode =  this.source.whenReady.then((metadata) => {
             this.metadata = metadata;
+            const { attributes, boundingBox, hierarchy } = metadata;
 
-            const normal = Array.isArray(metadata.attributes) &&
-               metadata.attributes.find((elem: { name: string }) => elem.name.startsWith('NORMAL'));
+            const normal = Array.isArray(attributes) &&
+                attributes.find((elem: { name: string }) => elem.name.startsWith('NORMAL'));
             if (normal) {
                 // @ts-expect-error PointsMaterial is not typed
                 this.material.defines[normal.name] = 1;
@@ -93,7 +98,6 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             this.setElevationRange();
 
-            const { boundingBox, hierarchy } = metadata;
             const bounds = [...boundingBox.min, ...boundingBox.max];
             const rootHierarchy = {
                 '0-0-0-0': {

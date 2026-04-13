@@ -10,7 +10,7 @@ import { BIMLoader } from '../ModelLoaders';
 export const BIMScene: SceneType = {
     title: 'From Building to Territory',
     description: 'Integrate Building Information Models into your geospatial context. '
-    + 'Load glTF models to combine architectural and geographic data.',
+        + 'Load glTF models to combine architectural and geographic data.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.76633, 45.706118),
         range: 300,
@@ -85,10 +85,10 @@ export const BIMScene: SceneType = {
     },
     onEnter: async () => {
         const itownsView = BIMScene.getItownsView();
-        itownsView.scene.add(...BIMScene.meshes!);
+        itownsView.scene.add(...(BIMScene.meshes ?? []));
     },
     onExit: async () => {
         const itownsView = BIMScene.getItownsView();
-        itownsView.scene.remove(...BIMScene.meshes!);
+        itownsView.scene.remove(...(BIMScene.meshes ?? []));
     },
 };

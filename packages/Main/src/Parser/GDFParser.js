@@ -23,15 +23,15 @@ export default {
      * Parses a GDF file content and returns a corresponding {@link GeoidGrid}.
      *
      * @param   {string}    gdf                             The content of the GDF file to parse.
-     * @param   {Object}    options                         An object gathering the optional parameters to pass to
-                                                            * the parser.
-     * @param   {Object}    [options.in={}]                 Information on the GDF data.
+     * @param   {object}    options                         An object gathering the optional parameters to pass to
+     * the parser.
+     * @param   {object}    [options.in={}]                 Information on the GDF data.
      * @param   {string}    [options.in.crs='EPSG:4326']    The Coordinates Reference System (CRS) of the GDF data.
-                                                            * It must be a geographic CRS, and must be given as an EPSG
-                                                            * code.
+     * It must be a geographic CRS, and must be given as an EPSG
+     * code.
      *
      * @returns {Promise<GeoidGrid>}    A promise resolving with a {@link GeoidGrid}, which contains all the necessary
-                                        * attributes and methods to access GDF file data.
+     * attributes and methods to access GDF file data.
      */
     parse(gdf, options = { in: {} }) {
         const rows = gdf.split('\n');

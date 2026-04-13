@@ -11,21 +11,23 @@ type Option<T> = T | undefined;
 
 type IndexArray = Option<Uint8Array | Uint16Array | Uint32Array>;
 
-export type Buffers = {
-    index: IndexArray,
-    position: Float32Array,
-    normal: Float32Array,
-    uvs: [Option<Float32Array>, Option<Float32Array>],
-};
+export interface Buffers {
+    index: IndexArray;
+    position: Float32Array;
+    normal: Float32Array;
+    uvs: [Option<Float32Array>, Option<Float32Array>];
+}
+
+type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
 type BuffersAndSkirt = Buffers & {
-    skirt: IndexArray,
+    skirt: IndexArray;
 };
 
 function getUintArrayConstructor(
     highestValue: number,
 ): Uint8ArrayConstructor | Uint16ArrayConstructor | Uint32ArrayConstructor {
-    let picked = null;
+    let picked;
 
     if (highestValue < 2 ** 8) {
         picked = Uint8Array;
@@ -40,17 +42,17 @@ function getUintArrayConstructor(
     return picked;
 }
 
-type BufferCache = {
+interface BufferCache {
     index: Exclude<IndexArray, undefined>;
     uv: Float32Array;
-};
+}
 
 function allocateIndexBuffer(
     nVertex: number,
     nSeg: number,
     params: { disableSkirt: boolean },
     cache?: BufferCache['index'],
-): { index: IndexArray, skirt: IndexArray } {
+): { index: IndexArray; skirt: IndexArray } {
     const indexBufferSize = getBufferIndexSize(nSeg, params.disableSkirt);
     const indexConstructor = getUintArrayConstructor(nVertex);
 
@@ -137,7 +139,13 @@ interface ComputeBuffersParams extends TileBuilderPrepareParams {
     center: THREE.Vector3;
 }
 
-/** Compute buffers describing a tile according to a builder and its params. */
+/**
+ * Compute buffers describing a tile according to a builder and its params.
+ * @param builder
+ * @param params
+ * @param cache
+ * @returns
+ */
 // TODO: Split this even further into subfunctions
 export function computeBuffers(
     builder: TileBuilder,
@@ -214,7 +222,7 @@ export function computeBuffers(
 
             for (const [index, computeUv] of computeUvs.entries()) {
                 if (computeUv !== undefined) {
-                    computeUv(outBuffers.uvs[index]!, y * nVertex + x, u, v);
+                    computeUv(outBuffers.uvs[index] as Float32Array, y * nVertex + x, u, v);
                 }
             }
         }
@@ -222,6 +230,7 @@ export function computeBuffers(
 
     // Fill skirt index buffer
     if (cache === undefined && !preparedParams.disableSkirt) {
+        const skirt = outBuffers.skirt as UintArray;
         for (let x = 0; x < nVertex; x++) {
             //   -------->
             //   0---1---2
@@ -229,14 +238,14 @@ export function computeBuffers(
             //   +---+---+
             //   | / | / |
             //   +---+---+
-            outBuffers.skirt![x] = x;
+            skirt[x] = x;
             //   +---+---+
             //   | / | / |   [0-9] = assign order
             //   +---+---x   x = skipped for now
             //   | / | / |
             //   0---1---2
             //   <--------
-            outBuffers.skirt![2 * nVertex - 2 + x] = nVertex ** 2 - (x + 1);
+            skirt[2 * nVertex - 2 + x] = nVertex ** 2 - (x + 1);
         }
 
         for (let y = 1; y < nVertex - 1; y++) {
@@ -245,22 +254,28 @@ export function computeBuffers(
             //   +---+---o | s = already stored
             //   | / | / | |
             //   +---+---s v
-            outBuffers.skirt![nVertex - 1 + y] = y * nVertex + (nVertex - 1);
+            skirt[nVertex - 1 + y] = y * nVertex + (nVertex - 1);
             // ^ s---+---+
             // | | / | / |   o = stored vertices
             // | o---+---+   s = already stored
             // | | / | / |
             // | s---+---+
-            outBuffers.skirt![3 * nVertex - 3 + y] =
-                nVertex * (nVertex - 1 - y);
+            skirt[3 * nVertex - 3 + y] = nVertex * (nVertex - 1 - y);
         }
     }
 
-    /** Copy passed indices at the desired index of the output index buffer. */
+    /**
+     * Copy passed indices at the desired index of the output index buffer.
+     * @param id
+     * @param va
+     * @param vb
+     * @param vc
+     */
     function bufferizeTri(id: number, va: number, vb: number, vc: number) {
-        outBuffers.index![id + 0] = va;
-        outBuffers.index![id + 1] = vb;
-        outBuffers.index![id + 2] = vc;
+        const index = outBuffers.index as UintArray;
+        index[id + 0] = va;
+        index[id + 1] = vb;
+        index[id + 2] = vc;
     }
 
     if (cache === undefined) {
@@ -300,8 +315,9 @@ export function computeBuffers(
                 return id + 6;
             },
             uv: (buf: Option<Float32Array>, idTo: number, idFrom: number) => {
-                buf![idTo * 2 + 0] = buf![idFrom * 2 + 0];
-                buf![idTo * 2 + 1] = buf![idFrom * 2 + 1];
+                const b = buf as Float32Array;
+                b[idTo * 2 + 0] = b[idFrom * 2 + 0];
+                b[idTo * 2 + 1] = b[idFrom * 2 + 1];
             },
         } : { index: () => { }, uv: () => { } };
 
@@ -309,8 +325,9 @@ export function computeBuffers(
         const start = nTileVertex;
         const indexBufStart = 6 * nSeg ** 2;
 
-        for (let i = 0; i < outBuffers.skirt!.length; i++) {
-            const id = outBuffers.skirt![i];
+        const skirt = outBuffers.skirt as UintArray;
+        for (let i = 0; i < skirt.length; i++) {
+            const id = skirt[i];
             const id_m3 = (start + i) * 3;
             const id2_m3 = id * 3;
 
@@ -331,12 +348,12 @@ export function computeBuffers(
                 outBuffers.uvs[1][start + i] = outBuffers.uvs[1][id];
             }
 
-            const idf = (i + 1) % outBuffers.skirt!.length;
+            const idf = (i + 1) % skirt.length;
 
             const v1 = id;
             const v2 = start + i;
             const v3 = (idf === 0) ? start : start + i + 1;
-            const v4 = outBuffers.skirt![idf];
+            const v4 = skirt[idf];
 
             buildSkirt.index(indexBufStart + i * 6, v1, v2, v3, v4);
         }

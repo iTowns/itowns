@@ -21,10 +21,10 @@ const worldCoordinateCenter = new THREE.Vector3();
 /**
  * Bounding region is converted to a bounding sphere to simplify and speed computation and culling. This function
  * computes a sphere enclosing the bounding region.
- * @param {Object} region - the parsed json from the tile representing the region
+ * @param {object} region - the parsed json from the tile representing the region
  * @param {THREE.Matrix4} tileMatrixInverse - the inverse transformation matrix of the tile to transform the produced
  * sphere from a global to a reference local to the tile
- * @return {THREE.Sphere} a sphere enclosing the given region
+ * @returns {THREE.Sphere} a sphere enclosing the given region
  */
 function initFromRegion(region, tileMatrixInverse) {
     const east = region[2];
@@ -57,8 +57,8 @@ function initFromRegion(region, tileMatrixInverse) {
 
 /**
  * Create a bounding box from a json describing a box in a 3D Tiles tile.
- * @param {Object} box - the parsed json from the tile representing the box
- * @return {THREE.Box3} the bounding box of the tile
+ * @param {object} box - the parsed json from the tile representing the box
+ * @returns {THREE.Box3} the bounding box of the tile
  */
 function initFromBox(box) {
     // box[0], box[1], box[2] = center of the box
@@ -74,7 +74,7 @@ function initFromBox(box) {
 
 /**
  * Creats a bounding sphere from a json describing a sphere in a 3D Tiles tile.
- * @param {Object} sphere - the parsed json from the tile representing the sphere
+ * @param {object} sphere - the parsed json from the tile representing the sphere
  * @returns {THREE.Sphere} the bounding sphere of the tile
  */
 function initFromSphere(sphere) {
@@ -91,7 +91,7 @@ function initFromSphere(sphere) {
  * @property {C3DTilesTypes} type - Used by 3D Tiles extensions
  * (e.g. {@link C3DTBatchTableHierarchyExtension}) to know in which context
  * (i.e. for which 3D Tiles class) the parsing of the extension should be done.
- * @property {String} initialVolumeType - the initial volume type to be able to dissociate spheres
+ * @property {string} initialVolumeType - the initial volume type to be able to dissociate spheres
  * and regions if needed since both are converted to spheres (one of {@link C3DTilesBoundingVolumeTypes})
  * @property {THREE.Box3|THREE.Sphere} volume - The 3D bounding volume created. Can be a THREE.Box3 for bounding volumes
  * of types box or a THREE.Sphere for bounding volumes of type sphere or region.
@@ -133,7 +133,7 @@ class C3DTBoundingVolume {
         if (this.initialVolumeType === C3DTilesBoundingVolumeTypes.box) {
             return !camera.isBox3Visible(this.volume, tileMatrixWorld);
         } else if (this.initialVolumeType === C3DTilesBoundingVolumeTypes.sphere ||
-                   this.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
+            this.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
             return !camera.isSphereVisible(this.volume, tileMatrixWorld);
         } else {
             throw new Error('Unknown bounding volume type.');

@@ -9,10 +9,10 @@ import { createHTMLListFromObject } from './GUI/GuiTools.js';
  * Function allowing picking on a given 3D tiles layer and filling an html div
  * with information on the picked feature.
  * @param {MouseEvent} event
- * @param {Object} pickingArg
+ * @param {object} pickingArg
  * @param {HTMLDivElement} pickingArg.htmlDiv - div element which contains the
  * picked information
- * @param {GlobeView} picking.view - iTowns view where the picking must be done
+ * @param {GlobeView} pickingArg.view - iTowns view where the picking must be done
  * @param {OGC3DTilesLayer} pickingArg.layer - the layer on which the picking
  * must be done
  */
@@ -33,12 +33,10 @@ export function fillHTMLWithPickingInfo(event, pickingArg) {
         layer.getC3DTileFeatureFromIntersectsArray(intersects);
 
     if (closestC3DTileFeature) {
-        // eslint-disable-next-line
         htmlDiv.appendChild(createHTMLListFromObject(closestC3DTileFeature));
     }
 
     layer.getMetadataFromIntersections(intersects).then((metadata) => {
-        // eslint-disable-next-line
         metadata?.forEach(m => htmlDiv.appendChild(createHTMLListFromObject(m)));
     });
 }

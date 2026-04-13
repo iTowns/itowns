@@ -3,7 +3,7 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates, CRS } from '@itowns/geographic';
 import VpcSource from 'Source/VpcSource';
 import VpcLayer from 'Layer/VpcLayer';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 

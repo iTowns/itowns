@@ -19,7 +19,7 @@ class C3DTilesIonSource extends C3DTilesSource {
      *
      * @extends Source
      *
-     * @param {Object} source An object that can contain all properties of a C3DTilesIonSource and {@link Source}.
+     * @param {object} source An object that can contain all properties of a C3DTilesIonSource and {@link Source}.
      * Only `accessToken` and `assetId` are mandatory.
      */
     constructor(source) {
@@ -43,7 +43,7 @@ class C3DTilesIonSource extends C3DTilesSource {
             .then((json) => {
                 if (json.type !== '3DTILES') {
                     throw new Error(`${json.type} datasets from Cesium ion are not supported with C3DTilesIonSource. ` +
-                    'Only 3D Tiles datasets are supported.');
+                        'Only 3D Tiles datasets are supported.');
                 }
                 this.url = json.url; // Store url to the tileset.json
                 this.baseUrl = json.url.slice(0, json.url.lastIndexOf('/') + 1); // baseUrl for tiles queries

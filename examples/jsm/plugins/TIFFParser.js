@@ -28,9 +28,9 @@ const TIFFParser = (function _() {
          * Parse a TIFF file and return a `THREE.DataTexture`.
          *
          * @param {ArrayBuffer} data - The TIFF file content to parse.
-         * @param {Object} options - options
+         * @param {object} options - options
          *
-         * @return {Promise} A promise resolving with a `THREE.DataTexture`.
+         * @returns {Promise} A promise resolving with a `THREE.DataTexture`.
          *
          * @memberof module:TIFFParser
          */
@@ -58,7 +58,7 @@ const TIFFParser = (function _() {
 
                 const it = IFD.data.values();
                 const rowSize = IFD.height * 4;
-                let rowOffset = 0;
+                let rowOffset;
                 for (let i = 0; i < IFD.width; i++) {
                     rowOffset = i * width * 4;
                     resizedData.fill(255, rowOffset, rowOffset + rowSize);

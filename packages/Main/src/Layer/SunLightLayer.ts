@@ -61,6 +61,7 @@ class SunLightLayer extends GeometryLayer {
      * Updates the sun light position and its target to shine on what the
      * camera sees. Dynamically adjusts the shadow box size to minimize
      * flickering while covering the visible area.
+     * @param context - The update context.
      */
     update(context: UpdateContext) {
         const camera = context.camera.camera3D;

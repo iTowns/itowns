@@ -49,47 +49,47 @@ const OGC3D_TILES_MAX_BYTES = 2 ** 30; // 1GB
 export const OGC3DTILES_LAYER_EVENTS = {
     /**
      * Fired when a new root or child tile set is loaded
-     * @event OGC3DTilesLayer#load-tile-set
-     * @type {Object}
-     * @property {Object} tileset - the tileset json parsed in an Object
-     * @property {String} url - tileset url
+     * @event OGC3DTilesLayer#"load-tile-set"
+     * @type {object}
+     * @property {object} tileset - the tileset json parsed in an Object
+     * @property {string} url - tileset url
      */
     LOAD_TILE_SET: 'load-tileset',
     /**
      * Fired when a tile model is loaded
-     * @event OGC3DTilesLayer#load-model
-     * @type {Object}
+     * @event OGC3DTilesLayer#"load-model"
+     * @type {object}
      * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
-     * @property {Object} tile - the tile metadata from the tileset
+     * @property {object} tile - the tile metadata from the tileset
      */
     LOAD_MODEL: 'load-model',
     /**
      * Fired when a tile model is disposed
-     * @event OGC3DTilesLayer#dispose-model
-     * @type {Object}
+     * @event OGC3DTilesLayer#"dispose-model"
+     * @type {object}
      * @property {THREE.Group} scene - the model (tile content) that is disposed
-     * @property {Object} tile - the tile metadata from the tileset
+     * @property {object} tile - the tile metadata from the tileset
      */
     DISPOSE_MODEL: 'dispose-model',
     /**
      * Fired when a tiles visibility changes
-     * @event OGC3DTilesLayer#tile-visibility-change
-     * @type {Object}
+     * @event OGC3DTilesLayer#"tile-visibility-change"
+     * @type {object}
      * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
-     * @property {Object} tile - the tile metadata from the tileset
+     * @property {object} tile - the tile metadata from the tileset
      * @property {boolean} visible - the tile visible state
      */
     TILE_VISIBILITY_CHANGE: 'tile-visibility-change',
     /**
      * Fired when a new batch of tiles start loading (can be fired multiple times, e.g. when the camera moves and new tiles
      * start loading)
-     * @event OGC3DTilesLayer#tiles-load-start
+     * @event OGC3DTilesLayer#"tiles-load-start"
      */
     TILES_LOAD_START: 'tiles-load-start',
     /**
      * Fired when all visible tiles are loaded (can be fired multiple times, e.g. when the camera moves and new tiles
      * are loaded)
-     * @event OGC3DTilesLayer#tiles-load-end
+     * @event OGC3DTilesLayer#"tiles-load-end"
      */
     TILES_LOAD_END: 'tiles-load-end',
 };
@@ -97,9 +97,9 @@ export const OGC3DTILES_LAYER_EVENTS = {
 /**
  * Enable loading 3D Tiles with [Draco](https://google.github.io/draco/) geometry extension.
  *
- * @param {String} path path to draco library folder containing the JS and WASM decoder libraries. They can be found in
+ * @param {string} path path to draco library folder containing the JS and WASM decoder libraries. They can be found in
  * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/draco).
- * @param {Object} [config] optional configuration for Draco decoder (see threejs'
+ * @param {object} [config] optional configuration for Draco decoder (see threejs'
  * [setDecoderConfig](https://threejs.org/docs/index.html?q=draco#examples/en/loaders/DRACOLoader.setDecoderConfig) that
  * is called under the hood with this configuration for details.
  */
@@ -118,7 +118,7 @@ export function enableDracoLoader(path, config) {
 /**
  * Enable loading 3D Tiles with [KTX2](https://www.khronos.org/ktx/) texture extension.
  *
- * @param {String} path path to ktx2 library folder containing the JS and WASM decoder libraries. They can be found in
+ * @param {string} path path to ktx2 library folder containing the JS and WASM decoder libraries. They can be found in
  * [itowns examples](https://github.com/iTowns/itowns/tree/master/examples/libs/basis).
  * @param {THREE.WebGLRenderer} renderer the threejs renderer
  */
@@ -364,20 +364,20 @@ class OGC3DTilesLayer extends GeometryLayer {
      *
      * @extends Layer
      *
-     * @param {String} id - unique layer id.
-     * @param {Object} config - layer specific configuration
+     * @param {string} id - unique layer id.
+     * @param {object} config - layer specific configuration
      * @param {OGC3DTilesSource} config.source - data source configuration
-     * @param {String} [config.pntsMode = PNTS_MODE.COLOR] Point cloud coloring mode (passed to {@link PointsMaterial}).
+     * @param {string} [config.pntsMode = PNTS_MODE.COLOR] Point cloud coloring mode (passed to {@link PointsMaterial}).
      *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
      *      CLASSIFICATION uses a classification property of the batch table to color points.
      * @param {ClassificationScheme}  [config.classificationScheme = ClassificationScheme.DEFAULT]  {@link PointsMaterial} classification scheme
-     * @param {String} [config.pntsShape = PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
+     * @param {string} [config.pntsShape = PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
      * (passed to {@link PointsMaterial}).
-     * @param {String} [config.pntsSizeMode = PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
+     * @param {string} [config.pntsSizeMode = PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
      * Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance
      * from point to camera.
-     * @param {Number} [config.pntsMinAttenuatedSize = 3] Minimum scale used by 'ATTENUATED' size mode.
-     * @param {Number} [config.pntsMaxAttenuatedSize = 10] Maximum scale used by 'ATTENUATED' size mode.
+     * @param {number} [config.pntsMinAttenuatedSize = 3] Minimum scale used by 'ATTENUATED' size mode.
+     * @param {number} [config.pntsMaxAttenuatedSize = 10] Maximum scale used by 'ATTENUATED' size mode.
      */
     constructor(id, config) {
         const {
@@ -402,7 +402,7 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.pntsMinAttenuatedSize = pntsMinAttenuatedSize;
         this.pntsMaxAttenuatedSize = pntsMaxAttenuatedSize;
 
-        /** @type{any} */
+        /** @type {any} */
         this.tilesRenderer = new TilesRenderer(this.source.url);
         if (config.source.isOGC3DTilesIonSource) {
             this.tilesRenderer.registerPlugin(new CesiumIonAuthPlugin({
@@ -655,7 +655,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * extension and the returned featured to index metadata stored in property tables.
      *
      * @param {Array<THREE.Intersection>} intersections
-     * @returns {Promise<Object | null>} - the intersected object's metadata
+     * @returns {Promise<object | null>} - the intersected object's metadata
      */
     async getMetadataFromIntersections(intersections) {
         if (!intersections.length) { return null; }
@@ -669,14 +669,14 @@ class OGC3DTilesLayer extends GeometryLayer {
      * intersects.
      * @param {Array<THREE.Intersection>} intersects -  An array containing all
      * objects picked under mouse coordinates computed with view.pickObjectsAt(..).
-     * @returns {Object | null} - An object containing
+     * @returns {object | null} - An object containing
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
         if (!intersects.length) { return null; }
 
         const { face, index, object, instanceId } = intersects[0];
 
-        /** @type{number|null} */
+        /** @type {number|null} */
         let batchId;
         if (object.isPoints && index != null) {
             batchId = object.geometry.getAttribute('_batchid')?.getX(index) ?? index;

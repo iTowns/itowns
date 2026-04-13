@@ -6,7 +6,7 @@ import type { SceneType } from '../Types';
 export const Terrain3dScene: SceneType = {
     title: 'Feel the Relief',
     description: 'Add realistic relief to your maps with elevation data. '
-    + 'iTowns supports multiple terrain formats such as WMTS with images and COG.',
+        + 'iTowns supports multiple terrain formats such as WMTS with images and COG.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 9, 44.5),
         range: 300000,

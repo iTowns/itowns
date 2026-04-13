@@ -21,7 +21,7 @@ import Style from 'Core/Style';
 import Feature2Mesh from 'Converter/Feature2Mesh';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Renderer from './bootstrap';
 
 import holes from '../data/geojson/holesPoints.geojson';

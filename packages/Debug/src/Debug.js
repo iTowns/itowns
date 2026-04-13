@@ -9,9 +9,9 @@ import OBBHelper from './OBBHelper';
 /**
  * Create a debug instance attached to an itowns instance
  *
- * @Constructor
+ * @class
  * @param {Scene} scene the itowns Scene
- * @return {Debug} a debug instance
+ * @returns {Debug} a debug instance
  */
 
 // disabling eslint errors as it is the exported constructor

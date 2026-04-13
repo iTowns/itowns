@@ -30,7 +30,7 @@ export default {
      * process. You can give candidates tiles likely to contain `coord`.
      * Otherwise the lookup process starts from the root of `layer`.
      *
-     * @return {number} If found, a value in meters is returned; otherwise
+     * @returns {number} If found, a value in meters is returned; otherwise
      * `undefined`.
      */
     getElevationValueAt(layer, coord, method = FAST_READ_Z, tileHint) {
@@ -42,7 +42,7 @@ export default {
 
     /**
      * @typedef Terrain
-     * @type {Object}
+     * @type {object}
      *
      * @property {Coordinates} coord - Pick coordinate with the elevation in coord.z.
      * @property {THREE.Texture} texture - the picked elevation texture.
@@ -74,9 +74,9 @@ export default {
      * @param {TileMesh[]} [tileHint] - Optional array of tiles to speed up the
      * process. You can give candidates tiles likely to contain `coord`.
      * Otherwise the lookup process starts from the root of `layer`.
-     * @param {Object} [cache] - Object to cache previous result and speed up the next `getTerrainObjectAt`` use.
+     * @param {object} [cache] - Object to cache previous result and speed up the next `getTerrainObjectAt`` use.
      *
-     * @return {Terrain} - The {@link Terrain} object.
+     * @returns {Terrain} - The {@link Terrain} object.
      */
     getTerrainObjectAt(layer, coord, method = FAST_READ_Z, tileHint, cache) {
         return _readZ(layer, method, coord, tileHint || layer.level0Nodes, cache);

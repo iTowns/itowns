@@ -54,7 +54,7 @@ const typedArrayMapping = {
  * @param {Array} v - The array depicting the position [x, y, z].
  * @param {Array} q - The Array depicting the Quaternion. [x, y, z, w]
  *
- * @return {Vector3} A reference to this vector.
+ * @returns {Vector3} A reference to this vector.
  */
 function _applyQuaternion(v, q) {
     // quaternion q is assumed to have unit length

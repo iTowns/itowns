@@ -36,19 +36,19 @@ export const Buildings3dLayer: LayerPromiseTypeMeshCallback = {
         const properties = feature as {
             object: {
                 feature: {
-                    id: string,
+                    id: string;
                     geometries: {
                         properties: {
-                            alti_sol: string,
-                            hauteur: string,
-                            isole: string,
-                            niveau: string,
-                            symbo: string,
-                            territoire: string,
-                        }
-                    }[]
-                }
-            }
+                            alti_sol: string;
+                            hauteur: string;
+                            isole: string;
+                            niveau: string;
+                            symbo: string;
+                            territoire: string;
+                        };
+                    }[];
+                };
+            };
         };
 
         return {

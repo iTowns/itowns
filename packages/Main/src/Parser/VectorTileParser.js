@@ -205,20 +205,20 @@ export default {
      *
      * @param {ArrayBuffer} file - The vector tile file to parse.
      *
-     * @param {Object} options - Options controlling the parsing {@link ParsingOptions}.
+     * @param {object} options - Options controlling the parsing {@link ParsingOptions}.
      *
-     * @param {Object} options.in - Object containing all styles,
+     * @param {object} options.in - Object containing all styles,
      * layers and informations data, see {@link InformationsData}.
      *
-     * @param {Object} options.in.styles - Object containing subobject with
+     * @param {object} options.in.styles - Object containing subobject with
      * informations on a specific style layer. Styles available is by `layer.id` and by zoom.
      *
-     * @param {Object} options.in.layers - Object containing subobject with
+     * @param {object} options.in.layers - Object containing subobject with
      *
      * @param {FeatureBuildingOptions} options.out - options indicates how the features should be built,
      * see {@link FeatureBuildingOptions}.
      *
-     * @return {Promise} A Promise resolving with a Feature or an array a
+     * @returns {Promise} A Promise resolving with a Feature or an array a
      * Features.
      */
     parse(file, options) {
