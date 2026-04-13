@@ -4,6 +4,7 @@ import { Extent } from '@itowns/geographic';
 const _countTiles = new THREE.Vector2();
 const _dim = new THREE.Vector2();
 
+export const globalDefaultExtentCRS = ['EPSG:4326', 'EPSG:3857'];
 export const globalExtentTMS: Map<string, Extent> = new Map();
 export const schemeTiles: Map<string, THREE.Vector2> = new Map();
 
