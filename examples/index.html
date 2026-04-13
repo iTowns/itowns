@@ -14,6 +14,10 @@
         integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link cype="text/css" rel="stylesheet" href="css/example.css" />
+    <!-- Code Mirror material-darker theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/material-darker.min.css" 
+    integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 
 <body data-spy="scroll" data-target="nav">
@@ -39,7 +43,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <div id="main">
-        <iframe id="content" frameborder="0" height="100%"></iframe>
+        <iframe id="content" frameborder="0" height="100%" width="auto"></iframe>
     </div>
 
     <div id="editor-panel">
@@ -48,15 +52,20 @@
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
-                <button id="gallery-btn" class="sidebar-btn active" data-panel="gallery-panel" title="Example gallery">    
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery">    
                      <img src="images/dashboard.svg" alt="Example gallery" />
                 </button>
-                <button id="code-btn" class="sidebar-btn" data-panel="code-panel" title="Code editor">
+                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
-                <a href="https://github.com/iTowns">
-                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository">
+                <a href="https://github.com/iTowns" target="_blank" rel="noopener noreferrer">
+                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button">
                             <img src="images/github.svg" alt="Code editor" />
+                    </button>
+                </a>
+                <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button">
+                            <img src="images/book.svg" alt="Code editor" />
                     </button>
                 </a>
             </nav>
@@ -101,7 +110,6 @@
                 <!--content added dynamically in JS--> 
             </div>
 
-            
 
             <div class="panel-footer">  <!--Is the version switch really relevant here ?-->
                 <div class="switch-box">    
@@ -119,11 +127,11 @@
                 <h1 class="panel-title">Code editor</h1>
                 <p>Example description lorem ipsum</p>  
             </div>
-                <!--
-                <div style="display: flex; padding: 1em; height: 100%">
+                
+                <div id="code-editor-wrapper">
                     <textarea id="code-editor"></textarea>
                 </div>
-                -->
+                
 
             <div class="panel-footer">
                 <div class="switch-box">
@@ -135,25 +143,16 @@
                 </div>
                 <button type="button" id="run-button">
                     RUN
-                    <img src="images/run.svg" alt="Code editor" />
+                    <img src="images/run.svg" alt="Run code" />
                 </button>
             </div>
         </div>
-        
-
-
-
-        
-
-        
 
     </div>
 
 
     <button id="editor-collapse">
-        <svg viewBox="0 0 10 10">
-            <polygon points="0,5 10,0 10,10" style="fill:white" />
-        </svg>
+        <img src="images/collapse.svg" alt="Collapse" />
     </button>
 
     <script type="text/javascript">
@@ -162,7 +161,7 @@
         const exampleSelector = document.getElementById("example-selector");
         const codeEditorTextArea = document.getElementById("code-editor");
         const sidebarTabs = document.getElementById("sidebar-tabs");
-        const sidebarButtons = document.querySelectorAll(".sidebar-btn");
+        const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
         const panels = document.querySelectorAll(".panel");
         const versionSwitches = document.querySelectorAll(".switch");
         const exampleList = document.getElementById("example-list");
@@ -174,16 +173,19 @@
         function getTheme(isDark) {
             return isDark ? "shadowfox" : "default";
         }
-/*
+
         const codeEditor = CodeMirror.fromTextArea(codeEditorTextArea, {
             lineNumbers: true,
             mode: "htmlmixed",
-            theme: getTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),
+            theme: "material-darker",
+            /*getTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),*/
         });
 
+        /*
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             codeEditor.setOption("theme", getTheme(event.matches));
         });
+        */
 
         const exampleCache = {};
 
@@ -216,8 +218,8 @@
             return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
 
-        /*
-        function runCode() {                DEBUG, WILL NEED TO DECOMMENT
+        
+        function runCode() {                
             const code = codeEditor.getValue();
             localStorage.setItem("code", toBase64(code));
 
@@ -229,7 +231,7 @@
         codeEditor.setOption("extraKeys", {
             "Ctrl-Enter": runCode,
         });
-        */
+        
 
         
 
@@ -242,6 +244,13 @@
                 panels.forEach(panel => panel.classList.remove("active"));
                 const panelId = button.dataset.panel;
                 document.getElementById(panelId).classList.add("active");
+
+
+                if (panelId === "code-panel") {
+                    setTimeout(() => {
+                        codeEditor.refresh();
+                    }, 0);
+                }
             });
         });
 
@@ -284,7 +293,7 @@
         fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value || 13);
         */
 
-        /*
+        
         let editorHidden = false;
         const editorCollapse = document.getElementById("editor-collapse");
         editorCollapse.onclick = () => {
@@ -292,16 +301,16 @@
                 editorCollapse.style.left = "0";
                 editorCollapse.style.transform = "scaleX(-1)";
                 setTimeout(() => editorCollapse.style.opacity = "0", 1000);
-                editorPanel.style.left = "calc(-100% * 7 / 16)";
+                editorPanel.style.left = "calc(-100% * 6 / 16)";
                 iframe.style.left = "0";
                 iframe.style.width = "100%";
             } else {
-                editorCollapse.style.left = "calc(100% * 7 / 16 - 1em)";
+                editorCollapse.style.left = "calc(100% * 6 / 16 - 1em)";
                 editorCollapse.style.transform = "scaleX(1)";
                 editorCollapse.style.opacity = "";
                 editorPanel.style.left = "0";
                 iframe.style.left = "";
-                iframe.style.width = "calc(100% * 9 / 16)";
+                iframe.style.width = "calc(100% * 10 / 16)";
             }
             editorHidden = !editorHidden;
         };
@@ -323,10 +332,10 @@
             setTimeout(() => {if (editorHidden) {editorCollapse.style.opacity = "0";} }, 5000);
         }
 
-        */
+        
 
         /** @param {string} slug - An example's slug */
-        /*
+        
         function cacheExample(slug) {
             const src = isLocal
                 ? `${new URL(baseURI).origin}/examples/${slug}.html`
@@ -338,10 +347,10 @@
                     return text;
                 });
         }
-                */
+                
 
         /** @param {string} slug - An example's slug */
-        /*
+        
         async function loadExample(slug) {
             const example = exampleCache[slug] ?? (await (() => {
                 codeEditor.setValue("Loading...");
@@ -351,10 +360,10 @@
             window.location.hash = slug;
             window.location.search = "";
             runCode();
+            setTimeout(() => codeEditor.refresh(), 0);
         }
 
-        */
-
+        
 
         function initNavigation(list) {
             const nav = document.getElementById("editor-header");
@@ -503,7 +512,7 @@
                 })
                 .then(function _(config) {
                     initNavigation(config);
-                    /*
+                    
                     const searchParams = new URL(
                         document.location.toString(),
                     ).searchParams; 
@@ -526,7 +535,7 @@
                         codeEditor.setValue(fromBase64(decodeURIComponent(urlCode)));
                         alert('Please check foreign code before running it!');
                     }
-                        */
+                        
                 });
                 
         }
