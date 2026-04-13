@@ -236,12 +236,12 @@
             const extrusionToggle = {
                 toggleHeight: function () {
                     useFixedHeight = !useFixedHeight;
-                    wfsBuildingLayer.style.fill.extrusion_height = useFixedHeight ? 8 : extrudeBuildings
+                    wfsBuildingLayer.style.fill.extrusion_height = useFixedHeight ? 8 : extrudeBuildings;
                     view.notifyChange(wfsBuildingLayer);
                 },
                 toggleColor: function () {
                     useFixedColor = !useFixedColor;
-                    wfsBuildingLayer.style.fill.color = useFixedColor ? '#00cc00' : colorBuildings
+                    wfsBuildingLayer.style.fill.color = useFixedColor ? '#00cc00' : colorBuildings;
                     view.notifyChange(wfsBuildingLayer);
                 }
             };
@@ -295,7 +295,7 @@
                         var gui = debug.GeometryDebug.createGeometryDebugUI(debugGui, view, layer);
                         debug.GeometryDebug.addWireFrameCheckbox(gui, view, layer);
 
-                        // Buttons to demonstrate dynamic style updates
+                        // Buttons to demonstrate style changes after initialization
                         gui.add(extrusionToggle, 'toggleHeight').name('Toggle Extrusion (Property/8)');
                         gui.add(extrusionToggle, 'toggleColor').name('Toggle Color');
                         extrusionToggle.toggleHeight();
