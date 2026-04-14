@@ -36,10 +36,12 @@ class c3DEngine {
         let renderer;
         let viewerDiv;
         if (rendererOrDiv.domElement) {
+            this._shouldDisposeRenderer = false; // don't dispose renderer if provided by the user
             renderer = rendererOrDiv;
             viewerDiv = renderer.domElement instanceof HTMLDivElement ?
                 renderer.domElement : renderer.domElement.parentElement;
         } else {
+            this._shouldDisposeRenderer = true;
             viewerDiv = rendererOrDiv;
         }
 
@@ -140,11 +142,13 @@ class c3DEngine {
     }
 
     dispose() {
-        this.renderer.domElement.parentElement?.removeChild(this.renderer.domElement);
         this.label2dRenderer.domElement.parentElement?.removeChild(this.label2dRenderer.domElement);
         this.fullSizeRenderTarget.dispose();
         this.composer.dispose();
-        this.renderer.dispose();
+        if (this._shouldDisposeRenderer) {
+            this.renderer.domElement.parentElement?.removeChild(this.renderer.domElement);
+            this.renderer.dispose();
+        }
     }
 
     getWindowSize() {
