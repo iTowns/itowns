@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import TiledGeometryLayer from 'Layer/TiledGeometryLayer';
-import { globalExtentTMS } from 'Core/Tile/TileGrid';
+import { globalExtentTMS, globalDefaultExtentCRS } from 'Core/Tile/TileGrid';
 import { PlanarTileBuilder } from './PlanarTileBuilder';
 
 /**
@@ -55,6 +55,13 @@ class PlanarLayer extends TiledGeometryLayer {
 
         this.minSubdivisionLevel = minSubdivisionLevel;
         this.maxSubdivisionLevel = maxSubdivisionLevel;
+    }
+
+    delete(clearCache) {
+        super.delete(clearCache);
+        if (!globalDefaultExtentCRS.includes(this.extent.crs)) {
+            globalExtentTMS.delete(this.extent.crs);
+        }
     }
 }
 
