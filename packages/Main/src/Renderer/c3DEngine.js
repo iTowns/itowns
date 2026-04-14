@@ -139,6 +139,14 @@ class c3DEngine {
         });
     }
 
+    dispose() {
+        this.renderer.domElement.parentElement?.removeChild(this.renderer.domElement);
+        this.label2dRenderer.domElement.parentElement?.removeChild(this.label2dRenderer.domElement);
+        this.fullSizeRenderTarget.dispose();
+        this.composer.dispose();
+        this.renderer.dispose();
+    }
+
     getWindowSize() {
         return new THREE.Vector2(this.width, this.height);
     }
