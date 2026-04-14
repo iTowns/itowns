@@ -124,7 +124,7 @@
         
         <div class="panel" id="code-panel"> 
             <div class="panel-header" id="code-panel-header">
-                <h1 class="panel-title">Code editor</h1>
+                <h1 class="panel-title">EXAMPLE NAME HERE</h1>
                 <p>Example description lorem ipsum</p>  
             </div>
                 
@@ -168,8 +168,9 @@
         const sidebarTabs = document.getElementById("sidebar-tabs");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
         const panels = document.querySelectorAll(".panel");
-        const versionSwitches = document.querySelectorAll(".switch");
+        const versionSwitches = document.querySelectorAll(".switch-input");
         const exampleList = document.getElementById("example-list");
+        const codeBtn = document.getElementById("code-btn");
 
         /**
          * @param {boolean} isDark - Which theme name to get
@@ -431,11 +432,11 @@
                                         `<ul>`, 
                                         ...Object.entries(section).map(
                                             ([slug, name]) =>
-                                                `<li class="example-item">
+                                                `<li class="example-item" data-slug='${slug}'>
                                                     <img src="images/thumbnails/default.png" alt="${name}"/>
                                                     <div class="example-info">
                                                         <h3 class="example-title">${name}</h3>
-                                                        <p class="example-desc">This is the description of the example. Hi, I am the description and I provide some context.    </p>
+                                                        <p class="example-desc">Placing a single non-tiled image at a specific geographic location.</p>
                                                     </div>
                                                 </li>`,
                                         ),
@@ -576,6 +577,39 @@
             const parent = header.closest('.category');
             parent.classList.toggle('collapsed');
         });
+
+
+
+        // click on example
+        exampleList.addEventListener('click', (event) => {
+            const item = event.target.closest('.example-item');
+            if (!item) return;
+
+            const slug = item.dataset.slug;
+            loadExample(slug);
+            codeBtn.click(); 
+        });
+
+        versionSwitches.forEach(sw => {
+            sw.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+
+                versionSwitches.forEach(otherSw => {
+                    otherSw.checked = isChecked;
+                });
+
+                const isDev = baseURI.includes("/itowns/dev/");
+                const options = ["/itowns/", "/itowns/dev/"];
+                if (isChecked !== isDev) {
+                    window.location.href = document.location.href.replace(
+                        options[isDev ? 1 : 0],
+                        options[isDev ? 0 : 1]
+                    );
+                    
+                }
+            });
+        });
+
 
 
         document.addEventListener('DOMContentLoaded', () => {

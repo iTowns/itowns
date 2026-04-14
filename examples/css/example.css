@@ -425,7 +425,6 @@ hr {
 .panel-footer {
     display: flex;
     align-items: center;
-    /*justify-content: space-between; */
     margin-top: auto;
     justify-content: flex-start; 
     padding-top: 1em;
@@ -436,7 +435,6 @@ hr {
     box-shadow : 0px 1px 10px -5px rgba(0, 0, 0, 0.5);
     */
 }
-
 
 
 
@@ -549,87 +547,6 @@ input:checked + .slider:before {
     padding: 0;
 }
 
-
-
-/*
-
-.switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    cursor: pointer;
-}
-
-.switch {
-    display: flex;
-    flex-direction: row;
-    gap: .2em;
-    cursor: pointer;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-.switch .checkmark {
-    display: inline-block;
-    position: relative;
-    top: .15em;
-    width: 1em;
-    height: 1em;
-    background-color: #7ea8c5;
-    border-radius: .3em;
-}
-
-.switch>* {
-    margin: 0;
-}
-
-.switch:has(input:disabled) {
-    cursor: default;
-}
-
-.switch:has(input:disabled) .checkmark {
-    background-color: light-dark(#c0c0c0, #303e63);
-}
-
-.switch:has(input:checked) {
-    font-weight: bold;
-}
-
-.switch:hover .checkmark {
-    background-color: #404e73;
-    cursor: pointer;
-}
-
-.checkmark:after {
-    content: "";
-    position: relative;
-    display: none;
-}
-
-.switch input:checked~.checkmark:after {
-    display: block;
-}
-
-.switch .checkmark:after {
-    left: .29em;
-    top: .1em;
-    width: .2em;
-    height: .5em;
-    border: solid white;
-    border-width: 0 .3em .3em 0;
-    -webkit-transform: rotate(45deg);
-    -ms-transform: rotate(45deg);
-    transform: rotate(45deg);
-}
-
-.switch input:disabled~label {
-    color: #c0c0c0;
-}
-
-*/
-
 #editor-header {
     display: flex;
     flex-flow: row;
@@ -716,29 +633,7 @@ input:checked + .slider:before {
 }
 */
 @media(prefers-color-scheme: dark) {
-    /*
-    #itowns-logo {
-        filter: drop-shadow(-1px -1px 0.5px #7ea8c5) drop-shadow(-1px 1px 0.5px #7ea8c5) drop-shadow(1px -1px 0.5px #7ea8c5) drop-shadow(1px 1px 0.5px #7ea8c5);
-    }
 
-    .header-button {
-        filter: brightness(0) saturate(100%) invert(64%) sepia(70%) saturate(186%) hue-rotate(161deg) brightness(89%) contrast(86%);
-    }
-
-    .header-button:before {
-        background-color: white;
-        background-size: 1em;
-    }
-
-    .header-button:hover {
-        filter: invert(70%);
-    }
-
-    .header-button:active {
-        filter: invert(52%) sepia(67%) saturate(5866%) hue-rotate(168deg) brightness(104%) contrast(105%);
-    }
-    
-*/
     .sidebar-btn img, .category-header img, #editor-collapse img { 
         filter: brightness(0) invert(1);
     }
@@ -748,21 +643,6 @@ input:checked + .slider:before {
     } 
 
 }
-
-/*
-
-#run-button {
-    background: url("../images/run-icon.svg") center no-repeat;
-    background-size: 3em;
-}
-
-#share-button {
-    background: url("../images/share-icon.svg") center no-repeat;
-    background-size: 3em;
-}
-
-*/
-
 
 .CodeMirror {
     font-size: 1em;
@@ -834,6 +714,13 @@ input:checked + .slider:before {
 }
 
 @media (width <=1700px) {
+
+
+    .CodeMirror {
+        height: 100% !important;
+        width: 100%;
+    }
+
     #editor-header> :nth-child(1) {
         flex-flow: row;
         gap: 2em;
@@ -845,11 +732,6 @@ input:checked + .slider:before {
         max-height: 200px;
     }
 
-    /*
-    .CodeMirror {
-        height: calc(100% - 200px - 2em);
-    }
-    */
     #editor-header>hr {
         margin: 0 1em;
     }
