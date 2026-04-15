@@ -124,8 +124,8 @@
         
         <div class="panel" id="code-panel"> 
             <div class="panel-header" id="code-panel-header">
-                <h1 class="panel-title">EXAMPLE NAME HERE</h1>
-                <p>Example description lorem ipsum</p>  
+                <h1 class="panel-title" id="code-panel-title">EXAMPLE NAME HERE</h1>
+                <p id="code-panel-desc">Example description lorem ipsum</p>  
             </div>
                 
                 <div id="code-editor-wrapper">
@@ -171,6 +171,9 @@
         const versionSwitches = document.querySelectorAll(".switch-input");
         const exampleList = document.getElementById("example-list");
         const codeBtn = document.getElementById("code-btn");
+        const codePanelTitle = document.querySelector("#code-panel-title");
+        const codePanelDesc = document.querySelector("#code-panel-desc");
+        let examplesConfig = null;
 
         /**
          * @param {boolean} isDark - Which theme name to get
@@ -381,6 +384,8 @@
         /** @param {string} slug - An example's slug */
         
         async function loadExample(slug) {
+            updateCodePanelHeader(slug);
+
             const example = exampleCache[slug] ?? (await (() => {
                 codeEditor.setValue("Loading...");
                 return cacheExample(slug);
@@ -390,6 +395,25 @@
             window.location.search = "";
             runCode();
             setTimeout(() => codeEditor.refresh(), 0);
+        }
+
+
+        /** @param {string} slug - An example's slug */
+
+        function updateCodePanelHeader(slug) {
+            if (!examplesConfig) return;
+
+            for (const section of Object.values(examplesConfig)) {
+                if (section[slug]) {
+                    const info = section[slug];
+                    codePanelTitle.textContent = info.label;
+                    codePanelDesc.textContent = info.description;
+                    return;
+                }
+            }
+
+            titleElement.textContent = "Custom Example";
+            descElement.textContent = "Editing local or unsaved code.";
         }
 
         
@@ -431,12 +455,12 @@
                                     `<div class="category-content">`,
                                         `<ul>`, 
                                         ...Object.entries(section).map(
-                                            ([slug, name]) =>
+                                            ([slug, info]) =>
                                                 `<li class="example-item" data-slug='${slug}'>
-                                                    <img src="images/thumbnails/default.png" alt="${name}"/>
+                                                    <img src="images/thumbnails/${slug}.png" alt="${info.label}"/>
                                                     <div class="example-info">
-                                                        <h3 class="example-title">${name}</h3>
-                                                        <p class="example-desc">Placing a single non-tiled image at a specific geographic location.</p>
+                                                        <h3 class="example-title">${info.label}</h3>
+                                                        <p class="example-desc">${info.description}</p>
                                                     </div>
                                                 </li>`,
                                         ),
@@ -540,6 +564,7 @@
                     return response.json();
                 })
                 .then(function _(config) {
+                    examplesConfig = config;
                     initNavigation(config);
                     
                     const searchParams = new URL(
