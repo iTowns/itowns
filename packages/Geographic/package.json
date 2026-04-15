@@ -5,10 +5,10 @@
   "type": "module",
   "main": "lib/index.js",
   "exports": {
-    "types": "./src/index.ts",
+    "types": "./lib/index.d.ts",
     "default": "./lib/index.js"
   },
-  "types": "./src/index.ts",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "build": "",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\"",
