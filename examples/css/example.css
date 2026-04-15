@@ -255,6 +255,7 @@ p, h1, h2, h3, h4 {
 .panel-header {
     padding-left: 1.5em;
     padding-right: 1.5em;
+    padding-bottom: 1.5em;
 }
 
 .panel-title {
@@ -264,6 +265,25 @@ p, h1, h2, h3, h4 {
     font-weight: 500;
 }
 
+
+#search-container {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+}
+
+
+#search-input {
+    border-radius: 0.5em;
+    height: 2.5em;
+    width: 60%;
+}
+
+#category-selector {
+    border-radius: 0.5em;
+    height: 2.5em;
+    width: auto;
+}
 
 
 

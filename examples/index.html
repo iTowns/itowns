@@ -104,6 +104,15 @@
         <div class="panel active" id="gallery-panel">
             <div class="panel-header">
                 <h1 class="panel-title">Example gallery</h1>
+                <div>
+                    <form id="search-container">
+                        <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
+
+                        <select id="category-selector">
+                        </select>
+                        
+                    </form>
+                </div>
             </div>
 
             <div id="example-list"> 
@@ -173,6 +182,7 @@
         const codeBtn = document.getElementById("code-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
         const codePanelDesc = document.querySelector("#code-panel-desc");
+        const categorySelector = document.getElementById("category-selector");
         let examplesConfig = null;
 
         /**
@@ -443,7 +453,7 @@
 
             // Dynamic example generation
             const examples = [
-                ...Object.entries(list).flatMap(
+                ...Object.entries(list).flatMap(          /* NEED TO REFACTOR (section -> category) */
                     ([sectionName, section]) => {
                         return [
                             `<div class="category">`,
@@ -473,23 +483,31 @@
                     },
                 ),
             ];
-                    /*
-            const exampleSelector =
-                document.getElementById("example-selector");
-                    */
-            console.log("test");
-            console.log(exampleList);
+
+
+            const categories = [
+                ...Object.entries(list).flatMap(
+                    ([categoryName, category]) => {
+                        return [
+                            `<option>${categoryName}</option>`       /* NEED TO ADD SLUG /!\ */
+                        ];
+                    },
+                ),
+            ];
+
             exampleList.insertAdjacentHTML(
                 "afterbegin",
                 examples.join("\n"),
             );
-            /*
-            exampleList.onchange = (event) =>
-                loadExample(event.target.value);
-            */
+
+            categorySelector.insertAdjacentHTML(
+                "afterbegin",
+                categories.join("\n"),
+            );
+
+
             const hash = window.location.hash;
             const currentExample = hash.slice(1) || "custom";
-            /*exampleSelector.value = currentExample;*/
         }
 
 
