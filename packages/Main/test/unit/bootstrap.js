@@ -122,6 +122,14 @@ class DOMElement {
         c.parentNode = this;
         this.children.push(c);
     }
+    removeChild(c) {
+        const idx = this.children.indexOf(c);
+        if (idx > -1) {
+            this.children.splice(idx, 1);
+        }
+        c.parentNode = null;
+        return c;
+    }
     append(c) { this.appendChild(c); }
     cloneNode() { return Object.create(this); }
     getBoundingClientRect() { return { x: 0, y: 0, width: this.width, height: this.height }; }
@@ -420,6 +428,7 @@ class Renderer {
     getDrawingBufferSize() { return new THREE.Vector2(4, 4); } // arbitrary size
     getClearAlpha() { return 1; }
     setClearAlpha() {}
+    dispose() {}
 }
 
 export default Renderer;

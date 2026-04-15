@@ -333,6 +333,8 @@ class View extends THREE.EventDispatcher {
         viewers.splice(id, 1);
         // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
         this.scene.traverse(ObjectRemovalHelper.cleanup);
+        // Dispose the rendering engine (removes canvas and label2d from DOM, disposes WebGL renderer)
+        this.mainLoop.gfxEngine.dispose();
         this.dispatchEvent({ type: VIEW_EVENTS.DISPOSED });
         // remove alls events
         this.removeAllEvents();
