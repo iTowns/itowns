@@ -6,6 +6,8 @@ import Picking from 'Core/Picking';
 
 import type PointCloudNode from 'Core/PointCloudNode';
 
+const GC_PENDING_TTL = 10000;
+
 const point = new THREE.Vector3();
 const bboxMesh = new THREE.Mesh();
 const box3 = new THREE.Box3();
@@ -425,58 +427,57 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      *
      * @returns The child nodes to update or [] if there is none.
      */
-    update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
-        }
+    update(context: Context, layer: this, root: PointCloudNode): PointCloudNode[] {
+        const rootWithWeight = { node: root, weight: Infinity };
+        const queue = new TinyQueue([rootWithWeight], (a, b) => b.weight - a.weight);
+        let numVisiblePoints = 0;
+        while (queue.length > 0 && numVisiblePoints < this.pointBudget) {
+            const { node } = queue.pop() as { node: PointCloudNode };
+            const bbox = node.voxelOBB.box3D;
+            const object3d = node.voxelOBB;
 
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox as THREE.Box3;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-        }
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
+                markForDeletion(node);
+                continue;
+            }
 
-        const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
 
-        if (!visible) {
-            markForDeletion(elt);
-            return [];
-        }
+            if (!visible) {
+                markForDeletion(node);
+                continue;
+            }
 
-        // TODO: See if we can limit the calcul of the matrixWorlInverse.
-        point.copy(context.camera.camera3D.position)
-            .applyMatrix4(object3d.matrixWorld.clone().invert());
+            numVisiblePoints += node.numPoints;
 
-        const distanceToCamera = bbox.distanceToPoint(point);
+            // TODO: See if we can limit the calcul of the matrixWorlInverse.
+            point.copy(context.camera.camera3D.position)
+                .applyMatrix4(object3d.matrixWorld.clone().invert());
 
-        elt.sse = computeScreenSpaceError(
-            context,
-            layer.pointSize,
-            elt.pointSpacing,
-            distanceToCamera,
-        ) / this.sseThreshold;
+            const distanceToCamera = bbox.distanceToPoint(point);
 
-        // The visibility here is not definitive, as it will be updated
-        // in the postUpdate phase
-        elt.visible = visible;
-        elt.notVisibleSince = undefined;
-        this._candidateNodes.push(elt);
-        this.loadData(elt, context, layer, distanceToCamera);
+            node.sse = computeScreenSpaceError(
+                context,
+                layer.pointSize,
+                node.pointSpacing,
+                distanceToCamera,
+            ) / this.sseThreshold;
 
-        if (elt.children && elt.children.length) {
-            if (elt.sse >= 1) {
-                return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
+            node.visible = visible;
+            node.notVisibleSince = undefined;
+            this._candidateNodes.push(node);
+            this.loadData(node, context, layer, distanceToCamera);
+
+            if (node.children && node.children.length) {
+                if (node.sse >= 1) {
+                    for (const child of node.children) {
+                        queue.push({ node: child, weight: node.sse });
+                    }
+                } else {
+                    for (const child of node.children) {
+                        markForDeletion(child);
+                    }
                 }
-                return [];
             }
         }
 
@@ -527,7 +528,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as THREE.Points;
-            if (!obj.visible && (now - obj.userData.node.notVisibleSince > 10000)) {
+            if (!obj.visible && (now - obj.userData.node.notVisibleSince > GC_PENDING_TTL)) {
                 this.group.remove(obj);
                 obj.geometry.dispose();
                 obj.userData.node.obj = null;
