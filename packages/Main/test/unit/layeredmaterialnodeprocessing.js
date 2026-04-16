@@ -3,7 +3,7 @@ import assert from 'assert';
 import TileMesh from 'Core/TileMesh';
 import { Extent } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
-import Layer from 'Layer/Layer';
+import ColorLayer from 'Layer/ColorLayer';
 import Source from 'Source/Source';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import { RasterColorTile } from 'Renderer/RasterTile';
@@ -30,13 +30,17 @@ describe('updateLayeredMaterialNodeImagery', function () {
         },
     };
 
+    context.view.mainLoop = {
+        scheduler: context.scheduler,
+    };
+
     const source = new Source({
         url: 'http://',
         crs: 'EPSG:4326',
         extent,
     });
 
-    const layer = new Layer('foo', {
+    const layer = new ColorLayer('foo', {
         source,
         crs: 'EPSG:4326',
         info: { update: () => { } },
@@ -52,7 +56,11 @@ describe('updateLayeredMaterialNodeImagery', function () {
         ],
     };
 
-    const nodeLayer = new RasterColorTile(layer);
+    const node = new TileMesh(geom, material, layer, extent, 0);
+    const tiles = node.getExtentsByProjection(layer.crs);
+
+    const nodeLayer = new RasterColorTile(layer, tiles);
+
     material.getTile = () => nodeLayer;
 
     beforeEach('reset state', function () {
@@ -60,10 +68,10 @@ describe('updateLayeredMaterialNodeImagery', function () {
         context.scheduler.commands = [];
         // reset default layer state
 
-        layer.updateStrategy = {
-            type: STRATEGY_MIN_NETWORK_TRAFFIC,
-            options: {},
-        };
+        // layer.updateStrategy = {
+        //     type: STRATEGY_MIN_NETWORK_TRAFFIC,
+        //     options: {},
+        // };
         layer.visible = true;
 
         source.hasData = () => true;
@@ -71,12 +79,12 @@ describe('updateLayeredMaterialNodeImagery', function () {
         source.extent = new Extent('EPSG:4326');
     });
 
-    xit('hidden tile should not execute commands', () => {
+    it('hidden tile should not execute commands', () => {
         const tile = new TileMesh(geom, material, layer, extent, 0);
         material.visible = false;
         nodeLayer.level = 0;
         tile.parent = {};
-        // updateLayeredMaterialNodeImagery(context, layer, tile, tile.parent);
+        layer.update(context, layer, tile);
         assert.equal(context.scheduler.commands.length, 0);
     });
 
