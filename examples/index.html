@@ -388,7 +388,7 @@
                     exampleCache[slug] = text;
                     return text;
                 });
-        }
+        }   
                 
 
         /** @param {string} slug - An example's slug */
@@ -413,17 +413,18 @@
         function updateCodePanelHeader(slug) {
             if (!examplesConfig) return;
 
-            for (const section of Object.values(examplesConfig)) {
-                if (section[slug]) {
-                    const info = section[slug];
+            for (const category of Object.values(examplesConfig)) {
+                if (category.items && category.items[slug]) {
+                    const info = category.items[slug];
                     codePanelTitle.textContent = info.label;
                     codePanelDesc.textContent = info.description;
                     return;
                 }
             }
 
-            titleElement.textContent = "Custom Example";
-            descElement.textContent = "Editing local or unsaved code.";
+
+            codePanelTitle.textContent = "Custom Example";
+            codePanelDesc.textContent = "Editing local or unsaved code.";
         }
 
         
@@ -453,25 +454,25 @@
 
             // Dynamic example generation
             const examples = [
-                ...Object.entries(list).flatMap(          /* NEED TO REFACTOR (section -> category) */
-                    ([sectionName, section]) => {
+                ...Object.entries(list).flatMap(      
+                    ([categorySlug, category]) => {
                         return [
                             `<div class="category">`,
                                 `<button type='button' class="category-header">
                                     <img src="images/down_arrow.svg" alt="Collapse/expand category"/>
-                                    <h3> ${sectionName} </h3>
+                                    <h3> ${category.label} </h3>
                                 </button>`,
                                 `<div class="category-grid-wrapper">`,
                                     `<div class="category-content">`,
                                         `<ul>`, 
-                                        ...Object.entries(section).map(
+                                        ...Object.entries(category.items).map(
                                             ([slug, info]) =>
                                                 `<li class="example-item" data-slug='${slug}'>
                                                     <img src="images/thumbnails/${slug}.png" alt="${info.label}"/>
                                                     <div class="example-info">
                                                         <h3 class="example-title">${info.label}</h3>
                                                         <p class="example-desc">${info.description}</p>
-                                                    </div>
+                                                    </div>  
                                                 </li>`,
                                         ),
                                         `</ul>`,
@@ -487,9 +488,9 @@
 
             const categories = [
                 ...Object.entries(list).flatMap(
-                    ([categoryName, category]) => {
+                    ([categorySlug, category]) => {
                         return [
-                            `<option>${categoryName}</option>`       /* NEED TO ADD SLUG /!\ */
+                            `<option value="${categorySlug}">${category.label}</option>`   
                         ];
                     },
                 ),
