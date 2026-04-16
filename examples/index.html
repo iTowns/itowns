@@ -182,6 +182,7 @@
         const codeBtn = document.getElementById("code-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
         const codePanelDesc = document.querySelector("#code-panel-desc");
+        const searchInput = document.getElementById("search-input");
         const categorySelector = document.getElementById("category-selector");
         let examplesConfig = null;
 
@@ -487,6 +488,7 @@
 
 
             const categories = [
+                `<option value="all">All categories</option>`,
                 ...Object.entries(list).flatMap(
                     ([categorySlug, category]) => {
                         return [
@@ -633,6 +635,45 @@
             loadExample(slug);
             codeBtn.click(); 
         });
+
+
+
+        // example search
+        searchInput.addEventListener('input', (event) => {
+            const query = event.target.value.toLowerCase().trim();
+            
+            const exampleItems = document.querySelectorAll('.example-item');
+            const categories = document.querySelectorAll('.category');
+            
+            exampleItems.forEach(item => {
+                const title = item.querySelector('.example-title').textContent.toLowerCase();
+                const desc = item.querySelector('.example-desc').textContent.toLowerCase();
+
+                if (title.includes(query) || desc.includes(query)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+
+            // hide empty categories
+            categories.forEach(cat => {
+                let hasVisibleItems = false;
+                    for (const item of cat.querySelectorAll('.example-item')) {
+                        if (item.style.display !== "none") {
+                            hasVisibleItems = true;
+                            break;
+                        }
+                    }
+                cat.style.display = hasVisibleItems ? "" : "none";
+            });
+        })
+
+
+        // NEED TO ADD CATEGORY FILTERING LOGIC
+
+
+
 
         versionSwitches.forEach(sw => {
             sw.addEventListener('change', (event) => {
