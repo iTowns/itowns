@@ -231,8 +231,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * Be default it is a new `PointsMaterial`. */
     material: THREE.PointsMaterial;
 
-    private _candidateNodes: TinyQueue<PointCloudNode>;
-    private _visibleNodes: Set<PointCloudNode> = new Set();
+    private _visibleNodes = new Set<PointCloudNode>();
+    private _prevVisibleNodes = new Set<PointCloudNode>();
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -315,9 +315,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
         this.root = undefined;
 
-        this.displayedCount = 0;
-
-        this._candidateNodes = new TinyQueue<PointCloudNode>([], (a, b) => b.sse - a.sse);
+        this._visibleNodes = new Set();
+        this._prevVisibleNodes = new Set();
     }
 
     setElevationRange() {
@@ -335,8 +334,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     }
 
     preUpdate(context: Context) {
-        this._candidateNodes = new TinyQueue<PointCloudNode>([], (a, b) => b.sse - a.sse);
-
         // See https://cesiumjs.org/hosted-apps/massiveworlds/downloads/Ring/WorldScaleTerrainRendering.pptx
         // slide 17
         context.camera.preSSE =
@@ -428,6 +425,9 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * @returns The child nodes to update or [] if there is none.
      */
     update(context: Context, layer: this, root: PointCloudNode): PointCloudNode[] {
+        [this._prevVisibleNodes, this._visibleNodes] = [this._visibleNodes, this._prevVisibleNodes];
+        this._visibleNodes.clear();
+
         const rootWithWeight = { node: root, weight: Infinity };
         const queue = new TinyQueue([rootWithWeight], (a, b) => b.weight - a.weight);
         let numVisiblePoints = 0;
@@ -465,7 +465,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
             node.visible = visible;
             node.notVisibleSince = undefined;
-            this._candidateNodes.push(node);
+            this._visibleNodes.add(node);
+            if (node.obj) { node.obj.visible = true; }
+            if (!this._prevVisibleNodes.has(node)) {
+                this.setNodeVisible(node, true);
+            }
             this.loadData(node, context, layer, distanceToCamera);
 
             if (node.children && node.children.length) {
@@ -481,43 +485,18 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             }
         }
 
+        this.displayedCount = numVisiblePoints;
+
         return [];
     }
 
     postUpdate() {
-        const visibleLastUpdate = this._visibleNodes;
-        this._visibleNodes = new Set();
         this.displayedCount = 0;
-
-        // Push visible nodes until the point budget is reached
-        while (this._candidateNodes.length > 0) {
-            const node = this._candidateNodes.pop() as PointCloudNode;
-            if (this.displayedCount + node.numPoints > this.pointBudget) {
-                this._candidateNodes.push(node);
-                break;
-            }
-            this.displayedCount += node.numPoints;
-            this._visibleNodes.add(node);
-            node.visible = true;
-            if (node.obj) { node.obj.visible = true; }
-            if (!visibleLastUpdate.has(node)) {
-                this.setNodeVisible(node, true);
-            }
-        }
-
-        const nonVisibleNodes = new Set<PointCloudNode>();
-        // Hide remaining visible nodes that didn't fit in the budget
-        while (this._candidateNodes.length > 0) {
-            const node = this._candidateNodes.pop() as PointCloudNode;
-            node.visible = false;
-            if (node.obj) { node.obj.visible = false; }
-            nonVisibleNodes.add(node);
-        }
 
         // Set symmetric difference between visible nodes from last
         // update and current update. Unfortunatelly the standard operation
         // is only available on browsers baseline since june 2024.
-        for (const n of visibleLastUpdate) {
+        for (const n of this._prevVisibleNodes) {
             if (!this._visibleNodes.has(n)) {
                 this.setNodeVisible(n, false);
             }
