@@ -77,7 +77,7 @@ class RasterLayer extends Layer {
         if (layer.visible && !layer.freeze && this.hasData(node)) {
             const rasterTile = node.material.getTile(this.id) || this.setupRasterNode(node);
 
-            rasterTile.load(node, context.view);
+            return rasterTile.load(node, context.view);
         }
     }
 }
