@@ -62,7 +62,7 @@ describe('misc_clamp_ground', function _() {
         }, destRange);
 
         // Wait itowns loading new elevation data
-        await waitUntilItownsIsIdle();
+        // await waitUntilItownsIsIdle();
 
         // get range value with globeControls method
         const controlsMethod = await page.evaluate(() => view.controls.getRange());
