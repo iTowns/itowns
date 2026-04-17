@@ -48,7 +48,7 @@
 
     <div id="editor-panel">
         <div id="sidebar">
-            <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page">
+            <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page" target="_blank" rel="noopener noreferrer">
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
@@ -70,36 +70,7 @@
                 </a>
             </nav>
         </div>
-        <!--
-        <div id="editor-header">    
-            <div>
-                <a href="/">
-                    <picture id="itowns-logo">
-                        <source media="(width <= 1700px)" srcset="./images/itowns_logo.svg" width="245" />
-                        <source media="(width > 1700px)" srcset="images/itowns_logo.png" width="245" />
-                        /* Fallback Image */
-                        <img src="images/itowns_logo.png" width="245px" />
-                    </picture>
-                </a>
-                <label class="switch">
-                    <input id="version-switch" type="checkbox" name="version-switch" />
-                    <span class="checkmark"></span>
-                    Development version
-                </label>
-            </div>
-            <hr />
-            <div>
-                <select id="example-selector" class="selector"></select>
-                <input id="font-size-selector" class="selector" type="number" min="8" step="1" />
-                <div>
-                    <button type="button" id="run-button" class="header-button"></button>
-                    <button type="button" id="share-button" class="header-button" />
-                </div>
-            </div>
-        </div>
-        
-        <hr/> 
-        -->
+
 
         <div class="panel active" id="gallery-panel">
             <div class="panel-header">
@@ -198,14 +169,9 @@
             lineNumbers: true,
             mode: "htmlmixed",
             theme: "material-darker",
-            /*getTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),*/
         });
 
-        /*
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            codeEditor.setOption("theme", getTheme(event.matches));
-        });
-        */
+
 
         const exampleCache = {};
 
@@ -291,27 +257,6 @@
 
         */
 
-        /** @returns {number} - The CodeMirror editor's font size */
-        /*
-        function getEditorFontSize() {
-            const editor = document.getElementsByClassName("CodeMirror")[0];
-            return parseFloat(window.getComputedStyle(editor, null).getPropertyValue("font-size"));
-        }*/
-
-        /** @param {number} size_px - The new font size to apply */
-        /*
-        function setEditorFontSize(size_px) {
-            const size = Math.max(8, Math.round(size_px));
-            const editor = document.getElementsByClassName("CodeMirror")[0];
-            editor.style.fontSize = `${size}px`;
-            // Must release focus to change value
-            document.activeElement.blur();
-            fontSizeSelector.value = size;
-            fontSizeSelector.focus();
-        }
-        fontSizeSelector.value = getEditorFontSize();
-        fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value || 13);
-        */
 
         
         let editorHidden = false;
@@ -361,6 +306,8 @@
         const searchParams = new URL(
             document.location.toString(),
         ).searchParams;
+
+                                                                        // NEED TO DELETE, DOES NOTHING
         const hideEditor = parseInt(searchParams.get("hide_editor"));
         if (hideEditor) {
             editorCollapse.style["transition-duration"] = "";
@@ -374,7 +321,7 @@
             setTimeout(() => editorCollapse.style.opacity = "1", 1000);
             setTimeout(() => {if (editorHidden) {editorCollapse.style.opacity = "0";} }, 5000);
         }
-
+        
         
 
         /** @param {string} slug - An example's slug */
@@ -423,10 +370,56 @@
                 }
             }
 
-
             codePanelTitle.textContent = "Custom Example";
             codePanelDesc.textContent = "Editing local or unsaved code.";
         }
+
+
+
+
+
+
+        function searchAndFilter() {
+            const clean = (str) => str.replace(/\s+/g, '').toLowerCase();
+
+            const query = clean(searchInput.value);
+            
+            const exampleItems = document.querySelectorAll('.example-item');
+            const categories = document.querySelectorAll('.category');
+
+        
+            // match search input
+            exampleItems.forEach(item => {
+                const title = clean(item.querySelector('.example-title').textContent);
+                const desc = clean(item.querySelector('.example-desc').textContent)
+                const belongingCategory = clean(item.closest(".category").querySelector(".category-title").textContent);
+
+                if (title.includes(query) || desc.includes(query) || belongingCategory.includes(query)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            
+            });
+
+            // hide empty and unselected categories
+            categories.forEach(cat => {
+                let hasVisibleItems = false;
+                for (const item of cat.querySelectorAll('.example-item')) {
+                    if (item.style.display !== "none") {
+                        hasVisibleItems = true;
+                        break;
+                    }
+                }
+                if (((cat.dataset.slug === categorySelector.value || categorySelector.value === "all") && hasVisibleItems)){
+                    cat.style.display = "";
+                } else {
+                    cat.style.display = "none";
+                }
+            });
+
+        }
+
 
         
 
@@ -458,10 +451,10 @@
                 ...Object.entries(list).flatMap(      
                     ([categorySlug, category]) => {
                         return [
-                            `<div class="category">`,
+                            `<div class="category" data-slug='${categorySlug}'>`,
                                 `<button type='button' class="category-header">
                                     <img src="images/down_arrow.svg" alt="Collapse/expand category"/>
-                                    <h3> ${category.label} </h3>
+                                    <h3 class='category-title'> ${category.label} </h3>
                                 </button>`,
                                 `<div class="category-grid-wrapper">`,
                                     `<div class="category-content">`,
@@ -469,7 +462,9 @@
                                         ...Object.entries(category.items).map(
                                             ([slug, info]) =>
                                                 `<li class="example-item" data-slug='${slug}'>
-                                                    <img src="images/thumbnails/${slug}.png" alt="${info.label}"/>
+                                                    <div class="example-img-container">
+                                                        <img src="images/thumbnails/${slug}.png" alt="${info.label}"/>
+                                                    </div>
                                                     <div class="example-info">
                                                         <h3 class="example-title">${info.label}</h3>
                                                         <p class="example-desc">${info.description}</p>
@@ -516,70 +511,9 @@
 
 
 
-
-
-
-        /** @param {Record<string, Record<string, string>>} list - List of examples */
-        /*
-        function initNavigation(list) {
-            const nav = document.getElementById("editor-header");
-            const versionSwitch = document.getElementById("version-switch");
-            if (!baseURI.includes("/itowns/")) {
-                versionSwitch.setAttribute("disabled", "");
-            } else {
-                versionSwitch.onchange = (event) => {
-                    window.location.href = document.location.href.replace();
-                    const isDev = baseURI.includes("/itowns/dev/");
-                    const options = ["/itowns/", "/itowns/dev/"];
-                    window.location.href = document.location.href.replace(
-                        options[isDev],
-                        options[!isDev],
-                    );
-                };
-                if (baseURI.includes("/itowns/dev/")) {
-                    versionSwitch.setAttribute("checked", "");
-                }
-            }
-
-            // Dropdown example selector
-            const examples = [
-                "<option hidden value='custom'>Custom</option>",
-                ...Object.entries(list).flatMap(
-                    ([sectionName, section]) => {
-                        return [
-                            `<optgroup label="${sectionName}">`,
-                            ...Object.entries(section).map(
-                                ([slug, name]) =>
-                                    `<option value=${slug}>${name}</option>`,
-                            ),
-                            "</optgroup>",
-                        ];
-                    },
-                ),
-            ];
-
-            const exampleSelector =
-                document.getElementById("example-selector");
-            exampleSelector.insertAdjacentHTML(
-                "afterbegin",
-                examples.join("\n"),
-            );
-            exampleSelector.onchange = (event) =>
-                loadExample(event.target.value);
-
-            const hash = window.location.hash;
-            const currentExample = hash.slice(1) || "custom";
-            exampleSelector.value = currentExample;
-        }
-        */
-        
-        
-
         function onLoad() {
         
             // Get the configuration
-
-            
             fetch("./config.json")
                 .then(function _(response) {
                     return response.json();
@@ -638,39 +572,9 @@
 
 
 
-        // example search
-        searchInput.addEventListener('input', (event) => {
-            const query = event.target.value.toLowerCase().trim();
-            
-            const exampleItems = document.querySelectorAll('.example-item');
-            const categories = document.querySelectorAll('.category');
-            
-            exampleItems.forEach(item => {
-                const title = item.querySelector('.example-title').textContent.toLowerCase();
-                const desc = item.querySelector('.example-desc').textContent.toLowerCase();
 
-                if (title.includes(query) || desc.includes(query)) {
-                    item.style.display = "";
-                } else {
-                    item.style.display = "none";
-                }
-            });
-
-            // hide empty categories
-            categories.forEach(cat => {
-                let hasVisibleItems = false;
-                    for (const item of cat.querySelectorAll('.example-item')) {
-                        if (item.style.display !== "none") {
-                            hasVisibleItems = true;
-                            break;
-                        }
-                    }
-                cat.style.display = hasVisibleItems ? "" : "none";
-            });
-        })
-
-
-        // NEED TO ADD CATEGORY FILTERING LOGIC
+        searchInput.addEventListener("input", searchAndFilter);
+        categorySelector.addEventListener("change", searchAndFilter);
 
 
 

@@ -248,10 +248,6 @@ p, h1, h2, h3, h4 {
 }
 
 
-#gallery-panel  {
-    padding: 0.8em 0em 0em 0em;
-}
-
 .panel-header {
     padding-left: 1.5em;
     padding-right: 1.5em;
@@ -263,6 +259,10 @@ p, h1, h2, h3, h4 {
     text-transform: uppercase;
     font-family: Roboto;
     font-weight: 500;
+    
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    
 }
 
 
@@ -284,6 +284,10 @@ p, h1, h2, h3, h4 {
 
 #search-input:focus, #category-selector:focus {
     outline: 1px solid light-dark(#1565c1, white);
+}
+
+#search-input::-webkit-search-cancel-button {
+    margin-right: 0.7em;
 }
 
 #category-selector {
@@ -319,6 +323,7 @@ p, h1, h2, h3, h4 {
     justify-content: start;
     padding-left: 1.5em;
     padding-right: 1.5em;
+    margin-right: 0.3em;
 
     flex: 1;           
     overflow-y: auto;
@@ -350,7 +355,7 @@ p, h1, h2, h3, h4 {
     grid-template-rows: 1fr; 
     transition: grid-template-rows 0.3s ease-out;
     overflow: hidden;
-    padding-left: 1em;
+    padding-left: 0.5em;
 }
 
 .category.collapsed .category-grid-wrapper {
@@ -422,10 +427,19 @@ p, h1, h2, h3, h4 {
     */
 }
 
+.example-img-container {
+    display: flex;
+    flex: 0 0 12.6em;
+    height: auto;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}   
+
 .example-item img {
-    max-width: 100%;
+    height: 100%;
     width: auto;
-    flex-shrink: 0;
+    object-fit: contain;
     border-radius: 8px;
 }
 
@@ -538,9 +552,10 @@ hr {
     transition: .25s;
     border-radius: 50%;
     border-style: solid;
+    background-color:light-dark(white, #242525);
     border-width: 2px;
     border-color: light-dark(#1565c1, white);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    /* box-shadow: 0 2px 4px rgba(0,0,0,0.2); */
     box-sizing: border-box;
 }
 
@@ -552,7 +567,7 @@ input:checked + .slider {
 input:checked + .slider:before {
     transform: translateX(20px) translateY(-50%);
     background-color: light-dark(white, #333);
-    border-color: light-dark(#1565c1, #333);
+    border-color: light-dark(#1565c1, white);
 }
 
 
@@ -574,6 +589,10 @@ input:checked + .slider:before {
     padding-right: 0.6em;
     padding-left: 0.6em;
     
+}
+
+#run-button:hover {
+    background-color: light-dark(#174ea6, rgb(206, 204, 204));
 }
 
 #run-button img {
