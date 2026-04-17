@@ -76,7 +76,7 @@
     "@types/three": "^0.182.0",
     "@typescript-eslint/eslint-plugin": "^8.56.0",
     "@typescript-eslint/parser": "^8.56.0",
-    "@xmldom/xmldom": "^0.8.11",
+    "@xmldom/xmldom": "^0.8.12",
     "babel-inline-import-loader": "^1.0.1",
     "babel-loader": "^10.1.1",
     "babel-plugin-inline-import": "^3.0.0",
