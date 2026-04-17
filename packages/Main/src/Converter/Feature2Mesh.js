@@ -872,8 +872,7 @@ export default {
                 style.addEventListener('style-property-changed', (event) => {
                     if (event.parameter === 'color') {
                         this._styleColorVersion++;
-                    }
-                    if (event.parameter === 'extrusion_height' || event.parameter === 'base_altitude') {
+                    } else if (event.parameter === 'extrusion_height' || event.parameter === 'base_altitude') {
                         this._stylePositionVersion++;
                     }
                 });
