@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CRS } from '@itowns/geographic';
 import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
-import Feature2Mesh from 'Converter/Feature2Mesh';
+import Feature2Mesh, { applyStyle } from 'Converter/Feature2Mesh';
 import Style from 'Core/Style';
 
 import geojson from '../data/geojson/holes.geojson';
@@ -138,6 +138,7 @@ describe('Feature2Mesh', function () {
 
                 layer.style.fill.color = 'red';
                 layer.style.fill.base_altitude = 100;
+                applyStyle(featureMesh, collection, layer.style, ['color', 'position']);
 
                 assert.equal(colorAttr.array[0], 255);
                 assert.equal(colorAttr.array[1], 0);
@@ -171,6 +172,7 @@ describe('Feature2Mesh', function () {
                 const topZ = posAttr.array[halfCount * 3 + 2];
 
                 layer.style.fill.extrusion_height = 150;
+                applyStyle(featureMesh, collection, layer.style, ['position']);
 
                 const updatedTopZ = posAttr.array[halfCount * 3 + 2];
                 assert.equal(updatedTopZ - topZ, 100);
@@ -204,9 +206,11 @@ describe('Feature2Mesh', function () {
 
                 layer.style.point.color = 'lime'; // not 'green'
                 layer.style.point.base_altitude = 50;
+                applyStyle(pointMesh, collection, layer.style, ['color', 'position']);
 
                 layer.style.stroke.color = 'blue';
                 layer.style.stroke.base_altitude = 75;
+                applyStyle(lineMesh, collection, layer.style, ['color', 'position']);
 
                 assert.equal(pointColorAttr.array[0], 0);
                 assert.equal(pointColorAttr.array[1], 255);
