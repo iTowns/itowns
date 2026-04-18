@@ -80,6 +80,7 @@
                         <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
 
                         <select id="category-selector">
+                            <!-- content added dynamically in JS --> 
                         </select>
                         
                     </form>
@@ -87,11 +88,11 @@
             </div>
 
             <div id="example-list"> 
-                <!--content added dynamically in JS--> 
+                <!-- content added dynamically in JS --> 
             </div>
 
 
-            <div class="panel-footer">  <!--Is the version switch really relevant here ?-->
+            <div class="panel-footer">
                 <div class="switch-box">    
                     <label class="switch">
                         <input type="checkbox" class="switch-input" id="switch-input-gallery">
@@ -134,11 +135,6 @@
 
     </div>
 
-    <!--
-    <button id="editor-collapse">
-        <img src="images/collapse.svg" alt="Collapse" />
-    </button>
-    -->
 
     <script type="text/javascript">
         const iframe = document.getElementById("content");
@@ -155,15 +151,16 @@
         const codePanelDesc = document.querySelector("#code-panel-desc");
         const searchInput = document.getElementById("search-input");
         const categorySelector = document.getElementById("category-selector");
-        let examplesConfig = null;
+        const editorCollapse = document.getElementById("editor-collapse");
 
-        /**
-         * @param {boolean} isDark - Which theme name to get
-         * @returns {string}
-         */
-        function getTheme(isDark) {
-            return isDark ? "shadowfox" : "default";
-        }
+        let examplesConfig = null;
+        let editorHidden = false;
+
+        const exampleCache = {};
+
+        let baseURI = document.baseURI;
+        const isLocal = baseURI.includes("localhost");
+
 
         const codeEditor = CodeMirror.fromTextArea(codeEditorTextArea, {
             lineNumbers: true,
@@ -171,21 +168,6 @@
             theme: "material-darker",
         });
 
-
-
-        const exampleCache = {};
-
-        var baseURI = document.baseURI;
-        if (baseURI.includes("/itowns/dev/")) {
-            document
-                .getElementById("itowns-logo")
-                .setAttribute("src", "images/itowns_logo_next.png");
-            document
-                .getElementById("version-switch")
-                .setAttribute("checked", "");
-        }
-
-        const isLocal = baseURI.includes("localhost");
 
         /**
          * UTF-8 fix to btoa.
@@ -196,7 +178,8 @@
             return btoa(Array.from(new TextEncoder().encode(string), byte => String.fromCodePoint(byte)).join(""));
         }
 
-        /* UTF-8 fix to atob.
+        /* 
+         * UTF-8 fix to atob.
          * @param {string} bytes - A base64-encoded string.
          * @returns {string} The decoded string.
          */
@@ -204,7 +187,9 @@
             return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
 
-        
+        /* 
+         * Runs the current example's code and displays the result in the iframe.
+         */
         function runCode() {                
             const code = codeEditor.getValue();
             localStorage.setItem("code", toBase64(code));
@@ -212,7 +197,7 @@
             iframe.srcdoc = codeEditor.getValue();
         }
 
-                                    
+    
         document.getElementById("run-button").onclick = runCode;
         codeEditor.setOption("extraKeys", {
             "Ctrl-Enter": runCode,
@@ -220,7 +205,7 @@
         
 
         
-
+        // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
                 console.log("btn clicked");
@@ -258,11 +243,6 @@
         */
 
 
-        
-        let editorHidden = false;
-        const editorCollapse = document.getElementById("editor-collapse");
-        
-
 
         editorCollapse.onclick = () => {
             if (!editorHidden) {
@@ -282,26 +262,7 @@
             }
             editorHidden = !editorHidden;
         };
-        /*
-        editorCollapse.onclick = () => {
-            if (!editorHidden) {
-                editorCollapse.style.left = "0";
-                editorCollapse.style.transform = "scaleX(-1)";
-                setTimeout(() => editorCollapse.style.opacity = "0", 1000);
-                editorPanel.style.left = "calc(-100% * 6 / 16)";
-                iframe.style.left = "0";
-                iframe.style.width = "100%";
-            } else {
-                editorCollapse.style.left = "calc(100% * 6 / 16 - 1em)";
-                editorCollapse.style.transform = "scaleX(1)";
-                editorCollapse.style.opacity = "";
-                editorPanel.style.left = "0";
-                iframe.style.left = "";
-                iframe.style.width = "calc(100% * 10 / 16)";
-            }
-            editorHidden = !editorHidden;
-        };
-        */
+
         
         const searchParams = new URL(
             document.location.toString(),
@@ -324,7 +285,10 @@
         
         
 
-        /** @param {string} slug - An example's slug */
+        /** 
+         * Caches the code of the example associated with the given slug.
+         * @param {string} slug - An example's slug
+         */
         
         function cacheExample(slug) {
             const src = isLocal
@@ -339,7 +303,10 @@
         }   
                 
 
-        /** @param {string} slug - An example's slug */
+        /** 
+         * Loads the example associated with the given slug.
+         * @param {string} slug - An example's slug 
+         */
         
         async function loadExample(slug) {
             updateCodePanelHeader(slug);
@@ -356,7 +323,10 @@
         }
 
 
-        /** @param {string} slug - An example's slug */
+        /**
+         * Updates the code panel's title and description according to the example associated with the given slug.
+         *  @param {string} slug - An example's slug 
+         */
 
         function updateCodePanelHeader(slug) {
             if (!examplesConfig) return;
@@ -371,13 +341,14 @@
             }
 
             codePanelTitle.textContent = "Custom Example";
-            codePanelDesc.textContent = "Editing local or unsaved code.";
+            codePanelDesc.textContent = "Editing local code.";
         }
 
 
 
-
-
+        /** 
+         * Displays or hides examples based on the user's text query and selected category.
+         */
 
         function searchAndFilter() {
             const clean = (str) => str.replace(/\s+/g, '').toLowerCase();
@@ -420,9 +391,10 @@
 
         }
 
-
         
-
+        /** 
+         * Dynamically generates DOM elements according to the current examples in config.json.
+         */
         function initNavigation(list) {
             const nav = document.getElementById("editor-header");
 
@@ -446,7 +418,7 @@
             }
             */
 
-            // Dynamic example generation
+            // dynamic example generation
             const examples = [
                 ...Object.entries(list).flatMap(      
                     ([categorySlug, category]) => {
@@ -571,12 +543,8 @@
         });
 
 
-
-
         searchInput.addEventListener("input", searchAndFilter);
         categorySelector.addEventListener("change", searchAndFilter);
-
-
 
 
         versionSwitches.forEach(sw => {
