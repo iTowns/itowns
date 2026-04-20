@@ -39,7 +39,7 @@ class OBB extends THREE.Object3D {
         max = new THREE.Vector3(-Infinity, -Infinity, -Infinity),
     ) {
         super();
-        this.natBox = new THREE.Box3(min.clone(), max.clone());
+        this.natBox = new THREE.Box3(min, max);
         this.box3D = this.natBox.clone();
         this.z = { min: 0, max: 0, scale: 1.0, delta: 0 };
         this.matrixWorldInverse = this.matrixWorld.clone().invert();
@@ -57,7 +57,7 @@ class OBB extends THREE.Object3D {
         const matrixWorldInverseNeedsUpdate = this.matrixAutoUpdate || this.matrixWorldNeedsUpdate;
         super.updateMatrixWorld(force);
         if (matrixWorldInverseNeedsUpdate || force) {
-            this.matrixWorldInverse = this.matrixWorld.clone().invert();
+            this.matrixWorldInverse.copy(this.matrixWorld).invert();
         }
     }
 
@@ -172,13 +172,13 @@ class OBB extends THREE.Object3D {
 
     setFromBox3(box3: THREE.Box3) {
         this.natBox.copy(box3);
-        this.box3D = this.natBox.clone();
+        this.box3D.copy(this.natBox);
         return this;
     }
 
     setFromArray(array: number[]) {
         this.natBox.setFromArray(array);
-        this.box3D = this.natBox.clone();
+        this.box3D.copy(this.natBox);
         return this;
     }
 

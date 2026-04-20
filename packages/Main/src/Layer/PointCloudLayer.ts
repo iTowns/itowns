@@ -7,7 +7,6 @@ import Picking from 'Core/Picking';
 import type PointCloudNode from 'Core/PointCloudNode';
 
 const point = new THREE.Vector3();
-const matrix4 = new THREE.Matrix4();
 
 export interface PointCloudSource {
     /** The minimal value for elevation (read from the metadata). */
@@ -399,7 +398,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     // be added nor cleaned
                     this.group.add(elt.obj);
                     elt.obj.updateMatrixWorld(true);
-                    elt.obj.matrixWorldInverse = matrix4.copy(elt.obj.matrixWorld).invert();
+                    elt.obj.matrixWorldInverse = elt.obj.matrixWorld.clone().invert();
                     context.view.notifyChange(this);
                     this.dispatchEvent({ type: 'load-model', scene: pts, tile: elt });
                 }).catch((err: { isCancelledCommandException: boolean }) => {
@@ -442,7 +441,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             if (!object3d.parent) {
                 this.obbes.add(object3d);
                 object3d.updateMatrixWorld(true);
-                object3d.matrixWorldInverse = matrix4.copy(object3d.matrixWorld).invert();
             }
         }
 
