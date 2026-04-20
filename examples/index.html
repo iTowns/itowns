@@ -130,7 +130,7 @@
                     </label>
                     <p>Development version</p>
                 </div>
-                <button type="button" id="run-button">
+                <button type="button" id="run-btn">
                     RUN
                     <img src="images/run.svg" alt="Run code" />
                 </button>
@@ -163,6 +163,7 @@
         const categorySelector = document.getElementById("category-selector");
         const editorCollapse = document.getElementById("editor-collapse");
         const shareBtn = document.getElementById("share-btn");
+        const runBtn = document.getElementById("run-btn");
 
         let examplesConfig = null;
         let editorHidden = false;
@@ -219,33 +220,11 @@
         }
 
     
-        document.getElementById("run-button").onclick = runCode;
-        codeEditor.setOption("extraKeys", {
-            "Ctrl-Enter": runCode,
-        });
-        
 
         
-        // sidebar button management
-        sidebarButtons.forEach(button => {
-            button.addEventListener("click", () => {
-                sidebarButtons.forEach(b => b.classList.remove("active"));
-                button.classList.add("active");
-
-                panels.forEach(panel => panel.classList.remove("active"));
-                const panelId = button.dataset.panel;
-                document.getElementById(panelId).classList.add("active");
-
-
-                if (panelId === "code-panel") {
-                    setTimeout(() => {
-                        codeEditor.refresh();
-                    }, 0);
-                }
-            });
-        });
-
-        
+        /* 
+         * Compresses the current code into a shareable URL and copies it to the clipboard.
+         */
         function shareCode() {
             try {
                 const code = codeEditor.getValue();
@@ -254,59 +233,16 @@
 
                 const url = new URL(document.location.toString());
                 url.searchParams.set("code", compressedCode);
+                url.hash = "";
 
                 navigator.clipboard.writeText(url.href).then(() => {
-                    showToast("URL copied to clipboard");
+                    showToast("URL copied to clipboard", 2000);
                 });
             } catch (e) {
-                    showToast("Failed to copy URL");
+                    showToast("Failed to copy URL", 2000);
             }
         }
 
-        
-
-
-        
-        
-        editorCollapse.onclick = () => {
-            if (!editorHidden) {
-                editorPanel.style.left = "calc(-100% * 6 / 16)";
-                editorCollapse.style.transform = "scaleX(-1)";
-                editorCollapse.style.borderRadius = "8px 0 0 8px";
-                
-                iframe.style.left = "0";
-                iframe.style.width = "100%";
-            } else {
-                editorPanel.style.left = "0";
-                editorCollapse.style.transform = "scaleX(1)";
-                editorCollapse.style.borderRadius = "0 8px 8px 0";
-                
-                iframe.style.left = "";
-                iframe.style.width = "calc(100% * 10 / 16)";
-            }
-            editorHidden = !editorHidden;
-        };
-        
-        
-        const searchParams = new URL(
-            document.location.toString(),
-        ).searchParams;
-
-                                                                        // NEED TO DELETE, DOES NOTHING
-        const hideEditor = parseInt(searchParams.get("hide_editor"));
-        if (hideEditor) {
-            editorCollapse.style["transition-duration"] = "";
-            editorPanel.style["transition-duration"] = "";
-            iframe.style["transition-duration"] = "";
-            editorCollapse.click();
-            editorCollapse.style["transition-duration"] = "200ms";
-            editorPanel.style["transition-duration"] = "200ms";
-            iframe.style["transition-duration"] = "200ms";
-
-            setTimeout(() => editorCollapse.style.opacity = "1", 1000);
-            setTimeout(() => {if (editorHidden) {editorCollapse.style.opacity = "0";} }, 5000);
-        }
-        
         
 
         /** 
@@ -416,9 +352,16 @@
         }
 
 
+        /** 
+         * Show a toast display the given message for a given duration
+         * @param {string} message - The message to be displayed.
+         * @param {number} [duration=3000] - The duration the toast will be displayed for.
+         */
+
         function showToast(message, duration = 3000) {
             const container = document.getElementById('toast-container');
-            
+            container.innerHTML = '';
+
             const toast = document.createElement('div');
             toast.className = 'toast';
             toast.textContent = message;
@@ -433,8 +376,110 @@
             }, duration);
         }
 
+
+
+        // sidebar button management
+        sidebarButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                sidebarButtons.forEach(b => b.classList.remove("active"));
+                button.classList.add("active");
+
+                panels.forEach(panel => panel.classList.remove("active"));
+                const panelId = button.dataset.panel;
+                document.getElementById(panelId).classList.add("active");
+
+
+                if (panelId === "code-panel") {
+                    setTimeout(() => {
+                        codeEditor.refresh();
+                    }, 0);
+                }
+            });
+        });
+
+
+        
+        // editor collapsing
+        editorCollapse.onclick = () => {
+            if (!editorHidden) {
+                editorPanel.style.left = "calc(-100% * 6 / 16)";
+                editorCollapse.style.transform = "scaleX(-1)";
+                editorCollapse.style.borderRadius = "8px 0 0 8px";
+                
+                iframe.style.left = "0";
+                iframe.style.width = "100%";
+            } else {
+                editorPanel.style.left = "0";
+                editorCollapse.style.transform = "scaleX(1)";
+                editorCollapse.style.borderRadius = "0 8px 8px 0";
+                
+                iframe.style.left = "";
+                iframe.style.width = "calc(100% * 10 / 16)";
+            }
+            editorHidden = !editorHidden;
+        };
         
 
+        
+        // collapsing categories
+        exampleList.addEventListener('click', (event) => {
+            const header = event.target.closest('.category-header');
+            if (!header) return;
+
+            const parent = header.closest('.category');
+            parent.classList.toggle('collapsed');
+        });
+
+
+
+        // click on example
+        exampleList.addEventListener('click', (event) => {
+            const item = event.target.closest('.example-item');
+            if (!item) return;
+
+            const slug = item.dataset.slug;
+            loadExample(slug);
+            codeBtn.click(); 
+        });
+
+
+        
+        // version switching 
+        versionSwitches.forEach(sw => {
+            sw.addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                versionSwitches.forEach(otherSw => {
+                    otherSw.checked = isChecked;
+                });
+
+                const isDev = baseURI.includes("/itowns/dev/");
+                const options = ["/itowns/", "/itowns/dev/"];
+                
+                const target = isDev ? options[0] : options[1];
+                const current = isDev ? options[1] : options[0];
+
+                console.log("Current : " + current + " | Target : " + target);
+
+                if (baseURI.includes("/itowns/")) {
+                    window.location.href = document.location.href.replace(current, target);
+                }
+            });
+        });
+
+
+
+        searchInput.addEventListener("input", searchAndFilter);
+        categorySelector.addEventListener("change", searchAndFilter);
+
+        shareBtn.onclick = shareCode;
+
+        runBtn.onclick = runCode;
+        codeEditor.setOption("extraKeys", {
+            "Ctrl-Enter": runCode,
+        });
+
+
+        
 
         /**
          * @typedef {Object} ExampleItem
@@ -453,25 +498,9 @@
          * @param {Record<string, ExampleCategory>} list - A collection of categories.
          */
         function initNavigation(list) {
-            /*
-            const versionSwitch = document.getElementById("version-switch");
-            if (!baseURI.includes("/itowns/")) {
-                versionSwitch.setAttribute("disabled", "");
-            } else {
-                versionSwitch.onchange = (event) => {
-                    window.location.href = document.location.href.replace();
-                    const isDev = baseURI.includes("/itowns/dev/");
-                    const options = ["/itowns/", "/itowns/dev/"];
-                    window.location.href = document.location.href.replace(
-                        options[isDev],
-                        options[!isDev],
-                    );
-                };
-                if (baseURI.includes("/itowns/dev/")) {
-                    versionSwitch.setAttribute("checked", "");
-                }
-            }
-            */
+
+            const isDev = baseURI.includes("/itowns/dev/");
+            versionSwitches.forEach(sw => sw.checked = isDev);
 
             // dynamic example generation
             const examples = [
@@ -540,7 +569,7 @@
 
         function onLoad() {
         
-            // Get the configuration
+            // get the configuration
             fetch("./config.json")
                 .then(function _(response) {
                     return response.json();
@@ -574,55 +603,6 @@
                         
                 });
         }
-
-        // collapsing categories
-        exampleList.addEventListener('click', (event) => {
-            const header = event.target.closest('.category-header');
-            if (!header) return;
-
-            const parent = header.closest('.category');
-            parent.classList.toggle('collapsed');
-        });
-
-
-
-        // click on example
-        exampleList.addEventListener('click', (event) => {
-            const item = event.target.closest('.example-item');
-            if (!item) return;
-
-            const slug = item.dataset.slug;
-            loadExample(slug);
-            codeBtn.click(); 
-        });
-
-
-        searchInput.addEventListener("input", searchAndFilter);
-        categorySelector.addEventListener("change", searchAndFilter);
-
-        shareBtn.onclick = shareCode;
-
-
-        versionSwitches.forEach(sw => {
-            sw.addEventListener('change', (event) => {
-                const isChecked = event.target.checked;
-
-                versionSwitches.forEach(otherSw => {
-                    otherSw.checked = isChecked;
-                });
-                console.log("test1");
-                const isDev = baseURI.includes("/itowns/dev/");
-                const options = ["/itowns/", "/itowns/dev/"];
-                if (isChecked !== isDev) {
-                    console.log("test2");
-                    window.location.href = document.location.href.replace(
-                        options[isDev ? 1 : 0],
-                        options[isDev ? 0 : 1]
-                    );
-                    
-                }
-            });
-        });
 
 
 

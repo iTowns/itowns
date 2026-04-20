@@ -593,7 +593,7 @@ input:checked + .slider:before {
 
 
 
-#run-button {
+#run-btn {
     display: flex;
     flex-direction: row;
     justify-content: space-around;
@@ -612,15 +612,15 @@ input:checked + .slider:before {
     
 }
 
-#run-button:hover {
+#run-btn:hover {
     background-color: #1052AD;
 }
 
-#run-button:active {
+#run-btn:active {
     background-color: #0D419A;
 }
 
-#run-button img {
+#run-btn img {
     height: 35%;
 }
 
@@ -758,12 +758,6 @@ input:checked + .slider:before {
     #editor-collapse img, #share-btn img{ 
         filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
     }
-
-    /*
-    #run-button img {
-        filter: brightness(1) invert(1);
-    } 
-    */
 
     #category-selector {
         background-image: url(/examples/images/white_dropdown_arrow.svg);
@@ -932,7 +926,7 @@ input:checked + .slider:before {
     width: 200px;
     height: 18px;
     color: black;
-    font-family: Roboto;
+    font-family: "Open Sans", sans-serif;
     font-size: 16px;
     -moz-user-select: none;
     -webkit-user-select: none;
@@ -942,8 +936,8 @@ input:checked + .slider:before {
 
 #toast-container {
     position: fixed;
-    bottom: 20px;
-    right: 20px;
+    top: 15px;
+    left: calc(100% * 4 / 16);
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -955,6 +949,7 @@ input:checked + .slider:before {
     color: light-dark(#fff, #333);
     padding: 12px 20px;
     border-radius: 8px;
+    font-family: Roboto;
     font-size: 14px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     
