@@ -18,6 +18,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/material-darker.min.css" 
     integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- lz-string compression -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 </head>
 
 <body data-spy="scroll" data-target="nav">
@@ -60,12 +62,12 @@
                 </button>
                 <a href="https://github.com/iTowns" target="_blank" rel="noopener noreferrer">
                     <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button">
-                            <img src="images/github.svg" alt="Code editor" />
+                            <img src="images/github.svg" alt="GitHub logo" />
                     </button>
                 </a>
                 <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
                     <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button">
-                            <img src="images/book.svg" alt="Code editor" />
+                            <img src="images/book.svg" alt="Book icon "/>
                     </button>
                 </a>
             </nav>
@@ -105,8 +107,14 @@
         
         <div class="panel" id="code-panel"> 
             <div class="panel-header" id="code-panel-header">
-                <h1 class="panel-title" id="code-panel-title">EXAMPLE NAME HERE</h1>
-                <p id="code-panel-desc">Example description lorem ipsum</p>  
+                <h1 class="panel-title" id="code-panel-title">Example failed to load</h1>
+                <div id="desc-share-container">
+                    <p id="code-panel-desc">Example description failed to load</p>  
+                    <button id="share-btn" title="Share this code">
+                        <img src="images/share.svg" alt="Share icon" />
+                    </button>
+                </div>
+                
             </div>
                 
                 <div id="code-editor-wrapper">
@@ -136,6 +144,8 @@
     </div>
 
 
+    <div id="toast-container"></div>
+
     <script type="text/javascript">
         const iframe = document.getElementById("content");
         const editorPanel = document.getElementById("editor-panel");
@@ -152,6 +162,7 @@
         const searchInput = document.getElementById("search-input");
         const categorySelector = document.getElementById("category-selector");
         const editorCollapse = document.getElementById("editor-collapse");
+        const shareBtn = document.getElementById("share-btn");
 
         let examplesConfig = null;
         let editorHidden = false;
@@ -187,12 +198,22 @@
             return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
 
+
+
+        function compress(string){
+            return LZString.compressToEncodedURIComponent(string);
+        }
+
+        function decompress(string){
+            return LZString.decompressToEncodedURIComponent(string);
+        }
+
         /* 
          * Runs the current example's code and displays the result in the iframe.
          */
         function runCode() {                
             const code = codeEditor.getValue();
-            localStorage.setItem("code", toBase64(code));
+            sessionStorage.setItem("code", compress(code));
 
             iframe.srcdoc = codeEditor.getValue();
         }
@@ -208,7 +229,6 @@
         // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
-                console.log("btn clicked");
                 sidebarButtons.forEach(b => b.classList.remove("active"));
                 button.classList.add("active");
 
@@ -225,25 +245,29 @@
             });
         });
 
-        /*
+        
         function shareCode() {
-            const code = codeEditor.getValue();
-            const base64 = toBase64(code);
-            localStorage.setItem("code", base64);
+            try {
+                const code = codeEditor.getValue();
+                const compressedCode = compress(code);
+                sessionStorage.setItem("code", compressedCode);
 
-            const url = new URL(document.location.toString());
-            url.hash = "";
-            url.search = "?code=" + encodeURIComponent(base64);
-            navigator.clipboard.writeText(url);
+                const url = new URL(document.location.toString());
+                url.searchParams.set("code", compressedCode);
+
+                navigator.clipboard.writeText(url.href).then(() => {
+                    showToast("URL copied to clipboard");
+                });
+            } catch (e) {
+                    showToast("Failed to copy URL");
+            }
         }
-        document.getElementById("share-button").onclick = shareCode;
 
-        const fontSizeSelector = document.getElementById("font-size-selector");
-
-        */
+        
 
 
-
+        
+        
         editorCollapse.onclick = () => {
             if (!editorHidden) {
                 editorPanel.style.left = "calc(-100% * 6 / 16)";
@@ -262,7 +286,7 @@
             }
             editorHidden = !editorHidden;
         };
-
+        
         
         const searchParams = new URL(
             document.location.toString(),
@@ -391,13 +415,44 @@
 
         }
 
+
+        function showToast(message, duration = 3000) {
+            const container = document.getElementById('toast-container');
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                toast.addEventListener('animationend', () => {
+                    toast.remove();
+                });
+            }, duration);
+        }
+
         
-        /** 
-         * Dynamically generates DOM elements according to the current examples in config.json.
+
+
+        /**
+         * @typedef {Object} ExampleItem
+         * @property {string} label - The display name of the example.
+         * @property {string} description - A short explanation of what the example shows.
+         */
+
+        /**
+         * @typedef {Object} ExampleCategory
+         * @property {string} label - The display name of the category.
+         * @property {Record<string, ExampleItem>} items - A dictionnary of items indexed by their unique keys.
+         */
+
+        /**
+         * Dynamically generates DOM elements according to the current examples in the given json file.
+         * @param {Record<string, ExampleCategory>} list - A collection of categories.
          */
         function initNavigation(list) {
-            const nav = document.getElementById("editor-header");
-
             /*
             const versionSwitch = document.getElementById("version-switch");
             if (!baseURI.includes("/itowns/")) {
@@ -425,7 +480,7 @@
                         return [
                             `<div class="category" data-slug='${categorySlug}'>`,
                                 `<button type='button' class="category-header">
-                                    <img src="images/down_arrow.svg" alt="Collapse/expand category"/>
+                                    <img src="images/down_arrow.svg" class="category-arrow" alt="Collapse/expand category"/>
                                     <h3 class='category-title'> ${category.label} </h3>
                                 </button>`,
                                 `<div class="category-grid-wrapper">`,
@@ -499,7 +554,7 @@
                     ).searchParams; 
                     const urlCode = searchParams.get("code");
 
-                    const localCode = localStorage.getItem("code");
+                    const localCode = sessionStorage.getItem("code");
 
                     if (!urlCode) {
                         if (!localCode || isLocal) {
@@ -509,16 +564,15 @@
                             );
                         }
                         else {
-                            codeEditor.setValue(fromBase64(localCode));
+                            codeEditor.setValue(decompress(localCode));
                             runCode();
                         }
                     } else {
-                        codeEditor.setValue(fromBase64(decodeURIComponent(urlCode)));
+                        codeEditor.setValue(decompress(decodeURIComponent(urlCode)));
                         alert('Please check foreign code before running it!');
                     }
                         
                 });
-                
         }
 
         // collapsing categories
@@ -546,6 +600,8 @@
         searchInput.addEventListener("input", searchAndFilter);
         categorySelector.addEventListener("change", searchAndFilter);
 
+        shareBtn.onclick = shareCode;
+
 
         versionSwitches.forEach(sw => {
             sw.addEventListener('change', (event) => {
@@ -554,10 +610,11 @@
                 versionSwitches.forEach(otherSw => {
                     otherSw.checked = isChecked;
                 });
-
+                console.log("test1");
                 const isDev = baseURI.includes("/itowns/dev/");
                 const options = ["/itowns/", "/itowns/dev/"];
                 if (isChecked !== isDev) {
+                    console.log("test2");
                     window.location.href = document.location.href.replace(
                         options[isDev ? 1 : 0],
                         options[isDev ? 0 : 1]
