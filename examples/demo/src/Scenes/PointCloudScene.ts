@@ -58,7 +58,11 @@ export const PointCloudScene: SceneType = {
         await PointCloudScene.view.addLayers(PointCloudScene.layers);
 
         const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(itownsView.referenceCrs)) as
-            LayerType as itowns.CopcLayer;
+            LayerType as itowns.CopcLayer & {
+                material: {
+                    mode: number,
+                },
+            };
         PointCloudScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(itownsView, pointCloudLayer);
 
@@ -88,6 +92,19 @@ export const PointCloudScene: SceneType = {
     },
     onEnter: async () => {
         configContainer.style.display = 'block';
+
+        const layer = Layers.PointCloudLayer.cachedLayer as itowns.CopcLayer & {
+            material: {
+                mode: number,
+            },
+        };
+        if (layer.material.mode === itowns.PNTS_MODE.COLOR) {
+            classificationButton.classList.remove('active');
+            colorButton.classList.add('active');
+        } else {
+            colorButton.classList.remove('active');
+            classificationButton.classList.add('active');
+        }
     },
     onExit: async () => {
         configContainer.style.display = 'none';

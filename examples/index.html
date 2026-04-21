@@ -134,36 +134,6 @@
         function fromBase64(bytes) {
             return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
-    }
-
-    function goTo(url, slug) {
-        if (slug) window.location.hash = slug;
-        var iframe = document.getElementById('content');
-        iframe.src = url.replace('index.html', '');
-        iframe.focus();
-
-        let viewSrc = `https://github.com/iTowns/itowns/blob/master/examples/${
-            window.location.hash.substr(1) || 'demo/index'
-        }.html`;
-        document.getElementById('view-source').onclick = () => { window.open(viewSrc); };
-    }
-
-    function initNavigation(list) {
-        // Add version switch :
-        const versionSwitchText = document.createElement('p');
-        versionSwitchText.innerHTML = `iTowns examples of the ${
-            (baseURI.includes("/itowns/dev/") && "next version (current master branch)")
-                || "latest released version"
-        }.`;
-
-        const versionSwitchButton = document.createElement('button');
-        versionSwitchButton.classList.add('switch-button');
-        versionSwitchButton.innerHTML = `Switch to ${
-            (baseURI.includes("/itowns/dev/") && "latest release") || "next version"
-        }`;
-        versionSwitchButton.onclick = () => {
-            if (baseURI.includes("/itowns/dev/")) {
-                window.location.href = document.location.href.replace('/itowns/dev/', '/itowns/');
 
         function runCode() {
             const code = codeEditor.getValue();
@@ -344,7 +314,7 @@
                         if (!localCode || isLocal) {
                             loadExample(
                                 window.location.hash.replace("#", "") ||
-                                "view_3d_map",
+                                "demo/index",
                             );
                         }
                         else {

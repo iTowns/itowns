@@ -11,7 +11,7 @@ export async function getFetcherConfig() {
     if (!configPromise) {
         configPromise = (
             itowns.Fetcher.json(
-                'assets/WORLD_DTM.json',
+                'demo/assets/WORLD_DTM.json',
             ) as Promise<FetcherConfigType>
         ).then((config) => {
             config.source = new itowns.WMTSSource(config.source);

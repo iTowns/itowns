@@ -9,7 +9,7 @@
         <script type="importmap">
             {
                 "imports": {
-                    "itowns": "../../dist/itowns.js",
+                    "itowns": "../dist/itowns.js",
                     "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                     "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
                     "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
@@ -17,14 +17,14 @@
             }
         </script>
 
-        <link rel="stylesheet" type="text/css" href="../css/example.css" />
+        <link rel="stylesheet" type="text/css" href="css/example.css" />
         <link
             rel="stylesheet"
             type="text/css"
-            href="../css/LoadingScreen.css"
+            href="css/LoadingScreen.css"
         />
-        <link rel="stylesheet" type="text/css" href="../css/widgets.css" />
-        <link rel="stylesheet" type="text/css" href="css/demo.css" />
+        <link rel="stylesheet" type="text/css" href="css/widgets.css" />
+        <link rel="stylesheet" type="text/css" href="demo/css/demo.css" />
     </head>
     <body>
         <div id="demoUI">
@@ -46,7 +46,7 @@
 
             try {
                 // If webpack served, import from global build
-                const mod1 = await import("../../dist/demo.js");
+                const mod1 = await import("../dist/demo.js");
                 SceneTransitionUtils = mod1.SceneTransitionUtils;
                 SceneRepository = mod1.SceneRepository;
             } catch (e) {

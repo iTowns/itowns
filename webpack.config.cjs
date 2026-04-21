@@ -175,6 +175,7 @@ module.exports = () => {
         plugins: [
             new ESLintPlugin({
                 files: include,
+                configType: 'eslintrc',
             }),
         ],
         experiments: {

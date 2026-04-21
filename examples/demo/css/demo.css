@@ -50,6 +50,7 @@ button {
     padding: 0.5vh 2vh;
     
     color: black;
+    background-color: #ffffff;
     text-align: center;
     text-decoration: none;
     font-size: min(1vh, 1.5vw);
@@ -61,6 +62,12 @@ button {
 button:hover {
     background-color: #E5E5E5;
     color: black;
+}
+
+button:disabled {
+    background-color: #E5E5E5;
+    color: #A0A0A0;
+    cursor: not-allowed;
 }
 
 button:active {

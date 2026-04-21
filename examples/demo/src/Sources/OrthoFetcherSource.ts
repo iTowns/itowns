@@ -11,7 +11,7 @@ export async function getFetcherConfig() {
     if (!configPromise) {
         configPromise = (
             itowns.Fetcher.json(
-                'assets/Ortho.json',
+                'demo/assets/Ortho.json',
             ) as Promise<FetcherConfigType>
         ).then((config) => {
             config.source = new itowns.WMTSSource(config.source);

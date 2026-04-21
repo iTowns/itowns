@@ -105,7 +105,11 @@ export const CombinedDataScene: SceneType = {
 
         const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(
             itownsView.referenceCrs,
-        )) as LayerType as itowns.CopcLayer;
+        )) as LayerType as itowns.CopcLayer & {
+            material: {
+                mode: number;
+            };
+        };
         CombinedDataScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(itownsView, pointCloudLayer);
 
@@ -173,6 +177,19 @@ export const CombinedDataScene: SceneType = {
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             CombinedDataScene.event,
         );
+
+        const layer = Layers.PointCloudLayer.cachedLayer as itowns.CopcLayer & {
+            material: {
+                mode: number,
+            },
+        };
+        if (layer.material.mode === itowns.PNTS_MODE.COLOR) {
+            classificationButton.classList.remove('active');
+            colorButton.classList.add('active');
+        } else {
+            colorButton.classList.remove('active');
+            classificationButton.classList.add('active');
+        }
     },
     onExit: async () => {
         const itownsView = CombinedDataScene.getItownsView();
