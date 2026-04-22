@@ -8,8 +8,10 @@ type LayerType = (
     itowns.OGC3DTilesLayer |
     itowns.CopcLayer |
     itowns.OrientedImageLayer |
-    itowns.LabelLayer
+    itowns.LabelLayer |
+    itowns.EntwinePointTileSource
 ) & {
+    id: string, // EntwinePointTileSource doesn't define id
     visible?: boolean,
 }
 

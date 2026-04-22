@@ -17,14 +17,15 @@ export const PointCloudLayer: LayerPromiseTypeCRS = {
                     opacity: 0.5,
                 };
                 const config = {
-                    source: await PointCloudSource.getSource(crs),
+                    source: await PointCloudSource.getSource(),
                     crs,
                     sseThreshold: 4,
-                    pointBudget: 100000,
+                    pointSize: 2,
                     ...options,
                 };
 
-                PointCloudLayer.cachedLayer = new itowns.CopcLayer(PointCloudLayer.id, config);
+                PointCloudLayer.cachedLayer =
+                    new itowns.EntwinePointTileLayer(PointCloudLayer.id, config);
 
                 return PointCloudLayer.cachedLayer;
             })();

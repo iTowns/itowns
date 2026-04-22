@@ -32,10 +32,10 @@ export const CombinedDataScene: SceneType = {
     description:
         'Visualize multiple data sources together to create rich, layered maps.',
     placement: {
-        coord: new itowns.Coordinates('EPSG:4326', 4.860377, 45.760213),
-        range: 2500,
-        tilt: 35,
-        heading: 30,
+        coord: new itowns.Coordinates('EPSG:4326', 4.85160666022384, 45.76111582920194),
+        range: 3000,
+        tilt: 25,
+        heading: 220,
     },
     layers: [],
     view: undefined,
@@ -127,8 +127,9 @@ export const CombinedDataScene: SceneType = {
             itownsView.notifyChange(pointCloudLayer, true);
         });
 
-        classificationButton.classList.add('active');
-        colorButton.classList.remove('active');
+        pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
+        colorButton.classList.add('active');
+        classificationButton.classList.remove('active');
 
         const viewerDiv = CombinedDataScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);

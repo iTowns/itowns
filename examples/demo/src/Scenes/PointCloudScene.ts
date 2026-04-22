@@ -28,10 +28,10 @@ export const PointCloudScene: SceneType = {
     description: 'Display massive LiDAR datasets with optimized streaming. '
     + 'Supports EPT, COPC, LAS and 3D Tiles with various rendering styles.',
     placement: {
-        coord: new itowns.Coordinates('EPSG:4326', 4.860377, 45.760213),
-        range: 2500,
-        tilt: 35,
-        heading: 30,
+        coord: new itowns.Coordinates('EPSG:4326', 4.85160666022384, 45.76111582920194),
+        range: 1000,
+        tilt: 14,
+        heading: 220,
     },
     layers: [],
     view: undefined,
@@ -80,8 +80,9 @@ export const PointCloudScene: SceneType = {
             itownsView.notifyChange(pointCloudLayer, true);
         });
 
-        classificationButton.classList.add('active');
-        colorButton.classList.remove('active');
+        pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
+        colorButton.classList.add('active');
+        classificationButton.classList.remove('active');
 
         const viewerDiv = PointCloudScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);
