@@ -40,11 +40,13 @@ class SkyManager {
         const skyMaterial = new SkyMaterial();
         this.sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), skyMaterial);
         this.sky.frustumCulled = false;
+        scene.add(this.sky);
 
         // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
         this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
+        scene.add(this.skyLight);
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
         this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
@@ -118,7 +120,7 @@ class SkyManager {
     }
 
     get enabled() {
-        return !!this.sky.parent; // sky has a parent (the scene)
+        return this.sky.visible;
     }
 
     set enabled(on: boolean) {
@@ -135,13 +137,15 @@ class SkyManager {
     enable() {
         // Realistic rendering requires a dimmer sunlight
         this.view.sunLightLayer.sunLight.intensity *= 0.1;
-        this.scene.add(this.sky, this.skyLight);
+        this.sky.visible = true;
+        this.skyLight.visible = true;
         this.effectPass.enabled = true;
     }
 
     disable() {
         this.view.sunLightLayer.sunLight.intensity *= 10;
-        this.scene.remove(this.sky, this.skyLight);
+        this.sky.visible = false;
+        this.skyLight.visible = false;
         this.effectPass.enabled = false;
     }
 }
