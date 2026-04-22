@@ -28,14 +28,17 @@ class View3D extends View {
         this.view = new itowns.GlobeView(
             this.viewerDiv,
             placement,
+            {
+                realisticLighting: true,
+            },
         );
 
-        const view = this.view as itowns.GlobeView &
-        { skyManager: { enable: (on: boolean) => void } };
+        const view = this.view as itowns.GlobeView;
 
         this.atmosphereFrameRequester = () => {
-            if (view.skyManager && view.skyManager.enable) {
-                view.skyManager.enable(view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD);
+            if (view.skyManager) {
+                view.skyManager.enabled =
+                    view.getDistanceFromCamera() > Config.ATMOSPHERE_THRESHOLD;
             }
         };
         this.view.addFrameRequester(
