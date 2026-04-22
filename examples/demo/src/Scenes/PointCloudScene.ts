@@ -38,7 +38,7 @@ export const PointCloudScene: SceneType = {
     ready: false,
     getView: () => {
         if (!PointCloudScene.view) {
-            throw new Error('Point Cloud Scene view is not initialized');
+            PointCloudScene.view = new View3D();
         }
         return PointCloudScene.view;
     },
@@ -47,7 +47,9 @@ export const PointCloudScene: SceneType = {
         if (PointCloudScene.ready) {
             return;
         }
-        PointCloudScene.view = new View3D();
+        if (!PointCloudScene.view) {
+            PointCloudScene.view = new View3D();
+        }
 
         const itownsView = PointCloudScene.getItownsView();
 
@@ -79,10 +81,6 @@ export const PointCloudScene: SceneType = {
             colorButton.classList.remove('active');
             itownsView.notifyChange(pointCloudLayer, true);
         });
-
-        pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
-        colorButton.classList.add('active');
-        classificationButton.classList.remove('active');
 
         const viewerDiv = PointCloudScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);

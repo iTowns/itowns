@@ -24,7 +24,7 @@ export const TexturedMeshes3dScene: SceneType = {
     ready: false,
     getView: () => {
         if (!TexturedMeshes3dScene.view) {
-            throw new Error('Textured Meshes 3D Scene view is not initialized');
+            TexturedMeshes3dScene.view = new View3D();
         }
         return TexturedMeshes3dScene.view;
     },
@@ -33,7 +33,9 @@ export const TexturedMeshes3dScene: SceneType = {
         if (TexturedMeshes3dScene.ready) {
             return;
         }
-        TexturedMeshes3dScene.view = new View3D();
+        if (!TexturedMeshes3dScene.view) {
+            TexturedMeshes3dScene.view = new View3D();
+        }
 
         const itownsView = TexturedMeshes3dScene.getItownsView();
 

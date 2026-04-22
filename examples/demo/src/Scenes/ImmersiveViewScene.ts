@@ -25,7 +25,7 @@ export const ImmersiveViewScene: SceneType = {
     ready: false,
     getView: () => {
         if (!ImmersiveViewScene.view) {
-            throw new Error('Immersive View Scene view is not initialized');
+            ImmersiveViewScene.view = new ImmersiveView();
         }
         return ImmersiveViewScene.view;
     },
@@ -41,7 +41,9 @@ export const ImmersiveViewScene: SceneType = {
         if (ImmersiveViewScene.ready) {
             return;
         }
-        ImmersiveViewScene.view = new ImmersiveView();
+        if (!ImmersiveViewScene.view) {
+            ImmersiveViewScene.view = new ImmersiveView();
+        }
 
         const itownsView = ImmersiveViewScene.getItownsView();
 

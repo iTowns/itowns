@@ -33,7 +33,7 @@ export const PlanarViewScene: SceneType = {
     ready: false,
     getView: () => {
         if (!PlanarViewScene.view) {
-            throw new Error('Planar View Scene view is not initialized');
+            PlanarViewScene.view = new PlanarView(extent);
         }
         return PlanarViewScene.view;
     },
@@ -42,7 +42,9 @@ export const PlanarViewScene: SceneType = {
         if (PlanarViewScene.ready) {
             return;
         }
-        PlanarViewScene.view = new PlanarView(extent);
+        if (!PlanarViewScene.view) {
+            PlanarViewScene.view = new PlanarView(extent);
+        }
 
         PlanarViewScene.layers.push(await Layers.OrthoImageWMSLayer.getLayer(extent));
         PlanarViewScene.layers.push(await Layers.ElevationWMSLayer.getLayer(extent));

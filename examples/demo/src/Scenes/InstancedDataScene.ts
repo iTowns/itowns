@@ -22,7 +22,7 @@ export const InstancedDataScene: SceneType = {
     ready: false,
     getView: () => {
         if (!InstancedDataScene.view) {
-            throw new Error('Instanced Data Scene view is not initialized');
+            InstancedDataScene.view = new View3D();
         }
         return InstancedDataScene.view;
     },
@@ -45,7 +45,9 @@ export const InstancedDataScene: SceneType = {
         if (InstancedDataScene.ready) {
             return;
         }
-        InstancedDataScene.view = new View3D();
+        if (!InstancedDataScene.view) {
+            InstancedDataScene.view = new View3D();
+        }
 
         const itownsView = InstancedDataScene.getItownsView();
 

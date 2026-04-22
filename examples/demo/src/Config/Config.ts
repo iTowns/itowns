@@ -5,6 +5,7 @@ const Config = {
     ATMOSPHERE_THRESHOLD: 4000000,
     MIN_DISTANCE: 0.1,
     DRAG_THRESHOLD: 5,
+    basePath: '',
 };
 
 export default Config;

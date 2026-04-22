@@ -27,6 +27,9 @@ export const PointCloudLayer: LayerPromiseTypeCRS = {
                 PointCloudLayer.cachedLayer =
                     new itowns.EntwinePointTileLayer(PointCloudLayer.id, config);
 
+                // @ts-expect-error mode property undefined
+                PointCloudLayer.cachedLayer.material.mode = itowns.PNTS_MODE.COLOR;
+
                 return PointCloudLayer.cachedLayer;
             })();
         }

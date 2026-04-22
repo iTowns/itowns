@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
     <head>
         <title>Itowns - Showcase</title>
@@ -6,25 +6,35 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+        <!-- both itowns paths for webpack and local build -->
         <script type="importmap">
             {
                 "imports": {
-                    "itowns": "../dist/itowns.js",
+                    "itowns": "../../dist/itowns.js",
                     "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                     "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
                     "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
                 }
             }
         </script>
+        <script>
+            function loadCss(url) {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.type = "text/css";
+                link.href = url;
+                document.head.appendChild(link);
+            }
 
-        <link rel="stylesheet" type="text/css" href="css/example.css" />
-        <link
-            rel="stylesheet"
-            type="text/css"
-            href="css/LoadingScreen.css"
-        />
-        <link rel="stylesheet" type="text/css" href="css/widgets.css" />
-        <link rel="stylesheet" type="text/css" href="demo/css/demo.css" />
+            const basePath = window.location.href.startsWith("about:srcdoc")
+                ? "/examples"
+                : "..";
+
+            loadCss(`${basePath}/css/example.css`);
+            loadCss(`${basePath}/css/widgets.css`);
+            loadCss(`${basePath}/demo/css/demo.css`);
+            loadCss(`${basePath}/css/LoadingScreen.css`);
+        </script>
     </head>
     <body>
         <div id="demoUI">
@@ -41,36 +51,36 @@
         <script type="module">
             import * as THREE from "three";
             import * as itowns from "itowns";
-            
-            let SceneTransitionUtils, SceneRepository;
+            import { SceneTransitionUtils, SceneRepository, Config } from "../../dist/demo.js";
 
-            try {
-                // If webpack served, import from global build
-                const mod1 = await import("../dist/demo.js");
-                SceneTransitionUtils = mod1.SceneTransitionUtils;
-                SceneRepository = mod1.SceneRepository;
-            } catch (e) {
-                // Otherwise, import from local build
-                const mod2 = await import("./dist/index.js");
-                SceneTransitionUtils = mod2.SceneTransitionUtils;
-                SceneRepository = mod2.SceneRepository;
-            }
+            Config.basePath = window.location.href.startsWith("about:srcdoc")
+                ? "/examples"
+                : "..";
 
             const resetSceneButton = document.getElementById("resetScene");
-            const hardResetSceneButton = document.getElementById("hardResetScene");
+            const hardResetSceneButton =
+                document.getElementById("hardResetScene");
 
             SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
             await SceneRepository[0].onCreate();
             await SceneRepository[0].onEnter?.();
             SceneRepository[0].getView().setVisible(true);
             const iTownsView = SceneRepository[0].getItownsView();
-            await SceneTransitionUtils.moveCameraTo(iTownsView, SceneRepository[0].placement, 0.1);
+            await SceneTransitionUtils.moveCameraTo(
+                iTownsView,
+                SceneRepository[0].placement,
+                0.1,
+            );
 
             let currentIndex = 0;
 
             const SceneManager = {
                 async goTo(index) {
-                    if (index === currentIndex || index < 0 || index >= SceneRepository.length) {
+                    if (
+                        index === currentIndex ||
+                        index < 0 ||
+                        index >= SceneRepository.length
+                    ) {
                         return;
                     }
                     const from = SceneRepository[currentIndex];
@@ -91,7 +101,9 @@
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
-                        await SceneTransitionUtils.resetScene(SceneRepository[currentIndex]);
+                        await SceneTransitionUtils.resetScene(
+                            SceneRepository[currentIndex],
+                        );
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
@@ -101,7 +113,9 @@
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
-                        await SceneTransitionUtils.hardResetScene(SceneRepository[currentIndex]);
+                        await SceneTransitionUtils.hardResetScene(
+                            SceneRepository[currentIndex],
+                        );
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
@@ -125,7 +139,9 @@
 
             function toggleEnableButtons(enable) {
                 resetSceneButton.style.pointerEvents = enable ? "auto" : "none";
-                hardResetSceneButton.style.pointerEvents = enable ? "auto" : "none";
+                hardResetSceneButton.style.pointerEvents = enable
+                    ? "auto"
+                    : "none";
                 resetSceneButton.disabled = !enable;
                 hardResetSceneButton.disabled = !enable;
             }

@@ -33,7 +33,7 @@ export const ExtrudedData3dScene: SceneType = {
     },
     getView: () => {
         if (!ExtrudedData3dScene.view) {
-            throw new Error('Extruded Data 3D Scene view is not initialized');
+            ExtrudedData3dScene.view = new View3D();
         }
         return ExtrudedData3dScene.view;
     },
@@ -42,7 +42,9 @@ export const ExtrudedData3dScene: SceneType = {
         if (ExtrudedData3dScene.ready) {
             return;
         }
-        ExtrudedData3dScene.view = new View3D();
+        if (!ExtrudedData3dScene.view) {
+            ExtrudedData3dScene.view = new View3D();
+        }
 
         function scaleZ(mesh: THREE.Mesh) {
             for (let i = 0; i < mesh.children.length; i++) {

@@ -43,7 +43,7 @@ export const CombinedDataScene: SceneType = {
     ready: false,
     getView: () => {
         if (!CombinedDataScene.view) {
-            throw new Error('Combined Data Scene view is not initialized');
+            CombinedDataScene.view = new View3D();
         }
         return CombinedDataScene.view;
     },
@@ -65,7 +65,9 @@ export const CombinedDataScene: SceneType = {
         if (CombinedDataScene.ready) {
             return;
         }
-        CombinedDataScene.view = new View3D();
+        if (!CombinedDataScene.view) {
+            CombinedDataScene.view = new View3D();
+        }
 
         const itownsView = CombinedDataScene.getItownsView();
 
@@ -127,10 +129,6 @@ export const CombinedDataScene: SceneType = {
             itownsView.notifyChange(pointCloudLayer, true);
         });
 
-        pointCloudLayer.material.mode = itowns.PNTS_MODE.COLOR;
-        colorButton.classList.add('active');
-        classificationButton.classList.remove('active');
-
         const viewerDiv = CombinedDataScene.view.getViewerDiv();
         viewerDiv.appendChild(configContainer);
 
@@ -184,9 +182,10 @@ export const CombinedDataScene: SceneType = {
                 mode: number,
             },
         };
+
         if (layer.material.mode === itowns.PNTS_MODE.COLOR) {
-            classificationButton.classList.remove('active');
             colorButton.classList.add('active');
+            classificationButton.classList.remove('active');
         } else {
             colorButton.classList.remove('active');
             classificationButton.classList.add('active');

@@ -18,7 +18,7 @@ export const Terrain3dScene: SceneType = {
     ready: false,
     getView: () => {
         if (!Terrain3dScene.view) {
-            throw new Error('Terrain 3D Scene view is not initialized');
+            Terrain3dScene.view = new View3D();
         }
         return Terrain3dScene.view;
     },
@@ -27,7 +27,9 @@ export const Terrain3dScene: SceneType = {
         if (Terrain3dScene.ready) {
             return;
         }
-        Terrain3dScene.view = new View3D();
+        if (!Terrain3dScene.view) {
+            Terrain3dScene.view = new View3D();
+        }
 
         Terrain3dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
         Terrain3dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());

@@ -18,7 +18,7 @@ export const ProjectedData2dScene: SceneType = {
     ready: false,
     getView: () => {
         if (!ProjectedData2dScene.view) {
-            throw new Error('Projected Data 2D Scene view is not initialized');
+            ProjectedData2dScene.view = new View3D();
         }
         return ProjectedData2dScene.view;
     },
@@ -27,7 +27,9 @@ export const ProjectedData2dScene: SceneType = {
         if (ProjectedData2dScene.ready) {
             return;
         }
-        ProjectedData2dScene.view = new View3D();
+        if (!ProjectedData2dScene.view) {
+            ProjectedData2dScene.view = new View3D();
+        }
 
         ProjectedData2dScene.layers.push(await Layers.OrthoFetcherLayer.getLayer());
         ProjectedData2dScene.layers.push(await Layers.WorldDTMFetcherLayer.getLayer());

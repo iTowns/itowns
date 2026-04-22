@@ -23,7 +23,7 @@ export const BIMScene: SceneType = {
     meshes: [],
     getView: () => {
         if (!BIMScene.view) {
-            throw new Error('BIM Scene view is not initialized');
+            BIMScene.view = new View3D();
         }
         return BIMScene.view;
     },
@@ -32,7 +32,9 @@ export const BIMScene: SceneType = {
         if (BIMScene.ready) {
             return;
         }
-        BIMScene.view = new View3D();
+        if (!BIMScene.view) {
+            BIMScene.view = new View3D();
+        }
 
         const itownsView = BIMScene.getItownsView();
 

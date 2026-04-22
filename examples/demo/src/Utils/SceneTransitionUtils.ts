@@ -77,14 +77,13 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     // stop any ongoing camera animation
     controls.player.stop();
 
-    await nextScene.onCreate(); // only called once per scene
-
-    const nextView = nextScene.getView();
-
     let cameraPromise: Promise<void>;
 
     currentView.setVisible(false);
+    const nextView = nextScene.getView();
     globeView.setVisible(true);
+
+    await nextScene.onCreate(); // only called once per scene
 
     // set transition view camera to current scene location if not already there
     if (!(currentScene.view instanceof View3D)) {
@@ -191,10 +190,10 @@ export const hardResetScene = async (scene: SceneType) => {
     }
 
     for (const s of SceneRepository) {
-        if (s.view && s.view.id === view.id) {
-            s.ready = false;
-            s.layers = [];
-        }
+        s.view?.clearInstance();
+        s.view = undefined;
+        s.ready = false;
+        s.layers = [];
     }
 
     // reset Globe3dScene as well since it's used for transitions
