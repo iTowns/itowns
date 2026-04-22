@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>Itowns Examples</title>
 
+    <!-- Theme toggling -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-toggles@4.10.1/css/classic.min.css">
 
 
@@ -21,8 +22,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/material-darker.min.css" 
     integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <!-- lz-string compression -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 </head>
 
 <body data-spy="scroll" data-target="nav">
@@ -52,6 +51,39 @@
     </div>
 
     <div id="editor-panel">
+
+         <label class="theme-toggle" title="Toggle theme" id="global-theme-toggle">
+            <input type="checkbox"/>
+            <span class="theme-toggle-sr">Toggle theme</span>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                width="1em"
+                height="1em"
+                fill="currentColor"
+                stroke-linecap="round"
+                class="theme-toggle__classic"
+                viewBox="0 0 32 32"
+            >
+                <clipPath id="theme-toggle__classic__cutout">
+                <path d="M0-5h30a1 1 0 0 0 9 13v24H0Z" />
+                </clipPath>
+                <g clip-path="url(#theme-toggle__classic__cutout)">
+                <circle cx="16" cy="16" r="9.34" />
+                <g stroke="currentColor" stroke-width="1.5">
+                    <path d="M16 5.5v-4" />
+                    <path d="M16 30.5v-4" />
+                    <path d="M1.5 16h4" />
+                    <path d="M26.5 16h4" />
+                    <path d="m23.4 8.6 2.8-2.8" />
+                    <path d="m5.7 26.3 2.9-2.9" />
+                    <path d="m5.8 5.8 2.8 2.8" />
+                    <path d="m23.4 23.4 2.9 2.9" />
+                </g>
+                </g>
+            </svg>
+        </label>
+
         <div id="sidebar">
             <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page" target="_blank" rel="noopener noreferrer">
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
@@ -76,122 +108,66 @@
             </nav>
         </div>
 
+        <div id="panel-content">
+            <div class="panel active" id="gallery-panel">
+                <div class="panel-header">
 
-        <div class="panel active" id="gallery-panel">
-            <div class="panel-header">
+                    <div class="title-toggle-container">
+                        <h1 class="panel-title">Example gallery</h1>
 
-                <div class="title-toggle-container">
-                    <h1 class="panel-title">Example gallery</h1>
-
-
-                    <label class="theme-toggle" title="Toggle theme">
-                        <input type="checkbox" />
-                        <span class="theme-toggle-sr">Toggle theme</span>
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            aria-hidden="true"
-                            width="1em"
-                            height="1em"
-                            fill="currentColor"
-                            stroke-linecap="round"
-                            class="theme-toggle__classic"
-                            viewBox="0 0 32 32"
-                        >
-                            <clipPath id="theme-toggle__classic__cutout">
-                            <path d="M0-5h30a1 1 0 0 0 9 13v24H0Z" />
-                            </clipPath>
-                            <g clip-path="url(#theme-toggle__classic__cutout)">
-                            <circle cx="16" cy="16" r="9.34" />
-                            <g stroke="currentColor" stroke-width="1.5">
-                                <path d="M16 5.5v-4" />
-                                <path d="M16 30.5v-4" />
-                                <path d="M1.5 16h4" />
-                                <path d="M26.5 16h4" />
-                                <path d="m23.4 8.6 2.8-2.8" />
-                                <path d="m5.7 26.3 2.9-2.9" />
-                                <path d="m5.8 5.8 2.8 2.8" />
-                                <path d="m23.4 23.4 2.9 2.9" />
-                            </g>
-                            </g>
-                        </svg>
-                    </label>
-                    <!--
-                    <div class="theme-switch-box">
-                        <label class="switch" id="theme-switch">
-                            <input type="checkbox" class="switch-input theme-input">
-                            <span class="slider" id="theme-slider"></span>
-                        </label>
                     </div>
-                    -->
+
+                    <div>
+                        <form id="search-container">
+                            <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
+
+                            <select id="category-selector">
+                                <!-- content added dynamically in JS --> 
+                            </select>
+                            
+                        </form>
+                    </div>
                 </div>
 
-                <div>
-                    <form id="search-container">
-                        <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
-
-                        <select id="category-selector">
-                            <!-- content added dynamically in JS --> 
-                        </select>
-                        
-                    </form>
+                <div id="example-list"> 
+                    <!-- content added dynamically in JS --> 
                 </div>
+
             </div>
-
-            <div id="example-list"> 
-                <!-- content added dynamically in JS --> 
-            </div>
-
-
-            <div class="panel-footer">
-                <div class="switch-box">    
-                    <label class="switch">
-                        <input type="checkbox" class="switch-input version-input">
-                        <span class="slider"></span>
-                    </label>
-                    <p>Development version</p>
+            
+            <div class="panel" id="code-panel"> 
+                <div class="panel-header" id="code-panel-header">
+                    <div class="title-toggle-container">
+                        <h1 class="panel-title" id="code-panel-title">Example failed to load</h1>
+                    </div>
+                    <p id="code-panel-desc">Example description failed to load</p>  
                 </div>
-            </div>
-        </div>
-        
-        <div class="panel" id="code-panel"> 
-            <div class="panel-header" id="code-panel-header">
-                <div class="title-toggle-container">
-                    <h1 class="panel-title" id="code-panel-title">Example failed to load</h1>
                     
-                    <div class="theme-switch-box">
-                        <label class="switch" id="theme-switch">
-                            <input type="checkbox" class="switch-input theme-input">
-                            <span class="slider theme-slider" id="theme-slider"></span>
-                        </label>
+                    <div id="code-editor-wrapper">
+                        <textarea id="code-editor"></textarea>
                     </div>
-                </div>
-                <p id="code-panel-desc">Example description failed to load</p>  
+
             </div>
-                
-                <div id="code-editor-wrapper">
-                    <textarea id="code-editor"></textarea>
-                </div>
 
 
             <div class="panel-footer">
-                <div class="switch-box">
-                    <label class="switch">
-                        <input type="checkbox" class="switch-input version-input">
-                        <span class="slider"></span>
-                    </label>
-                    <p>Development version</p>
+                    <div class="switch-box">
+                        <label class="switch">
+                            <input type="checkbox" class="switch-input version-input">
+                            <span class="slider"></span>
+                        </label>
+                        <p>Development version</p>
+                    </div>
+                    <button type="button" id="run-btn">
+                        RUN
+                        <img src="images/run.svg" alt="Run code" />
+                    </button>
                 </div>
-                <button type="button" id="run-btn">
-                    RUN
-                    <img src="images/run.svg" alt="Run code" />
-                </button>
-            </div>
+
+            <button id="editor-collapse">
+                <img src="images/collapse.svg" alt="Collapse" />
+            </button>
         </div>
-
-        <button id="editor-collapse">
-            <img src="images/collapse.svg" alt="Collapse" />
-        </button>
-
     </div>
 
 
@@ -216,6 +192,8 @@
         const categorySelector = document.getElementById("category-selector");
         const editorCollapse = document.getElementById("editor-collapse");
         const runBtn = document.getElementById("run-btn");
+        const themeToggle = document.getElementById("global-theme-toggle");
+        const themeInput = themeToggle.querySelector("input");
 
         let examplesConfig = null;
         let editorHidden = false;
@@ -233,31 +211,47 @@
         });
 
 
-        /**
-         * Compresses the given string in Encoded URI Component format.
-         * @param {string} string - A string to be compressed.
-         * @returns {string} The compressed string.
+
+         /**
+         * UTF-8 fix to btoa.
+         * @param {string} string - A valid UTF-8 string.
+         * @returns {string} The encoded string.
          */
-        function compress(string){
-            return LZString.compressToEncodedURIComponent(string);
+        function toBase64(string) {
+            return btoa(Array.from(new TextEncoder().encode(string), byte => String.fromCodePoint(byte)).join(""));
+        }
+
+        /* UTF-8 fix to atob.
+         * @param {string} bytes - A base64-encoded string.
+         * @returns {string} The decoded string.
+         */
+        function fromBase64(bytes) {
+            return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
 
 
         /**
-         * Decompresses a string given in Encoded URI Component format.
-         * @param {string} string - A string to decompress.
-         * @returns {string} The decompressed string.
+         * Toggles the current theme between light and dark.
          */
-        function decompress(string){
-            return LZString.decompressToEncodedURIComponent(string);
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            html.classList.remove('light', 'dark');
+            html.classList.add(newTheme);
+
+            localStorage.setItem('theme-preference', newTheme);
         }
+
+        
 
         /* 
          * Runs the current example's code and displays the result in the iframe.
          */
         function runCode() {                
             const code = codeEditor.getValue();
-            sessionStorage.setItem("code", compress(code));
+            sessionStorage.setItem("code", toBase64(code));
 
             iframe.srcdoc = codeEditor.getValue();
         }
@@ -367,30 +361,6 @@
         }
 
 
-        /** 
-         * Show a toast display the given message for a given duration
-         * @param {string} message - The message to be displayed.
-         * @param {number} [duration=3000] - The duration the toast will be displayed for.
-         */
-        function showToast(message, duration = 3000) {
-            const container = document.getElementById('toast-container');
-            container.innerHTML = '';
-
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            
-            container.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.classList.add('fade-out');
-                toast.addEventListener('animationend', () => {
-                    toast.remove();
-                });
-            }, duration);
-        }
-
-
 
         // sidebar button management
         sidebarButtons.forEach(button => {
@@ -403,9 +373,9 @@
                 sessionStorage.setItem("activePanelId", panelId);
                 document.getElementById(panelId).classList.add("active");
 
-                                                // TODO : add explanation
+                // refresh editor when opening it, so it displays properly
                 if (panelId === "code-panel") {
-                    setTimeout(() => {
+                    setTimeout(() => {              
                         codeEditor.refresh();
                     }, 0);
                 }
@@ -419,18 +389,18 @@
             editorHidden = !editorHidden;
 
             body.classList.toggle('manual-collapse', editorHidden);
-                                        // TODO: add comments
-            if (editorHidden) {
-                editorCollapse.style.transform = "scaleX(-1)";          
-                editorCollapse.style.borderRadius = "8px 0 0 8px";
 
+            if (editorHidden) {
+                // swap arrow direction
+                editorCollapse.style.transform = "scaleX(-1)";   
+                // since element is swapped, border smoothings also need to be swapped in order to stay in the same place   
+                editorCollapse.style.borderRadius = "8px 0 0 8px";  
             } else {
                 editorCollapse.style.transform = "scaleX(1)";
                 editorCollapse.style.borderRadius = "0 8px 8px 0";
-    
-            }
-            if (!editorHidden) {                // TODO: is it really useful?
-                setTimeout(() => codeEditor.refresh(), 200);
+
+                // refresh editor once it reappears
+                setTimeout(() => codeEditor.refresh(), 200);        
             }
         };
         
@@ -461,19 +431,15 @@
         
         // version switching 
         versionSwitches.forEach(sw => {
-            sw.addEventListener('change', (event) => {              // faire un seul footer au lieu de deux
-                const isChecked = event.target.checked;
-                versionSwitches.forEach(otherSw => {
-                    otherSw.checked = isChecked;
-                });
+            sw.addEventListener('change', (event) => {      
 
                 const isDev = baseURI.includes("/itowns/dev/");
-                const options = ["#view_3d_map", "#view_2d_map"];
+                const options = ["/itowns/", "/itowns/dev/"];
                 
                 const target = isDev ? options[0] : options[1];
                 const current = isDev ? options[1] : options[0];
 
-                console.log("Current : " + current + " | Target : " + target);
+                /* console.log("Current : " + current + " | Target : " + target); */
 
                 if (baseURI.includes("/itowns/")) {
                     window.location.href = document.location.href.replace("current", target);
@@ -482,12 +448,12 @@
         });
 
 
+        themeInput.addEventListener("change", toggleTheme);
+
 
         searchInput.addEventListener("input", searchAndFilter);
         categorySelector.addEventListener("change", searchAndFilter);
 
-
-        console.log(window.location.hash);
 
         runBtn.onclick = runCode;
         codeEditor.setOption("extraKeys", {
@@ -553,7 +519,7 @@
                 ),
             ];
 
-
+            // filling the category selector
             const categories = [
                 `<option value="all">All categories</option>`,
                 ...Object.entries(list).flatMap(
@@ -579,9 +545,21 @@
 
 
 
-
+        /**
+         * Initializes the application theme, fetches configuration, 
+         * and restores the saved session state and content.
+         */
         function onLoad() {
-        
+            
+            // set theme
+            const savedTheme = localStorage.getItem('theme-preference');
+            if (savedTheme) {
+                document.documentElement.classList.add(savedTheme);
+                if (savedTheme === 'dark'){
+                    themeInput.checked = true;
+                }
+            }
+
             // get the configuration
             fetch("./config.json")
                 .then(function _(response) {
@@ -591,31 +569,22 @@
                     examplesConfig = config;
                     initNavigation(config);
                     
-                    const searchParams = new URL(
-                        document.location.toString(),
-                    ).searchParams; 
-                    const urlCode = searchParams.get("code");
 
                     const localCode = sessionStorage.getItem("code");
 
-                    if (!urlCode) {
-                        if (!localCode || isLocal) {
-                            loadExample(
-                                window.location.hash.replace("#", "") ||
-                                "demo/index",
-                            );
-                        }
-                        else {
-                            codeEditor.setValue(decompress(localCode));
-                            runCode();
-                        }
-                    } else {
-                        codeEditor.setValue(decompress(decodeURIComponent(urlCode)));
-                        alert('Please check foreign code before running it!');
+                    if (!localCode || isLocal) {
+                        loadExample(
+                            window.location.hash.replace("#", "") ||
+                            "demo/index",
+                        );
+                    }
+                    else {
+                        codeEditor.setValue(fromBase64(localCode));
+                        runCode();
                     }
 
-                    const savedPanelId = sessionStorage.getItem("activePanelId");
-                    console.log("target " + savedPanelId);
+                    // staying on the same panel even when hard refreshing
+                    const savedPanelId = sessionStorage.getItem("activePanelId");        
                     if (savedPanelId) {
                         const targetBtn = document.querySelector(`.sidebar-btn[data-panel="${savedPanelId}"]`);
                         if (targetBtn) {
@@ -627,7 +596,7 @@
         }
 
 
-
+        // waiting for DOM content to be loaded to start generating examples
         document.addEventListener('DOMContentLoaded', () => {
             onLoad(); 
         });
