@@ -32,15 +32,17 @@ class SunLightLayer extends GeometryLayer {
         this.isSunLightLayer = true;
 
         this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
-        this.sunLight.castShadow = true;
         this.sunLight.shadow.mapSize.set(4096, 4096);
+
+        this.sunLight.castShadow = this.castShadow;
+        this.defineLayerProperty('castShadow', this.castShadow, () => {
+            this.sunLight.castShadow = this.castShadow;
+        });
 
         this.object3d.add(
             this.sunLight,
             this.sunLight.target); // to update matrixWorld at each frame
 
-        this.castShadow = false;
-        this.receiveShadow = false;
         view.renderer.shadowMap.enabled = true;
         view.renderer.shadowMap.type = THREE.PCFShadowMap;
     }
