@@ -175,7 +175,7 @@ class GlobeView extends View {
 
         // Sunlight and shadow layer
         this.sunLightLayer = new SunLightLayer(this);
-        View.prototype.addLayer.call(this, this.sunLightLayer);
+        this.addLayer(this.sunLightLayer);
 
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
@@ -184,13 +184,13 @@ class GlobeView extends View {
         this.addFrameRequester(
             MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
             () => {
-                this.sunDirection = new THREE.Vector3();
-                getSunDirectionECEF(this.date, this.sunDirection);
+                const sunDirection = this.sunLightLayer.sunDirection;
+                getSunDirectionECEF(this.date, sunDirection);
                 // This creates a white disk at the Sun's position
-                this.sunDirection.multiplyScalar(1.00002);
+                sunDirection.multiplyScalar(1.00002);
 
                 // actually only useful if Sun or Moon direction has changed
-                if (this.skyManager) { this.skyManager.update(this.date, this.sunDirection); }
+                if (this.skyManager) { this.skyManager.update(this.date); }
             },
         );
     }

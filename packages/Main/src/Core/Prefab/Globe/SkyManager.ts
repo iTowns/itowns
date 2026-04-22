@@ -89,10 +89,11 @@ class SkyManager {
         this.composer.render();
     }
 
-    update(date: Date, sunDirection: THREE.Vector3) {
+    update(date: Date) {
         const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         if (!this.enabled) { return; }
 
+        const sunDirection = this.view.sunLightLayer.sunDirection;
         const moonDirection = new THREE.Vector3();
         getMoonDirectionECEF(date, moonDirection);
 

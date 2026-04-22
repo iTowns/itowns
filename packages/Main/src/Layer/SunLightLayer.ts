@@ -9,7 +9,6 @@ interface UpdateContext {
     view: {
         renderer: THREE.WebGLRenderer;
         scene: THREE.Scene;
-        sunDirection?: THREE.Vector3;
     };
 }
 
@@ -20,6 +19,7 @@ interface UpdateContext {
  */
 class SunLightLayer extends GeometryLayer {
     sunLight: THREE.DirectionalLight;
+    sunDirection: THREE.Vector3;
     isSunLightLayer: boolean;
 
     constructor(view: UpdateContext['view']) {
@@ -30,6 +30,7 @@ class SunLightLayer extends GeometryLayer {
         super(id, object3d, { source: null });
 
         this.isSunLightLayer = true;
+        this.sunDirection = new THREE.Vector3();
 
         this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
         this.sunLight.shadow.mapSize.set(4096, 4096);
@@ -57,10 +58,7 @@ class SunLightLayer extends GeometryLayer {
      * flickering while covering the visible area.
      */
     update(context: UpdateContext) {
-        if (!context.view.sunDirection) { return; }
-
         const camera = context.camera.camera3D;
-        const sunDirection = context.view.sunDirection;
 
         // Center the shadow around the camera's target position
         const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
@@ -75,7 +73,7 @@ class SunLightLayer extends GeometryLayer {
 
         const shadowCam = this.sunLight.shadow.camera;
         const prevShadowHalfSide = shadowCam.top;
-        this.sunLight.position.copy(sunDirection).multiplyScalar(prevShadowHalfSide)
+        this.sunLight.position.copy(this.sunDirection).multiplyScalar(prevShadowHalfSide)
             .add(prevSunTargetPos);
         this.sunLight.updateMatrixWorld();
 
