@@ -25,6 +25,13 @@ type CogSourceConfig = {
      * An optional decoder pool to use when extracting data from a COG image.
      */
     pool?: GeoTIFF.Pool;
+    /**
+     * Zoom level bounds for this source. Limits which tile zoom levels will
+     * request data from this COG. Required when used as an ElevationLayer
+     * source, since the tile system reads `source.zoom.max` to determine
+     * maximum subdivision depth.
+     */
+    zoom?: { min: number, max: number };
     [key: string]: any;  // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
@@ -61,6 +68,7 @@ class CogSource extends Source {
     defaultAlpha: number;
     resampleMethod: string;
     pool: GeoTIFF.Pool;
+    zoom: { min: number, max: number };
 
     /**
      * @param config - Source configuration.
@@ -70,6 +78,7 @@ class CogSource extends Source {
             pool = new GeoTIFF.Pool(),
             defaultAlpha = 255,
             resampleMethod = 'nearest',
+            zoom = { min: 0, max: Infinity },
             ...sourceConfig
         } = config;
 
@@ -83,6 +92,7 @@ class CogSource extends Source {
         this.defaultAlpha = defaultAlpha;
         this.pool = pool;
         this.resampleMethod = resampleMethod;
+        this.zoom = zoom;
 
         this.overviews = [];
 
@@ -126,8 +136,9 @@ class CogSource extends Source {
             });
     }
 
-    extentInsideLimit(extent: Extent) {
-        return this.extent.intersectsExtent(extent);
+    extentInsideLimit(extent: Extent, zoom: number) {
+        return zoom >= this.zoom.min && zoom <= this.zoom.max
+            && this.extent.intersectsExtent(extent);
     }
 
     urlFromExtent() {
