@@ -72,7 +72,7 @@ class FeatureGeometryLayer extends GeometryLayer {
 
         this.isFeatureGeometryLayer = true;
 
-        this.style = style instanceof Style ? style : new Style(style);
+        this._style = style instanceof Style ? style : new Style(style);
         this.accurate = accurate;
         this.buildExtent = !this.accurate;
         this.filter = filter;
@@ -82,6 +82,32 @@ class FeatureGeometryLayer extends GeometryLayer {
     preUpdate(context, sources) {
         if (sources.has(this.parent)) {
             this.object3d.clear();
+        }
+    }
+
+    /**
+     * The style applied to this layer's features.
+     * When setting a plain object, only the provided categories (fill, stroke,
+     * point, text, icon, zoom) are updated on the existing Style instance,
+     * preserving event listeners. Setting a Style instance replaces it entirely.
+     * @type {Style}
+     */
+    get style() {
+        return this._style;
+    }
+
+    set style(value) {
+        if (value instanceof Style) {
+            this._style = value;
+        } else if (value && typeof value === 'object') {
+            // Update only the provided categories on the existing Style
+            // so that event listeners registered on it are preserved.
+            const categories = ['zoom', 'fill', 'stroke', 'point', 'text', 'icon'];
+            for (const cat of categories) {
+                if (value[cat] !== undefined) {
+                    this._style[cat] = value[cat];
+                }
+            }
         }
     }
 }
