@@ -242,6 +242,32 @@
             html.classList.add(newTheme);
 
             localStorage.setItem('theme-preference', newTheme);
+            if (newTheme === 'dark'){
+                themeInput.checked = true;
+            }
+            else {
+                themeInput.checked = false;
+            }
+
+        }
+
+
+        /**
+         * Sets the theme according to the given string.
+         * @param {string} theme - The theme to be applied (light or dark).
+         */
+        function setTheme(theme){
+            const html = document.documentElement;
+            html.classList.remove('light', 'dark');
+            html.classList.add(theme);
+
+            localStorage.setItem('theme-preference', theme);
+            if (theme === 'dark'){
+                themeInput.checked = true;
+            }
+            else {
+                themeInput.checked = false;
+            }
         }
 
         
@@ -428,7 +454,7 @@
         });
 
 
-        
+
         // version switching 
         versionSwitches.forEach(sw => {
             sw.addEventListener('change', (event) => {      
@@ -460,8 +486,12 @@
             "Ctrl-Enter": runCode,
         });
 
+        // if user's theme preference changes, set theme accordingly
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            setTheme(event.matches ? 'dark': 'light');
+        });
 
-        
+
 
         /**
          * @typedef {Object} ExampleItem
@@ -554,10 +584,11 @@
             // set theme
             const savedTheme = localStorage.getItem('theme-preference');
             if (savedTheme) {
-                document.documentElement.classList.add(savedTheme);
-                if (savedTheme === 'dark'){
-                    themeInput.checked = true;
-                }
+                setTheme(savedTheme);
+            }
+            else {
+                const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(isDarkMode ? 'dark' : 'light');
             }
 
             // get the configuration
