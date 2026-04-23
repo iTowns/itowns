@@ -47,7 +47,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <div id="main">
-        <iframe id="content" frameborder="0" height="100%" width="auto"></iframe>
+        <iframe id="content" sandbox="allow-scripts allow-downloads allow-forms allow-same-origin" frameborder="0" height="100%" width="auto"></iframe>
     </div>
 
     <div id="editor-panel">
@@ -89,19 +89,19 @@
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
-                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery">    
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">    
                      <img src="images/dashboard.svg" alt="Example gallery" />
                 </button>
-                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor">
+                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
                 <a href="https://github.com/iTowns" target="_blank" rel="noopener noreferrer">
-                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button">
+                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="iTowns GitHub repository">
                             <img src="images/github.svg" alt="GitHub logo" />
                     </button>
                 </a>
                 <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
-                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation"> 
                             <img src="images/book.svg" alt="Book icon "/>
                     </button>
                 </a>
