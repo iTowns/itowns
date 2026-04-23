@@ -684,7 +684,7 @@ input:checked + .slider:before {
 
 
 .sidebar-btn img, .category-    header img,
-#editor-collapse img, #share-btn img{ 
+#editor-collapse img, #share-btn img, .category-arrow { 
     filter: var(--icon-filter);         /* filter depends on theme */
 }
 
