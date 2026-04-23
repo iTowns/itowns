@@ -97,6 +97,8 @@ class GlobeView extends View {
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
+     * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
+     * later via `this.shadows`.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -181,6 +183,11 @@ class GlobeView extends View {
             this.skyManager = new SkyManager(this);
         }
 
+        this.renderer.shadowMap.type = THREE.PCFShadowMap;
+        if (options.shadows === true) {
+            this.shadows = true;
+        }
+
         this.addFrameRequester(
             MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
             () => {
@@ -236,6 +243,25 @@ class GlobeView extends View {
 
     getMetersToDegrees(meters = 1) {
         return THREE.MathUtils.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+    }
+
+    /**
+     * Enable or disable shadow rendering.
+     * @type {boolean}
+     */
+    get shadows() {
+        return this.renderer.shadowMap.enabled;
+    }
+
+    set shadows(value) {
+        if (this.renderer.shadowMap.enabled == value) { return; }
+        this.renderer.shadowMap.enabled = value;
+        this.scene.traverse((obj) => { // mark all materials for recompilation
+            if (!obj.material) { return; }
+            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+            for (const material of materials) { material.needsUpdate = true; }
+        });
+        this.notifyChange(this.camera3D);
     }
 }
 

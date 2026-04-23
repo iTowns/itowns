@@ -43,9 +43,6 @@ class SunLightLayer extends GeometryLayer {
         this.object3d.add(
             this.sunLight,
             this.sunLight.target); // to update matrixWorld at each frame
-
-        view.renderer.shadowMap.enabled = true;
-        view.renderer.shadowMap.type = THREE.PCFShadowMap;
     }
 
     preUpdate() {
