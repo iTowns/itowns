@@ -16,123 +16,111 @@
         "tileMatrixSetLimits": {
             "2": {
                 "minTileRow": 0,
-                "maxTileRow": 4,
+                "maxTileRow": 3,
                 "minTileCol": 0,
                 "maxTileCol": 4
             },
             "3": {
                 "minTileRow": 0,
-                "maxTileRow": 8,
+                "maxTileRow": 7,
                 "minTileCol": 0,
                 "maxTileCol": 8
             },
             "4": {
-                "minTileRow": 0,
-                "maxTileRow": 16,
+                "minTileRow": 1,
+                "maxTileRow": 14,
                 "minTileCol": 0,
-                "maxTileCol": 16
+                "maxTileCol": 15
             },
             "5": {
-                "minTileRow": 0,
-                "maxTileRow": 32,
+                "minTileRow": 3,
+                "maxTileRow": 28,
                 "minTileCol": 0,
-                "maxTileCol": 32
+                "maxTileCol": 31
             },
             "6": {
-                "minTileRow": 1,
-                "maxTileRow": 64,
+                "minTileRow": 7,
+                "maxTileRow": 56,
                 "minTileCol": 0,
-                "maxTileCol": 64
+                "maxTileCol": 63
             },
             "7": {
-                "minTileRow": 3,
-                "maxTileRow": 128,
+                "minTileRow": 14,
+                "maxTileRow": 113,
                 "minTileCol": 0,
-                "maxTileCol": 128
+                "maxTileCol": 127
             },
             "8": {
-                "minTileRow": 7,
-                "maxTileRow": 256,
+                "minTileRow": 28,
+                "maxTileRow": 227,
                 "minTileCol": 0,
-                "maxTileCol": 256
+                "maxTileCol": 255
             },
             "9": {
-                "minTileRow": 15,
-                "maxTileRow": 512,
+                "minTileRow": 57,
+                "maxTileRow": 454,
                 "minTileCol": 0,
-                "maxTileCol": 512
+                "maxTileCol": 511
             },
             "10": {
-                "minTileRow": 31,
-                "maxTileRow": 1024,
+                "minTileRow": 114,
+                "maxTileRow": 909,
                 "minTileCol": 0,
-                "maxTileCol": 1024
+                "maxTileCol": 1023
             },
             "11": {
-                "minTileRow": 62,
-                "maxTileRow": 2048,
+                "minTileRow": 229,
+                "maxTileRow": 1818,
                 "minTileCol": 0,
-                "maxTileCol": 2048
+                "maxTileCol": 2047
             },
             "12": {
-                "minTileRow": 125,
-                "maxTileRow": 4096,
+                "minTileRow": 459,
+                "maxTileRow": 3636,
                 "minTileCol": 0,
-                "maxTileCol": 4096
+                "maxTileCol": 4095
             },
             "13": {
-                "minTileRow": 2739,
-                "maxTileRow": 4628,
-                "minTileCol": 41,
-                "maxTileCol": 7917
+                "minTileRow": 919,
+                "maxTileRow": 7272,
+                "minTileCol": 0,
+                "maxTileCol": 8191
             },
             "14": {
-                "minTileRow": 5478,
-                "maxTileRow": 9256,
-                "minTileCol": 82,
-                "maxTileCol": 15835
+                "minTileRow": 1839,
+                "maxTileRow": 14544,
+                "minTileCol": 0,
+                "maxTileCol": 16383
             },
             "15": {
-                "minTileRow": 10956,
-                "maxTileRow": 18513,
-                "minTileCol": 165,
-                "maxTileCol": 31670
+                "minTileRow": 3678,
+                "maxTileRow": 29089,
+                "minTileCol": 0,
+                "maxTileCol": 32767
             },
             "16": {
-                "minTileRow": 21912,
-                "maxTileRow": 37026,
-                "minTileCol": 330,
-                "maxTileCol": 63341
+                "minTileRow": 7357,
+                "maxTileRow": 58178,
+                "minTileCol": 0,
+                "maxTileCol": 65535
             },
             "17": {
-                "minTileRow": 43825,
-                "maxTileRow": 74052,
-                "minTileCol": 660,
-                "maxTileCol": 126683
+                "minTileRow": 14714,
+                "maxTileRow": 116357,
+                "minTileCol": 0,
+                "maxTileCol": 131071
             },
             "18": {
-                "minTileRow": 87648,
-                "maxTileRow": 148111,
-                "minTileCol": 1312,
-                "maxTileCol": 253375
+                "minTileRow": 29428,
+                "maxTileRow": 232715,
+                "minTileCol": 0,
+                "maxTileCol": 262143
             },
             "19": {
-                "minTileRow": 175296,
-                "maxTileRow": 294063,
-                "minTileCol": 170144,
-                "maxTileCol": 343487
-            },
-            "20": {
-                "minTileRow": 357008,
-                "maxTileRow": 384687,
-                "minTileCol": 524400,
-                "maxTileCol": 540927
-            },
-            "21": {
-                "minTileRow": 714032,
-                "maxTileRow": 768783,
-                "minTileCol": 1048816,
-                "maxTileCol": 1081775
+                "minTileRow": 58856,
+                "maxTileRow": 465431,
+                "minTileCol": 0,
+                "maxTileCol": 524287
             }
         }
     }
