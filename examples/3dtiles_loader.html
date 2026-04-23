@@ -94,6 +94,7 @@
             // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
                 realisticLighting: true,
+                shadows: true,
                 controls: {
                     minDistance: 100,
                 }
@@ -199,20 +200,19 @@
             const dateFolder = gui.addFolder('Date/Time');
             const date = view.date;
             dateFolder.add(
-                { month: THREE.MathUtils.clamp(1 + date.getMonth(), 1, 12) }, 'month', 1, 12, 1
+                { month: 1 + date.getMonth() }, 'month', 1, 12, 1
             ).onChange((v) => {
-                date.setMonth(v);
+                date.setMonth(v - 1);
                 view.notifyChange(view.sunLightLayer);
             }).name('month (1-12)');
             dateFolder.add(
-                { hour: THREE.MathUtils.clamp(date.getHours(), 6, 21) }, 'hour', 6, 21, 0.1
+                { hour: date.getHours() }, 'hour', 0, 24, 0.1
             ).onChange((v) => {
-                const clampedValue = v;
-                const hours = Math.floor(clampedValue);
-                const minutes = (clampedValue - hours) * 60;
+                const hours = Math.floor(v);
+                const minutes = (v - hours) * 60;
                 date.setHours(hours, minutes);
                 view.notifyChange(view.sunLightLayer);
-            }).name('hour (6-21)');
+            }).name('hour (24h)');
 
             function loadLyon() {
                 setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
