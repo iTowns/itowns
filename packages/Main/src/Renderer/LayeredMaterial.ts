@@ -108,6 +108,7 @@ function updateLayersUniformsForType<Type extends 'c' | 'e'>(
     let count = 0;
     let width = 0;
     let height = 0;
+    let setSize = false;
 
     // Determine total count of textures and dimensions
     // (assuming all textures are same size)
@@ -125,7 +126,7 @@ function updateLayersUniformsForType<Type extends 'c' | 'e'>(
             ++i, ++count
         ) {
             const texture = tile.textures[i];
-            if (!texture) { continue; }
+            if (!texture.isTexture) { continue; }
 
             textureSetId += `${texture.id}.`;
             uOffsetScales[count] = tile.offsetScales[i];
@@ -135,14 +136,13 @@ function updateLayersUniformsForType<Type extends 'c' | 'e'>(
             if (!img || img.width <= 0 || img.height <= 0) {
                 console.error('Texture image not loaded or has zero dimensions');
                 uTextureCount.value = 0;
-                return;
-            } else if (count == 0) {
+            } else if (setSize === false) {
                 width = img.width;
                 height = img.height;
+                setSize = true;
             } else if (width !== img.width || height !== img.height) {
                 console.error('Texture dimensions mismatch');
                 uTextureCount.value = 0;
-                return;
             }
         }
     }
