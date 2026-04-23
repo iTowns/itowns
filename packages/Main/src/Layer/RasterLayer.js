@@ -74,7 +74,9 @@ class RasterLayer extends Layer {
     }
 
     update(context, layer, node) {
-        if (layer.visible && !layer.freeze && this.hasData(node)) {
+        // may be add node.visible
+        // node.material.visible empeche l'init ou le premier chargement
+        if (layer.visible && !layer.freeze && this.hasData(node) && node.material.visible) {
             const rasterTile = node.material.getTile(this.id) || this.setupRasterNode(node);
 
             return rasterTile.load(node, context.view);

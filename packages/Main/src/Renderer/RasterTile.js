@@ -104,6 +104,11 @@ export class RasterTile extends THREE.EventDispatcher {
             const nextLevel = nextLevelToFetch(this);
             const nextTiles = this.tiles.map(tile => tile.tiledExtentParent(nextLevel));
 
+            // TODO maybe just for the
+            if (this.level == nextLevel) {
+                return;
+            }
+
             const command = buildCommand(this, nextTiles, requester, view);
 
             return view.mainLoop.scheduler.execute(command).then((textures) => {

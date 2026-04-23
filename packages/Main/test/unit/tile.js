@@ -25,7 +25,7 @@ describe('Tile', function () {
         assert.equal(20037508.342789244, withValues.north);
     });
 
-    xit('should convert EPSG:3857 tile to EPSG:4326 extent like expected', function () {
+    it('should convert EPSG:3857 tile to EPSG:4326 extent like expected', function () {
         const withValues = new Tile('EPSG:3857', 0, 0, 0);
         const result = withValues.toExtent('EPSG:4326');
         assert.equal(-180.00000000000003, result.west);
