@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Itowns - Planar + vector-tiles</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "itowns_widgets": "../dist/itowns_widgets.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
+            }
+        }
+        </script>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/noto.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="debug" width="400" height="300"></div>
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import * as itowns_widgets from 'itowns_widgets';
+            // # Planar view with one single layer of vector tile
+
+            const authKey = 'Basic aW52aXRlOnBvY21uY2E=';
+
+            // Define geographic extent: CRS, min/max X, min/max Y
+            var extent = new itowns.Extent(
+                'EPSG:3857',
+                -20037508.342789244, 20037508.342789244,
+                -20037508.342789255, 20037508.342789244);
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            var viewerDiv = document.getElementById('viewerDiv');
+
+            const poc4326 = new itowns.Extent(
+                'EPSG:4326',
+                6.6245319397143874,
+                7.7314055602856131,
+                43.46785224971439,
+                44.362460250285608,
+            );
+            const placement3857 = poc4326.as('EPSG:3857');
+
+            // Instanciate PlanarView
+            var view = new itowns.PlanarView(viewerDiv, extent, {
+                placement: placement3857,
+                maxSubdivisionLevel: 20,
+                camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC },
+                controls: {
+                    // We do not want the user to zoom out too much
+                    maxAltitude: 40000000,
+                    // We want to keep the rotation disabled, to only have a view from the top
+                    enableRotation: false,
+                    // Don't zoom too much on smart zoom
+                    smartTravelHeightMax: 100000,
+                },
+            });
+
+            var menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            const osmSource = new itowns.TMSSource({
+                crs: 'EPSG:3857',
+                isInverted: true,
+                // eslint-disable-next-line no-template-curly-in-string
+                url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png',
+                networkOptions: { crossOrigin: 'anonymous' },
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'https://www.openstreetmap.org/copyright',
+                },
+            });
+            const osmLayer = new itowns.ColorLayer('OSM', {
+                source: osmSource,
+            });
+            view.addLayer(osmLayer).then(() => menuGlobe.addLayerGUI(osmLayer));
+
+
+
+            const vtSource = new itowns.TMSSource({
+                format: 'application/x-protobuf;type=mapbox-vector',
+                crs: 'EPSG:3857',
+                isInverted: true,
+                // eslint-disable-next-line no-template-curly-in-string
+                url: 'https://data.geopf.fr/private/tms/1.0.0/poc_mnca_indices_communes_gpkg_30-03-2026_tms/${z}/${x}/${y}.pbf',
+                networkOptions: {
+                    crossOrigin: 'anonymous',
+                    headers: { Authorization: authKey },
+                 },
+            });
+            const vtLayer = new itowns.ColorLayer('VT', {
+                source: vtSource,
+            });
+            view.addLayer(vtLayer).then(() => menuGlobe.addLayerGUI(vtLayer));
+
+            const mvtStyleInline = {
+                version: 8,
+                name: 'POC MNCA indices communes',
+                sources: {
+                    mnca: {
+                        type: 'vector',
+                        tiles: ['https://data.geopf.fr/private/tms/1.0.0/poc_mnca_indices_communes_gpkg_30-03-2026_tms/{z}/{x}/{y}.pbf'],
+                    },
+                },
+                layers: [
+                    {
+                        id: 'mnca-communes-fill',
+                        type: 'fill',
+                        source: 'mnca',
+                        'source-layer': 'indic_agregcommune_temp2_d006',
+                        paint: {
+                            'fill-color': '#4a90d9',
+                            'fill-opacity': 0.45,
+                            'fill-outline-color': '#2c5a8c',
+                        },
+                    },
+                ],
+            };
+
+            const mvtSource2 = new itowns.VectorTilesSource({
+                style: mvtStyleInline,
+                extent: placement3857,
+                zoom: { min: 9, max: 18 },
+                networkOptions: {
+                    crossOrigin: 'anonymous',
+                    headers: { Authorization: authKey },
+                },
+            });
+
+            var mvtLayer2 = new itowns.ColorLayer('MVT2', {
+                source: mvtSource2,
+                addLabelLayer: { performance: true },
+            });
+
+            view.addLayer(mvtLayer2).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+
+            // Request redraw
+            view.notifyChange();
+            debug.createTileDebugUI(menuGlobe.gui, view);
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
+        </script>
+    </body>
+</html>
