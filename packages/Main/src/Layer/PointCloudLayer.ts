@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import TinyQueue from 'tinyqueue';
 import GeometryLayer from 'Layer/GeometryLayer';
-import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
+import PointsMaterial, { PNTS_MODE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 
 import type PointCloudNode from 'Core/PointCloudNode';
 
@@ -228,6 +229,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
     private _visibleNodes: Set<PointCloudNode> = new Set();
+    private _visibilityTextureNeedsUpdate: boolean = true;
+    private _visibilityTextureData: { data: Uint8Array; offsets: Map<string, number> } | undefined;
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -327,6 +330,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             visible,
         });
         node.visible = visible;
+        this._visibilityTextureNeedsUpdate = true;
     }
 
     preUpdate(context: Context) {
@@ -536,6 +540,64 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             }
         }
 
+        // @ts-expect-error PointsMaterial is not typed yet
+        if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
+            if (this._visibilityTextureNeedsUpdate) {
+                this._visibilityTextureData =
+                    computeVisibilityTextureData(Array.from(this._visibleNodes));
+                this._visibilityTextureNeedsUpdate = false;
+            }
+
+            if (this._visibilityTextureData === undefined) {
+                return;
+            }
+
+            // @ts-expect-error PointsMaterial is not typed yet
+            const vnt = this.material.visibleNodes;
+            const data = vnt.image.data;
+            data.set(this._visibilityTextureData.data);
+            vnt.needsUpdate = true;
+
+            // Use natBox (native octree space) for octreeSize, as the
+            // octree hierarchy is defined in the source CRS coordinate system
+            const rootSize = this.root!.voxelOBB.natBox.getSize(new THREE.Vector3());
+            const octreeSize = Math.max(rootSize.x, rootSize.y, rootSize.z);
+
+            for (const pts of this.group.children) {
+                const node = pts.userData.node;
+                const depth = node.depth;
+                const nodeStartOffset = this._visibilityTextureData.offsets.get(node.voxelKey);
+                const octreeSpacing = node.source.spacing;
+
+                // Compute the bounding box min of the node's octree cell
+                // in the local space of the THREE.Points geometry.
+                // We must use voxelOBB.natBox.min (the octree cell boundary
+                // in source CRS) rather than geomBBox.min (which only covers
+                // the actual points, not the full octree cell).
+                const natMin = node.voxelOBB.natBox.min;
+                const origin = node.obj.position;
+                const bboxMin = new THREE.Vector3(
+                    natMin.x - origin.x,
+                    natMin.y - origin.y,
+                    natMin.z - origin.z,
+                );
+
+                pts.onBeforeRender = (_renderer, _scene, _camera, _geometry, material) => {
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeStartOffset.value = nodeStartOffset;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSize.value = octreeSize;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSpacing.value = octreeSpacing;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeDepth.value = depth;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeBBoxMin.value.copy(bboxMin);
+                    // @ts-expect-error Material is not typed yet
+                    material.uniformsNeedUpdate = true;
+                };
+            }
+        }
         this.dispatchEvent({ type: 'post-update' });
     }
 
