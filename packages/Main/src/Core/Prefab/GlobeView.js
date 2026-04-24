@@ -7,6 +7,11 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
+import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+import {
+    getSunDirectionECEF,
+} from '@takram/three-atmosphere';
+import SunLightLayer from 'Layer/SunLightLayer';
 
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
@@ -92,6 +97,8 @@ class GlobeView extends View {
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
+     * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
+     * later via `this.shadows`.
      */
     constructor(viewerDiv, placement = {}, options = {}) {
         THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -166,9 +173,33 @@ class GlobeView extends View {
             this.webXR.initializeWebXR();
         }
 
+        this.date = new Date(); // now
+
+        // Sunlight and shadow layer
+        this.sunLightLayer = new SunLightLayer(this);
+        this.addLayer(this.sunLightLayer);
+
         if (options.realisticLighting === true) {
             this.skyManager = new SkyManager(this);
         }
+
+        this.renderer.shadowMap.type = THREE.PCFShadowMap;
+        if (options.shadows === true) {
+            this.shadows = true;
+        }
+
+        this.addFrameRequester(
+            MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
+            () => {
+                const sunDirection = this.sunLightLayer.sunDirection;
+                getSunDirectionECEF(this.date, sunDirection);
+                // This creates a white disk at the Sun's position
+                sunDirection.multiplyScalar(1.00002);
+
+                // actually only useful if Sun or Moon direction has changed
+                if (this.skyManager) { this.skyManager.update(this.date); }
+            },
+        );
     }
 
     /**
@@ -212,6 +243,25 @@ class GlobeView extends View {
 
     getMetersToDegrees(meters = 1) {
         return THREE.MathUtils.radToDeg(2 * Math.asin(meters / (2 * ellipsoidSizes.x)));
+    }
+
+    /**
+     * Enable or disable shadow rendering.
+     * @type {boolean}
+     */
+    get shadows() {
+        return this.renderer.shadowMap.enabled;
+    }
+
+    set shadows(value) {
+        if (this.renderer.shadowMap.enabled == value) { return; }
+        this.renderer.shadowMap.enabled = value;
+        this.scene.traverse((obj) => { // mark all materials for recompilation
+            if (!obj.material) { return; }
+            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+            for (const material of materials) { material.needsUpdate = true; }
+        });
+        this.notifyChange(this.camera3D);
     }
 }
 
