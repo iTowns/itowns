@@ -1,4 +1,11 @@
-#demoUI {
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+
+html, body {
+    font-family: Roboto, sans-serif;
+}
+
+#scene-info {
     position: fixed;
     left: 50%;
     transform: translateX(-50%);
@@ -8,14 +15,21 @@
     flex-direction: column;
     align-items: center;
 
-    width: min(80vw, 70vh); 
+    width: min(30vw, 30vh); 
     max-height: 40vh;
     padding: 2vh 3vh;
-    border-radius: 3rem;
-    background-color: rgba(255, 255, 255, 0.75);
+    border-radius: 1rem;
+    background-color: light-dark(white, #0F1419);
     backdrop-filter: blur(0.5vh);
     z-index: 100;
 }
+
+
+#sceneTitle {
+    color: #1565c1;
+    text-transform: uppercase;
+}
+
 
 #textContainer {
     position: static;
@@ -25,7 +39,6 @@
 
     color: black;
     text-align: center;
-    font-family:'Courier New', Courier, monospace;
 }
 
 /*** Navigation Menu ***/
@@ -54,7 +67,6 @@ button {
     text-align: center;
     text-decoration: none;
     font-size: min(1vh, 1.5vw);
-    font-family:'Courier New', Courier, monospace;
 
     cursor: pointer;
 }
@@ -115,7 +127,6 @@ button.active {
     border-radius: 1vh;
     overflow-y: auto;
 
-    font-family:'Courier New', Courier, monospace;
     font-size: min(1.5vh, 2vw);
     color: black;
 
@@ -141,7 +152,6 @@ button.active {
     flex-direction: column;
     justify-content: center;
 
-    font-family:'Courier New', Courier, monospace;
     font-size: min(1.5vh, 2vw);
     color: black;
 
