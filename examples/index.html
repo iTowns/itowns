@@ -515,6 +515,7 @@
             versionSwitches.forEach(sw => sw.checked = isDev);
 
             // dynamic example generation
+            // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
             const examples = [
                 ...Object.entries(list).flatMap(      
                     ([categorySlug, category]) => {
