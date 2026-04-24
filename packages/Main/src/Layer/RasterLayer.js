@@ -1,8 +1,24 @@
 import Layer from 'Layer/Layer';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
-import { removeLayeredMaterialNodeTile } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+
+export function removeLayeredMaterialNodeTile(tileId) {
+    /**
+     * @param {TileMesh} node - The node to udpate.
+     */
+    return function removeLayeredMaterialNodeTile(node) {
+        if (node.material?.removeTile) {
+            if (node.material.elevationTile !== undefined) {
+                node.setBBoxZ({ min: 0, max: 0 });
+            }
+            node.material.removeTile(tileId);
+        }
+        if (node.layerUpdateState && node.layerUpdateState[tileId]) {
+            delete node.layerUpdateState[tileId];
+        }
+    };
+}
 
 class RasterLayer extends Layer {
     constructor(id, config) {
@@ -19,6 +35,7 @@ class RasterLayer extends Layer {
             cacheLifeTime,
         });
 
+        this.visible = true;
         this.minFilter = minFilter;
         this.magFilter = magFilter;
 
@@ -42,6 +59,27 @@ class RasterLayer extends Layer {
         }
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeTile(this.id));
+        }
+    }
+
+    hasData(node) {
+        // TODO why maxZoom ??
+        const maxZoom = Math.min(this.source.zoom.max, this.zoom.max);
+
+        const extents  = node.getExtentsByProjection(this.crs)
+            .map(e => e.tiledExtentParent(maxZoom));
+
+        // TODO remove e.zoom >= this.zoom.min ???
+        return extents.find(e => this.source.hasData(e) && e.zoom >= this.zoom.min);
+    }
+
+    update(context, layer, node) {
+        // may be add node.visible
+        // node.material.visible empeche l'init ou le premier chargement
+        if (layer.visible && !layer.freeze && this.hasData(node) && node.material.visible) {
+            const rasterTile = node.material.getTile(this.id) || this.setupRasterNode(node);
+
+            return rasterTile.load(node, context.view);
         }
     }
 }

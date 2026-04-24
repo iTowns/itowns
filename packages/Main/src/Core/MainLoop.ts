@@ -119,6 +119,10 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
         this.renderingState = RENDERING_PAUSED;
         this.scheduler = scheduler;
         this.gfxEngine = engine; // TODO: remove me
+
+        this.scheduler.addEventListener('command-queue-empty', () => {
+            this.dispatchEvent({ type: 'command-queue-empty' });
+        });
     }
 
     public scheduleViewUpdate(view: View, forceRedraw: boolean) {

@@ -217,13 +217,23 @@ class View extends THREE.EventDispatcher {
         this._allLayersAreReadyCallback = () => {
             // all layers must be ready
             const allReady = this.getLayers().every(layer => layer.ready);
+            // const count = this.mainLoop.scheduler.commandsWaitingExecutionCount();
+
             if (allReady &&
                 this.mainLoop.scheduler.commandsWaitingExecutionCount() == 0 &&
                 this.mainLoop.renderingState == RENDERING_PAUSED) {
                 this.dispatchEvent({ type: VIEW_EVENTS.LAYERS_INITIALIZED });
-                this.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
+                if (this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
+                    this.removeFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
+                }
+
+                if (this.mainLoop.hasEventListener('command-queue-empty', this._allLayersAreReadyCallback)) {
+                    this.mainLoop.addEventListener('command-queue-empty', this._allLayersAreReadyCallback);
+                }
             }
         };
+
+        // this.mainLoop.addEventListener('command-queue-empty', this._allLayersAreReadyCallback);
 
         // Factor to apply to the camera's near value.
         // Given a plane orthogonal the camera direction (in this case, the near plane),
@@ -390,6 +400,10 @@ class View extends THREE.EventDispatcher {
                 !this._frameRequesters[MAIN_LOOP_EVENTS.UPDATE_END].includes(this._allLayersAreReadyCallback)) {
                 this.addFrameRequester(MAIN_LOOP_EVENTS.UPDATE_END, this._allLayersAreReadyCallback);
             }
+            if (!this.mainLoop.hasEventListener('command-queue-empty', this._allLayersAreReadyCallback)) {
+                this.mainLoop.addEventListener('command-queue-empty', this._allLayersAreReadyCallback);
+            }
+            //
             this.dispatchEvent({
                 type: VIEW_EVENTS.LAYER_ADDED,
                 layerId: layer.id,
