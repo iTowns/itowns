@@ -22,7 +22,9 @@ class SunLightLayer extends GeometryLayer {
     sunDirection: THREE.Vector3;
     isSunLightLayer: boolean;
 
-    constructor(view: UpdateContext['view']) {
+    private _prevSunIntensity = 0;
+
+    constructor() {
         const object3d = new THREE.Group();
         const id = 'sunlight';
         object3d.name = id;
@@ -59,6 +61,15 @@ class SunLightLayer extends GeometryLayer {
 
         // Center the shadow around the camera's target position
         const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
+
+        // Turn sunlight on/off based on sun elevation above/below local horizon
+        const sunElevation = this.sunDirection.dot(sunTargetPos);
+        if (sunElevation < 0 && this.sunLight.intensity) {
+            this._prevSunIntensity = this.sunLight.intensity;
+            this.sunLight.intensity = 0;
+        } else if (sunElevation >= 0 && !this.sunLight.intensity) {
+            this.sunLight.intensity = this._prevSunIntensity;
+        }
 
         // Only update if the position has changed enough,
         // to avoid flickering effect
