@@ -59,6 +59,8 @@ export const FeaturePickerService = {
         if (layerIds.length === 0) {
             FeaturePickerService.container.innerHTML =
                 'Click on a feature to display informations.';
+            FeaturePickerService.container.classList.add("no-feature-selected");
+            console.log(FeaturePickerService.container);
             return;
         }
 
@@ -92,22 +94,37 @@ export const FeaturePickerService = {
         if (FeaturePickerService.pickingContent.length === 0) {
             FeaturePickerService.container.innerHTML =
                 'Click on a feature to display informations.';
+            FeaturePickerService.container.classList.add("no-feature-selected");
+            console.log(FeaturePickerService.container);
             return;
         }
-
-        FeaturePickerService.container.innerHTML = '<h3>Features Info:</h3>';
+        
+        // FeaturePickerService.container.innerHTML = '<h3>Features Info:</h3>';
+        FeaturePickerService.container.innerHTML = "";
 
         for (let i = 0; i < FeaturePickerService.pickingContent.length; i++) {
             const featureProps = FeaturePickerService.pickingContent[i];
+            /*
             const propH = document.createElement('h4');
             propH.innerHTML = `--- Feature ${i + 1} ---`;
             FeaturePickerService.container!.appendChild(propH);
+            **/
 
             for (const [key, value] of Object.entries(featureProps)) {
-                const propP = document.createElement('p');
-                propP.innerHTML = `<strong>${key}:</strong> ${value}`;
-                FeaturePickerService.container!.appendChild(propP);
+                if (key.includes("Name") || key.includes("ID")){
+                    const propH = document.createElement('h4');
+                    propH.innerHTML = `${value}`;
+                    propH.classList.add("feature-name");
+                    FeaturePickerService.container!.appendChild(propH);
+                } else {
+                    const propP = document.createElement('p');
+                    propP.innerHTML = `<strong>${key}:</strong> ${value}`;
+                    propP.classList.add("feature-property");
+                    FeaturePickerService.container!.appendChild(propP);
+                }
             }
+            FeaturePickerService.container.classList.remove("no-feature-selected");
+
         }
     },
     onMouseDown: (event: Event) => {
