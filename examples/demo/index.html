@@ -40,7 +40,16 @@
         <link rel="stylesheet" href="examples/css/LoadingScreen.css">
     </head>
     <body>
-         <div id="sceneDots"></div> 
+        <div id="sceneDots"></div> 
+
+        <div id="prev-next-container">
+            <button class="nav-btn" id="prev-scene-btn">
+                <img src="/examples/demo/assets/images/prev.svg" alt="Previous scene">
+            </button>
+            <button class="nav-btn" id="next-scene-btn">
+                <img src="/examples/demo/assets/images/next.svg" alt="Next scene">
+            </button>
+        </div>
         <div id="scene-info">
             <div id="logo-container">
                 <img src="./images/itowns_logo.svg" id="itowns-logo" alt="iTowns logo">
@@ -53,7 +62,7 @@
                 </div>
                 <div id="navigation-container">
                     <!---->
-                    <button id="resetScene">
+                    <button id="resetScene">    <!-- TODO: CHANGE TO RELATIVE PATH !! -->
                          <img src="/examples/demo/assets/images/reset.svg" class="nav-logo" id="reset-logo" alt="Reset camera">
                         Reset camera
                     </button>
@@ -75,6 +84,9 @@
             const hardResetSceneButton =
                 document.getElementById("hardResetScene");
             const sceneNumberInfo = document.getElementById("scene-number-info");
+            const prevSceneBtn = document.getElementById("prev-scene-btn");
+            const nextSceneBtn = document.getElementById("next-scene-btn");
+
 
             SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
             await SceneRepository[0].onCreate();
@@ -191,6 +203,11 @@
             hardResetSceneButton.onclick = async () => {
                 await SceneManager.hardReset();
             };
+
+            nextSceneBtn.addEventListener("click", () => SceneManager.goTo(currentIndex + 1));
+            
+
+
         </script>
     </body>
 </html>

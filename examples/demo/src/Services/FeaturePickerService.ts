@@ -138,10 +138,13 @@ export const FeaturePickerService = {
         const viewerDiv = view.getViewerDiv();
 
         let container = viewerDiv.querySelector<HTMLDivElement>('#feature-picking-info');
+        container?.classList.add("no-feature-selected");
 
         if (!container) {
             container = document.createElement('div');
             container.id = 'feature-picking-info';
+            container?.classList.add("no-feature-selected");
+
             viewerDiv.appendChild(container);
             viewerDiv.addEventListener('mouseup', FeaturePickerService.onClick);
             viewerDiv.addEventListener('mousedown', FeaturePickerService.onMouseDown);
