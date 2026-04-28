@@ -1,10 +1,14 @@
+/*
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+*/
+
 
 /* CONSTS */
 :root {
-    --text_stroke_display: "none";
+    --text_stroke_display: none;
     --text_stroke_width: 0px;
-    --text_stroke_color: "white";
+    --text_stroke_color: white;
+    --itowns-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 
     color-scheme: light dark;
 
@@ -114,7 +118,6 @@ body {
     position: relative;
     display: flex;
     flex-direction: row; 
-    height: 100%;
     /* Drawer-style animation on resize */
     transition: left 200ms ease-in-out;
     overflow: visible;
@@ -158,6 +161,15 @@ body {
 }
 
 
+#editor-collapse.collasped {
+    transform: scaleX(-1);   /* swap arrow direction */
+    border-radius: 8px 0 0 8px;  /* since element is swapped, border smoothings also need 
+                                    to be swapped in order to stay in the same place */
+}
+
+
+
+
 body.manual-collapse #editor-panel {
     left: calc(-100% * 6 / 16);
 }
@@ -168,7 +180,7 @@ body.manual-collapse #content {
 
 
 p, h1, h2, h3, h4 {
-    font-family: Roboto;
+    font-family: var(--itowns-font);
 }
 
 
@@ -280,13 +292,12 @@ p, h1, h2, h3, h4 {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    /* align-items: center; */
 }
 
 .panel-title {
     color: light-dark(#1565c1, #8CC1EE);
     text-transform: uppercase;
-    font-family: Roboto;
+    font-family: var(--itowns-font);;
     font-weight: 500;
     
     padding-top: 0.2em;
@@ -428,11 +439,6 @@ p, h1, h2, h3, h4 {
     font-weight: 400;
 }
 
-/*                      not sure how good it looks
-.category-header:hover {
-    background-color: light-dark(#e3e3e3, #575655);
-}   
-*/
 
 .category-header:hover h3 {
     font-weight: bold;
@@ -544,9 +550,6 @@ hr {
     padding-bottom: 1em;
     padding-left: 1.5em;
     padding-right: 1.5em;
-    /*
-    box-shadow : 0px 1px 10px -5px rgba(0, 0, 0, 0.5);
-    */
 }
 
 
@@ -572,9 +575,7 @@ hr {
     flex-direction: row;
     align-items: center;
     gap: 0.6em;
-    /* width: auto; */
     flex-grow: 1;
-    /* justify-content: flex-start; */
     text-align: left;
     
 
@@ -599,7 +600,6 @@ hr {
     content: "";
     height: 17px;
     width: 17px;
-    /*bottom: -1px;*/
     top: 50%;
     margin-top:-0.3px;
     transform: translateY(-50%);
@@ -610,7 +610,6 @@ hr {
     background-color:light-dark(white, #0F1419);
     border-width: 2px;
     border-color: light-dark(#1565c1, #8CC1EE);
-    /* box-shadow: 0 2px 4px rgba(0,0,0,0.2); */
     box-sizing: border-box;
 }
 
@@ -665,8 +664,6 @@ input:checked + .slider:before {
 
 
 #code-editor-wrapper {
-    padding: 1em; /* */
-
     flex: 1;            
     display: flex;      
     flex-direction: column;
@@ -675,15 +672,7 @@ input:checked + .slider:before {
 }
 
 
-
-#example-selector {
-    width: 30%;
-    flex-grow: 3;
-}
-
-
-
-.sidebar-btn img, .category-    header img,
+.sidebar-btn img, .category-header img,
 #editor-collapse img, #share-btn img, .category-arrow { 
     filter: var(--icon-filter);         /* filter depends on theme */
 }
@@ -692,7 +681,6 @@ input:checked + .slider:before {
 
 .CodeMirror {
     font-size: 1em;
-    /* border-radius: .5em;   not sure if better with or without */ 
 }
 
 .CodeMirror * {
@@ -801,15 +789,7 @@ input:checked + .slider:before {
     z-index: 2 !important;
 }
 
-#miniDiv {
-    display: block;
-    position: absolute;
-    width: 100px;
-    height: 100px;
-    left: 20;
-    bottom: 20;
-    color: white;
-}
+
 
 #divScaleWidget {
     display: block;
@@ -831,40 +811,4 @@ input:checked + .slider:before {
     -webkit-user-select: none;
     -ms-user-select: none;
     user-select: none;
-}
-
-#toast-container {
-    position: fixed;
-    top: 15px;
-    left: calc(100% * 4 / 16);
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    z-index: 9999;
-}
-
-.toast {
-    background-color: light-dark(#333, #f0f0f0);
-    color: light-dark(#fff, #333);
-    padding: 12px 20px;
-    border-radius: 8px;
-    font-family: Roboto;
-    font-size: 14px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    
-    animation: slideIn 0.3s ease-out forwards;
-    opacity: 0;
-}
-
-@keyframes slideIn {
-    from { transform: translateY(-100%); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
-}
-
-.toast.fade-out {
-    animation: fadeOut 0.5s ease-in forwards;
-}
-
-@keyframes fadeOut {
-    to { opacity: 0; transform: translateY(-10px); }
 }

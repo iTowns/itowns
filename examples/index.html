@@ -14,14 +14,16 @@
         integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Code Mirror Shadowfox dark theme -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/shadowfox.min.css"
-        integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link cype="text/css" rel="stylesheet" href="css/example.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/shadowfox.min.css"
+     integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw==" 
+     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
     <!-- Code Mirror material-darker theme -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/material-darker.min.css" 
-    integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
-    crossorigin="anonymous" referrerpolicy="no-referrer" />
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/material-darker.min.css" 
+   integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
+   crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link type="text/css" rel="stylesheet" href="css/example.css" />
 </head>
 
 <body data-spy="scroll" data-target="nav">
@@ -113,8 +115,7 @@
                 <div class="panel-header">
 
                     <div class="title-toggle-container">
-                        <h1 class="panel-title">Example gallery</h1>
-
+                        <h1 class="panel-title">iTowns Example gallery</h1>
                     </div>
 
                     <div>
@@ -171,19 +172,13 @@
     </div>
 
 
-    <div id="toast-container"></div>
-
     <script type="text/javascript">
         const body = document.body;
         const iframe = document.getElementById("content");
-        const editorPanel = document.getElementById("editor-panel");
-        const exampleSelector = document.getElementById("example-selector");
         const codeEditorTextArea = document.getElementById("code-editor");
-        const sidebarTabs = document.getElementById("sidebar-tabs");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
         const panels = document.querySelectorAll(".panel");
-        const versionSwitches = document.querySelectorAll(".version-input");
-        const themeSwitches = document.querySelectorAll(".theme-input");
+        const versionSwitch = document.querySelector(".version-input");
         const exampleList = document.getElementById("example-list");
         const codeBtn = document.getElementById("code-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
@@ -238,17 +233,7 @@
             const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-            html.classList.remove('light', 'dark');
-            html.classList.add(newTheme);
-
-            localStorage.setItem('theme-preference', newTheme);
-            if (newTheme === 'dark'){
-                themeInput.checked = true;
-            }
-            else {
-                themeInput.checked = false;
-            }
-
+            setTheme(newTheme);
         }
 
 
@@ -279,7 +264,7 @@
             const code = codeEditor.getValue();
             sessionStorage.setItem("code", toBase64(code));
 
-            iframe.srcdoc = codeEditor.getValue();
+            iframe.srcdoc = code;
         }
 
         
@@ -342,12 +327,13 @@
 
 
 
+
+        const clean = (str) => str.replace(/\s+/g, '').toLowerCase();
+
         /** 
          * Displays or hides examples based on the user's text query and selected category.
          */
         function searchAndFilter() {
-            const clean = (str) => str.replace(/\s+/g, '').toLowerCase();
-
             const query = clean(searchInput.value);
             
             const exampleItems = document.querySelectorAll('.example-item');
@@ -415,18 +401,11 @@
             editorHidden = !editorHidden;
 
             body.classList.toggle('manual-collapse', editorHidden);
+            editorCollapse.classList.toggle("collasped");
 
-            if (editorHidden) {
-                // swap arrow direction
-                editorCollapse.style.transform = "scaleX(-1)";   
-                // since element is swapped, border smoothings also need to be swapped in order to stay in the same place   
-                editorCollapse.style.borderRadius = "8px 0 0 8px";  
-            } else {
-                editorCollapse.style.transform = "scaleX(1)";
-                editorCollapse.style.borderRadius = "0 8px 8px 0";
-
-                // refresh editor once it reappears
-                setTimeout(() => codeEditor.refresh(), 200);        
+            if(!editorHidden){
+                 // refresh editor when opening it, so it displays properly
+                setTimeout(() => codeEditor.refresh(), 200); 
             }
         };
         
@@ -456,22 +435,18 @@
 
 
         // version switching 
-        versionSwitches.forEach(sw => {
-            sw.addEventListener('change', (event) => {      
-
+        versionSwitch.addEventListener('change', (event) => {      
+            if (baseURI.includes("/itowns/")) {
                 const isDev = baseURI.includes("/itowns/dev/");
                 const options = ["/itowns/", "/itowns/dev/"];
                 
                 const target = isDev ? options[0] : options[1];
                 const current = isDev ? options[1] : options[0];
 
-                /* console.log("Current : " + current + " | Target : " + target); */
-
-                if (baseURI.includes("/itowns/")) {
-                    window.location.href = document.location.href.replace("current", target);
-                } 
-            });
+                window.location.href = document.location.href.replace(current, target);
+            } 
         });
+
 
 
         themeInput.addEventListener("change", toggleTheme);
@@ -502,7 +477,7 @@
         /**
          * @typedef {Object} ExampleCategory
          * @property {string} label - The display name of the category.
-         * @property {Record<string, ExampleItem>} items - A dictionnary of items indexed by their unique keys.
+         * @property {Record<string, ExampleItem>} items - A dictionary of items indexed by their unique keys.
          */
 
         /**
@@ -512,7 +487,7 @@
         function initNavigation(list) {
 
             const isDev = baseURI.includes("/itowns/dev/");
-            versionSwitches.forEach(sw => sw.checked = isDev);
+            versionSwitch.checked = isDev;
 
             // dynamic example generation
             // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
@@ -532,7 +507,7 @@
                                             ([slug, info]) =>
                                                 `<li class="example-item" data-slug='${slug}' id="${slug}">
                                                     <div class="example-img-container">
-                                                        <img src="images/thumbnails/${slug}.png" alt="${info.label}"/>
+                                                        <img src="images/thumbnails/${slug}.webp" alt="${info.label}"/>
                                                     </div>
                                                     <div class="example-info">
                                                         <h3 class="example-title">${info.label}</h3>
