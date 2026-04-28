@@ -89,17 +89,17 @@ class SkyManager {
         this.composer.render();
     }
 
-    update(date: Date) {
+    update() {
         const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
         if (!this.enabled) { return; }
 
         const sunDirection = this.view.sunLightLayer.sunDirection;
         const moonDirection = new THREE.Vector3();
-        getMoonDirectionECEF(date, moonDirection);
+        getMoonDirectionECEF(this.view.date, moonDirection);
 
         this.sky.updateMatrixWorld();
 
-        const skyMaterial = <SkyMaterial> this.sky.material;
+        const skyMaterial = this.sky.material as SkyMaterial;
         skyMaterial.sunDirection.copy(sunDirection);
         skyMaterial.moonDirection.copy(moonDirection);
 
@@ -132,6 +132,7 @@ class SkyManager {
         // to get a correct background color
         this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
 
+        if (on) { this.update(); }
         this.composer.render();
     }
 

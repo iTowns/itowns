@@ -197,7 +197,7 @@ class GlobeView extends View {
                 sunDirection.multiplyScalar(1.00002);
 
                 // actually only useful if Sun or Moon direction has changed
-                if (this.skyManager) { this.skyManager.update(this.date); }
+                if (this.skyManager) { this.skyManager.update(); }
             },
         );
     }
