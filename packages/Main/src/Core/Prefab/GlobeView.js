@@ -183,6 +183,7 @@ class GlobeView extends View {
             this.skyManager = new SkyManager(this);
         }
 
+        this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFShadowMap;
         if (options.shadows === true) {
             this.shadows = true;
@@ -247,20 +248,16 @@ class GlobeView extends View {
 
     /**
      * Enable or disable shadow rendering.
+     * Does not affect shadows cast by user-defined lights.
      * @type {boolean}
      */
     get shadows() {
-        return this.renderer.shadowMap.enabled;
+        return this.sunLightLayer.castShadow;
     }
 
     set shadows(value) {
-        if (this.renderer.shadowMap.enabled == value) { return; }
-        this.renderer.shadowMap.enabled = value;
-        this.scene.traverse((obj) => { // mark all materials for recompilation
-            if (!obj.material) { return; }
-            const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
-            for (const material of materials) { material.needsUpdate = true; }
-        });
+        if (this.sunLightLayer.castShadow == value) { return; }
+        this.sunLightLayer.castShadow = value;
         this.notifyChange(this.camera3D);
     }
 }
