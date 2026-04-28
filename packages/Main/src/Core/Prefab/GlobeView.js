@@ -7,10 +7,6 @@ import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
 import SkyManager from 'Core/Prefab/Globe/SkyManager';
-import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
-import {
-    getSunDirectionECEF,
-} from '@takram/three-atmosphere';
 import SunLightLayer from 'Layer/SunLightLayer';
 
 /**
@@ -188,19 +184,6 @@ class GlobeView extends View {
         if (options.shadows === true) {
             this.shadows = true;
         }
-
-        this.addFrameRequester(
-            MAIN_LOOP_EVENTS.AFTER_CAMERA_UPDATE,
-            () => {
-                const sunDirection = this.sunLightLayer.sunDirection;
-                getSunDirectionECEF(this.date, sunDirection);
-                // This creates a white disk at the Sun's position
-                sunDirection.multiplyScalar(1.00002);
-
-                // actually only useful if Sun or Moon direction has changed
-                if (this.skyManager) { this.skyManager.update(); }
-            },
-        );
     }
 
     /**
