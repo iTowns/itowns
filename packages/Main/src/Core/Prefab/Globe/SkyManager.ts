@@ -75,7 +75,7 @@ class SkyManager {
 
         this.fog = scene.fog;
 
-        this.enable();
+        this._setState(true);
 
         scene.onBeforeRender = () => {
             // disable fog only during render
@@ -126,7 +126,7 @@ class SkyManager {
 
     set enabled(on: boolean) {
         if (this.enabled == on) { return; }
-        if (on) { this.enable(); } else { this.disable(); }
+        this._setState(on);
 
         // force internally calling state.buffers.color.setClear
         // to get a correct background color
@@ -136,19 +136,12 @@ class SkyManager {
         this.composer.render();
     }
 
-    enable() {
+    private _setState(on: boolean) {
         // Realistic rendering requires a dimmer sunlight
-        this.view.sunLightLayer.sunLight.intensity *= 0.1;
-        this.sky.visible = true;
-        this.skyLight.visible = true;
-        this.effectPass.enabled = true;
-    }
-
-    disable() {
-        this.view.sunLightLayer.sunLight.intensity *= 10;
-        this.sky.visible = false;
-        this.skyLight.visible = false;
-        this.effectPass.enabled = false;
+        this.view.sunLightLayer.sunLight.intensity *= on ? 0.1 : 10;
+        this.sky.visible = on;
+        this.skyLight.visible = on;
+        this.effectPass.enabled = on;
     }
 }
 
