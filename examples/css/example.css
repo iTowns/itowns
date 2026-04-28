@@ -1,8 +1,3 @@
-/*
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
-*/
-
-
 /* CONSTS */
 :root {
     --text_stroke_display: none;
@@ -13,7 +8,7 @@
     color-scheme: light dark;
 
     --icon-filter: none;
-    --dropdown-arrow: url(/examples/images/dropdown_arrow.svg);
+    --dropdown-arrow: url(../images/dropdown_arrow.svg);
 }
 
 
@@ -24,7 +19,7 @@ html.light {
 html.dark {
     color-scheme: dark;
     --icon-filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
-    --dropdown-arrow: url(/examples/images/white_dropdown_arrow.svg);
+    --dropdown-arrow: url(../images/white_dropdown_arrow.svg);
 }
 
 html,
@@ -161,7 +156,7 @@ body {
 }
 
 
-#editor-collapse.collasped {
+#editor-collapse.collapsed {
     transform: scaleX(-1);   /* swap arrow direction */
     border-radius: 8px 0 0 8px;  /* since element is swapped, border smoothings also need 
                                     to be swapped in order to stay in the same place */
@@ -697,13 +692,8 @@ input:checked + .slider:before {
 }
 
 .CodeMirror ::-webkit-scrollbar-track {
-    /*  shadowfox theme
-    background: light-dark(#2a2a2e, #2a2a2e); 
-    */
-
     /* material-darker theme */
     background: light-dark(#212121, #212121); 
-
 }
 
 .CodeMirror ::-webkit-scrollbar-thumb {
