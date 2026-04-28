@@ -5,18 +5,28 @@
     <meta charset="utf-8" />
     <title>Itowns Examples</title>
 
+    <!-- Theme toggling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-toggles@4.10.1/css/classic.min.css">
+
+
     <!-- Code Mirror CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.css"
         integrity="sha512-uf06llspW44/LZpHzHT6qBOIVODjWtv4MxCricRxkzvopAlSWnTf6hpZTFxuuZcuNE9CBQhqE0Seu1CoRk84nQ=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Code Mirror Shadowfox dark theme -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/theme/shadowfox.min.css"
-        integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link cype="text/css" rel="stylesheet" href="css/example.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/shadowfox.min.css"
+     integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw==" 
+     crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Code Mirror material-darker theme -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/material-darker.min.css" 
+   integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
+   crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link type="text/css" rel="stylesheet" href="css/example.css" />
 </head>
 
-<body data-spy="scroll" data-target="nav" onload="onLoad()">
+<body data-spy="scroll" data-target="nav">
     <!-- Code Mirror Main -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.js"
         integrity="sha512-tXHFLFVaasTvIEFYN8K6UlGvb6Sh1ealAA8YxjpezWMio6u0vU9KfGFzKVth49xh2affuBfmLGY8t2G5pZH+zg=="
@@ -39,86 +49,165 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <div id="main">
-        <iframe id="content" frameborder="0" height="100%"></iframe>
+        <iframe id="content" sandbox="allow-scripts allow-downloads allow-forms allow-same-origin" frameborder="0" height="100%" width="auto"></iframe>
     </div>
 
     <div id="editor-panel">
-        <div id="editor-header">
-            <div>
-                <a href="/">
-                    <picture id="itowns-logo">
-                        <source media="(width <= 1700px)" srcset="./images/itowns_logo.svg" width="245" />
-                        <source media="(width > 1700px)" srcset="images/itowns_logo.png" width="245" />
-                        <!-- Fallback Image -->
-                        <img src="images/itowns_logo.png" width="245px" />
-                    </picture>
+
+         <label class="theme-toggle" title="Toggle theme" id="global-theme-toggle">
+            <input type="checkbox"/>
+            <span class="theme-toggle-sr">Toggle theme</span>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                width="1em"
+                height="1em"
+                fill="currentColor"
+                stroke-linecap="round"
+                class="theme-toggle__classic"
+                viewBox="0 0 32 32"
+            >
+                <clipPath id="theme-toggle__classic__cutout">
+                <path d="M0-5h30a1 1 0 0 0 9 13v24H0Z" />
+                </clipPath>
+                <g clip-path="url(#theme-toggle__classic__cutout)">
+                <circle cx="16" cy="16" r="9.34" />
+                <g stroke="currentColor" stroke-width="1.5">
+                    <path d="M16 5.5v-4" />
+                    <path d="M16 30.5v-4" />
+                    <path d="M1.5 16h4" />
+                    <path d="M26.5 16h4" />
+                    <path d="m23.4 8.6 2.8-2.8" />
+                    <path d="m5.7 26.3 2.9-2.9" />
+                    <path d="m5.8 5.8 2.8 2.8" />
+                    <path d="m23.4 23.4 2.9 2.9" />
+                </g>
+                </g>
+            </svg>
+        </label>
+
+        <div id="sidebar">
+            <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page" target="_blank" rel="noopener noreferrer">
+                <img src="images/itowns_icon.svg" alt="iTowns icon">
+            </a>
+            <nav id="sidebar-tabs">
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">    
+                     <img src="images/dashboard.svg" alt="Example gallery" />
+                </button>
+                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
+                     <img src="images/code.svg" alt="Code editor" />
+                </button>
+                <a href="https://github.com/iTowns" target="_blank" rel="noopener noreferrer">
+                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="iTowns GitHub repository">
+                            <img src="images/github.svg" alt="GitHub logo" />
+                    </button>
                 </a>
-                <label class="switch">
-                    <input id="version-switch" type="checkbox" name="version-switch" />
-                    <span class="checkmark"></span>
-                    Latest
-                </label>
-            </div>
-            <hr />
-            <div>
-                <select id="example-selector" class="selector"></select>
-                <input id="font-size-selector" class="selector" type="number" min="8" step="1" />
-                <div>
-                    <button type="button" id="run-button" class="header-button"></button>
-                    <button type="button" id="share-button" class="header-button" />
-                </div>
-            </div>
+                <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation"> 
+                            <img src="images/book.svg" alt="Book icon "/>
+                    </button>
+                </a>
+            </nav>
         </div>
-        <hr />
-        <div style="display: flex; padding: 1em; height: 100%">
-            <textarea id="code-editor"></textarea>
+
+        <div id="panel-content">
+            <div class="panel active" id="gallery-panel">
+                <div class="panel-header">
+
+                    <div class="title-toggle-container">
+                        <h1 class="panel-title">iTowns Example gallery</h1>
+                    </div>
+
+                    <div>
+                        <form id="search-container">
+                            <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
+
+                            <select id="category-selector">
+                                <!-- content added dynamically in JS --> 
+                            </select>
+                            
+                        </form>
+                    </div>
+                </div>
+
+                <div id="example-list"> 
+                    <!-- content added dynamically in JS --> 
+                </div>
+
+            </div>
+            
+            <div class="panel" id="code-panel"> 
+                <div class="panel-header" id="code-panel-header">
+                    <div class="title-toggle-container">
+                        <h1 class="panel-title" id="code-panel-title">Example failed to load</h1>
+                    </div>
+                    <p id="code-panel-desc">Example description failed to load</p>  
+                </div>
+                    
+                    <div id="code-editor-wrapper">
+                        <textarea id="code-editor"></textarea>
+                    </div>
+
+            </div>
+
+
+            <div class="panel-footer">
+                    <div class="switch-box">
+                        <label class="switch">
+                            <input type="checkbox" class="switch-input version-input">
+                            <span class="slider"></span>
+                        </label>
+                        <p>Development version</p>
+                    </div>
+                    <button type="button" id="run-btn">
+                        RUN
+                        <img src="images/run.svg" alt="Run code" />
+                    </button>
+                </div>
+
+            <button id="editor-collapse">
+                <img src="images/collapse.svg" alt="Collapse" />
+            </button>
         </div>
     </div>
-    <button id="editor-collapse">
-        <svg viewBox="0 0 10 10">
-            <polygon points="0,5 10,0 10,10" style="fill:white" />
-        </svg>
-    </button>
+
 
     <script type="text/javascript">
+        const body = document.body;
         const iframe = document.getElementById("content");
-        const editorPanel = document.getElementById("editor-panel");
-        const exampleSelector = document.getElementById("example-selector");
         const codeEditorTextArea = document.getElementById("code-editor");
+        const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
+        const panels = document.querySelectorAll(".panel");
+        const versionSwitch = document.querySelector(".version-input");
+        const exampleList = document.getElementById("example-list");
+        const codeBtn = document.getElementById("code-btn");
+        const codePanelTitle = document.querySelector("#code-panel-title");
+        const codePanelDesc = document.querySelector("#code-panel-desc");
+        const searchInput = document.getElementById("search-input");
+        const categorySelector = document.getElementById("category-selector");
+        const editorCollapse = document.getElementById("editor-collapse");
+        const runBtn = document.getElementById("run-btn");
+        const themeToggle = document.getElementById("global-theme-toggle");
+        const themeInput = themeToggle.querySelector("input");
 
-        /**
-         * @param {boolean} isDark - Which theme name to get
-         * @returns {string}
-         */
-        function getTheme(isDark) {
-            return isDark ? "shadowfox" : "default";
-        }
+        let examplesConfig = null;
+        let editorHidden = false;
+
+        const exampleCache = {};
+
+        let baseURI = document.baseURI;
+        const isLocal = baseURI.includes("localhost");
+
 
         const codeEditor = CodeMirror.fromTextArea(codeEditorTextArea, {
             lineNumbers: true,
             mode: "htmlmixed",
-            theme: getTheme(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches),
+            theme: "material-darker",
         });
 
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-            codeEditor.setOption("theme", getTheme(event.matches));
-        });
 
-        const exampleCache = {};
 
-        var baseURI = document.baseURI;
-        if (baseURI.includes("/itowns/dev/")) {
-            document
-                .getElementById("itowns-logo")
-                .setAttribute("src", "images/itowns_logo_next.png");
-            document
-                .getElementById("version-switch")
-                .setAttribute("checked", "");
-        }
-
-        const isLocal = baseURI.includes("localhost");
-
-        /**
+         /**
          * UTF-8 fix to btoa.
          * @param {string} string - A valid UTF-8 string.
          * @returns {string} The encoded string.
@@ -135,89 +224,55 @@
             return new TextDecoder().decode(Uint8Array.from(atob(bytes), m => m.codePointAt(0)));
         }
 
-        function runCode() {
-            const code = codeEditor.getValue();
-            localStorage.setItem("code", toBase64(code));
 
-            iframe.srcdoc = codeEditor.getValue();
-        }
-        document.getElementById("run-button").onclick = runCode;
-        codeEditor.setOption("extraKeys", {
-            "Ctrl-Enter": runCode,
-        });
+        /**
+         * Toggles the current theme between light and dark.
+         */
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
 
-        function shareCode() {
-            const code = codeEditor.getValue();
-            const base64 = toBase64(code);
-            localStorage.setItem("code", base64);
-
-            const url = new URL(document.location.toString());
-            url.hash = "";
-            url.search = "?code=" + encodeURIComponent(base64);
-            navigator.clipboard.writeText(url);
-        }
-        document.getElementById("share-button").onclick = shareCode;
-
-        const fontSizeSelector = document.getElementById("font-size-selector");
-
-        /** @returns {number} - The CodeMirror editor's font size */
-        function getEditorFontSize() {
-            const editor = document.getElementsByClassName("CodeMirror")[0];
-            return parseFloat(window.getComputedStyle(editor, null).getPropertyValue("font-size"));
+            setTheme(newTheme);
         }
 
-        /** @param {number} size_px - The new font size to apply */
-        function setEditorFontSize(size_px) {
-            const size = Math.max(8, Math.round(size_px));
-            const editor = document.getElementsByClassName("CodeMirror")[0];
-            editor.style.fontSize = `${size}px`;
-            // Must release focus to change value
-            document.activeElement.blur();
-            fontSizeSelector.value = size;
-            fontSizeSelector.focus();
-        }
-        fontSizeSelector.value = getEditorFontSize();
-        fontSizeSelector.onchange = (event) => setEditorFontSize(event.target.value || 13);
 
-        let editorHidden = false;
-        const editorCollapse = document.getElementById("editor-collapse");
-        editorCollapse.onclick = () => {
-            if (!editorHidden) {
-                editorCollapse.style.left = "0";
-                editorCollapse.style.transform = "scaleX(-1)";
-                setTimeout(() => editorCollapse.style.opacity = "0", 1000);
-                editorPanel.style.left = "calc(-100% * 7 / 16)";
-                iframe.style.left = "0";
-                iframe.style.width = "100%";
-            } else {
-                editorCollapse.style.left = "calc(100% * 7 / 16 - 1em)";
-                editorCollapse.style.transform = "scaleX(1)";
-                editorCollapse.style.opacity = "";
-                editorPanel.style.left = "0";
-                iframe.style.left = "";
-                iframe.style.width = "calc(100% * 9 / 16)";
+        /**
+         * Sets the theme according to the given string.
+         * @param {string} theme - The theme to be applied (light or dark).
+         */
+        function setTheme(theme){
+            const html = document.documentElement;
+            html.classList.remove('light', 'dark');
+            html.classList.add(theme);
+
+            localStorage.setItem('theme-preference', theme);
+            if (theme === 'dark'){
+                themeInput.checked = true;
             }
-            editorHidden = !editorHidden;
-        };
-        editorCollapse.onhover = () => console.log("toto");
-        const searchParams = new URL(
-            document.location.toString(),
-        ).searchParams;
-        const hideEditor = parseInt(searchParams.get("hide_editor"));
-        if (hideEditor) {
-            editorCollapse.style["transition-duration"] = "";
-            editorPanel.style["transition-duration"] = "";
-            iframe.style["transition-duration"] = "";
-            editorCollapse.click();
-            editorCollapse.style["transition-duration"] = "200ms";
-            editorPanel.style["transition-duration"] = "200ms";
-            iframe.style["transition-duration"] = "200ms";
-
-            setTimeout(() => editorCollapse.style.opacity = "1", 1000);
-            setTimeout(() => {if (editorHidden) {editorCollapse.style.opacity = "0";} }, 5000);
+            else {
+                themeInput.checked = false;
+            }
         }
 
-        /** @param {string} slug - An example's slug */
+        
+
+        /* 
+         * Runs the current example's code and displays the result in the iframe.
+         */
+        function runCode() {                
+            const code = codeEditor.getValue();
+            sessionStorage.setItem("code", toBase64(code));
+
+            iframe.srcdoc = code;
+        }
+
+        
+
+        /** 
+         * Caches the code of the example associated with the given slug.
+         * @param {string} slug - An example's slug
+         */
         function cacheExample(slug) {
             const src = isLocal
                 ? `${new URL(baseURI).origin}/examples/${slug}.html`
@@ -228,10 +283,16 @@
                     exampleCache[slug] = text;
                     return text;
                 });
-        }
+        }   
+                
 
-        /** @param {string} slug - An example's slug */
+        /** 
+         * Loads the example associated with the given slug.
+         * @param {string} slug - An example's slug 
+         */
         async function loadExample(slug) {
+            updateCodePanelHeader(slug);
+
             const example = exampleCache[slug] ?? (await (() => {
                 codeEditor.setValue("Loading...");
                 return cacheExample(slug);
@@ -240,93 +301,314 @@
             window.location.hash = slug;
             window.location.search = "";
             runCode();
+            setTimeout(() => codeEditor.refresh(), 0);
         }
 
-        /** @param {Record<string, Record<string, string>>} list - List of examples */
-        function initNavigation(list) {
-            const nav = document.getElementById("editor-header");
-            const versionSwitch = document.getElementById("version-switch");
-            if (!baseURI.includes("/itowns/")) {
-                versionSwitch.setAttribute("disabled", "");
-            } else {
-                versionSwitch.onchange = (event) => {
-                    window.location.href = document.location.href.replace();
-                    const isDev = baseURI.includes("/itowns/dev/");
-                    const options = ["/itowns/", "/itowns/dev/"];
-                    window.location.href = document.location.href.replace(
-                        options[isDev],
-                        options[!isDev],
-                    );
-                };
-                if (baseURI.includes("/itowns/dev/")) {
-                    versionSwitch.setAttribute("checked", "");
+
+        /**
+         * Updates the code panel's title and description according to the example associated with the given slug.
+         *  @param {string} slug - An example's slug 
+         */
+        function updateCodePanelHeader(slug) {
+            if (!examplesConfig) return;
+
+            for (const category of Object.values(examplesConfig)) {
+                if (category.items && category.items[slug]) {
+                    const info = category.items[slug];
+                    codePanelTitle.textContent = info.label;
+                    codePanelDesc.textContent = info.description;
+                    return;
                 }
             }
 
-            // Dropdown example selector
+            codePanelTitle.textContent = "Custom Example";
+            codePanelDesc.textContent = "Editing local code.";
+        }
+
+
+
+
+        const clean = (str) => str.replace(/\s+/g, '').toLowerCase();
+
+        /** 
+         * Displays or hides examples based on the user's text query and selected category.
+         */
+        function searchAndFilter() {
+            const query = clean(searchInput.value);
+            
+            const exampleItems = document.querySelectorAll('.example-item');
+            const categories = document.querySelectorAll('.category');
+
+        
+            // match search input
+            exampleItems.forEach(item => {
+                const title = clean(item.querySelector('.example-title').textContent);
+                const desc = clean(item.querySelector('.example-desc').textContent)
+                const belongingCategory = clean(item.closest(".category").querySelector(".category-title").textContent);
+
+                if (title.includes(query) || desc.includes(query) || belongingCategory.includes(query)) {
+                    item.style.display = "";
+                } else {
+                    item.style.display = "none";
+                }
+            
+            });
+
+            // hide empty and unselected categories
+            categories.forEach(cat => {
+                let hasVisibleItems = false;
+                for (const item of cat.querySelectorAll('.example-item')) {
+                    if (item.style.display !== "none") {
+                        hasVisibleItems = true;
+                        break;
+                    }
+                }
+                if (((cat.dataset.slug === categorySelector.value || categorySelector.value === "all") && hasVisibleItems)){
+                    cat.style.display = "";
+                } else {
+                    cat.style.display = "none";
+                }
+            });
+
+        }
+
+
+
+        // sidebar button management
+        sidebarButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                sidebarButtons.forEach(b => b.classList.remove("active"));
+                button.classList.add("active");
+
+                panels.forEach(panel => panel.classList.remove("active"));
+                const panelId = button.dataset.panel;
+                sessionStorage.setItem("activePanelId", panelId);
+                document.getElementById(panelId).classList.add("active");
+
+                // refresh editor when opening it, so it displays properly
+                if (panelId === "code-panel") {
+                    setTimeout(() => {              
+                        codeEditor.refresh();
+                    }, 0);
+                }
+            });
+        });
+
+
+        
+        // editor collapsing
+        editorCollapse.onclick = () => {
+            editorHidden = !editorHidden;
+
+            body.classList.toggle('manual-collapse', editorHidden);
+            editorCollapse.classList.toggle("collapsed");
+
+            if(!editorHidden){
+                 // refresh editor when opening it, so it displays properly
+                setTimeout(() => codeEditor.refresh(), 200); 
+            }
+        };
+        
+
+        
+        // collapsing categories
+        exampleList.addEventListener('click', (event) => {
+            const header = event.target.closest('.category-header');
+            if (!header) return;
+
+            const parent = header.closest('.category');
+            parent.classList.toggle('collapsed');
+        });
+
+
+
+        // click on example
+        exampleList.addEventListener('click', (event) => {
+            const item = event.target.closest('.example-item');
+            if (!item) return;
+
+            const slug = item.dataset.slug;
+            loadExample(slug);
+            codeBtn.click(); 
+        });
+
+
+
+        // version switching 
+        versionSwitch.addEventListener('change', (event) => {      
+            if (baseURI.includes("/itowns/")) {
+                const isDev = baseURI.includes("/itowns/dev/");
+                const options = ["/itowns/", "/itowns/dev/"];
+                
+                const target = isDev ? options[0] : options[1];
+                const current = isDev ? options[1] : options[0];
+
+                window.location.href = document.location.href.replace(current, target);
+            } 
+        });
+
+
+
+        themeInput.addEventListener("change", toggleTheme);
+
+
+        searchInput.addEventListener("input", searchAndFilter);
+        categorySelector.addEventListener("change", searchAndFilter);
+
+
+        runBtn.onclick = runCode;
+        codeEditor.setOption("extraKeys", {
+            "Ctrl-Enter": runCode,
+        });
+
+        // if user's theme preference changes, set theme accordingly
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            setTheme(event.matches ? 'dark': 'light');
+        });
+
+
+
+        /**
+         * @typedef {Object} ExampleItem
+         * @property {string} label - The display name of the example.
+         * @property {string} description - A short explanation of what the example shows.
+         */
+
+        /**
+         * @typedef {Object} ExampleCategory
+         * @property {string} label - The display name of the category.
+         * @property {Record<string, ExampleItem>} items - A dictionary of items indexed by their unique keys.
+         */
+
+        /**
+         * Dynamically generates DOM elements according to the current examples in the given json file.
+         * @param {Record<string, ExampleCategory>} list - A collection of categories.
+         */
+        function initNavigation(list) {
+
+            const isDev = baseURI.includes("/itowns/dev/");
+            versionSwitch.checked = isDev;
+
+            // dynamic example generation
+            // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
             const examples = [
-                "<option hidden value='custom'>Custom</option>",
-                ...Object.entries(list).flatMap(
-                    ([sectionName, section]) => {
+                ...Object.entries(list).flatMap(      
+                    ([categorySlug, category]) => {
                         return [
-                            `<optgroup label="${sectionName}">`,
-                            ...Object.entries(section).map(
-                                ([slug, name]) =>
-                                    `<option value=${slug}>${name}</option>`,
-                            ),
-                            "</optgroup>",
+                            `<div class="category" data-slug='${categorySlug}'>`,
+                                `<button type='button' class="category-header">
+                                    <img src="images/down_arrow.svg" class="category-arrow" alt="Collapse/expand category"/>
+                                    <h3 class='category-title'> ${category.label} </h3>
+                                </button>`,
+                                `<div class="category-grid-wrapper">`,
+                                    `<div class="category-content">`,
+                                        `<ul>`, 
+                                        ...Object.entries(category.items).map(
+                                            ([slug, info]) =>
+                                                `<li class="example-item" data-slug='${slug}' id="${slug}">
+                                                    <div class="example-img-container">
+                                                        <img src="images/thumbnails/${slug}.webp" alt="${info.label}"/>
+                                                    </div>
+                                                    <div class="example-info">
+                                                        <h3 class="example-title">${info.label}</h3>
+                                                        <p class="example-desc">${info.description}</p>
+                                                    </div>  
+                                                </li>`,
+                                        ),
+                                        `</ul>`,
+                                    `</div>`,
+                                `</div>`,
+                                '<hr/>',
+                            `</div>`,
                         ];
                     },
                 ),
             ];
 
-            const exampleSelector =
-                document.getElementById("example-selector");
-            exampleSelector.insertAdjacentHTML(
+            // filling the category selector
+            const categories = [
+                `<option value="all">All categories</option>`,
+                ...Object.entries(list).flatMap(
+                    ([categorySlug, category]) => {
+                        return [
+                            `<option value="${categorySlug}">${category.label}</option>`   
+                        ];
+                    },
+                ),
+            ];
+
+            exampleList.insertAdjacentHTML(
                 "afterbegin",
                 examples.join("\n"),
             );
-            exampleSelector.onchange = (event) =>
-                loadExample(event.target.value);
 
-            const hash = window.location.hash;
-            const currentExample = hash.slice(1) || "custom";
-            exampleSelector.value = currentExample;
+            categorySelector.insertAdjacentHTML(
+                "afterbegin",
+                categories.join("\n"),
+            );
+            
         }
 
+
+
+        /**
+         * Initializes the application theme, fetches configuration, 
+         * and restores the saved session state and content.
+         */
         function onLoad() {
-            // Get the configuration
+            
+            // set theme
+            const savedTheme = localStorage.getItem('theme-preference');
+            if (savedTheme) {
+                setTheme(savedTheme);
+            }
+            else {
+                const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                setTheme(isDarkMode ? 'dark' : 'light');
+            }
+
+            // get the configuration
             fetch("./config.json")
                 .then(function _(response) {
                     return response.json();
                 })
                 .then(function _(config) {
+                    examplesConfig = config;
                     initNavigation(config);
+                    
 
-                    const searchParams = new URL(
-                        document.location.toString(),
-                    ).searchParams;
-                    const urlCode = searchParams.get("code");
+                    const localCode = sessionStorage.getItem("code");
 
-                    const localCode = localStorage.getItem("code");
-
-                    if (!urlCode) {
-                        if (!localCode || isLocal) {
-                            loadExample(
-                                window.location.hash.replace("#", "") ||
-                                "demo/index",
-                            );
-                        }
-                        else {
-                            codeEditor.setValue(fromBase64(localCode));
-                            runCode();
-                        }
-                    } else {
-                        codeEditor.setValue(fromBase64(decodeURIComponent(urlCode)));
-                        alert('Please check foreign code before running it!');
+                    if (!localCode || isLocal) {
+                        loadExample(
+                            window.location.hash.replace("#", "") ||
+                            "demo/index",
+                        );
                     }
+                    else {
+                        codeEditor.setValue(fromBase64(localCode));
+                        runCode();
+                    }
+
+                    // staying on the same panel even when hard refreshing
+                    const savedPanelId = sessionStorage.getItem("activePanelId");        
+                    if (savedPanelId) {
+                        const targetBtn = document.querySelector(`.sidebar-btn[data-panel="${savedPanelId}"]`);
+                        if (targetBtn) {
+                            targetBtn.click();
+                        }
+                    }
+                        
                 });
         }
+
+
+        // waiting for DOM content to be loaded to start generating examples
+        document.addEventListener('DOMContentLoaded', () => {
+            onLoad(); 
+        });
+
+        
     </script>
 </body>
 
