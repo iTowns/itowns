@@ -66,9 +66,12 @@
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+
+                return layer;
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            const p = itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
             itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+
 
             function addMeshToScene() {
                 // creation of the new mesh (a cylinder)
@@ -100,9 +103,7 @@
             }
 
             // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function globeInitialized() {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
+            p.then((layer) => {
                 addMeshToScene();
             });
             window.view = view;
