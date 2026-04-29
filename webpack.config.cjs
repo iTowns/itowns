@@ -101,6 +101,10 @@ module.exports = () => {
             itowns: [
                 './packages/Main/src/MainBundle.js',
             ],
+            demo: {
+                import: './examples/demo/src/index.ts',
+                dependOn: 'itowns',
+            },
         },
         output: {
             ...sharedConfig.output,
@@ -119,6 +123,10 @@ module.exports = () => {
             itowns: [
                 './packages/Main/src/Main.js',
             ],
+            demo: {
+                import: './examples/demo/src/index.ts',
+                dependOn: 'itowns',
+            },
         },
         output: {
             ...sharedConfig.output,
@@ -163,28 +171,9 @@ module.exports = () => {
         ],
     };
 
-    const configServe = {
-        ...configESM,
-        entry: {
-            ...configESM.entry,
-            demo: {
-                import: './examples/demo/src/index.ts',
-                dependOn: 'itowns',
-            },
-        },
-        plugins: [
-            new ESLintPlugin({
-                files: include,
-                configType: 'eslintrc',
-            }),
-        ],
-        experiments: {
-            outputModule: true,
-        },
-    };
 
     if (process.env.WEBPACK_SERVE) {
-        configServe.devServer = {
+        configESM.devServer = {
             hot: false,
             devMiddleware: {
                 publicPath: '/dist/',
@@ -204,7 +193,7 @@ module.exports = () => {
             },
         };
 
-        return [configServe];
+        return [configESM];
     } else {
         return [configESM, configUMD];
     }

@@ -11,6 +11,7 @@
             {
                 "imports": {
                     "itowns": "../../dist/itowns.js",
+                    "demo": "../../dist/demo.js",
                     "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                     "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
                     "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
@@ -51,7 +52,7 @@
         <script type="module">
             import * as THREE from "three";
             import * as itowns from "itowns";
-            import { SceneTransitionUtils, SceneRepository, Config } from "../../dist/demo.js";
+            import { SceneTransitionUtils, SceneRepository, Config } from "demo";
 
             Config.basePath = window.location.href.startsWith("about:srcdoc")
                 ? "/examples"
