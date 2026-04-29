@@ -144,20 +144,24 @@ export function updateLayeredMaterialNodeImagery(context, layer, node, parent) {
     node.layerUpdateState[layer.id].newTry();
     const command = buildCommand(context.view, layer, extentsSource, extentsDestination, node);
 
-    return context.scheduler.execute(command).then(
-        (results) => {
-            // Does nothing if the layer has been removed while command was being or waiting to be executed
-            if (!node.layerUpdateState[layer.id]) {
-                return;
-            }
-            const textures = results.map((texture, index) => (texture != null ? texture :
-                { isTexture: false, extent: extentsDestination[index] }));
-            // TODO: Handle error : result is undefined in provider. throw error
-            const pitchs = computePitchs(textures, extentsDestination);
-            nodeLayer.setTextures(textures, pitchs);
-            node.layerUpdateState[layer.id].success();
-        },
-        err => handlingError(err, node, layer, targetLevel, context.view));
+    return context.scheduler.execute(command)
+        .then(
+            (results) => {
+                // Does nothing if the layer has been removed while command was being or waiting to be executed
+                if (!node.layerUpdateState[layer.id]) {
+                    return;
+                }
+                const textures = results.map((texture, index) => (texture != null ? texture :
+                    { isTexture: false, extent: extentsDestination[index] }));
+
+                // TODO: Handle error : result is undefined in provider. throw error
+                const pitchs = computePitchs(textures, extentsDestination);
+                nodeLayer.setTextures(textures, pitchs);
+                node.layerUpdateState[layer.id].success();
+            })
+        .catch((err) => {
+            handlingError(err, node, layer, targetLevel, context.view);
+        });
 }
 
 export function updateLayeredMaterialNodeElevation(context, layer, node, parent) {
