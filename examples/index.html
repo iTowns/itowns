@@ -275,7 +275,7 @@
          */
         function cacheExample(slug) {
             const src = isLocal
-                ? `${new URL(baseURI).origin}/examples/${slug}.html`
+                ? new URL(slug + ".html", baseURI).href
                 : `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
             return fetch(src)
                 .then((response) => response.text())

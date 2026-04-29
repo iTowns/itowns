@@ -6,36 +6,38 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <!-- both itowns paths for webpack and local build -->
-        <script type="importmap">
-            {
-                "imports": {
-                    "itowns": "../../dist/itowns.js",
-                    "demo": "../../dist/demo.js",
-                    "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
-                    "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
-                    "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
-                }
-            }
-        </script>
         <script>
-            function loadCss(url) {
-                const link = document.createElement("link");
-                link.rel = "stylesheet";
-                link.type = "text/css";
-                link.href = url;
-                document.head.appendChild(link);
-            }
+            (function () {
+                // escape iframe to retrieve the correct URL
+                const here = (window.location.href.indexOf("about:srcdoc") === 0)
+                    ? window.parent.location.href
+                    : window.location.href;
+                const idx = here.lastIndexOf("/examples/");
+                const rootURL = idx >= 0
+                    ? here.slice(0, idx + 1)
+                    : new URL("./", here).href;
 
-            const basePath = window.location.href.startsWith("about:srcdoc")
-                ? "/examples"
-                : "..";
-
-            loadCss(`${basePath}/css/example.css`);
-            loadCss(`${basePath}/css/widgets.css`);
-            loadCss(`${basePath}/demo/css/demo.css`);
-            loadCss(`${basePath}/css/LoadingScreen.css`);
+                document.write('<base href="' + rootURL + '">');
+                window.__itownsRoot = rootURL;
+            })();
         </script>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "./dist/itowns.js",
+                "demo": "./dist/demo.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
+                "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
+            }
+        }
+        </script>
+
+        <link rel="stylesheet" href="examples/css/example.css">
+        <link rel="stylesheet" href="examples/css/widgets.css">
+        <link rel="stylesheet" href="examples/demo/css/demo.css">
+        <link rel="stylesheet" href="examples/css/LoadingScreen.css">
     </head>
     <body>
         <div id="demoUI">
@@ -54,9 +56,7 @@
             import * as itowns from "itowns";
             import { SceneTransitionUtils, SceneRepository, Config } from "demo";
 
-            Config.basePath = window.location.href.startsWith("about:srcdoc")
-                ? "/examples"
-                : "..";
+            Config.basePath = window.__itownsRoot + "examples";
 
             const resetSceneButton = document.getElementById("resetScene");
             const hardResetSceneButton =
