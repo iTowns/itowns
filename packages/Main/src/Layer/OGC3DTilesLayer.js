@@ -14,6 +14,7 @@ import {
 } from '3d-tiles-renderer/core/plugins';
 
 import GeometryLayer from 'Layer/GeometryLayer';
+
 import iGLTFLoader from 'Parser/iGLTFLoader';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -586,6 +587,9 @@ class OGC3DTilesLayer extends GeometryLayer {
                     new THREE.BufferAttribute(classificationData, 1),
                 );
             }
+        } else if (model.isMesh && geometry) {
+            geometry.computeVertexNormals();
+            geometry.needsUpdate = true;
         }
     }
 
