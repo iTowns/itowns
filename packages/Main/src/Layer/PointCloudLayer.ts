@@ -118,21 +118,6 @@ function computeScreenSpaceError(
     return computeSSEPerspective(context, pointSize, pointSpacing, distance);
 }
 
-function markForDeletion(elt: PointCloudNode) {
-    elt.visible = false;
-    if (elt.obj) {
-        elt.obj.visible = false;
-    }
-
-    if (!elt.notVisibleSince) {
-        elt.notVisibleSince = Date.now();
-        // Set .sse to an invalid value
-        elt.sse = -1;
-    }
-    for (const child of elt.children) {
-        markForDeletion(child);
-    }
-}
 
 function changeIntensityRange(layer: PointCloudLayer) {
     // @ts-expect-error PointsMaterial is not typed yet
@@ -327,6 +312,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             visible,
         });
         node.visible = visible;
+        if (visible) {
+            node.notVisibleSince = undefined;
+        } else {
+            node.notVisibleSince = Date.now();
+            node.sse = -1;
+        }
     }
 
     preUpdate(context: Context) {
@@ -394,6 +385,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     elt.obj = pts;
                     elt.obj.visible = false;
 
+                    if (!elt.visible) {
+                        elt.notVisibleSince = Date.now();
+                    }
+
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
@@ -425,7 +420,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      */
     update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
         if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
             return [];
         }
 
@@ -447,7 +441,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
 
         if (!visible) {
-            markForDeletion(elt);
             return [];
         }
 
@@ -466,18 +459,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         // The visibility here is not definitive, as it will be updated
         // in the postUpdate phase
         elt.visible = visible;
-        elt.notVisibleSince = undefined;
         this._candidateNodes.push(elt);
         this.loadData(elt, context, layer, distanceToCamera);
 
         if (elt.children && elt.children.length) {
             if (elt.sse >= 1) {
                 return elt.children;
-            } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
-                }
-                return [];
             }
         }
 
@@ -505,13 +492,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             }
         }
 
-        const nonVisibleNodes = new Set<PointCloudNode>();
         // Hide remaining visible nodes that didn't fit in the budget
         while (this._candidateNodes.length > 0) {
             const node = this._candidateNodes.pop() as PointCloudNode;
             node.visible = false;
             if (node.obj) { node.obj.visible = false; }
-            nonVisibleNodes.add(node);
         }
 
         // Set symmetric difference between visible nodes from last
@@ -528,10 +513,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as THREE.Points;
-            if (!obj.visible && (now - obj.userData.node.notVisibleSince > 10000)) {
+            const node = obj.userData.node as PointCloudNode;
+            if (node.notVisibleSince && (now - node.notVisibleSince > 10000)) {
                 this.group.remove(obj);
                 obj.geometry.dispose();
-                obj.userData.node.obj = null;
+                node.obj = undefined;
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
         }
