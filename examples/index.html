@@ -293,13 +293,20 @@
         async function loadExample(slug) {
             updateCodePanelHeader(slug);
 
+            // set current example to active to update its appearance
+            document.querySelectorAll('.example-item').forEach(el => el.classList.remove('active-example'));
+            const targetItem = document.getElementById(slug);
+            if (targetItem) {
+                targetItem.classList.add('active-example');
+                targetItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+
             const example = exampleCache[slug] ?? (await (() => {
                 codeEditor.setValue("Loading...");
                 return cacheExample(slug);
             })());
             codeEditor.setValue(example);
             window.location.hash = slug;
-            window.location.search = "";
             runCode();
             setTimeout(() => codeEditor.refresh(), 0);
         }
@@ -443,7 +450,7 @@
                 const target = isDev ? options[0] : options[1];
                 const current = isDev ? options[1] : options[0];
 
-                window.location.href = document.location.href.replace(current, target);
+                window.location.href = document.location.href.replace(current, target).replace("?","");
             } 
         });
 
@@ -575,18 +582,16 @@
                 .then(function _(config) {
                     examplesConfig = config;
                     initNavigation(config);
-                    
 
+                    const hash = window.location.hash.replace("#", "");
                     const localCode = sessionStorage.getItem("code");
 
                     if (!localCode || isLocal) {
-                        loadExample(
-                            window.location.hash.replace("#", "") ||
-                            "demo/index",
-                        );
+                        loadExample(hash || "demo/index");
                     }
                     else {
                         codeEditor.setValue(fromBase64(localCode));
+                        updateCodePanelHeader(hash);
                         runCode();
                     }
 
