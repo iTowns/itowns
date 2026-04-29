@@ -6,7 +6,7 @@ import type { Extent } from '@itowns/geographic';
 import type { TileGeometry } from 'Core/TileGeometry';
 import type Tile from 'Core/Tile/Tile';
 import OBB from 'Renderer/OBB';
-import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
+
 import type { LayeredMaterial, LayeredMaterialParameters } from 'Renderer/LayeredMaterial';
 import type LayerUpdateState from 'Layer/LayerUpdateState';
 import { TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
@@ -101,8 +101,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
             },
         });
 
-        // Align TileMesh receiveShadow and castShadow with layer.receiveShadow and layer.castShadow
-        referShadowProperties(this, layer);
+
     }
 
     /**

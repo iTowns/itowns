@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import Earcut from 'earcut';
 import { FEATURE_TYPES } from 'Core/Feature';
-import ReferLayerProperties, { referShadowProperties } from 'Layer/ReferencingLayerProperties';
+import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { deprecatedFeature2MeshOptions } from 'Core/Deprecated/Undeprecator';
 import { Extent, Coordinates, OrientationUtils } from '@itowns/geographic';
 import Style, { StyleContext } from 'Core/Style';
@@ -697,8 +697,6 @@ export default {
             const meshes = features.map((feature) => {
                 const mesh = featureToMesh(feature, options);
                 mesh.layer = layer;
-                // Align mesh castShadow/receiveShadow with layer
-                referShadowProperties(mesh, layer);
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);

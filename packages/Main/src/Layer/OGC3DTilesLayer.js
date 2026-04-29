@@ -14,7 +14,7 @@ import {
 } from '3d-tiles-renderer/core/plugins';
 
 import GeometryLayer from 'Layer/GeometryLayer';
-import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
+
 import iGLTFLoader from 'Parser/iGLTFLoader';
 // eslint-disable-next-line import/extensions, import/no-unresolved
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
@@ -591,9 +591,6 @@ class OGC3DTilesLayer extends GeometryLayer {
             geometry.computeVertexNormals();
             geometry.needsUpdate = true;
         }
-
-        const layer = this;
-        referShadowProperties(model, layer);
     }
 
     handleTasks() {

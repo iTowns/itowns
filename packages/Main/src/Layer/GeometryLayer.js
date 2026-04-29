@@ -2,6 +2,7 @@ import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
 
 /**
  * Fires when the opacity of the layer has changed.
@@ -131,6 +132,20 @@ class GeometryLayer extends Layer {
          * @type {boolean}
          */
         this.receiveShadow = true;
+
+        // Centralized shadow property referencing: when any object is added
+        // to the object3d hierarchy, automatically apply referShadowProperties.
+        const applyOnAdd = (event) => {
+            const child = event.child;
+            referShadowProperties(child, this);
+            child.traverse((descendant) => {
+                referShadowProperties(descendant, this);
+                descendant.addEventListener('childadded', applyOnAdd);
+            });
+            // Listen for future additions deeper in the tree
+            child.addEventListener('childadded', applyOnAdd);
+        };
+        this.object3d.addEventListener('childadded', applyOnAdd);
     }
 
     get visible() {
