@@ -80,19 +80,26 @@ function _instanciateQueue() {
         execute(cmd, provider) {
             this.counters.pending--;
             this.counters.executing++;
-            return provider.executeCommand(cmd).then((result) => {
-                this.counters.executing--;
-                cmd.resolve(result);
-                // only count successul commands
-                this.counters.executed++;
-            }, (err) => {
-                this.counters.executing--;
-                cmd.reject(err);
-                this.counters.failed++;
-                if (__DEBUG__ && this.counters.failed < 3) {
-                    console.error(err);
-                }
-            });
+            return provider.executeCommand(cmd)
+                .then((result) => {
+                    this.counters.executing--;
+                    cmd.resolve(result);
+                    // only count successul commands
+                    this.counters.executed++;
+                })
+                .catch((err) => {
+                    this.counters.executing--;
+                    cmd.reject(err);
+                    this.counters.failed++;
+                    if (__DEBUG__ && this.counters.failed < 3) {
+                        // eslint-disable-next-line no-undef
+                        if (err instanceof AggregateError) {
+                            console.error(err, ...err.errors);
+                        } else {
+                            console.error(err);
+                        }
+                    }
+                });
         },
     };
 }
