@@ -46,6 +46,7 @@
             <button class="nav-btn" id="prev-scene-btn">
                 <img src="/examples/demo/assets/images/prev.svg" alt="Previous scene">
             </button>
+            <p class="scene-number-info"></p>
             <button class="nav-btn" id="next-scene-btn">
                 <img src="/examples/demo/assets/images/next.svg" alt="Next scene">
             </button>
@@ -56,7 +57,7 @@
             </div>
             <div id="info-bottom-container">
                 <div id="textContainer">
-                    <p id="scene-number-info"></p>
+                    <p class="scene-number-info "></p>
                     <h1 id="sceneTitle"></h1>
                     <p id="sceneDescription"></p>
                 </div>
@@ -83,7 +84,7 @@
             const resetSceneButton = document.getElementById("resetScene");
             const hardResetSceneButton =
                 document.getElementById("hardResetScene");
-            const sceneNumberInfo = document.getElementById("scene-number-info");
+            const sceneNumberInfo = document.querySelectorAll(".scene-number-info");
             const prevSceneBtn = document.getElementById("prev-scene-btn");
             const nextSceneBtn = document.getElementById("next-scene-btn");
 
@@ -109,13 +110,17 @@
                         index < 0 ||
                         index >= SceneRepository.length
                     ) {
+                        console.log(index === currentIndex);
+                        console.log(index< 0);
+                        console.log(index >= SceneRepository.length);
+                        console.log("goTo");
                         return;
                     }
                     const from = SceneRepository[currentIndex];
                     const to = SceneRepository[index];
                     currentIndex = index;
-                    updateActiveDot();
-
+                    updateUI();
+                    
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
@@ -181,7 +186,7 @@
                 });
             }
 
-            function updateActiveDot() {
+            function updateUI() {
                 dots.forEach((dot, i) => {
                     if (i === currentIndex) {
                         dot.classList.add("active");
@@ -189,14 +194,21 @@
                         dot.classList.remove("active");
                     }
                 });
-               
-                sceneNumberInfo.textContent = "Scene " + (currentIndex + 1) + "/" +  SceneRepository.length;
+
+                sceneNumberInfo.forEach((element) => {
+                    element.textContent = "Scene " + (currentIndex + 1) + "/" +  SceneRepository.length
+                })
+
+                if (currentIndex === 1){
+                    prevSceneBtn.classList.toggle("disabled");
+                }
             }
 
 
 
 
-            updateActiveDot();
+            updateUI();
+
             resetSceneButton.onclick = async () => {
                 await SceneManager.softReset();
             };
@@ -204,7 +216,13 @@
                 await SceneManager.hardReset();
             };
 
-            nextSceneBtn.addEventListener("click", () => SceneManager.goTo(currentIndex + 1));
+            nextSceneBtn.addEventListener("click", () => {
+                SceneManager.goTo(currentIndex+1);
+            });
+
+            prevSceneBtn.addEventListener("click", () => {
+                SceneManager.goTo(currentIndex-1);
+            });
             
 
 

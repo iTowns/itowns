@@ -3,9 +3,8 @@
 
 html, body {
     font-family: Roboto, sans-serif;
+    color: light-dark(#202020, #F0F0F0);
 }
-
-
 
 
 
@@ -13,17 +12,23 @@ html, body {
 
 #prev-next-container {
     position: fixed;
-    right: 50%;
+    left: 45%;
+    transform: translateX(-50%);
     bottom: 3vh;
     height: 3rem;
-    width: 10rem;
+    width: fit-content;
 
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 3rem;
+    gap: 2rem;
+    padding: 1em 1em;
 
     z-index: 100;
+
+    background-color: light-dark(white, #0F1419);
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
+    border-radius: 3rem;
 }
 
 
@@ -38,7 +43,7 @@ html, body {
     border: none;
     background-color: #1565c1;  
     cursor: pointer;
-    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
+    
 
 
 }
@@ -48,7 +53,7 @@ html, body {
 }
 
 #prev-next-container img {
-    height: 2rem;
+    height: 1.7rem;
     /* width: 3rem; */
 }
 
@@ -107,12 +112,12 @@ html, body {
     display: flex;
     flex-direction: column;
 
-    color: black;
+    /* color: black; */
     /* text-align: center; */
 }
 
-#scene-number-info {
-    background-color: #F0F6FF;
+#info-bottom-container .scene-number-info {
+    background-color: light-dark(#F0F6FF, #09184b);
     border-radius: 0.5em;
     color: #1565c1;
     padding: 0.2em 0.4em;
@@ -125,7 +130,7 @@ html, body {
 
 
 #sceneTitle {
-    color: #1565c1;
+    color: light-dark(#1565c1, #8CC1EE);
     text-transform: uppercase;
     font-weight: 500;
     font-size: 2.3vh;
@@ -155,10 +160,10 @@ html, body {
 
     padding: 0.5vh 0.8vh;
     border-style: none;
-    background-color: #ffffff;
     text-align: center;
     font-weight: bold;
-    color: #1565c1;
+    background-color: light-dark(white, #0F1419);
+    color: light-dark(#1565c1, #8CC1EE);
     text-transform: uppercase;
     border-radius: 15px;
     /* font-size: min(1vh, 1.5vw); */
@@ -223,7 +228,7 @@ button.active {
 }
 
 .scene-dot.active {
-    background-color: #7EA8C5;
+    background-color: #1565c1;
     transform: scale(1.4);
 }
 
