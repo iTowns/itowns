@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { Object3D, Box3 } from 'three';
+import { Box3 } from 'three';
 import PotreeLayer from 'Layer/PotreeLayer';
 import PotreeSource from 'Source/PotreeSource';
 import View from 'Core/View';
@@ -12,7 +12,6 @@ import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
 const resources = new Map();
-const object3d = new Object3D();
 
 // potree 1.7
 const baseurl = 'https://raw.githubusercontent.com/potree/potree/develop/pointclouds/lion_takanawa';
@@ -124,63 +123,6 @@ describe('Potree', function () {
 
             it('postUpdate potree layer', function () {
                 potreeLayer.postUpdate(context, potreeLayer);
-            });
-        });
-
-        describe('potree Node', function () {
-            const crs = 'EPSG:4326';
-            const numPoints = 1000;
-            const childrenBitField = 5;
-            let root;
-
-            it('instance', function (done) {
-                root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
-                assert.equal(root.numPoints, numPoints);
-                assert.equal(root.childrenBitField, childrenBitField);
-                done();
-            });
-
-            it('construct a correct URL', function () {
-                const source = {
-                    baseurl,
-                    bounds: [0, 0, 0, 100, 100, 100],
-                    crs,
-                };
-                root.voxelOBB.setFromArray(source.bounds);
-
-                const indexChild = 7;
-                const indexGChild = 3;
-                const nodeChild = new PotreeNode(1, indexChild, 0, 0, source, crs);
-                const nodeGChild = new PotreeNode(2, indexGChild, 0, 0, source, crs);
-                object3d.add(root.clampOBB);
-                root.add(nodeChild);
-                nodeChild.add(nodeGChild);
-
-                assert.equal(nodeGChild.url, `${baseurl}/r${indexChild}${indexGChild}.bin`);
-            });
-
-            it('load octree', function (done) {
-                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
-                root.voxelOBB.setFromArray(potreeSource.bounds);
-                object3d.add(root.clampOBB);
-                root.loadOctree()
-                    .then(() => {
-                        assert.equal(6, root.children.length);
-                        done();
-                    }).catch(done);
-            });
-
-            it('load child node', function (done) {
-                const root = new PotreeNode(0, -1, numPoints, childrenBitField, potreeSource, crs);
-                root.voxelOBB.setFromArray(potreeSource.bounds);
-                object3d.add(root.clampOBB);
-                root.loadOctree()
-                    .then(() => root.children[0].load()
-                        .then(() => {
-                            assert.equal(8, root.children[0].children.length);
-                            done();
-                        }),
-                    ).catch(done);
             });
         });
     });

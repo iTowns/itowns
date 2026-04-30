@@ -1,17 +1,18 @@
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import Fetcher from 'Provider/Fetcher';
-import LasNodeBase, { buildVoxelKey } from 'Core/LasNodeBase';
+import { buildVoxelKey } from 'Core/PointCloudNode';
+import LasNodeBase from 'Core/LasNodeBase';
 
 class EntwinePointTileNode extends LasNodeBase {
-    /** Used to checkout whether this
-    * node is a EntwinePointTileNode. Default is `true`. You should not change
-    * this, as it is used internally for optimisation. */
-    readonly isEntwinePointTileNode: true;
-
     source: EntwinePointTileSource;
 
-    crs: string;
-    url: string;
+    override url: string;
+
+    hierarchy: Record<string, number>;
+
+    /** The string id of the node, constituted of the four
+    * components: `depth-x-y-z`. */
+    override voxelKey: string;
 
     /**
      * Constructs a new instance of EntwinePointTileNode.
@@ -34,66 +35,53 @@ class EntwinePointTileNode extends LasNodeBase {
         depth: number,
         x: number, y: number, z: number,
         source: EntwinePointTileSource,
-        numPoints: number,
         crs: string,
+        hierarchy: Record<string, number> = {},
     ) {
-        super(depth, x, y, z, source, numPoints, crs);
-        this.isEntwinePointTileNode = true;
+        const voxelKey = buildVoxelKey(depth, x, y, z);
+        const numPoints = hierarchy[voxelKey];
+        super(depth, x, y, z, numPoints, crs);
+
         this.source = source;
 
-        this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
+        this.voxelKey = voxelKey;
 
-        this.crs = crs;
+        this.url = `${this.source.url}/ept-data/${this.voxelKey}.${this.source.extension}`;
+        this.hierarchy = hierarchy;
     }
 
     override fetcher(url: string, networkOptions: RequestInit): Promise<ArrayBuffer> {
         return this.source.fetcher(url, networkOptions);
     }
 
-    override async loadOctree(): Promise<void> {
+    override async loadHierarchy(): Promise<Record<string, number>> {
+        if (this.hierarchyIsLoaded) { return this.hierarchy; }
+
         const hierarchyUrl = `${this.source.url}/ept-hierarchy/${this.voxelKey}.json`;
-        const hierarchy =
+        this.hierarchy =
             await Fetcher.json(hierarchyUrl, this.networkOptions) as Record<string, number>;
 
-        this.numPoints = hierarchy[this.voxelKey];
+        // update current node from the newly fetched hierarchy
+        this.numPoints = this.hierarchy[this.voxelKey];
 
-        const stack = [];
-        stack.push(this);
-
-        while (stack.length) {
-            const node = stack.shift() as EntwinePointTileNode;
-            const depth = node.depth + 1;
-            const x = node.x * 2;
-            const y = node.y * 2;
-            const z = node.z * 2;
-
-            node.findAndCreateChild(depth, x,     y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z,     hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y,     z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x,     y + 1, z + 1, hierarchy, stack);
-            node.findAndCreateChild(depth, x + 1, y + 1, z + 1, hierarchy, stack);
-        }
+        return this.hierarchy;
     }
 
     override findAndCreateChild(
-        depth: number,
-        x: number, y: number, z: number,
-        hierarchy: Record<string, number>,
-        stack: EntwinePointTileNode[],
+        depth: number, x: number, y: number, z: number,
     ): void {
-        const voxelKey = buildVoxelKey(depth, x, y, z);
-        const numPoints = hierarchy[voxelKey];
+        const childVoxelKey = buildVoxelKey(depth, x, y, z);
 
-        if (typeof numPoints == 'number') {
-            const child = new EntwinePointTileNode(
-                depth, x, y, z,
-                this.source, numPoints, this.crs);
-            this.add(child as this, 0);
-            stack.push(child);
-        }
+        if (!this.hierarchy[childVoxelKey]) { return; }
+
+        const child = new EntwinePointTileNode(
+            depth, x, y, z,
+            this.source,
+            this.crs,
+            this.hierarchy,
+        );
+
+        this.add(child as this);
     }
 }
 
