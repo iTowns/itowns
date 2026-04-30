@@ -13,7 +13,10 @@ export default {
                     const anyFulfilledPromise = results.find(promise => promise.status === 'fulfilled');
                     if (!anyFulfilledPromise) {
                         // All promises failed -> reject
-                        return Promise.reject(new Error('Failed to load any data'));
+
+                        // eslint-disable-next-line no-undef
+                        const err = new AggregateError(results.map(r => r.reason), 'Failed to load any data');
+                        return Promise.reject(err);
                     }
                     return results.map(prom => (prom.value ? prom.value : null));
                 });

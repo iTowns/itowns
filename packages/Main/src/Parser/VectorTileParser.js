@@ -140,23 +140,36 @@ function readPBF(file, options) {
     collection.position.set(vFeature0.extent * x + center, vFeature0.extent * y + center, 0).multiply(collection.scale);
     collection.updateMatrixWorld();
 
+    let styleLayers = options.in.layers;
+    if (!styleLayers) {
+        styleLayers = {};
+        vtLayerNames.forEach((vtLayerName, i) => {
+            styleLayers[vtLayerName] = [{
+                id: vtLayerName,
+                order: i,
+                filterExpression: { filter: () => true },
+            }];
+        });
+    }
+
     vtLayerNames.forEach((vtLayerName) => {
-        if (!options.in.layers[vtLayerName]) { return Promise.resolve(collection); }
+        if (!styleLayers[vtLayerName]) { return; }
 
         const vectorTileLayer = vectorTile.layers[vtLayerName];
 
         for (let i = vectorTileLayer.length - 1; i >= 0; i--) {
             const vtFeature = vectorTileLayer.feature(i);
             vtFeature.tileNumbers = { x, y: options.extent.row, z };
+
             // Find layers where this vtFeature is used
-            const layers = options.in.layers[vtLayerName]
+            const layers = styleLayers[vtLayerName]
                 .filter(l => l.filterExpression.filter({ zoom: z }, vtFeature));
 
             for (const layer of layers) {
                 const feature = collection.requestFeatureById(layer.id, vtFeature.type - 1);
                 feature.id = layer.id;
                 feature.order = layer.order;
-                feature.style = options.in.styles[feature.id];
+                feature.style = options.in.styles?.[feature.id];
                 vtFeatureToFeatureGeometry(vtFeature, feature);
             }
 

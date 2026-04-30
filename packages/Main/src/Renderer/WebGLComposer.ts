@@ -76,6 +76,9 @@ export function makeDataArrayRenderTarget(
     // loop through each tile and its textures
     // to render them into DataArrayTexture layers
     let currentLayerIndex = 0;
+
+    let setTexture = false;
+
     for (const tile of tiles) {
         for (
             let i = 0;
@@ -83,13 +86,13 @@ export function makeDataArrayRenderTarget(
             ++i, ++currentLayerIndex
         ) {
             const texture = tile.textures[i];
-            if (!texture) { continue; }
+            if (!texture.isTexture) { continue; }
 
             // Set the current source 2D texture on the quad's material
             material!.uniforms.sourceTexture.value = texture;
 
-            if (!currentLayerIndex) {
-                // Set parameters from the first found texture
+            if (!setTexture) {
+                // Set parameters from the first valid texture
                 arrayTexture.magFilter = texture.magFilter;
                 arrayTexture.minFilter = texture.minFilter;
                 arrayTexture.wrapS = texture.wrapS;
@@ -99,6 +102,7 @@ export function makeDataArrayRenderTarget(
                 arrayTexture.internalFormat = texture.internalFormat;
                 arrayTexture.anisotropy = texture.anisotropy;
                 arrayTexture.premultiplyAlpha = texture.premultiplyAlpha;
+                setTexture = true;
             }
 
             // render this source texture into the current layer

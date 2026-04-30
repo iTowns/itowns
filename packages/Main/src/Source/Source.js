@@ -119,6 +119,7 @@ class Source {
     }
 
     handlingError(err) {
+        if (Error.isError(err)) { throw err; }
         throw new Error(err);
     }
 
