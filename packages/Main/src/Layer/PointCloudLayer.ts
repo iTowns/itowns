@@ -230,7 +230,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     private _candidateNodes: TinyQueue<PointCloudNode>;
     private _visibleNodes: Set<PointCloudNode> = new Set();
     private _visibilityTextureNeedsUpdate: boolean = true;
-    private _visibilityTextureData: { data: Uint8Array; offsets: Map<string, number> } | undefined;
+    private _visibilityTextureData: { data: Uint8Array; nodeToIndex: Map<PointCloudNode, number> } | undefined;
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -544,7 +544,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
             if (this._visibilityTextureNeedsUpdate) {
                 this._visibilityTextureData =
-                    computeVisibilityTextureData(Array.from(this._visibleNodes));
+                    computeVisibilityTextureData(this.root!, Array.from(this._visibleNodes));
                 this._visibilityTextureNeedsUpdate = false;
             }
 
@@ -566,7 +566,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             for (const pts of this.group.children) {
                 const node = pts.userData.node;
                 const depth = node.depth;
-                const nodeStartOffset = this._visibilityTextureData.offsets.get(node.voxelKey);
+                const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
                 const octreeSpacing = node.source.spacing;
 
                 // Compute the bounding box min of the node's octree cell
