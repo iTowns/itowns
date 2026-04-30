@@ -262,7 +262,12 @@
          */
         function runCode() {                
             const code = codeEditor.getValue();
+            const hash = window.location.hash.replace("#", "");
             sessionStorage.setItem("code", toBase64(code));
+
+            if (hash){
+                sessionStorage.setItem("exampleSlug", hash)
+            }
 
             iframe.srcdoc = code;
         }
@@ -270,8 +275,9 @@
         
 
         /** 
-         * Caches the code of the example associated with the given slug.
+         * Fetches and caches the code of the example associated with the given slug.
          * @param {string} slug - An example's slug
+         * @returns {Promise<string>} A promise that resolves to the source code of the example.
          */
         function cacheExample(slug) {
             const src = isLocal
@@ -285,12 +291,13 @@
                 });
         }   
                 
-
+            
         /** 
-         * Loads the example associated with the given slug.
+         * Loads the example associated with the given slug or the given code.
          * @param {string} slug - An example's slug 
+         * @param {string} [localCode=null] - An example's code
          */
-        async function loadExample(slug) {
+        async function loadExample(slug, localCode = null) {
             updateCodePanelHeader(slug);
 
             // set current example to active to update its appearance
@@ -301,11 +308,17 @@
                 targetItem.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
 
-            const example = exampleCache[slug] ?? (await (() => {
-                codeEditor.setValue("Loading...");
-                return cacheExample(slug);
-            })());
-            codeEditor.setValue(example);
+            let code;
+            if (localCode != null) {
+                code = localCode;
+            } else {
+                code = exampleCache[slug] ?? (await (() => {
+                    codeEditor.setValue("Loading...");
+                    return cacheExample(slug);
+                })());
+            }
+
+            codeEditor.setValue(code);
             window.location.hash = slug;
             runCode();
             setTimeout(() => codeEditor.refresh(), 0);
@@ -585,14 +598,16 @@
 
                     const hash = window.location.hash.replace("#", "");
                     const localCode = sessionStorage.getItem("code");
+                    const localExampleSlug = sessionStorage.getItem("exampleSlug");
+                    const targetSlug = hash || "demo/index";
 
-                    if (!localCode || isLocal) {
-                        loadExample(hash || "demo/index");
+                    // if target slug corresponds to the saved example, load it
+                    if (localCode && targetSlug === localExampleSlug) {
+                        loadExample(targetSlug, fromBase64(localCode));
                     }
+                    // else, load the default example (current hash or fallback)
                     else {
-                        codeEditor.setValue(fromBase64(localCode));
-                        updateCodePanelHeader(hash);
-                        runCode();
+                        loadExample(targetSlug);
                     }
 
                     // staying on the same panel even when hard refreshing

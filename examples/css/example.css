@@ -10,11 +10,6 @@
     --icon-filter: none;
     --dropdown-arrow: url(../images/dropdown_arrow.svg);
 }
-/*
-* {
-    box-sizing: border-box;
-}
-    */
 
 
 html.light {
@@ -207,6 +202,10 @@ p, h1, h2, h3, h4 {
     height: 1.7em;
     color: light-dark(#1565c1, #8CC1EE);
 } 
+
+.theme-toggle:hover {
+    transform: scale(130%);
+}
 
 
 /* SIDEBAR */
@@ -448,6 +447,8 @@ p, h1, h2, h3, h4 {
 
 .category-header h3 {
     font-weight: 400;
+    font-size: 1.3rem;
+
 }
 
 
@@ -489,11 +490,6 @@ p, h1, h2, h3, h4 {
     transition: transform 0.2s;
     height: 8em;
     padding: 0.5em 0.5em;   
-    /*
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-    */
 }
 
 .example-item:hover {
@@ -538,40 +534,33 @@ p, h1, h2, h3, h4 {
 }
 
 
-/*
-.example-info {
-    flex: 1;         
-    min-width: 0;
-    display: block;   
-    overflow: hidden; 
-    padding: 0 15px;
-    gap: 0.5em;    
-    align-self: center; 
-}
-    */
-
 .example-title, .example-desc {
     margin: 0;
     padding: 0;
 }
 
-.example-title{
-    text-transform: uppercase;
-    font-size: 1.2em;
-    font-weight: 500;
-    color: light-dark(#3F4B5A, #BECDDF);
 
-    white-space: nowrap;     
-    overflow: hidden;        
+.example-title{    
+    text-transform: uppercase;
+    font-size: 1.3em;
+    font-weight: 600;
+    color: light-dark(#3F4B5A, #BECDDF);
+    
+    display: -webkit-box;
+    -webkit-line-clamp: 2;   
+    line-clamp: 2;
     text-overflow: ellipsis; 
-    display: block;   
+    -webkit-box-orient: vertical;
+    overflow: hidden;
     margin-bottom: 4px;
+    
 }
+
 
 
 .example-desc {
     font-size: 1.15em;
-    opacity: 80%;
+    opacity: 90%;
 
     display: -webkit-box;
     -webkit-line-clamp: 2;   
@@ -791,7 +780,7 @@ input:checked + .slider:before {
 
 }
 
-@media (width < 1100px) {
+@media (width < 1170px) {
     #editor-panel {
         display: none !important;
     }
@@ -841,7 +830,6 @@ input:checked + .slider:before {
     display: block;
     position: absolute;
     right: 135px;
-    bottom: 20;
     border: 2px solid black;
     border-top: none;
     text-align: center;
@@ -858,16 +846,3 @@ input:checked + .slider:before {
     -ms-user-select: none;
     user-select: none;
 }
-
-
-/* TEMPORARY - DEBUG */ 
-
-/*
-#example-list { outline: 2px solid red !important; }
-.category-content { outline: 2px solid green !important; }
-.example-item { outline: 2px solid blue !important; }
-.example-info { outline: 2px solid orange !important; }
-
-
-
-*/
