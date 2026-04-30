@@ -543,7 +543,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
             if (this._visibilityTextureNeedsUpdate) {
                 this._visibilityTextureData =
-                    computeVisibilityTextureData(Array.from(this._visibleNodes));
+                    computeVisibilityTextureData(this.root!, Array.from(this._visibleNodes));
                 this._visibilityTextureNeedsUpdate = false;
             }
 
