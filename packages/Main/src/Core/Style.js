@@ -1,7 +1,7 @@
 import { Coordinates } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
-import { Color } from 'three';
+import { Color, EventDispatcher } from 'three';
 import { deltaE } from 'Renderer/Color';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
@@ -83,9 +83,9 @@ function replaceWhitePxl(imgd, color, id) {
         const colorToChange = new Color('white');
         for (let i = 0, n = pix.length; i < n; i += 4) {
             const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-            pix[i] = (pix[i] * d +  newColor.r * 255 * (1 - d));
-            pix[i + 1] = (pix[i + 1] * d +  newColor.g * 255 * (1 - d));
-            pix[i + 2] = (pix[i + 2] * d +  newColor.b * 255 * (1 - d));
+            pix[i] = (pix[i] * d + newColor.r * 255 * (1 - d));
+            pix[i + 1] = (pix[i + 1] * d + newColor.g * 255 * (1 - d));
+            pix[i + 2] = (pix[i + 2] * d + newColor.b * 255 * (1 - d));
         }
         cachedImg.set(`${id}_${color}`, imgd);
         return imgd;
@@ -127,7 +127,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
         {
             enumerable: true,
             get: () => {
-                // != to check for 'undefined' and 'null' value)
+                // != to check for 'undefined' and 'null' value
                 if (property != undefined) { return readExpression(property, style.context); }
                 const dataValue = style.context.featureStyle?.[category]?.[parameter];
                 if (dataValue != undefined) { return readExpression(dataValue, style.context); }
@@ -138,6 +138,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
             },
             set: (v) => {
                 property = v;
+                style.dispatchEvent({ type: 'style-property-changed', style, parameter });
             },
         });
 }
@@ -182,6 +183,9 @@ export class StyleContext {
         this.#geometry = g;
     }
 
+    /**
+     * @param {Object} c - The collection object.
+     */
     setCollection(c) {
         this.collection = c;
         this.#localCoordinates.setCrs(c.crs);
@@ -190,6 +194,10 @@ export class StyleContext {
     setLocalCoordinatesFromArray(vertices, offset) {
         this.#worldCoordsComputed = false;
         return this.#localCoordinates.setFromArray(vertices, offset);
+    }
+
+    get geometry() {
+        return this.#geometry;
     }
 
     get properties() {
@@ -210,7 +218,7 @@ export class StyleContext {
     get coordinates() {
         if (!this.#worldCoordsComputed) {
             this.#worldCoordsComputed = true;
-            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrixWorld);
+            this.#worldCoord.copy(this.#localCoordinates).applyMatrix4(this.collection.matrix);
             if (this.#localCoordinates.crs == 'EPSG:4978') {
                 return this.#worldCoord.as('EPSG:4326', this.#worldCoord);
             }
@@ -435,15 +443,31 @@ function _addIcon(icon, domElement, opt) {
  * });
  *
  * view.addLayer(layer);
+ *
+ * @example <caption>Updating style properties. Currently only works for FeatureGeometryLayer and color and extrusionHeight properties.</caption>
+ * // Update a single sub-property:
+ * layer.style.fill.color = '#00cc00';
+ *
+ * // Update several sub-properties at once via the category setter.
+ * // Only the provided keys are changed; other properties are kept intact.
+ * layer.style.fill = { color: '#00cc00', opacity: 0.8 };
+ *
+ * // WARNING: do NOT use the spread operator to "copy" the current category:
+ * //   layer.style.fill = { ...layer.style.fill, color: '#00cc00' };
+ * // The spread evaluates every getter immediately, which executes dynamic
+ * // properties (functions, expressions) without a feature context and will
+ * // either crash or freeze their values.
  */
 
-class Style {
+class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
      * and sub properties of a Style ({@link StyleOptions}).
      */
     constructor(params = {}) {
+        super();
+
         this.isStyle = true;
         this.context = new StyleContext();
 
@@ -454,19 +478,64 @@ class Style {
         params.text = params.text || {};
         params.icon = params.icon || {};
 
-        this.zoom = {};
-        defineStyleProperty(this, 'zoom', 'min', params.zoom.min);
-        defineStyleProperty(this, 'zoom', 'max', params.zoom.max);
+        this._initZoom(params.zoom);
+        this._initFill(params.fill);
+        this._initStroke(params.stroke);
+        this._initPoint(params.point);
+        this._initText(params.text);
+        this._initIcon(params.icon);
+    }
 
-        this.fill = {};
-        defineStyleProperty(this, 'fill', 'color', params.fill.color);
-        defineStyleProperty(this, 'fill', 'opacity', params.fill.opacity, 1.0);
-        defineStyleProperty(this, 'fill', 'pattern', params.fill.pattern);
-        defineStyleProperty(this, 'fill', 'base_altitude', params.fill.base_altitude, baseAltitudeDefault);
+    /**
+     * Defines a category-level property with a setter that delegates to
+     * individual sub-property setters.
+     * This allows users to do e.g. `style.fill = { color: 'red' }` and have
+     * only the specified sub-properties updated (and their change events
+     * dispatched), while leaving the other sub-properties untouched.
+     * @param {string} category - The category name (fill, stroke, point, text, icon, zoom).
+     * @returns {Object} The category object.
+     * @private
+     */
+    _defineCategoryProperty(category) {
+        const categoryObj = {};
+        Object.defineProperty(this, category, {
+            enumerable: true,
+            configurable: true,
+            get: () => categoryObj,
+            set: (newValue) => {
+                if (newValue && typeof newValue === 'object') {
+                    // Assign only the provided keys through the existing
+                    // sub-property setters, which handle dispatching
+                    // 'style-property-changed' events individually.
+                    for (const key of Object.keys(newValue)) {
+                        categoryObj[key] = newValue[key];
+                    }
+                }
+            },
+        });
+        return categoryObj;
+    }
+
+    /** @param {Object} params - Zoom style parameters.
+     *  @private */
+    _initZoom(params) {
+        this._defineCategoryProperty('zoom');
+        defineStyleProperty(this, 'zoom', 'min', params.min);
+        defineStyleProperty(this, 'zoom', 'max', params.max);
+    }
+
+    /** @param {Object} params - Fill style parameters.
+     *  @private */
+    _initFill(params) {
+        this._defineCategoryProperty('fill');
+        defineStyleProperty(this, 'fill', 'color', params.color);
+        defineStyleProperty(this, 'fill', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'fill', 'pattern', params.pattern);
+        defineStyleProperty(this, 'fill', 'base_altitude', params.base_altitude, baseAltitudeDefault);
 
         // define a special case for extrusion_height
         // to be able to know if user set it or not without calling the getter
-        this._extrusionHeight = params.fill.extrusion_height;
+        this._extrusionHeight = params.extrusion_height;
         Object.defineProperty(
             this.fill,
             'extrusion_height',
@@ -481,60 +550,81 @@ class Style {
                 },
                 set: (v) => {
                     this._extrusionHeight = v;
+                    this.dispatchEvent({
+                        type: 'style-property-changed',
+                        style: this,
+                        parameter: 'extrusion_height',
+                    });
                 },
             },
         );
+    }
 
-        this.stroke = {};
-        defineStyleProperty(this, 'stroke', 'color', params.stroke.color);
-        defineStyleProperty(this, 'stroke', 'opacity', params.stroke.opacity, 1.0);
-        defineStyleProperty(this, 'stroke', 'width', params.stroke.width, 1.0);
-        defineStyleProperty(this, 'stroke', 'dasharray', params.stroke.dasharray, []);
-        defineStyleProperty(this, 'stroke', 'base_altitude', params.stroke.base_altitude, baseAltitudeDefault);
+    /** @param {Object} params - Stroke style parameters.
+     *  @private */
+    _initStroke(params) {
+        this._defineCategoryProperty('stroke');
+        defineStyleProperty(this, 'stroke', 'color', params.color);
+        defineStyleProperty(this, 'stroke', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'stroke', 'width', params.width, 1.0);
+        defineStyleProperty(this, 'stroke', 'dasharray', params.dasharray, []);
+        defineStyleProperty(this, 'stroke', 'base_altitude', params.base_altitude, baseAltitudeDefault);
+    }
 
-        this.point = {};
-        defineStyleProperty(this, 'point', 'color', params.point.color);
-        defineStyleProperty(this, 'point', 'line', params.point.line);
-        defineStyleProperty(this, 'point', 'opacity', params.point.opacity, 1.0);
-        defineStyleProperty(this, 'point', 'radius', params.point.radius, 2.0);
-        defineStyleProperty(this, 'point', 'width', params.point.width, 0.0);
-        defineStyleProperty(this, 'point', 'base_altitude', params.point.base_altitude, baseAltitudeDefault);
-        if (params.point.model) {
-            defineStyleProperty(this, 'point', 'model', params.point.model);
+    /** @param {Object} params - Point style parameters.
+     *  @private */
+    _initPoint(params) {
+        this._defineCategoryProperty('point');
+        defineStyleProperty(this, 'point', 'color', params.color);
+        defineStyleProperty(this, 'point', 'line', params.line);
+        defineStyleProperty(this, 'point', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'point', 'radius', params.radius, 2.0);
+        defineStyleProperty(this, 'point', 'width', params.width, 0.0);
+        defineStyleProperty(this, 'point', 'base_altitude', params.base_altitude, baseAltitudeDefault);
+        if (params.model) {
+            defineStyleProperty(this, 'point', 'model', params.model);
         }
+    }
 
-        this.text = {};
-        defineStyleProperty(this, 'text', 'field', params.text.field);
-        defineStyleProperty(this, 'text', 'zOrder', params.text.zOrder, 'auto');
-        defineStyleProperty(this, 'text', 'color', params.text.color, '#000000');
-        defineStyleProperty(this, 'text', 'anchor', params.text.anchor, 'center');
-        defineStyleProperty(this, 'text', 'offset', params.text.offset, [0, 0]);
-        defineStyleProperty(this, 'text', 'padding', params.text.padding, 2);
-        defineStyleProperty(this, 'text', 'size', params.text.size, 16);
-        defineStyleProperty(this, 'text', 'placement', params.text.placement, 'point');
-        defineStyleProperty(this, 'text', 'rotation', params.text.rotation, 'auto');
-        defineStyleProperty(this, 'text', 'wrap', params.text.wrap, 10);
-        defineStyleProperty(this, 'text', 'spacing', params.text.spacing, 0);
-        defineStyleProperty(this, 'text', 'transform', params.text.transform, 'none');
-        defineStyleProperty(this, 'text', 'justify', params.text.justify, 'center');
-        defineStyleProperty(this, 'text', 'opacity', params.text.opacity, 1.0);
-        defineStyleProperty(this, 'text', 'font', params.text.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
-        defineStyleProperty(this, 'text', 'haloColor', params.text.haloColor, '#000000');
-        defineStyleProperty(this, 'text', 'haloWidth', params.text.haloWidth, 0);
-        defineStyleProperty(this, 'text', 'haloBlur', params.text.haloBlur, 0);
+    /** @param {Object} params - Text style parameters.
+     *  @private */
+    _initText(params) {
+        this._defineCategoryProperty('text');
+        defineStyleProperty(this, 'text', 'field', params.field);
+        defineStyleProperty(this, 'text', 'zOrder', params.zOrder, 'auto');
+        defineStyleProperty(this, 'text', 'color', params.color, '#000000');
+        defineStyleProperty(this, 'text', 'anchor', params.anchor, 'center');
+        defineStyleProperty(this, 'text', 'offset', params.offset, [0, 0]);
+        defineStyleProperty(this, 'text', 'padding', params.padding, 2);
+        defineStyleProperty(this, 'text', 'size', params.size, 16);
+        defineStyleProperty(this, 'text', 'placement', params.placement, 'point');
+        defineStyleProperty(this, 'text', 'rotation', params.rotation, 'auto');
+        defineStyleProperty(this, 'text', 'wrap', params.wrap, 10);
+        defineStyleProperty(this, 'text', 'spacing', params.spacing, 0);
+        defineStyleProperty(this, 'text', 'transform', params.transform, 'none');
+        defineStyleProperty(this, 'text', 'justify', params.justify, 'center');
+        defineStyleProperty(this, 'text', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'text', 'font', params.font, ['Open Sans Regular', 'Arial Unicode MS Regular', 'sans-serif']);
+        defineStyleProperty(this, 'text', 'haloColor', params.haloColor, '#000000');
+        defineStyleProperty(this, 'text', 'haloWidth', params.haloWidth, 0);
+        defineStyleProperty(this, 'text', 'haloBlur', params.haloBlur, 0);
+    }
 
-        this.icon = {};
-        defineStyleProperty(this, 'icon', 'source', params.icon.source);
-        if (params.icon.key) {
+    /** @param {Object} params - Icon style parameters.
+     *  @private */
+    _initIcon(params) {
+        this._defineCategoryProperty('icon');
+        defineStyleProperty(this, 'icon', 'source', params.source);
+        if (params.key) {
             console.warn("'icon.key' is deprecated: use 'icon.id' instead");
-            params.icon.id = params.icon.key;
+            params.id = params.key;
         }
-        defineStyleProperty(this, 'icon', 'id', params.icon.id);
-        defineStyleProperty(this, 'icon', 'cropValues', params.icon.cropValues);
-        defineStyleProperty(this, 'icon', 'anchor', params.icon.anchor, 'center');
-        defineStyleProperty(this, 'icon', 'size', params.icon.size, 1);
-        defineStyleProperty(this, 'icon', 'color', params.icon.color);
-        defineStyleProperty(this, 'icon', 'opacity', params.icon.opacity, 1.0);
+        defineStyleProperty(this, 'icon', 'id', params.id);
+        defineStyleProperty(this, 'icon', 'cropValues', params.cropValues);
+        defineStyleProperty(this, 'icon', 'anchor', params.anchor, 'center');
+        defineStyleProperty(this, 'icon', 'size', params.size, 1);
+        defineStyleProperty(this, 'icon', 'color', params.color);
+        defineStyleProperty(this, 'icon', 'opacity', params.opacity, 1.0);
     }
 
     setContext(ctx) {
@@ -651,7 +741,7 @@ class Style {
             icon = document.createElement('img');
         }
 
-        const iconPromise  = new Promise((resolve, reject) => {
+        const iconPromise = new Promise((resolve, reject) => {
             const opt = {
                 size: this.icon.size,
                 color: this.icon.color,
