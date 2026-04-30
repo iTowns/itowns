@@ -274,4 +274,71 @@ describe('Extent', function () {
     it('should throw error when instance with geocentric projection', () => {
         assert.throws(() => new Extent('EPSG:4978'));
     });
+
+    it('should return true for overlapping extents', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 5, 15, 5, 15);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), true);
+    });
+
+    it('should return false for horizontally disjoint extents', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 11, 20, 0, 10);
+
+        const a1 = new Extent('EPSG:4326', 10, 20, 0, 10);
+        const b1 = new Extent('EPSG:4326', 0, 5, 0, 10);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), false);
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a1, b1), false);
+    });
+
+    it('should return false for vertically disjoint extents', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 0, 10, 11, 20);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), false);
+    });
+
+    it('should return true when one extent is fully contained in another', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 2, 8, 2, 8);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), true);
+    });
+
+    it('should return true when extents touch at edges', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 10, 20, 0, 10);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), true);
+    });
+
+    it('should return true when extents touch at corners', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 10, 20, 10, 20);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), true);
+    });
+
+    it('should return false when one extent is completely above', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 0, 10, 20, 30);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), false);
+    });
+
+    it('should handle negative coordinates correctly', () => {
+        const a = new Extent('EPSG:4326', -10, 0, -10, 0);
+        const b = new Extent('EPSG:4326', -5, 5, -5, 5);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), true);
+    });
+
+    it('should return false for infinitely distant extents', () => {
+        const a = new Extent('EPSG:4326', -Infinity, -1000, -Infinity, -1000);
+        const b = new Extent('EPSG:4326', 1000, Infinity, 1000, Infinity);
+
+        assert.strictEqual(Extent.intersectsExtentExcludingBoundary(a, b), false);
+    });
 });
