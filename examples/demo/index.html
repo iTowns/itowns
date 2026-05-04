@@ -170,6 +170,11 @@
                 return dot;
             });
 
+
+            /**
+             * Toggles the interactivity and state of the scene control buttons.
+             * @param {boolean} enable - Whether to enable or disable the buttons.
+             */
             function toggleEnableButtons(enable) {
                 resetSceneButton.style.pointerEvents = enable ? "auto" : "none";
                 hardResetSceneButton.style.pointerEvents = enable
@@ -179,6 +184,11 @@
                 hardResetSceneButton.disabled = !enable;
             }
 
+
+            /**
+             * Toggles the interactivity and opacity of the navigation dots.
+             * @param {boolean} enable - Whether to enable or disable the dots.
+             */
             function toggleEnableDots(enable) {
                 dots.forEach((dot) => {
                     dot.style.pointerEvents = enable ? "auto" : "none";
@@ -186,6 +196,10 @@
                 });
             }
 
+
+            /** 
+             * Updates the UI according to the current scene.
+             */
             function updateUI() {
                 dots.forEach((dot, i) => {
                     if (i === currentIndex) {
@@ -199,12 +213,10 @@
                     element.textContent = "Scene " + (currentIndex + 1) + "/" +  SceneRepository.length
                 })
 
-                if (currentIndex === 1){
-                    prevSceneBtn.classList.toggle("disabled");
-                }
+                // disable buttons on first on last scene
+                prevSceneBtn.disabled = (currentIndex === 0);
+                nextSceneBtn.disabled = (currentIndex === SceneRepository.length - 1);
             }
-
-
 
 
             updateUI();
