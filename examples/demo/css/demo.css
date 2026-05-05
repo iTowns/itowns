@@ -35,6 +35,7 @@ html, body {
     bottom: 3vh;
     height: 3rem;
     width: fit-content;
+    max-width: 90vw;
 
     display: flex;
     flex-direction: row;
@@ -42,11 +43,16 @@ html, body {
     gap: 2rem;
     padding: 1em 1em;
 
-    z-index: 100;
+    z-index: 101;
 
     background-color: light-dark(white, #0F1419);
     box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
     border-radius: 3rem;
+}
+
+
+#prev-next-container .scene-number-info {
+    font-size: 1.15rem;
 }
 
 
@@ -84,20 +90,23 @@ html, body {
 
 #scene-info {
     position: fixed;
-    right: 1vh;
-    bottom: 2vh;
+    right: 1rem;
+    bottom: 2rem;
 
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    width: min(60vw, 40vh); 
-    max-height: 40vh;
+    width: 370px;
+    max-height: 450px;
     border-radius: 1rem;
     background-color: light-dark(white, #0F1419);
     backdrop-filter: blur(0.5vh);
     z-index: 100;
     box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 
@@ -106,7 +115,7 @@ html, body {
     width: 100%;
     box-sizing: border-box;
     border-bottom: #E1EBF5 solid 1px;
-    padding: 2vh 50%;
+    padding: 0.8rem 50%;
 
     display: flex;
     justify-content: center;
@@ -117,7 +126,9 @@ html, body {
 }
 
 #info-bottom-container {
-    padding: 0.5vh 2vh 2vh 2vh;
+    padding: 0.8rem 1.2rem 1.2rem 1.2rem;
+    overflow-y: auto;
+    max-height: 350px;
 }
 
 
@@ -142,17 +153,23 @@ html, body {
 
 
 
+
 #sceneTitle {
     color: light-dark(#1565c1, #8fb9f3);
     text-transform: uppercase;
     font-weight: 500;
-    font-size: 2.3vh;
+    font-size: 1.5rem;/*2.3vh; */
+    word-break: break-word;
+    overflow-wrap: break-word;
     
 }
 
 
 #sceneDescription {
     line-height: 1.3em;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
 }
 
 
@@ -166,8 +183,8 @@ html, body {
     align-items: center;
     
     width: 100%;
-    gap: 1vh;
-    margin-top: 2vh;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
 }
 
 #navigation-container button {
@@ -176,7 +193,7 @@ html, body {
     align-items: center;
     gap: 0.8em;
 
-    padding: 0.5vh 0.8vh;
+    padding: 0.4rem 0.6rem;
     border-style: none;
     text-align: center;
     font-weight: bold;
@@ -225,28 +242,28 @@ button.active {
 #sceneDots {
     display: flex;
     flex-direction: column;
-    gap: min(1.5vh, 1.5vw);
+    /* gap: min(1.5vh, 1.5vw); */
     align-items: center;
     position: fixed;
-    left: 2rem;
+    /* left: 2rem; */
     top: 30%;
     z-index: 100;   
 }
 
 .scene-dot {
-    width: min(1.5vh, 2vw);
-    height: min(1.5vh, 2vw);
+    width: min(2vh, 2vw);
+    height: min(2vh, 2vw);
     border-radius: 100px;
     background-color: light-dark(#ffffff, #0F1419 );
     cursor: pointer;
-    transition: height 0.3s ease, background-color 0.15s ease, transform 0.15s ease;    
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;    
     box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
 
 }
 
 .scene-dot.active {
     background-color: #1565c1;
-    height: min(4vh, 6vw);
+    height: min(5vh, 7vw);
     transform: scale(1);
 }
 
@@ -254,17 +271,97 @@ button.active {
     background-color: #E5E5E5;
 }
 
+
+
+.dot-wrapper {
+    width: 15vw;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    z-index: 110; 
+    padding-top: calc(0.5* min(1.5vh, 1.5vw));
+    padding-bottom: calc(0.5* min(1.5vh, 1.5vw));
+    padding-left: 2rem;
+}
+
+.dot-label {
+    position: absolute;
+    left: 5rem;
+    /* transform: translateY(-50%) translateX(-10px); */
+    /* transition: all 0.1s ease;  */
+    user-select: none;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    height: auto;
+    visibility: hidden;
+    width: 15vw;
+    
+}
+
+.dot-number {
+    color: white;
+    opacity: 50%;
+    font-size: 13rem;
+    font-weight: 600;
+    
+    position: absolute;
+    z-index: 50;
+    justify-self: left;
+}
+
+.dot-title {
+    color: white;
+    font-size: 2.3rem;
+    font-weight: 500;
+    
+    text-transform: uppercase;
+    position: relative;
+    z-index: 60;
+}
+
+
+.dot-wrapper:hover .dot-label {
+    visibility: visible;
+    /* transform: translateY(-50%) translateX(0px);
+     transform: translateX(-10px); */
+}
+
+.dot-wrapper:hover .scene-dot:not(.active){
+    height: min(5vh, 7vw);
+    transform: scale(1);
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
+}
+
+/*
+.dot-wrapper:hover .scene-dot.active{
+    background-color: red;
+    height: min(2vh, 2vw);
+    transform: scale(1);
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
+}
+    */
+
+
+body:has(.dot-wrapper:hover) .scene-dot.active{
+    height: min(2vh, 2vw);
+    transform: scale(1);
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
+}
+    
+
+
+
 /*** Feature Picking Info ***/
 #feature-picking-info {
     position: fixed;
     top: 1vh;
     right: 1vh;
     padding: 0.2vh 2vh 1vh 2vh;
-    border-radius: 1vh;
+    border-radius: 1rem;
     overflow-y: auto;
 
     font-size: min(1.5vh, 2vw);
-    /* color: black; */
 
     max-width: 25vw;
     max-height: 45vh;
@@ -328,4 +425,73 @@ button.active {
 #point-cloud-config button:last-child {
     border-left: none;
     border-radius: 0 0.5rem 0.5rem 0;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1024px) {
+
+
+     #scene-info {
+        width: 300px;
+     }
+
+    #navigation-container button {
+        font-size: 0.8em;
+    }
+ 
+    #prev-next-container {
+        gap: 1rem;
+        padding: 0.8em 0.8em;
+    }
+}
+
+@media (max-width: 768px) {
+    #prev-next-container {
+        bottom: auto;
+        top: 1vh;
+        left: 50%;
+        transform: translateX(-50%);
+        gap: 1rem;
+        height: auto;
+        padding: 0.7em 0.7em;
+        z-index: 101;
+    }
+    
+    #prev-next-container .scene-number-info {
+        font-size: 0.9rem;
+    }
+    
+    .nav-btn {
+        width: 2.5em;
+        height: 2.5em;
+    }
+    
+    #prev-next-container img {
+        height: 1.3rem;
+    }
+
+    #sceneDots {
+        display: none;
+    }
+  
+}
+
+@media (max-width: 480px) {
+    #prev-next-container {
+        gap: 0.8rem;
+        padding: 0.6em 0.6em;
+        font-size: 0.8rem;
+    }
+    
+    .nav-btn {
+        width: 2.2em;
+        height: 2.2em;
+    }
+    
+    #prev-next-container img {
+        height: 1.1rem;
+    }
+
 }

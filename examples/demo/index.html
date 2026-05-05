@@ -160,13 +160,46 @@
             const dotsContainer = document.getElementById("sceneDots");
 
             const dots = SceneRepository.map((scene, index) => {
+                /* structure :
+                <dotsContainer>
+                    <dotWrapper>
+                        <dot/>
+                        <dotLabel>
+                            <dotNumber/>
+                            <dotDesc/>
+                        <dotLabel/>
+                    <dotWrapper/>
+                    
+                    <dotWrapper .../>
+                <dotsContainer/>
+                */
+                const dotWrapper = document.createElement("div");
+                dotWrapper.classList.add("dot-wrapper");
+
                 const dot = document.createElement("div");
                 dot.classList.add("scene-dot");
                 dot.title = scene.title ?? `Scene ${index + 1}`;
                 dot.addEventListener("click", () => {
                     SceneManager.goTo(index);
                 });
-                dotsContainer.appendChild(dot);
+              
+                const dotLabel = document.createElement("div");
+                dotLabel.classList.add("dot-label");
+                dotWrapper.appendChild(dot);
+                dotWrapper.appendChild(dotLabel);
+
+                const dotNumber = document.createElement("span");
+                dotNumber.classList.add("dot-number");
+                dotNumber.textContent = index + 1;
+                dotLabel.appendChild(dotNumber);
+
+                const dotTitle = document.createElement("span");
+                dotTitle.classList.add("dot-title");
+                dotTitle.textContent = scene.title;
+                dotLabel.appendChild(dotTitle);
+
+
+                dotsContainer.appendChild(dotWrapper);
                 return dot;
             });
 
@@ -195,6 +228,7 @@
                     dot.style.opacity = enable ? "1.0" : "0.5";
                 });
             }
+
 
 
             /** 
