@@ -215,6 +215,7 @@ p, h1, h2, h3, h4 {
     gap: 1em;
     align-items: center;
     padding-top: 0.7em;
+    padding-bottom: 1.2rem;
     box-shadow : 1px 0px 10px -5px rgba(0, 0, 0, 0.5);
     
 }
@@ -224,7 +225,16 @@ p, h1, h2, h3, h4 {
     flex-direction: column;
     align-items: center;
     gap: 0.5em;
+    flex: 1;
+    justify-content: flex-start;
 }
+
+/* external links at the bottom */
+#sidebar-tabs > a:first-of-type {
+    margin-top: auto;
+}
+    
+
 
 
 .sidebar-btn {
@@ -252,6 +262,7 @@ p, h1, h2, h3, h4 {
     width: 6em; 
     height: auto;
 }
+
 
 
 .panel { display: none; }

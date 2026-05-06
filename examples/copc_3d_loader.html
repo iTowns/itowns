@@ -50,6 +50,7 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
             import { zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
+            import {getShareableURL} from './jsm/ExampleUtils.js';
 
             var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
@@ -96,12 +97,10 @@
 
             function loadCopc(url, options) {
                 if(!url) return;
-
                 // Share the view
-                document.getElementById('share').innerHTML = '<a href="' +
-                    location.href.replace(location.search, '?copc=' + url) +
-                    '" target="_blank">Link to share this view</a>';
 
+                document.getElementById('share').innerHTML = `<a href="${getShareableURL(url, "copc")}" target="_blank">Link to share this view</a>`;
+                
                 const source = new itowns.CopcSource({ url });
 
                 if (layer) {
