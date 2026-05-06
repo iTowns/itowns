@@ -246,7 +246,7 @@ button.active {
     align-items: center;
     position: fixed;
     /* left: 2rem; */
-    top: 30%;
+    top: 28%;
     z-index: 100;   
 }
 
@@ -279,8 +279,8 @@ button.active {
     flex-direction: row;
     gap: 1rem;
     z-index: 110; 
-    padding-top: calc(0.5* min(1.5vh, 1.5vw));
-    padding-bottom: calc(0.5* min(1.5vh, 1.5vw));
+    padding-top: calc(0.6* min(1.5vh, 1.5vw));
+    padding-bottom: calc(0.6* min(1.5vh, 1.5vw));
     padding-left: 2rem;
 }
 
@@ -296,6 +296,7 @@ button.active {
     height: auto;
     visibility: hidden;
     width: 15vw;
+    pointer-events: none;
     
 }
 
