@@ -7,7 +7,7 @@ const enum RenderMode {
     COLOR,
     CLASSIFICATION,
     RETURN_COUNT,
-};
+}
 
 export default class PointsMaterialTsl extends wgpu.SpriteNodeMaterial {
     constructor(attributes: Record<string, THREE.TypedArray>, public renderMode: RenderMode) {
@@ -20,19 +20,19 @@ export default class PointsMaterialTsl extends wgpu.SpriteNodeMaterial {
         }
 
         const positionAttribute = new wgpu.InstancedBufferAttribute(attributes.positions as Float32Array, 3);
-        positionAttribute.name = "positionAttribute";
+        positionAttribute.name = 'positionAttribute';
         const position = tsl.instancedBufferAttribute(positionAttribute);
 
-        const colorAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.colors as Uint8Array, 4)).setName("colorAttribute").div(255).setName("colorFinal");
+        const colorAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.colors as Uint8Array, 4)).setName('colorAttribute').div(255).setName('colorFinal');
         const classificationAttribute = classification_coloring(
             tsl.instancedBufferAttribute(
-                new wgpu.InstancedBufferAttribute(attributes.Classification as Uint16Array, 1)
-            ).setName("classificationAttribute")
+                new wgpu.InstancedBufferAttribute(attributes.Classification as Uint16Array, 1),
+            ).setName('classificationAttribute'),
         );
-        const returnCountAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.NumberOfReturns as Uint16Array, 1)).setName("returnCountAttribute").toFloat();
+        const returnCountAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.NumberOfReturns as Uint16Array, 1)).setName('returnCountAttribute').toFloat();
 
         renderMode = RenderMode.CLASSIFICATION;
-        let color = [colorAttribute, classificationAttribute, returnCountAttribute][renderMode];
+        const color = [colorAttribute, classificationAttribute, returnCountAttribute][renderMode];
 
         super({
             positionNode: position,
@@ -41,6 +41,6 @@ export default class PointsMaterialTsl extends wgpu.SpriteNodeMaterial {
             scaleNode: tsl.float(0.0008),
             vertexColors: true,
             sizeAttenuation: false,
-        })
+        });
     }
 }
