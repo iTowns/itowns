@@ -73,5 +73,9 @@
     "proj4": "^2.20.4",
     "three": "mrdoob/three.js#dev"
   },
+  "devDependencies": {
+    "chalk": "^5.4.1",
+    "copyfiles": "^2.4.1"
+  },
   "homepage": "https://itowns.github.io/"
 }

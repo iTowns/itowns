@@ -1,23 +1,46 @@
-import * as THREE from 'three/webgpu';
-import { color, uv, Fn, uniform, float, int, defined, depth } from 'three/tsl';
+import * as THREE from 'three';
+import * as wgpu from 'three/webgpu';
+import * as tsl from 'three/tsl';
+// import { WebGLNodesHandler } from 'three/addons/tsl/WebGLNodesHandler.js';
 
-const pointsMaterialTsl = new THREE.PointsNodeMaterial();
+const enum RenderMode {
+    COLOR,
+    CLASSIFICATION,
+    RETURN_COUNT,
+};
 
-const diffuse = uniform(new THREE.Vector3()).setName('diffuse');
-const opacity = uniform(float(0)).setName('opacity');
-const gamma = uniform(float(0)).setName('gamma');
-const ambientBoost = uniform(float(0)).setName('ambientBoost');
-const picking = uniform(false).setName('picking');
-const shape = uniform(int(0)).setName('shape');
+export default class PointsMaterialTsl extends wgpu.SpriteNodeMaterial {
+    constructor(attributes: Record<string, THREE.TypedArray>, public renderMode: RenderMode) {
+        function classification_coloring(classif: wgpu.Node): wgpu.Node {
+            return tsl.array([
+                tsl.vec3(1, 0, 0),
+                tsl.vec3(0, 1, 0),
+                tsl.vec3(0, 0, 1),
+            ]).element(classif.mod(3));
+        }
 
-const main = Fn(() => {
-    uv().sub(0.5).length().greaterThan(0.5)
-        .discard();
-    if (defined('USE_LOGARITHMIC_DEPTH_BUFFER')) {
-        depth.assign(viewZToLogarithmicDepth);
+        const positionAttribute = new wgpu.InstancedBufferAttribute(attributes.positions as Float32Array, 3);
+        positionAttribute.name = "positionAttribute";
+        const position = tsl.instancedBufferAttribute(positionAttribute);
+
+        const colorAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.colors as Uint8Array, 4)).setName("colorAttribute").div(255).setName("colorFinal");
+        const classificationAttribute = classification_coloring(
+            tsl.instancedBufferAttribute(
+                new wgpu.InstancedBufferAttribute(attributes.Classification as Uint16Array, 1)
+            ).setName("classificationAttribute")
+        );
+        const returnCountAttribute = tsl.instancedBufferAttribute(new wgpu.InstancedBufferAttribute(attributes.NumberOfReturns as Uint16Array, 1)).setName("returnCountAttribute").toFloat();
+
+        renderMode = RenderMode.CLASSIFICATION;
+        let color = [colorAttribute, classificationAttribute, returnCountAttribute][renderMode];
+
+        super({
+            positionNode: position,
+            opacityNode: tsl.shapeCircle(),
+            colorNode: color,
+            scaleNode: tsl.float(0.0008),
+            vertexColors: true,
+            sizeAttenuation: false,
+        })
     }
-});
-
-pointsMaterialTsl.colorNode = main();
-
-export default pointsMaterialTsl;
+}
