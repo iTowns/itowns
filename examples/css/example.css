@@ -165,7 +165,6 @@ body {
 
 
 
-
 body.manual-collapse #editor-panel {
     left: calc(-100% * 6 / 16);
 }
@@ -194,8 +193,6 @@ p, h1, h2, h3, h4 {
     z-index: 100;  
     cursor: pointer;
 }
-
-
 
 .theme-toggle svg {
     width: 1.7em;
@@ -497,7 +494,7 @@ p, h1, h2, h3, h4 {
 }
 
 
-.example-item:target,.example-item.active-example {
+.example-item:target, .example-item.active-example {
     background-color: light-dark(#e0effd, #09184B);
     outline: 0.2em solid light-dark(#5891d3, #70AEE5CC);
     outline-offset: -2px; 
@@ -557,7 +554,6 @@ p, h1, h2, h3, h4 {
 }
 
 
-
 .example-desc {
     font-size: 1.15em;
     opacity: 90%;
@@ -577,7 +573,6 @@ hr {
     margin: 2em auto;
     opacity: 20%;
 }
-
 
 
 
@@ -702,7 +697,6 @@ input:checked + .slider:before {
 
 
 
-
 #code-editor-wrapper {
     flex: 1;            
     display: flex;      
@@ -823,7 +817,6 @@ input:checked + .slider:before {
     user-select: none;
     z-index: 2 !important;
 }
-
 
 
 #divScaleWidget {
