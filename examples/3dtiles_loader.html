@@ -87,7 +87,10 @@
 
             const uri = new URL(location);
 
+            const isEmbedded = window.self !== window.top;
+
             window.gui = new dat.GUI();
+            
 
             // ---- Create a GlobeView ----
 
@@ -171,7 +174,10 @@
                 if (!input_url) return;
 
                 uri.searchParams.set('3dtiles', url);
-                history.replaceState(null, null, `?${uri.searchParams.toString()}`);
+
+                if (!isEmbedded){
+                    history.replaceState(null, null, `?${uri.searchParams.toString()}`);
+                }
 
                 input_url.value = url;
                 load(url);

@@ -617,7 +617,7 @@ hr {
 }
 
 
-.slider {
+.version-slider {
     position: absolute;
     cursor: pointer;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -630,7 +630,7 @@ hr {
 }
 
 
-.slider:before {
+.version-slider:before {
     position: absolute;
     content: "";
     height: 17px;
@@ -648,12 +648,12 @@ hr {
     box-sizing: border-box;
 }
 
-input:checked + .slider {
+input:checked + .version-slider {
     background-color: light-dark(#1565c1, #8CC1EE);
     border-color: light-dark(#1565c1, #8CC1EE);
 }
 
-input:checked + .slider:before {
+input:checked + .version-slider:before {
     transform: translateX(20px) translateY(-50%);
     border-color: light-dark(#1565c1, #8CC1EE);
 }
