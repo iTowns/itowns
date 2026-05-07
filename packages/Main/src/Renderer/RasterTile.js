@@ -63,14 +63,9 @@ export class RasterTile extends THREE.EventDispatcher {
     constructor(layer, tiles) {
         super();
         this.layer = layer;
-        this.crs = layer.parent.tileMatrixSets.indexOf(layer.crs);
-        if (this.crs == -1) {
-            console.error('Unknown crs:', layer.crs);
-        }
-
         this.textures = [];
         this.tiles = tiles;
-        this.offsetScales = [];
+        this.mapTransforms = [];
         this.level = EMPTY_TEXTURE_ZOOM;
         this.needsUpdate = false;
         this.state = new LayerUpdateState();
@@ -112,38 +107,15 @@ export class RasterTile extends THREE.EventDispatcher {
                 }
 
                 return textures;
-            }, () => this.state.success())
+            }, () => {
+                this.state.success();
+            })
                 .catch(err => handlingError(err, requester, this.layer, nextLevel, view));
         }
     }
 
     hasData() {
         return this.level > EMPTY_TEXTURE_ZOOM;
-    }
-
-    initFromParent(parent) {
-        if (parent && parent.level > this.level) {
-            let index = 0;
-            const sortedParentTextures = this.sortBestParentTextures(parent.textures);
-            for (const childExtent of this.tiles) {
-                const matchingParentTexture = sortedParentTextures
-                    .find(parentTexture => parentTexture && childExtent.isInside(parentTexture.extent));
-                if (matchingParentTexture) {
-                    this.setTexture(index++, matchingParentTexture,
-                        childExtent.offsetToParent(matchingParentTexture.extent));
-                }
-            }
-
-            if (nextLevelToFetch(this) == this.level) {
-                this.state.noMoreUpdatePossible();
-            }
-
-            if (__DEBUG__) {
-                if (index != this.tiles.length) {
-                    console.error(`non-coherent result ${index} vs ${this.tiles.length}.`, this.tiles);
-                }
-            }
-        }
     }
 
     sortBestParentTextures(textures) {
@@ -183,7 +155,7 @@ export class RasterTile extends THREE.EventDispatcher {
         // Dispose all textures
         this.disposeAtIndexes(this.textures.keys());
         this.textures = [];
-        this.offsetScales = [];
+        this.mapTransforms = [];
         this.level = EMPTY_TEXTURE_ZOOM;
     }
 
@@ -197,11 +169,11 @@ export class RasterTile extends THREE.EventDispatcher {
         this.needsUpdate = true;
     }
 
-    setTexture(index, texture, offsetScale) {
+    setTexture(index, texture, mapTransform) {
         if (texture && this.shouldWriteTextureAtIndex(index, texture)) {
             this.level = texture.extent ? texture.extent.zoom : this.level;
             this.textures[index] = texture;
-            this.offsetScales[index] = offsetScale;
+            this.mapTransforms[index] = mapTransform;
             this.needsUpdate = true;
             return texture;
         }
@@ -210,7 +182,9 @@ export class RasterTile extends THREE.EventDispatcher {
     setTextures(textures) {
         this.disposeRedrawnTextures(textures);
         for (let i = 0, il = textures.length; i < il; ++i) {
-            this.setTexture(i, textures[i], this.tiles[i].offsetToParent(textures[i].extent));
+            if (textures[i]) {
+                this.setTexture(i, textures[i], this.tiles[i].transformToParent(textures[i].extent));
+            }
         }
     }
 
@@ -278,15 +252,6 @@ export class RasterElevationTile extends RasterTile {
         }
     }
 
-    initFromParent(parent) {
-        const currentLevel = this.level;
-        super.initFromParent(parent);
-        this.updateMinMaxElevation();
-        if (currentLevel !== this.level) {
-            this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
-        }
-    }
-
     setTextures(textures) {
         const anyValidTexture = textures.find(texture => texture != null);
         if (!anyValidTexture) {
@@ -306,7 +271,7 @@ export class RasterElevationTile extends RasterTile {
         if (firstValidIndex !== -1 && !this.layer.useColorTextureElevation) {
             const { min, max } = computeMinMaxElevation(
                 this.textures[firstValidIndex],
-                this.offsetScales[firstValidIndex],
+                this.mapTransforms[firstValidIndex],
                 {
                     noDataValue: this.layer.noDataValue,
                     zmin: this.layer.zmin,
