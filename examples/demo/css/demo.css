@@ -6,7 +6,7 @@
     --icon-filter: none;
     --arrow-filter: none;
     --itowns-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    
+    --dot-speed: 0.10s;
 }
 
 
@@ -26,6 +26,10 @@ html, body {
     color: light-dark(#202020, #F0F0F0);
 }
 
+
+body.is-panning {
+    user-select: none;
+}
 
 
 #prev-next-container {
@@ -65,9 +69,9 @@ html, body {
     height: 3em;
     border-radius: 3rem;
     border: none;
-    background-color: #1565c1;  
+    background-color: #1565c1;
     cursor: pointer;
-    
+
 
 
 }
@@ -161,7 +165,7 @@ html, body {
     font-size: 1.5rem;/*2.3vh; */
     word-break: break-word;
     overflow-wrap: break-word;
-    
+
 }
 
 
@@ -181,7 +185,7 @@ html, body {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    
+
     width: 100%;
     gap: 0.6rem;
     margin-top: 0.8rem;
@@ -201,8 +205,8 @@ html, body {
     color: light-dark(#1565c1, #8CC1EE);
     text-transform: uppercase;
     border-radius: 15px;
-    
-    white-space: nowrap; 
+
+    white-space: nowrap;
     flex-shrink: 0;
     cursor: pointer;
 }
@@ -243,11 +247,21 @@ button.active {
     display: flex;
     flex-direction: column;
     /* gap: min(1.5vh, 1.5vw); */
-    align-items: center;
+    align-items: flex-start;
     position: fixed;
-    /* left: 2rem; */
+    left: 1rem;
     top: 28%;
-    z-index: 100;   
+    z-index: 100;
+    overflow: visible;
+    width: min(5vh, 5vw);
+    background-color:  rgba(255, 255, 255, 0.20);
+    border-radius: 100px;
+    padding-top: min(1vh, 1vw);
+    padding-bottom: min(1vh, 1vw);
+
+/*
+    transition: height 0.3s ease;
+    */
 }
 
 .scene-dot {
@@ -256,9 +270,14 @@ button.active {
     border-radius: 100px;
     background-color: light-dark(#ffffff, #0F1419 );
     cursor: pointer;
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;    
-    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
+    /*
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;
 
+    transition: height var(--dot-speed) ease-in-out, background-color 0.2s ease;
+
+/*
+    transform-origin: top center;
+    */
 }
 
 .scene-dot.active {
@@ -268,7 +287,7 @@ button.active {
 }
 
 .scene-dot:hover {
-    background-color: #E5E5E5;
+    background-color: light-dark(#E5E5E5, #09184B);
 }
 
 
@@ -278,17 +297,44 @@ button.active {
     display: flex;
     flex-direction: row;
     gap: 1rem;
-    z-index: 110; 
+    z-index: 110;
     padding-top: calc(0.6* min(1.5vh, 1.5vw));
     padding-bottom: calc(0.6* min(1.5vh, 1.5vw));
-    padding-left: 2rem;
+    padding-left: min(1.5vh, 1.5vw);  /* TODO: adjust */
+    /* to keep for no rebound effect, but uglier */
+    /* height: min(2.5vh, 2.5vw); */
+    /* align-items: center; */
+
+    /*
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;
+
+
+    transition: all var(--dot-speed) ease-in-out;
+    transition-delay: 0.05s;
+    */
+
 }
+
+/*
+.dot-wrapper:hover {
+    transition-delay: 0s;
+}
+    */
+/*
+.dot-wrapper:hover ~ .dot-wrapper {
+    transform: translateY(min(3vh, 5vw));
+}
+
+.scene-dot.active,
+.dot-wrapper:hover .scene-dot {
+    height: min(6.5vh, 9vw);
+}
+    */
+
 
 .dot-label {
     position: absolute;
     left: 5rem;
-    /* transform: translateY(-50%) translateX(-10px); */
-    /* transition: all 0.1s ease;  */
     user-select: none;
     display: flex;
     align-items: center;
@@ -297,7 +343,7 @@ button.active {
     visibility: hidden;
     width: 15vw;
     pointer-events: none;
-    
+
 }
 
 .dot-number {
@@ -305,7 +351,7 @@ button.active {
     opacity: 50%;
     font-size: 13rem;
     font-weight: 600;
-    
+
     position: absolute;
     z-index: 50;
     justify-self: left;
@@ -315,10 +361,11 @@ button.active {
     color: white;
     font-size: 2.3rem;
     font-weight: 500;
-    
+
     text-transform: uppercase;
     position: relative;
     z-index: 60;
+
 }
 
 
@@ -331,15 +378,17 @@ button.active {
 .dot-wrapper:hover .scene-dot:not(.active){
     height: min(5vh, 7vw);
     transform: scale(1);
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
-}
+    /*
+    transition: height var(--dot-speed) ease, background-color var(--dot-speed) ease, transform var(--dot-speed) ease;
+*/
+    }
 
 /*
 .dot-wrapper:hover .scene-dot.active{
     background-color: red;
     height: min(2vh, 2vw);
     transform: scale(1);
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
+    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;
 }
     */
 
@@ -347,9 +396,11 @@ button.active {
 body:has(.dot-wrapper:hover) .scene-dot.active{
     height: min(2vh, 2vw);
     transform: scale(1);
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;    
+    /*
+    transition: height var(--dot-speed) ease, background-color var(--dot-speed) ease, transform var(--dot-speed) ease;
+    */
 }
-    
+
 
 
 
@@ -376,7 +427,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active{
 
 #feature-picking-info.no-feature-selected {
     padding: 1vh 1vh;
-} 
+}
 
 
 .feature-name {
@@ -441,7 +492,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active{
     #navigation-container button {
         font-size: 0.8em;
     }
- 
+
     #prev-next-container {
         gap: 1rem;
         padding: 0.8em 0.8em;
@@ -459,16 +510,16 @@ body:has(.dot-wrapper:hover) .scene-dot.active{
         padding: 0.7em 0.7em;
         z-index: 101;
     }
-    
+
     #prev-next-container .scene-number-info {
         font-size: 0.9rem;
     }
-    
+
     .nav-btn {
         width: 2.5em;
         height: 2.5em;
     }
-    
+
     #prev-next-container img {
         height: 1.3rem;
     }
@@ -476,7 +527,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active{
     #sceneDots {
         display: none;
     }
-  
+
 }
 
 @media (max-width: 480px) {
@@ -485,12 +536,12 @@ body:has(.dot-wrapper:hover) .scene-dot.active{
         padding: 0.6em 0.6em;
         font-size: 0.8rem;
     }
-    
+
     .nav-btn {
         width: 2.2em;
         height: 2.2em;
     }
-    
+
     #prev-next-container img {
         height: 1.1rem;
     }

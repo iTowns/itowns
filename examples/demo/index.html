@@ -40,7 +40,7 @@
         <link rel="stylesheet" href="examples/css/LoadingScreen.css">
     </head>
     <body>
-        <div id="sceneDots"></div> 
+        <div id="sceneDots"></div>
 
         <div id="prev-next-container">
             <button class="nav-btn" id="prev-scene-btn">
@@ -94,6 +94,8 @@
             await SceneRepository[0].onEnter?.();
             SceneRepository[0].getView().setVisible(true);
             const iTownsView = SceneRepository[0].getItownsView();
+            const viewElement = iTownsView.domElement;
+
             await SceneTransitionUtils.moveCameraTo(
                 iTownsView,
                 SceneRepository[0].placement,
@@ -101,7 +103,7 @@
             );
 
             let currentIndex = 0;
-            
+
 
             const SceneManager = {
                 async goTo(index) {
@@ -120,7 +122,7 @@
                     const to = SceneRepository[index];
                     currentIndex = index;
                     updateUI();
-                    
+
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
                     try {
@@ -169,12 +171,14 @@
                             <dotDesc/>
                         <dotLabel/>
                     <dotWrapper/>
-                    
+
                     <dotWrapper .../>
                 <dotsContainer/>
                 */
+
                 const dotWrapper = document.createElement("div");
                 dotWrapper.classList.add("dot-wrapper");
+                dotsContainer.appendChild(dotWrapper);
 
                 const dot = document.createElement("div");
                 dot.classList.add("scene-dot");
@@ -182,7 +186,7 @@
                 dot.addEventListener("click", () => {
                     SceneManager.goTo(index);
                 });
-              
+
                 const dotLabel = document.createElement("div");
                 dotLabel.classList.add("dot-label");
                 dotWrapper.appendChild(dot);
@@ -198,8 +202,6 @@
                 dotTitle.textContent = scene.title;
                 dotLabel.appendChild(dotTitle);
 
-
-                dotsContainer.appendChild(dotWrapper);
                 return dot;
             });
 
@@ -231,7 +233,7 @@
 
 
 
-            /** 
+            /**
              * Updates the UI according to the current scene.
              */
             function updateUI() {
@@ -253,6 +255,15 @@
             }
 
 
+            viewElement.addEventListener('mousedown', () => {
+                document.body.classList.add('is-panning');
+            });
+
+            window.addEventListener('mouseup', () => {
+                document.body.classList.remove('is-panning');
+            });
+
+
             updateUI();
 
             resetSceneButton.onclick = async () => {
@@ -269,7 +280,7 @@
             prevSceneBtn.addEventListener("click", () => {
                 SceneManager.goTo(currentIndex-1);
             });
-            
+
 
 
         </script>
