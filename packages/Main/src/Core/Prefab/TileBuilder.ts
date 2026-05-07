@@ -16,8 +16,8 @@ export interface GpuBufferAttributes {
     index: THREE.BufferAttribute | null;
     position: THREE.BufferAttribute;
     normal: THREE.BufferAttribute;
-    uvs: THREE.BufferAttribute[];
-}
+    uv: THREE.BufferAttribute;
+};
 
 /**
  * Reference to a tile's extent with rigid transformations.
@@ -117,8 +117,8 @@ export function newTileGeometry(
             // TODO: Make this brain-based check compiler-based.
 
             cachedBuffers = {
-                index: new THREE.BufferAttribute(buffers.index as UintArray, 1),
-                uv: new THREE.BufferAttribute(buffers.uvs[0] as Float32Array, 2),
+                index: new THREE.BufferAttribute(buffers.index!, 1),
+                uv: new THREE.BufferAttribute(buffers.uv!, 2),
             };
 
             // Update cacheBuffer
@@ -127,13 +127,7 @@ export function newTileGeometry(
 
         const gpuBuffers: GpuBufferAttributes = {
             index: cachedBuffers.index,
-            uvs: [
-                cachedBuffers.uv,
-                ...(buffers.uvs[1] !== undefined
-                    ? [new THREE.BufferAttribute(buffers.uvs[1], 1)]
-                    : []
-                ),
-            ],
+            uv: cachedBuffers.uv,
             position: new THREE.BufferAttribute(buffers.position, 3),
             normal: new THREE.BufferAttribute(buffers.normal, 3),
         };

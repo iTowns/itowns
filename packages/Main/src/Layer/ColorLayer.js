@@ -167,8 +167,6 @@ class ColorLayer extends RasterLayer {
 
         const rasterColorTile = new RasterColorTile(this, tiles);
 
-        rasterColorTile.initFromParent(node.parent.material?.getColorTile(this.id));
-
         node.material.addColorTile(rasterColorTile);
         // set up ColorLayer ordering.
         node.material.setColorTileIds(this.parent.colorLayersOrder);

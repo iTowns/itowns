@@ -135,9 +135,6 @@ class ElevationLayer extends RasterLayer {
             this.removeEventListener('scale-property-changed', updateBBox);
         });
 
-        // Init the node by parent
-        rasterElevationNode.initFromParent(node.parent.material?.getElevationTile());
-
         return rasterElevationNode;
     }
 

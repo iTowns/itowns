@@ -7,6 +7,8 @@ export default {
 
         // partialLoading sets the return promise as fulfilled if at least one sub-promise is fulfilled
         // It waits until all promises are resolved
+        //
+        // TODO FAIRE uniquement quand il y a une erreur
         if (command.partialLoading) {
             return Promise.allSettled(promises)
                 .then((results) => {

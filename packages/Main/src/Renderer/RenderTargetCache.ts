@@ -89,6 +89,7 @@ export class RenderTargetCache {
      * @param rt - The render target to cache
      */
     public set(id: string, rt: THREE.WebGLArrayRenderTarget): void {
+        rt.texture.userData.textureSetId = id;
         this._cache.set(id, rt);
     }
 
