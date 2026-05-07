@@ -1,9 +1,9 @@
 import { readTextureValueWithBilinearFiltering } from 'Utils/DEMUtils';
 
 function minMax4Corners(texture, pitch, options) {
-    const u = pitch.x;
-    const v = pitch.y;
-    const w = pitch.z;
+    const u = pitch.elements[6];
+    const v = pitch.elements[7];
+    const w = pitch.elements[0];
     const z = [
         readTextureValueWithBilinearFiltering(options, texture, u, v),
         readTextureValueWithBilinearFiltering(options, texture, u + w, v),
@@ -25,7 +25,7 @@ function minMax4Corners(texture, pitch, options) {
  * Calculates the minimum maximum texture elevation with xbil data
  *
  * @param      {THREE.Texture}   texture                     The texture to parse
- * @param      {THREE.Vector4}   pitch                       The pitch,  restrict zone to parse
+ * @param      {THREE.Matrix3}   pitch                       The pitch,  restrict zone to parse
  * @param      {object}          options                     No data value and clamp values
  * @param      {number}          options.noDataValue         No data value
  * @param      {number}          [options.zmin]   The minimum elevation value after which it will be clamped
@@ -44,12 +44,12 @@ export function computeMinMaxElevation(texture, pitch, options) {
     // compute the minimum and maximum elevation on the 4 corners texture.
     let { min, max } = minMax4Corners(texture, pitch, options);
 
-    const sizeX = Math.floor(pitch.z * width);
+    const sizeX = Math.floor(pitch.elements[0] * width);
 
     if (sizeX > 2) {
-        const sizeY = Math.floor(pitch.z * height);
-        const xs = Math.floor(pitch.x * width);
-        const ys = Math.floor(pitch.y * height);
+        const sizeY = Math.floor(pitch.elements[4] * height);
+        const xs = Math.floor(pitch.elements[6] * width);
+        const ys = Math.floor(pitch.elements[7] * height);
         const inc = Math.max(Math.floor(sizeX / 32), 2);
         const limX = ys + sizeY;
         for (let y = ys; y < limX; y += inc) {

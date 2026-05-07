@@ -170,7 +170,7 @@ class GlobeView extends View {
         this.addLayer(this.sunLightLayer);
 
         if (options.realisticLighting === true) {
-            this.skyManager = new SkyManager(this);
+            this.skyManager = {};
         }
 
         this.renderer.shadowMap.enabled = true;
