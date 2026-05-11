@@ -93,7 +93,10 @@
 
             function loadVPC(url) {
                 if(!url) return;
-                document.getElementById('share').innerHTML = `<a href="${getShareableURL(url, "ept")}" target="_blank">Link to share this view</a>`;
+                document.getElementById('share').innerHTML =
+                    `<a href="${getShareableURL(url, "ept")}" target="_blank" title="Link to share this view">
+                        <img src="images/share.svg" alt="Share this view">
+                    </a>`;
 
 
                 if (vpcLayer) {
