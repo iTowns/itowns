@@ -162,11 +162,11 @@
                 "label": "WFS to 3D objects",
                 "description": "Dynamic fetching and mesh creation from WFS servers for globe visualization."
             },
-            "source_stream_wfs_raster": {   
+            "source_stream_wfs_raster": {
                 "label": "WFS to raster",
                 "description": "Converts WFS vector features into a raster layer for high-performance display."
-            }     
-        }  
+            }
+        }
     },
 
     "specific_source_options": {
@@ -319,7 +319,7 @@
         }
     },
 
-    "widgets": {    
+    "widgets": {
         "label": "Widgets",
         "items": {
             "widgets_navigation": {

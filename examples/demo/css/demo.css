@@ -1,5 +1,3 @@
-
-
 :root {
     color-scheme: light dark;
 
@@ -162,7 +160,7 @@ body.is-panning {
     color: light-dark(#1565c1, #8fb9f3);
     text-transform: uppercase;
     font-weight: 500;
-    font-size: 1.5rem;/*2.3vh; */
+    font-size: 1.5rem;
     word-break: break-word;
     overflow-wrap: break-word;
 
@@ -246,7 +244,6 @@ button.active {
 #sceneDots {
     display: flex;
     flex-direction: column;
-    /* gap: min(1.5vh, 1.5vw); */
     align-items: flex-start;
     position: fixed;
     left: 1rem;
@@ -258,26 +255,14 @@ button.active {
     border-radius: 100px;
     padding-top: min(1vh, 1vw);
     padding-bottom: min(1vh, 1vw);
-
-/*
-    transition: height 0.3s ease;
-    */
 }
 
 .scene-dot {
     width: min(2vh, 2vw);
     height: min(2vh, 2vw);
     border-radius: 100px;
-    background-color: light-dark(#ffffff, #0F1419 );
+    background-color: light-dark(#ffffff, #0F1419);
     cursor: pointer;
-    /*
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;
-
-    transition: height var(--dot-speed) ease-in-out, background-color 0.2s ease;
-
-/*
-    transform-origin: top center;
-    */
 }
 
 .scene-dot.active {
@@ -300,36 +285,9 @@ button.active {
     z-index: 110;
     padding-top: calc(0.6* min(1.5vh, 1.5vw));
     padding-bottom: calc(0.6* min(1.5vh, 1.5vw));
-    padding-left: min(1.5vh, 1.5vw);  /* TODO: adjust */
-    /* to keep for no rebound effect, but uglier */
-    /* height: min(2.5vh, 2.5vw); */
-    /* align-items: center; */
-
-    /*
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.15s ease;
-
-
-    transition: all var(--dot-speed) ease-in-out;
-    transition-delay: 0.05s;
-    */
-
+    padding-left: min(1.5vh, 1.5vw);
 }
 
-/*
-.dot-wrapper:hover {
-    transition-delay: 0s;
-}
-    */
-/*
-.dot-wrapper:hover ~ .dot-wrapper {
-    transform: translateY(min(3vh, 5vw));
-}
-
-.scene-dot.active,
-.dot-wrapper:hover .scene-dot {
-    height: min(6.5vh, 9vw);
-}
-    */
 
 
 .dot-label {
@@ -371,34 +329,24 @@ button.active {
 
 .dot-wrapper:hover .dot-label {
     visibility: visible;
-    /* transform: translateY(-50%) translateX(0px);
-     transform: translateX(-10px); */
 }
 
-.dot-wrapper:hover .scene-dot:not(.active){
+.dot-wrapper:hover .scene-dot{
     height: min(5vh, 7vw);
     transform: scale(1);
-    /*
-    transition: height var(--dot-speed) ease, background-color var(--dot-speed) ease, transform var(--dot-speed) ease;
-*/
     }
 
-/*
-.dot-wrapper:hover .scene-dot.active{
-    background-color: red;
+
+
+body:has(.dot-wrapper:hover) .scene-dot.active {
     height: min(2vh, 2vw);
     transform: scale(1);
-    transition: height 0.1s ease, background-color 0.15s ease, transform 0.1s ease;
+
 }
-    */
 
-
-body:has(.dot-wrapper:hover) .scene-dot.active{
-    height: min(2vh, 2vw);
+.dot-wrapper:hover:has(.scene-dot.active) .scene-dot {
+    height: min(5vh, 7vw);
     transform: scale(1);
-    /*
-    transition: height var(--dot-speed) ease, background-color var(--dot-speed) ease, transform var(--dot-speed) ease;
-    */
 }
 
 
