@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import proj4 from 'proj4';
 import { TileGeometry } from 'Core/TileGeometry';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
@@ -216,7 +215,7 @@ class OBB extends THREE.Object3D {
         const origin = forward([(min.x + max.x) * 0.5, (min.y + max.y) * 0.5, 0]);
 
         // get LocalRotation
-        const isGeocentric = proj4.defs(crsOut).projName === 'geocent';
+        const isGeocentric = CRS.isGeocentric(crsOut);
         let quaternion = new THREE.Quaternion();
         if (isGeocentric) {
             const coordOrigin = new Coordinates(crsOut).setFromArray(origin);

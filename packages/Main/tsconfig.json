@@ -1,12 +1,12 @@
 {
-    "extends": "../../tsconfig.json",
-    "include": [ "src/Main.js", "src/global.d.ts" ],
+    "extends": "../../tsconfig-base.json",
+    "include": [ "src" ],
     "exclude": [ "lib" ],
     "compilerOptions": {
-        "declaration": true,
+        "composite": true,
+        "rootDir": "src",
         "emitDeclarationOnly": true,
         "outDir": "lib",
-        "rootDir": "src",
         "baseUrl": "src"
     }
 }
