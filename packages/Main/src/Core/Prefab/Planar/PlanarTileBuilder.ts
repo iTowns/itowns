@@ -17,7 +17,6 @@ interface Transform {
 
 /** Specialized parameters for the [PlanarTileBuilder]. */
 export interface PlanarTileBuilderParams extends TileBuilderParams {
-    uvCount?: number;
     nbRow: number;
 }
 
@@ -46,10 +45,6 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
             position: new THREE.Vector3(),
             normal: new THREE.Vector3(0, 0, 1),
         };
-    }
-
-    public get uvCount(): number {
-        return this._uvCount;
     }
 
     public get crs(): string {

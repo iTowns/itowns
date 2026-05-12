@@ -77,7 +77,9 @@ export class TileGeometry extends THREE.BufferGeometry {
         this.setIndex(bufferAttributes.index);
         this.setAttribute('position', bufferAttributes.position);
         this.setAttribute('normal', bufferAttributes.normal);
-        this.setAttribute('uv', bufferAttributes.uv);
+        if (bufferAttributes.uv) {
+            this.setAttribute('uv', bufferAttributes.uv);
+        }
 
         this.boundingBox = new THREE.Box3();
         this.computeBoundingBox();
