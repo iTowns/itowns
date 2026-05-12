@@ -23,8 +23,6 @@ type Transform = {
 export interface GlobeTileBuilderParams extends TileBuilderParams {
     /** Number of rows of tiles, essentially the resolution of the globe. */
     nbRow: number;
-    /** Offset of the second texture set. */
-    deltaUV1: number;
     /** Transformation to align a tile's normal to the Z axis. */
     quatNormalToZ: THREE.Quaternion;
 }

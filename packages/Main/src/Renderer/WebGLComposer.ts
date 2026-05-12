@@ -1,54 +1,111 @@
 import * as THREE from 'three';
+import { Extent } from '@itowns/geographic';
+// eslint-disable-next-line import/extensions
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+// eslint-disable-next-line import/extensions
+import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
 import { RasterTile } from './RasterTile';
-import { materialUnit, materialMercatorToWGS84 } from './ProjectionMaterials';
+import {
+    materialUnit,
+    materialMercatorToWGS84,
+    materialMercatorToWGS84Optimized } from './GeographicTransformMaterials';
 
-const quadCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-const geometry = new THREE.PlaneGeometry(2, 2);
+declare module 'three' {
+  interface Texture {
+    extent: Extent | null | undefined,
+  }
+}
 
-const materials = new Map();
+const getGeographicTransformMaterial =
+    (input : string, outputExtent : Extent | null | undefined) => {
+        if (!outputExtent || input == outputExtent.crs) {
+            return materialUnit;
+        }
+        if (input == 'EPSG:3857' && outputExtent.crs == 'EPSG:4326') {
+            // todo could computed with the size texture
+            if (outputExtent.planarDimensions().x < 0.01) {
+                return materialMercatorToWGS84Optimized;
+            } else {
+                return materialMercatorToWGS84;
+            }
+        }
 
-const forwarding = (from, to) => ((from == to) ? 'transformUnit' : `${from} => ${to}`);
+        console.log('No Geographic Transform Material');
+    };
 
-materials.set(forwarding(), materialUnit);
-materials.set(forwarding('EPSG:3857', 'EPSG:4326'), materialMercatorToWGS84);
+class GeographicProjectionPass extends Pass {
+    tiles: RasterTile[];
+    extent: Extent | null;
+    _fsQuad: FullScreenQuad;
+    clear: boolean;
+    constructor() {
+        super();
+        this._fsQuad = new FullScreenQuad();
+        this.tiles = [];
+        this.extent = null;
+        this.clear = true;
+    }
 
-const quad = new THREE.Mesh(geometry, materialUnit);
+    render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget) {
+        renderer.setRenderTarget(writeBuffer);
+
+        const inputCrs = this.tiles[0].layer.crs;
+
+        const outputExtent = writeBuffer.texture.extent;
+
+        const geographicTransformMaterial = getGeographicTransformMaterial(inputCrs, outputExtent);
+
+        if (geographicTransformMaterial) {
+            geographicTransformMaterial.setOutputExtent(outputExtent);
+
+            this._fsQuad.material = geographicTransformMaterial;
+
+            if (this.clear) { renderer.clear(); }
+
+            this.tiles.forEach((tile) => {
+                if (tile.visible) {
+                    geographicTransformMaterial.setOpacity(tile.opacity);
+
+                    tile.textures.forEach((texture) => {
+                        if (texture) {
+                            geographicTransformMaterial.setTexture(texture);
+                            this._fsQuad.render(renderer);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    dispose() {
+        this._fsQuad.dispose();
+    }
+}
+
+const geographicProjectionPass = new GeographicProjectionPass();
+let composer : null | EffectComposer = null;
 
 export function drawMap(
     renderTarget: THREE.WebGLRenderTarget,
     tiles: RasterTile[],
     renderer: THREE.WebGLRenderer,
-    extent: Extent,
 ): undefined {
-    // Store renderer state and temporarily disable VR
-    const previousRenderTarget = renderer.getRenderTarget();
-    const gl = renderer.getContext();
-    const glViewport = gl.getParameter(gl.VIEWPORT);
+    if (!composer) {
+        composer = new EffectComposer(renderer, renderTarget);
+        composer.addPass(geographicProjectionPass);
+    } else {
+        composer.renderer = renderer;
+        composer.renderTarget1 = renderTarget;
+        composer.writeBuffer = renderTarget;
+    }
+
+    geographicProjectionPass.tiles = tiles;
+
     const wasVREnabled = renderer.xr.enabled;
     if (wasVREnabled) { renderer.xr.enabled = false; }
 
-    renderer.setRenderTarget(renderTarget);
-    const a = renderer.getClearAlpha();
-    renderer.setClearAlpha(0);
-    renderer.clear();
-    renderTarget.texture.extent = extent;
+    // todo verify if renderer size isn't overkill
+    composer.render();
 
-    for (const tile of tiles) {
-        if (tile.visible) {
-            quad.material = materials.get(
-                forwarding(tile.layer.crs, tile.layer.parent.extent.crs));
-            for (const texture of tile.textures) {
-                if (texture) {
-                    quad.material.setUniforms(texture, extent, tile);
-                    renderer.render(quad, quadCam);
-                }
-            }
-        }
-    }
-
-    renderer.setRenderTarget(previousRenderTarget);
-    // renderer.setViewport is not enough to update internal GL state
-    gl.viewport(...glViewport);
     if (wasVREnabled) { renderer.xr.enabled = true; }
-    renderer.setClearAlpha(a);
 }

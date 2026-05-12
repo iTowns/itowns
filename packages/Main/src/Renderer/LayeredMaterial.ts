@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Extent } from '@itowns/geographic';
 import TileVS from 'Renderer/Shader/TileVS.glsl';
 import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
@@ -61,9 +62,9 @@ function updateLayersUniforms(
     uniforms: Record<string, THREE.IUniform>,
     tiles: RasterTile[],
     renderer: THREE.WebGLRenderer,
-    renderTargetCache: RenderTargetCache,
+    renderTargetCache: RenderTargetCache | undefined,
     extent: Extent) {
-    if (tiles.length == 0 || tiles.find(tile => tile.textures.length == 0)) {
+    if (tiles.length == 0 || tiles.find(tile => tile.textures.length == 0) || !renderTargetCache) {
         return;
     }
 
@@ -73,11 +74,12 @@ function updateLayersUniforms(
 
     if (!renderTarget) {
         renderTarget = new THREE.WebGLRenderTarget(256, 256, { depthBuffer: false });
+        renderTarget.texture.extent = extent;
 
         renderTargetCache.set(textureSetId, renderTarget);
     }
 
-    drawMap(renderTarget, tiles, renderer, extent);
+    drawMap(renderTarget, tiles, renderer);
 
     uniforms.mapTransform.value.identity();
     uniforms.map.value = renderTarget.texture;
@@ -356,7 +358,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             updateLayersUniforms(this.uniforms,
                 colorlayers, renderer, this.renderTargetCache, extent);
 
-            if (this.elevationTile?.level > 0) {
+            if (this.elevationTile && this.elevationTile.level > 0) {
                 const { uniforms, elevationTile } = this;
                 uniforms.displacementMap.value = elevationTile.textures[0];
                 uniforms.displacementMapTransform.value = elevationTile.mapTransforms[0];
@@ -376,14 +378,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             throw new Error('renderTargetCache is not initialized');
         }
 
-        const colorTextures = this.getUniform('colorTextures');
-        if (colorTextures?.userData?.textureSetId) {
-            this.renderTargetCache.markAsUsed(colorTextures.userData.textureSetId);
+        const map = this.uniforms.map.value;
+        if (map?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(map.userData.textureSetId);
         }
 
-        const elevationTextures = this.getUniform('elevationTextures');
-        if (elevationTextures?.userData?.textureSetId) {
-            this.renderTargetCache.markAsUsed(elevationTextures.userData.textureSetId);
+        const displacementMap = this.uniforms.displacementMap.value;
+        if (displacementMap?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(displacementMap.userData.textureSetId);
         }
     }
 
