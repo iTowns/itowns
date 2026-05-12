@@ -59,7 +59,7 @@ export const FeaturePickerService = {
         if (layerIds.length === 0) {
             FeaturePickerService.container.innerHTML =
                 'Click on a feature to display informations.';
-            FeaturePickerService.container.classList.add("no-feature-selected");
+            FeaturePickerService.container.classList.add('no-feature-selected');
             console.log(FeaturePickerService.container);
             return;
         }
@@ -94,37 +94,29 @@ export const FeaturePickerService = {
         if (FeaturePickerService.pickingContent.length === 0) {
             FeaturePickerService.container.innerHTML =
                 'Click on a feature to display informations.';
-            FeaturePickerService.container.classList.add("no-feature-selected");
-            console.log(FeaturePickerService.container);
+            FeaturePickerService.container.classList.add('no-feature-selected');
             return;
         }
-        
-        // FeaturePickerService.container.innerHTML = '<h3>Features Info:</h3>';
-        FeaturePickerService.container.innerHTML = "";
+
+        FeaturePickerService.container.innerHTML = '';
 
         for (let i = 0; i < FeaturePickerService.pickingContent.length; i++) {
             const featureProps = FeaturePickerService.pickingContent[i];
-            /*
-            const propH = document.createElement('h4');
-            propH.innerHTML = `--- Feature ${i + 1} ---`;
-            FeaturePickerService.container!.appendChild(propH);
-            **/
 
             for (const [key, value] of Object.entries(featureProps)) {
-                if (key.includes("Name") || key.includes("ID")){
+                if (key.includes('Name') || key.includes('ID')) {
                     const propH = document.createElement('h4');
                     propH.innerHTML = `${value}`;
-                    propH.classList.add("feature-name");
+                    propH.classList.add('feature-name');
                     FeaturePickerService.container!.appendChild(propH);
                 } else {
                     const propP = document.createElement('p');
                     propP.innerHTML = `<strong>${key}:</strong> ${value}`;
-                    propP.classList.add("feature-property");
+                    propP.classList.add('feature-property');
                     FeaturePickerService.container!.appendChild(propP);
                 }
             }
-            FeaturePickerService.container.classList.remove("no-feature-selected");
-
+            FeaturePickerService.container.classList.remove('no-feature-selected');
         }
     },
     onMouseDown: (event: Event) => {
@@ -138,12 +130,12 @@ export const FeaturePickerService = {
         const viewerDiv = view.getViewerDiv();
 
         let container = viewerDiv.querySelector<HTMLDivElement>('#feature-picking-info');
-        container?.classList.add("no-feature-selected");
+        container?.classList.add('no-feature-selected');
 
         if (!container) {
             container = document.createElement('div');
             container.id = 'feature-picking-info';
-            container?.classList.add("no-feature-selected");
+            container?.classList.add('no-feature-selected');
 
             viewerDiv.appendChild(container);
             viewerDiv.addEventListener('mouseup', FeaturePickerService.onClick);
