@@ -188,10 +188,33 @@ describe('PointCloudLayer', function () {
             runUpdate(layer, context, parent);
 
             assert.ok(loadData.calledThrice, 'Expected loadData to be called exactly three times');
-            const { firstCall, secondCall, thirdCall } = loadData;
-            assert.ok(firstCall.calledWith(parent), 'Expected loadData to be called with parent');
-            assert.ok(secondCall.calledWith(child0), 'Expected loadData to be called with child0');
-            assert.ok(thirdCall.calledWith(child1), 'Expected loadData to be called with child1');
+            assert.ok(loadData.firstCall.calledWith(parent), 'Expected loadData to be called with parent first');
+            assert.ok(loadData.calledWith(child0), 'Expected loadData to be called with child0');
+            assert.ok(loadData.calledWith(child1), 'Expected loadData to be called with child1');
+        });
+
+        it('adds clampOBB to obbes group and updates its matrixWorld', function () {
+            const n = createNode();
+            const context = createContext({ camera: { isBox3Visible: () => true } });
+
+            assert.strictEqual(n.clampOBB.parent, null, 'Expected clampOBB to have no parent before update');
+            assert.strictEqual(layer.obbes.children.length, 0, 'Expected obbes to be empty before update');
+
+            layer.update(context, layer, n);
+
+            assert.strictEqual(n.clampOBB.parent, layer.obbes, 'Expected clampOBB to be added to layer.obbes');
+            assert.strictEqual(layer.obbes.children.length, 1, 'Expected obbes to contain the clampOBB');
+        });
+
+        it('does not add clampOBB to obbes again when already parented', function () {
+            const n = createNode();
+            const context = createContext({ camera: { isBox3Visible: () => true } });
+
+            layer.update(context, layer, n);
+            assert.strictEqual(layer.obbes.children.length, 1);
+
+            layer.update(context, layer, n);
+            assert.strictEqual(layer.obbes.children.length, 1, 'Expected clampOBB not to be added twice');
         });
 
         it('does not traverse children when parent SSE < 1', function () {
@@ -274,19 +297,19 @@ describe('PointCloudLayer', function () {
         });
 
         it('hides over-budget nodes', function () {
-            layer.pointBudget = 400;
-            layer._visibleNodes = new Set();
-            const nodeA = createNode({ numPoints: 300, sse: 2 });
-            const nodeB = createNode({ numPoints: 200, sse: 1 });
+            const child = createNode({ numPoints: 200, depth: 1 });
+            layer.root = createNode({ numPoints: 300, depth: 0, children: [child] });
+            layer.pointBudget = 300;
+            const context = createContext();
 
-            layer._candidateNodes.push(nodeA);
-            layer._candidateNodes.push(nodeB);
+            const [root] = layer.preUpdate(context);
+            layer.update(context, layer, root);
             layer.postUpdate();
 
-            assertNodeVisible(nodeA, layer);
-            assertNodeNotVisible(nodeB, layer);
+            assertNodeVisible(layer.root, layer);
+            assertNodeNotVisible(child, layer);
             assert.strictEqual(
-                layer.displayedCount, nodeA.numPoints,
+                layer.displayedCount, layer.root.numPoints,
                 'Expected displayed count to be the number of visible points',
             );
         });
@@ -336,20 +359,26 @@ describe('PointCloudLayer', function () {
 
         it('emits visibility change event when node becomes over-budget', function () {
             const listener = sinon.spy();
-            const n = createNode({ numPoints: 100, sse: 1 });
+            const n = layer.root;
+            layer.pointBudget = 500;
             layer.addEventListener('node-visibility-change', listener);
+            const context = createContext();
 
-            // Frame 1 : set node as visible
-            layer._candidateNodes.push(n);
+            // Frame 1: node becomes visible
+            layer.preUpdate(context);
+            layer.update(context, layer, n);
             layer.postUpdate();
+            assert.ok(listener.calledOnce, 'Expected listener to be called once');
 
-            // Frame 2 : set node as over-budget
+            // Frame 2: node becomes over-budget
             layer.pointBudget = 0;
-            layer._candidateNodes.push(n);
+            layer.preUpdate(context);
+            layer.update(context, layer, n);
             layer.postUpdate();
-
             assert.ok(listener.calledTwice, 'Expected listener to be called twice');
             assertNodeChangeInvisible(n, listener.secondCall);
+
+            layer.removeEventListener('node-visibility-change', listener);
         });
 
         it('never collects points whose are not set for disposal', function () {
@@ -422,18 +451,15 @@ describe('PointCloudLayer', function () {
         // The obj is silently added to layer.group but never scheduled for
         // disposal.
         it('disposes points loaded for node never visible', async function () {
-            const node = createNode({ numPoints: 100, visible: true });
+            const node = createNode({ numPoints: 100 }); // visible: false by default
             const pts = new THREE.Points();
             pts.userData.node = node;
 
             const context = createContext({
-                scheduler: { execute: () => sinon.spy(Promise.resolve(pts)) },
+                scheduler: { execute: () => Promise.resolve(pts) },
             });
 
-            layer.pointBudget = 0;
             layer.loadData(node, context, layer, 0);
-            layer._candidateNodes.push(node);
-            layer.postUpdate();
 
             await context.scheduler.execute();
 
