@@ -10,7 +10,7 @@ export class RenderTargetCache {
     /**
      * Render targets queued for disposal.
      */
-    private _pendingDisposal: Map<string, THREE.WebGLArrayRenderTarget>;
+    private _pendingDisposal: Map<string, THREE.WebGLRenderTarget>;
 
     /**
      * Render targets used in the current render cycle.
@@ -21,14 +21,14 @@ export class RenderTargetCache {
      * LRU cache of render targets, automatically discards least recently
      * used when max is exceeded.
      */
-    private _cache: LRUCache<string, THREE.WebGLArrayRenderTarget>;
+    private _cache: LRUCache<string, THREE.WebGLRenderTarget>;
 
     constructor(maxCacheSize = 200) {
         this._pendingDisposal = new Map();
         this._usedIds = new Set();
         this._cache = new LRUCache({
             max: maxCacheSize,
-            dispose: (rt: THREE.WebGLArrayRenderTarget, key: string) => {
+            dispose: (rt: THREE.WebGLRenderTarget, key: string) => {
                 this._pendingDisposal.set(key, rt);
             },
         });
@@ -68,7 +68,7 @@ export class RenderTargetCache {
      * @param id - The identifier of the render target
      * @returns The render target or undefined if not found
      */
-    public get(id: string): THREE.WebGLArrayRenderTarget | undefined {
+    public get(id: string): THREE.WebGLRenderTarget | undefined {
         let rt = this._cache.get(id);
 
         if (!rt) {
@@ -88,7 +88,7 @@ export class RenderTargetCache {
      * @param id - The identifier of the render target
      * @param rt - The render target to cache
      */
-    public set(id: string, rt: THREE.WebGLArrayRenderTarget): void {
+    public set(id: string, rt: THREE.WebGLRenderTarget): void {
         rt.texture.userData.textureSetId = id;
         this._cache.set(id, rt);
     }

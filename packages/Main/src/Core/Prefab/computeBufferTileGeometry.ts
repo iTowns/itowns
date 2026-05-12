@@ -15,7 +15,7 @@ export interface Buffers = {
     index: IndexArray;
     position: Float32Array;
     normal: Float32Array;
-    uv: Option<Float32Array>;
+    uv: Float32Array;
 };
 
 type BuffersAndSkirt = Buffers & {

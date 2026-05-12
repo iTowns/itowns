@@ -16,7 +16,7 @@ export interface GpuBufferAttributes {
     index: THREE.BufferAttribute | null;
     position: THREE.BufferAttribute;
     normal: THREE.BufferAttribute;
-    uv: THREE.BufferAttribute;
+    uv: THREE.BufferAttribute | null;
 };
 
 /**
