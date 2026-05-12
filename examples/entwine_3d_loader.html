@@ -51,6 +51,7 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
             import { zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
+            import {getShareableURL} from './jsm/ExampleUtils.js';
 
             var debugGui = new lil();
             var viewerDiv = document.getElementById('viewerDiv');
@@ -97,9 +98,8 @@
 
             function loadEPT(url, options) {
                 if(!url) return;
-                document.getElementById('share').innerHTML = '<a href="' +
-                    location.href.replace(location.search, '?ept=' + url) +
-                    '" target="_blank">Link to share this view</a>';
+                document.getElementById('share').innerHTML = `<a href="${getShareableURL(url, "ept")}" target="_blank">Link to share this view</a>`;
+
 
                 const eptSource = new itowns.EntwinePointTileSource({ url });
 

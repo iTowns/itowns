@@ -15,12 +15,12 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <!-- Code Mirror Shadowfox dark theme -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/shadowfox.min.css"
-     integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw==" 
+     integrity="sha512-Xt1Gi99yJFMZ0ocjkdHqKWLjtb/l8pzJo5cCmHV2GvBFwJiOCLR2HXQBrcFmqY6i8+gXnRaKTGzoBVOl3YUwjw=="
      crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
+
     <!-- Code Mirror material-darker theme -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/material-darker.min.css" 
-   integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g==" 
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/theme/material-darker.min.css"
+   integrity="sha512-2OhXH4Il3n2tHKwLLSDPhrkgnLBC+6lHGGQzSFi3chgVB6DJ/v6+nbx+XYO9CugQyHVF/8D/0k3Hx1eaUK2K9g=="
    crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <link type="text/css" rel="stylesheet" href="css/example.css" />
@@ -49,7 +49,7 @@
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
     <div id="main">
-        <iframe id="content" sandbox="allow-scripts allow-downloads allow-forms allow-same-origin" frameborder="0" height="100%" width="auto"></iframe>
+        <iframe id="content" sandbox="allow-scripts allow-downloads allow-forms allow-same-origin allow-popups" frameborder="0" height="100%" width="auto"></iframe>
     </div>
 
     <div id="editor-panel">
@@ -91,22 +91,23 @@
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
-                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">    
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">
                      <img src="images/dashboard.svg" alt="Example gallery" />
                 </button>
                 <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
+                <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation">
+                            <img src="images/book.svg" alt="Book icon "/>
+                    </button>
+                </a>
                 <a href="https://github.com/iTowns/itowns" target="_blank" rel="noopener noreferrer">
                     <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="iTowns GitHub repository">
                             <img src="images/github.svg" alt="GitHub logo" />
                     </button>
                 </a>
-                <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
-                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation"> 
-                            <img src="images/book.svg" alt="Book icon "/>
-                    </button>
-                </a>
+
             </nav>
         </div>
 
@@ -123,27 +124,27 @@
                             <input type="search" id="search-input" placeholder="Browse examples" autocomplete="off">
 
                             <select id="category-selector" aria-label="Filter by category">
-                                <!-- content added dynamically in JS --> 
+                                <!-- content added dynamically in JS -->
                             </select>
-                            
+
                         </form>
                     </div>
                 </div>
 
-                <div id="example-list"> 
-                    <!-- content added dynamically in JS --> 
+                <div id="example-list">
+                    <!-- content added dynamically in JS -->
                 </div>
 
             </div>
-            
-            <div class="panel" id="code-panel"> 
+
+            <div class="panel" id="code-panel">
                 <div class="panel-header" id="code-panel-header">
                     <div class="title-toggle-container">
                         <h1 class="panel-title" id="code-panel-title">Example failed to load</h1>
                     </div>
-                    <p id="code-panel-desc">Example description failed to load</p>  
+                    <p id="code-panel-desc">Example description failed to load</p>
                 </div>
-                    
+
                     <div id="code-editor-wrapper">
                         <textarea id="code-editor"></textarea>
                     </div>
@@ -155,7 +156,7 @@
                     <div class="switch-box">
                         <label class="switch">
                             <input type="checkbox" class="switch-input version-input">
-                            <span class="slider"></span>
+                            <span class="version-slider"></span>
                         </label>
                         <p>Development version</p>
                     </div>
@@ -255,12 +256,12 @@
             }
         }
 
-        
 
-        /* 
+
+        /*
          * Runs the current example's code and displays the result in the iframe.
          */
-        function runCode() {                
+        function runCode() {
             const code = codeEditor.getValue();
             const hash = window.location.hash.replace("#", "");
             sessionStorage.setItem("code", toBase64(code));
@@ -272,9 +273,9 @@
             iframe.srcdoc = code;
         }
 
-        
 
-        /** 
+
+        /**
          * Fetches and caches the code of the example associated with the given slug.
          * @param {string} slug - An example's slug
          * @returns {Promise<string>} A promise that resolves to the source code of the example.
@@ -289,12 +290,12 @@
                     exampleCache[slug] = text;
                     return text;
                 });
-        }   
-                
-            
-        /** 
+        }
+
+
+        /**
          * Loads the example associated with the given slug or the given code.
-         * @param {string} slug - An example's slug 
+         * @param {string} slug - An example's slug
          * @param {string} [localCode=null] - An example's code
          */
         async function loadExample(slug, localCode = null) {
@@ -327,7 +328,7 @@
 
         /**
          * Updates the code panel's title and description according to the example associated with the given slug.
-         *  @param {string} slug - An example's slug 
+         *  @param {string} slug - An example's slug
          */
         function updateCodePanelHeader(slug) {
             if (!examplesConfig) return;
@@ -347,7 +348,7 @@
 
 
 
-        /** 
+        /**
          * Removes spaces and converts the given string to lowercase.
          * @param {string} str - The string to clean
          * @returns {string} The cleaned string
@@ -357,16 +358,16 @@
         }
 
 
-        /** 
+        /**
          * Displays or hides examples based on the user's text query and selected category.
          */
         function searchAndFilter() {
             const query = clean(searchInput.value);
-            
+
             const exampleItems = document.querySelectorAll('.example-item');
             const categories = document.querySelectorAll('.category');
 
-        
+
             // match search input
             exampleItems.forEach(item => {
                 const title = clean(item.querySelector('.example-title').textContent);
@@ -378,7 +379,7 @@
                 } else {
                     item.style.display = "none";
                 }
-            
+
             });
 
             // hide empty and unselected categories
@@ -414,7 +415,7 @@
 
                 // refresh editor when opening it, so it displays properly
                 if (panelId === "code-panel") {
-                    setTimeout(() => {              
+                    setTimeout(() => {
                         codeEditor.refresh();
                     }, 0);
                 }
@@ -422,7 +423,7 @@
         });
 
 
-        
+
         // editor collapsing
         editorCollapse.onclick = () => {
             editorHidden = !editorHidden;
@@ -432,10 +433,10 @@
 
             if(!editorHidden){
                  // refresh editor when opening it, so it displays properly
-                setTimeout(() => codeEditor.refresh(), 200); 
+                setTimeout(() => codeEditor.refresh(), 200);
             }
         };
-        
+
 
         // click on example and category collapsing
         exampleList.addEventListener('click', (event) => {
@@ -444,7 +445,7 @@
             if (item) {
                 const slug = item.dataset.slug;
                 loadExample(slug);
-                codeBtn.click(); 
+                codeBtn.click();
                 return;
             }
             // category collapsing
@@ -457,17 +458,17 @@
         });
 
 
-        // version switching 
-        versionSwitch.addEventListener('change', (event) => {      
+        // version switching
+        versionSwitch.addEventListener('change', (event) => {
             if (baseURI.includes("/itowns/")) {
                 const isDev = baseURI.includes("/itowns/dev/");
                 const options = ["/itowns/", "/itowns/dev/"];
-                
+
                 const target = isDev ? options[0] : options[1];
                 const current = isDev ? options[1] : options[0];
 
                 window.location.href = document.location.href.replace(current, target).replace("?","");
-            } 
+            }
         });
 
 
@@ -514,7 +515,7 @@
             // dynamic example generation
             // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
             const examples = [
-                ...Object.entries(list).flatMap(      
+                ...Object.entries(list).flatMap(
                     ([categorySlug, category]) => {
                         return [
                             `<div class="category" data-slug='${categorySlug}'>`,
@@ -524,7 +525,7 @@
                                 </button>`,
                                 `<div class="category-grid-wrapper">`,
                                     `<div class="category-content">`,
-                                        `<ul>`, 
+                                        `<ul>`,
                                         ...Object.entries(category.items).map(
                                             ([slug, info]) =>
                                                 `<li class="example-item" data-slug='${slug}' id="${slug}">
@@ -534,7 +535,7 @@
                                                     <div class="example-info">
                                                         <h3 class="example-title">${info.label}</h3>
                                                         <p class="example-desc">${info.description}</p>
-                                                    </div>  
+                                                    </div>
                                                 </li>`,
                                         ),
                                         `</ul>`,
@@ -553,7 +554,7 @@
                 ...Object.entries(list).flatMap(
                     ([categorySlug, category]) => {
                         return [
-                            `<option value="${categorySlug}">${category.label}</option>`   
+                            `<option value="${categorySlug}">${category.label}</option>`
                         ];
                     },
                 ),
@@ -568,17 +569,17 @@
                 "afterbegin",
                 categories.join("\n"),
             );
-            
+
         }
 
 
 
         /**
-         * Initializes the application theme, fetches configuration, 
+         * Initializes the application theme, fetches configuration,
          * and restores the saved session state and content.
          */
         function onLoad() {
-            
+
             // set theme
             const savedTheme = localStorage.getItem('theme-preference');
             if (savedTheme) {
@@ -601,7 +602,7 @@
                     const hash = window.location.hash.replace("#", "");
                     const localCode = sessionStorage.getItem("code");
                     const localExampleSlug = sessionStorage.getItem("exampleSlug");
-                    const targetSlug = hash || "demo/index";
+                    const targetSlug = hash || "view_3d_map";
 
                     // if target slug corresponds to the saved example, load it
                     if (localCode && targetSlug === localExampleSlug) {
@@ -613,24 +614,24 @@
                     }
 
                     // staying on the same panel even when hard refreshing
-                    const savedPanelId = sessionStorage.getItem("activePanelId");        
+                    const savedPanelId = sessionStorage.getItem("activePanelId");
                     if (savedPanelId) {
                         const targetBtn = document.querySelector(`.sidebar-btn[data-panel="${savedPanelId}"]`);
                         if (targetBtn) {
                             targetBtn.click();
                         }
                     }
-                        
+
                 });
         }
 
 
         // waiting for DOM content to be loaded to start generating examples
         document.addEventListener('DOMContentLoaded', () => {
-            onLoad(); 
+            onLoad();
         });
 
-        
+
     </script>
 </body>
 

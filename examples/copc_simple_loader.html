@@ -51,6 +51,7 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
             import { zoomToLayer } from './jsm/PointCloudHelper.js';
+            import {getShareableURL} from './jsm/ExampleUtils.js';
 
             let layer; // COPCLayer
 
@@ -90,10 +91,8 @@
                 if(!url) return;
 
                 // Share the view
-                document.getElementById('share').innerHTML = '<a href="' +
-                    location.href.replace(location.search, '') +
-                    '?copc=' + url
-                    + '" target="_blank">Link to share this view</a>';
+                document.getElementById('share').innerHTML = `<a href="${getShareableURL(url, "copc")}" target="_blank">Link to share this view</a>`;
+
 
                 const source = new itowns.CopcSource({ url });
 
