@@ -74,6 +74,35 @@ jobs:
           checkAllCommitMessages: true
           accessToken: ${{ secrets.GITHUB_TOKEN }}
 
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write  # Nécessaire pour publier les résultats
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript]  # Change en fonction de ton langage (ex: [cpp, csharp, go, java, python, ruby])
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ matrix.language }}
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
 
   # Unit and coverage tests
   unit-and-coverage-tests:
