@@ -97,6 +97,9 @@
                 <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
+                <button id="demo-btn" class="sidebar-btn notalink" data-panel="demo-panel" title="iTowns demo" aria-label="Show iTowns demo">
+                     <img src="images/demo.svg" alt="iTowns demo" />
+                </button>
                 <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
                     <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation">
                             <img src="images/book.svg" alt="Book icon "/>
@@ -174,6 +177,7 @@
 
     <script type="text/javascript">
         const body = document.body;
+        const defaultExample = "view_3d_map";
         const iframe = document.getElementById("content");
         const codeEditorTextArea = document.getElementById("code-editor");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
@@ -181,6 +185,7 @@
         const versionSwitch = document.querySelector(".version-input");
         const exampleList = document.getElementById("example-list");
         const codeBtn = document.getElementById("code-btn");
+        const demoBtn = document.getElementById("demo-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
         const codePanelDesc = document.querySelector("#code-panel-desc");
         const searchInput = document.getElementById("search-input");
@@ -258,7 +263,6 @@
                 const iframeHtml = iframe.contentDocument.documentElement;
                 iframeHtml.classList.remove('light', 'dark');
                 iframeHtml.classList.add(theme);
-                console.log("test1");
             }
         }
 
@@ -411,11 +415,31 @@
         // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
+                const panelId = button.dataset.panel;
+                const wasInDemo = body.classList.contains("demo-mode");
+
+                if (button.id === "demo-btn") {
+                    body.classList.add("demo-mode");
+                    iframe.src = "";
+                    iframe.removeAttribute("srcdoc");
+                    iframe.src = "demo/index.html";
+                    window.location.hash = "demo";
+                } else {
+                    body.classList.remove("demo-mode");
+
+                    // if user was in demo, load his last viewed example or the default
+                    if (wasInDemo || !sessionStorage.getItem("exampleSlug")){
+                        const lastExampleSlug = sessionStorage.getItem("exampleSlug") || defaultExample;
+                        loadExample(lastExampleSlug);
+                    }
+                }
+
+
                 sidebarButtons.forEach(b => b.classList.remove("active"));
                 button.classList.add("active");
 
                 panels.forEach(panel => panel.classList.remove("active"));
-                const panelId = button.dataset.panel;
+
                 sessionStorage.setItem("activePanelId", panelId);
                 document.getElementById(panelId).classList.add("active");
 
@@ -604,7 +628,6 @@
                 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 setTheme(isDarkMode ? 'dark' : 'light');
             }
-
             // get the configuration
             fetch("./config.json")
                 .then(function _(response) {
@@ -617,10 +640,14 @@
                     const hash = window.location.hash.replace("#", "");
                     const localCode = sessionStorage.getItem("code");
                     const localExampleSlug = sessionStorage.getItem("exampleSlug");
-                    const targetSlug = hash || "view_3d_map";
+                    const targetSlug = hash || defaultExample;
 
+                    // if current URL hash is demo, load it
+                    if (hash === "demo"){
+                        demoBtn.click();
+                    }
                     // if target slug corresponds to the saved example, load it
-                    if (localCode && targetSlug === localExampleSlug) {
+                    else if (localCode && targetSlug === localExampleSlug) {
                         loadExample(targetSlug, fromBase64(localCode));
                     }
                     // else, load the default example (current hash or fallback)

@@ -1,14 +1,4 @@
 {
-    "showcase": {
-        "label": "Showcase",
-        "items": {
-            "demo/index": {
-                "label": "Interactive demo",
-                "description": "Extensive showcase of iTowns core features."
-
-            }
-        }
-    },
     "view": {
         "label": "View",
         "items": {
