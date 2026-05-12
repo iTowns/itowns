@@ -557,9 +557,14 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             data.set(this._visibilityTextureData.data);
             vnt.needsUpdate = true;
 
-            // Use natBox (native octree space) for octreeSize, as the
-            // octree hierarchy is defined in the source CRS coordinate system
-            const rootSize = this.root!.voxelOBB.natBox.getSize(new THREE.Vector3());
+            // Use box3D (projected in the local geometry coordinate frame) for
+            // octreeSize and bboxMin, because the vertex shader positions are
+            // expressed in that same local frame after CRS reprojection and
+            // quaternion rotation applied by the parsers.
+            // Using natBox (native source CRS) would mix coordinate systems
+            // (e.g. Lambert93 metres vs. ECEF metres) and produce wrong LODs
+            // for point clouds whose source CRS differs from the scene CRS.
+            const rootSize = this.root!.voxelOBB.box3D.getSize(new THREE.Vector3());
             const octreeSize = Math.max(rootSize.x, rootSize.y, rootSize.z);
 
             for (const pts of this.group.children) {
@@ -568,18 +573,16 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
                 const octreeSpacing = node.source.spacing;
 
-                // Compute the bounding box min of the node's octree cell
-                // in the local space of the THREE.Points geometry.
-                // We must use voxelOBB.natBox.min (the octree cell boundary
-                // in source CRS) rather than geomBBox.min (which only covers
-                // the actual points, not the full octree cell).
-                const natMin = node.voxelOBB.natBox.min;
-                const origin = node.obj.position;
-                const bboxMin = new THREE.Vector3(
-                    natMin.x - origin.x,
-                    natMin.y - origin.y,
-                    natMin.z - origin.z,
-                );
+                // Compute the bounding box min of the node's octree cell in
+                // the local coordinate frame used by the THREE.Points geometry.
+                // The parsers store each point as:
+                //   quat * (forward(nativePos) - centerZ0)
+                // where centerZ0 = voxelOBB.position and quat is computed at
+                // that same position.  projOBB() builds box3D with the exact
+                // same origin and the same quaternion, so box3D.min is already
+                // expressed in the geometry's local frame — no further
+                // transformation is needed.
+                const bboxMin = node.voxelOBB.box3D.min.clone();
 
                 pts.onBeforeRender = (_renderer, _scene, _camera, _geometry, material) => {
                     // @ts-expect-error Material is not typed yet
