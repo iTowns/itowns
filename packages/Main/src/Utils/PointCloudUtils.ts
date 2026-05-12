@@ -7,18 +7,15 @@ export function computeVisibilityTextureData(nodes: PointCloudNode[]) {
     // sort by level and hierarchy order
     const sort = function sortNodes(a: PointCloudNode, b: PointCloudNode) {
         if (a.depth !== b.depth) { return a.depth - b.depth; }
-        // @ts-expect-error PointCloudNode has x properties
         if (a.x !== b.x) { return a.x - b.x; }
-        // @ts-expect-error PointCloudNode has y properties
         if (a.y !== b.y) { return a.y - b.y; }
-        // @ts-expect-error PointCloudNode has z properties
         return a.z - b.z;
     };
     // breadth-first order
     const orderedNodes =  [...nodes].sort(sort);
 
     const data = new Uint8Array(orderedNodes.length * 4);
-    const visibleNodeTextureOffsets = new Map<string, number>();
+    const nodeToIndex = new Map<PointCloudNode, number>();
     const offsetsToChild: number[] = new Array(orderedNodes.length).fill(Infinity);
 
     // Helper function to get octree child index from node
@@ -27,11 +24,8 @@ export function computeVisibilityTextureData(nodes: PointCloudNode[]) {
             return 0;
         }
         const parent = node.parent;
-        // @ts-expect-error PointCloudNode has x properties
         const dx = node.x - parent.x * 2;
-        // @ts-expect-error PointCloudNode has y properties
         const dy = node.y - parent.y * 2;
-        // @ts-expect-error PointCloudNode has z properties
         const dz = node.z - parent.z * 2;
         // Octree child index (Potree convention): 4*x + 2*y + z
         return 4 * dx + 2 * dy + dz;
@@ -39,13 +33,11 @@ export function computeVisibilityTextureData(nodes: PointCloudNode[]) {
 
     for (let nodeIndex = 0; nodeIndex < orderedNodes.length; nodeIndex++) {
         const node = orderedNodes[nodeIndex];
-        // @ts-expect-error PointCloudNode has voxelKey properties
-        visibleNodeTextureOffsets.set(node.voxelKey, nodeIndex);
+        nodeToIndex.set(node, nodeIndex);
 
         if (node.parent) {
             const childIndex = getChildIndex(node);
-            // @ts-expect-error PointCloudNode has voxelKey properties
-            const parentIndex = visibleNodeTextureOffsets.get(node.parent.voxelKey);
+            const parentIndex = nodeToIndex.get(node.parent);
 
             if (parentIndex === undefined) {
                 continue;
@@ -72,6 +64,6 @@ export function computeVisibilityTextureData(nodes: PointCloudNode[]) {
 
     return {
         data,
-        offsets: visibleNodeTextureOffsets,
+        nodeToIndex,
     };
 }
