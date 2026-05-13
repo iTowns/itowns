@@ -69,9 +69,6 @@ body.is-panning {
     border: none;
     background-color: #1565c1;
     cursor: pointer;
-
-
-
 }
 
 .nav-btn:not(:disabled):hover {
@@ -159,7 +156,7 @@ body.is-panning {
 #sceneTitle {
     color: light-dark(#1565c1, #8fb9f3);
     text-transform: uppercase;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 1.5rem;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -317,7 +314,7 @@ button:disabled {
 }
 
 
-.dot-wrapper:hover .dot-label {
+body:not(.is-panning) .dot-wrapper:hover .dot-label {
     visibility: visible;
 }
 
@@ -371,7 +368,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
 .feature-name {
     text-transform: uppercase;
     color: light-dark(#1565c1, #8CC1EE);
-    font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 
 /*** Point Cloud Config ***/
@@ -426,6 +423,16 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
     border-left: none;
     border-radius: 0 0.5rem 0.5rem 0;
     border-style: none;
+}
+
+
+/* allow to go over UI elements when panning the map */
+body.is-panning #sceneDots,
+body.is-panning #scene-dot,
+body.is-panning #feature-picking-info,
+body.is-panning #prev-next-container,
+body.is-panning #scene-info {
+    pointer-events: none;
 }
 
 
