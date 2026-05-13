@@ -231,16 +231,6 @@ button:disabled {
 }
 
 
-button:active {
-    background-color: #7EA8C5;
-    color: white;
-}
-
-button.active {
-    background-color: #7EA8C5;
-    color: white;
-}
-
 #sceneDots {
     display: flex;
     flex-direction: column;
@@ -396,35 +386,46 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
     flex-direction: column;
     justify-content: center;
 
-    font-size: min(1.5vh, 2vw);
-    color: black;
+    font-size: min(1.6vh, 2vw);
 
-    width: 25vw;
+    width: fit-content;
     max-height: 45vh;
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: light-dark(white, #0F1419);
     backdrop-filter: blur(0.5vh);
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
 
     z-index: 100;
 }
 
 #point-cloud-buttons {
     width: 100%;
+    height: 2em;
     display: flex;
     justify-self: center;
 }
 
 #point-cloud-config button {
     width: 50%;
+    cursor: pointer;
+    background-color: light-dark(rgb(235, 235, 235), #202931);
+    font-size: min(1.5vh, 2vw);
+}
+
+#point-cloud-config button.active {
+    background-color: light-dark(#cee5fb, #2E3944);
+    color: light-dark(#1565c1, #8CC1EE);
 }
 
 #point-cloud-config button:first-child {
     border-right: none;
     border-radius: 0.5rem 0 0 0.5rem;
+    border-style: none;
 }
 
 #point-cloud-config button:last-child {
     border-left: none;
     border-radius: 0 0.5rem 0.5rem 0;
+    border-style: none;
 }
 
 
@@ -461,6 +462,10 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
 
     #prev-next-container .scene-number-info {
         font-size: 0.9rem;
+    }
+
+    #point-cloud-config {
+        max-width: 25vw;
     }
 
     .nav-btn {

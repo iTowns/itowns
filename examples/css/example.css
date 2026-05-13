@@ -197,6 +197,10 @@ p, h1, h2, h3, h4 {
 }
 
 
+#itowns-icon {
+    user-select: none;
+}
+
 /* THEME TOGGLING */
 
 .theme-toggle {
@@ -260,6 +264,7 @@ p, h1, h2, h3, h4 {
     border: none;
     background-color: transparent;
     cursor: pointer;
+    user-select: none;
 }
 
 .sidebar-btn:hover {
