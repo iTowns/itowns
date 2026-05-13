@@ -31,7 +31,7 @@ try {
 
 if (npm_config_git_tag_version === 'false') {
     try {
-        execSync('git add packages/**/package.json changelog.md', {
+        execSync('git add packages/**/package.json examples/demo/package.json changelog.md', {
             stdio: 'inherit'
         });
     } catch (error) {
