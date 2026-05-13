@@ -220,11 +220,14 @@ class OBB extends THREE.Object3D {
         if (isGeocentric) {
             const coordOrigin = new Coordinates(crsOut).setFromArray(origin);
             quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
+            // add the middle top for the curvature
+            corners.push(...forward([(min.x + max.x) * 0.5, (min.y + max.y) * 0.5, max.z]));
         }
 
         // project corners in local referentiel
         const cornersLocal = [];
-        for (let i = 0; i < 24; i += 3) {
+        const nbCorner = corners.length;
+        for (let i = 0; i < nbCorner; i += 3) {
             const cornerLocal = new THREE.Vector3(
                 corners[i] - origin[0],
                 corners[i + 1] - origin[1],
