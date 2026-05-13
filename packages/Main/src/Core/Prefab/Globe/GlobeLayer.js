@@ -9,9 +9,13 @@ const worldToScaledEllipsoid = new THREE.Matrix4();
 // camera's position in worldToScaledEllipsoid system
 const cameraPosition = new THREE.Vector3();
 let magnitudeSquared = 0.0;
+let useFarCulling = false;
+let horizonDistance = 0.0;
 
 // vectors for operation purpose
-const scaledHorizonCullingPoint = new THREE.Vector3();
+const cullingPoint = new THREE.Vector3();
+const cameraForward = new THREE.Vector3();
+const cameraToPoint = new THREE.Vector3();
 
 /**
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
@@ -94,10 +98,15 @@ class GlobeLayer extends TiledGeometryLayer {
     }
 
     preUpdate(context, changeSources) {
-        // pre-horizon culling
-        cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
-        magnitudeSquared = cameraPosition.lengthSq() - 1.0;
-
+        useFarCulling = context.view.horizonScaleFactor < 1;
+        if (!useFarCulling) {
+            // pre-horizon culling
+            cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(worldToScaledEllipsoid);
+            magnitudeSquared = cameraPosition.lengthSq() - 1.0;
+        } else {
+            // pre-far culling
+            horizonDistance = context.view.horizonDistance;
+        }
         return super.preUpdate(context, changeSources);
     }
 
@@ -121,19 +130,39 @@ class GlobeLayer extends TiledGeometryLayer {
             return false;
         }
 
-        return GlobeLayer.horizonCulling(node.horizonCullingPointElevationScaled);
+        if (useFarCulling) {
+            return GlobeLayer.farCulling(node, camera);
+        } else {
+            return GlobeLayer.horizonCulling(node.horizonCullingPointElevationScaled);
+        }
     }
 
     static horizonCulling(point) {
         // see https://cesiumjs.org/2013/04/25/Horizon-culling/
-        scaledHorizonCullingPoint.copy(point).applyMatrix4(worldToScaledEllipsoid);
-        scaledHorizonCullingPoint.sub(cameraPosition);
+        cullingPoint.copy(point).applyMatrix4(worldToScaledEllipsoid);
+        cullingPoint.sub(cameraPosition);
 
-        const vtMagnitudeSquared = scaledHorizonCullingPoint.lengthSq();
-        const dot = -scaledHorizonCullingPoint.dot(cameraPosition);
-        const isOccluded = magnitudeSquared < 0 ? dot > 0 : magnitudeSquared < dot && magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
+        const vtMagnitudeSquared = cullingPoint.lengthSq();
+        const dot = -cullingPoint.dot(cameraPosition);
+        const isOccluded = magnitudeSquared < 0 ? dot > 0
+            : magnitudeSquared < dot && magnitudeSquared < ((dot * dot) / vtMagnitudeSquared);
 
         return isOccluded;
+    }
+
+    static farCulling(node, camera) {
+        // Transform bounding sphere center from local to world space.
+        cullingPoint.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
+
+        // Camera forward direction in world space.
+        camera.camera3D.getWorldDirection(cameraForward);
+
+        // Project the vector camera -> sphere center onto the camera axis.
+        cameraToPoint.subVectors(cullingPoint, camera.camera3D.position);
+        const projectedDistance = cameraToPoint.dot(cameraForward);
+
+        // Cull only if the whole bounding sphere is beyond the far plane.
+        return projectedDistance - node.boundingSphere.radius > horizonDistance;
     }
 
     computeTileZoomFromDistanceCamera(distance, camera) {
