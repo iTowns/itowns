@@ -124,7 +124,6 @@ class PotreeSource extends Source {
         }
 
         super({ ...source, url });
-        this.baseurl = new URL('.', url).href;
         this.fetcher = Fetcher.arrayBuffer;
         this.extensionOctree = 'hrc';
 
@@ -150,7 +149,7 @@ class PotreeSource extends Source {
                 } else {
                     throw new Error('[PotreeSource] Unsupported LAS/LAZ format');
                 }
-                this.baseurl = new URL(`${cloud.octreeDir}/r`, this.baseurl).href;
+                this.baseurl = new URL(`${cloud.octreeDir}/r`, url).href;
 
                 this.parser = PotreeBinParser.parse;
                 this.scale = cloud.scale;

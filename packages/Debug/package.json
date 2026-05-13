@@ -11,7 +11,7 @@
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "transpile": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "watch": "npm run transpile -- --watch",
-    "version": "cross-env-shell npm install @itowns/geographic@$npm_package_version itowns@$npm_package_version"
+    "version": "cross-env-shell npm pkg set dependencies.@itowns/geographic=^$npm_package_version dependencies.itowns=^$npm_package_version"
   },
   "files": [
     "*.md",

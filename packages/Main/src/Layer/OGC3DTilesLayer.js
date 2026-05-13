@@ -41,6 +41,10 @@ itownsGLTFLoader.register(() => new GLTFMeshFeaturesExtension());
 itownsGLTFLoader.register(() => new GLTFStructuralMetadataExtension());
 itownsGLTFLoader.register(() => new GLTFCesiumRTCExtension());
 
+// 3D tiles cache configuration - max bytes size allowed and max number of tiles allowed. If one of these limit is
+// reached, no more tiles are loaded until some are unloaded (when moving the camera for instance)
+const OGC3D_TILES_MAX_BYTES = 2 ** 30; // 1GB
+
 export const OGC3DTILES_LAYER_EVENTS = {
     /**
      * Fired when a new root or child tile set is loaded
@@ -355,6 +359,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * [3DTilesRendererJS doc](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md). Also note that
      * the cache is shared amongst 3D tiles layers and can be configured through tilesRenderer.lruCache (see the
      * [following documentation](https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/master/README.md#lrucache-1).
+     * The cache max byte size is configured to 1GB, but it can also be configured with tilesRenderer.lruCache.maxBytesSize.
      *
      * @extends Layer
      *
@@ -413,6 +418,8 @@ class OGC3DTilesLayer extends GeometryLayer {
         this.tilesRenderer.registerPlugin(new ImplicitTilingPlugin());
 
         this.tilesRenderer.manager.addHandler(/\.gltf$/, itownsGLTFLoader);
+
+        this.tilesRenderer.lruCache.maxBytesSize = OGC3D_TILES_MAX_BYTES;
 
         this.object3d.add(this.tilesRenderer.group);
 

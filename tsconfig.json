@@ -1,27 +1,11 @@
 {
-    "compilerOptions": {
-        /* Type Checking */
-        "strict": true,
-        /* Modules */
-        "baseUrl": ".",
-        "module": "ESNext",
-        "moduleResolution": "bundler",
-        /* Emit */
-        /* JavaScript Support */
-        "allowJs": true,
-        "checkJs": false, // set to true for type checking of js files
-        /* Interop Constraints */
-        "allowSyntheticDefaultImports": true,
-        "esModuleInterop": true,
-        "isolatedModules": true,
-        /* Language and Environment */
-        "target": "ESNext",
-        /* Completeness */
-        "skipLibCheck": true
-    },
     "files": [],
+    "include": [],
     "references": [
         { "path": "./packages/Geographic" },
-        { "path": "./packages/Main" }
+        { "path": "./packages/Main" },
+        { "path": "./packages/Debug" },
+        { "path": "./packages/Widgets" },
+        { "path": "./examples/demo" }
     ]
 }

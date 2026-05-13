@@ -27,6 +27,7 @@ const include = [
     path.resolve(__dirname, 'packages/Main/src'),
     path.resolve(__dirname, 'packages/Debug/src'),
     path.resolve(__dirname, 'packages/Widgets/src'),
+    path.resolve(__dirname, 'examples/demo/src'),
 ];
 
 // excludes path to externalize
@@ -100,6 +101,10 @@ module.exports = () => {
             itowns: [
                 './packages/Main/src/MainBundle.js',
             ],
+            demo: {
+                import: './examples/demo/src/index.ts',
+                dependOn: 'itowns',
+            },
         },
         output: {
             ...sharedConfig.output,
@@ -118,6 +123,10 @@ module.exports = () => {
             itowns: [
                 './packages/Main/src/Main.js',
             ],
+            demo: {
+                import: './examples/demo/src/index.ts',
+                dependOn: 'itowns',
+            },
         },
         output: {
             ...sharedConfig.output,
@@ -162,6 +171,7 @@ module.exports = () => {
         ],
     };
 
+
     if (process.env.WEBPACK_SERVE) {
         configESM.devServer = {
             hot: false,
@@ -183,7 +193,7 @@ module.exports = () => {
             },
         };
 
-        return configESM;
+        return [configESM];
     } else {
         return [configESM, configUMD];
     }

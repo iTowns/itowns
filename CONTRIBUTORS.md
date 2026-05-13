@@ -22,6 +22,7 @@ The following people have contributed to iTowns.
   * [Irénée Dubourg](https://github.com/airnez)
   * [Victor Ripplinger](https://github.com/neptilo)
   * [Moncef Hassani](https://github.com/Nynjin)
+  * [Timothé Boutron](https://github.com/tim-btrn)
 
 * [Oslandia](http://www.oslandia.com)
   * [Vincent Picavet](https://github.com/vpicavet)

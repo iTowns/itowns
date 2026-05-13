@@ -1,107 +1,73 @@
-import { Vector3, type Box3 } from 'three';
-import PointCloudNode from './PointCloudNode';
+import PointCloudNode from 'Core/PointCloudNode';
 
-// Create an A(xis)A(ligned)B(ounding)B(ox) for the child `childIndex`
-// of one aabb. (PotreeConverter protocol builds implicit octree hierarchy
-// by applying the same subdivision algo recursively)
-const dHalfLength = new Vector3();
+export type NodeKeyInfo = {
+    depth: number,
+    x: number, y: number, z: number,
+}
 
-export function computeChildBBox(voxelBBox: Box3, childIndex: number) {
-    // Code inspired from potree
-    const childVoxelBBox = voxelBBox.clone();
-    voxelBBox.getCenter(childVoxelBBox.max);
-    dHalfLength.copy(childVoxelBBox.max).sub(voxelBBox.min);
+export function getChildVoxelKey(nodeInfo: NodeKeyInfo, childIndex: number) {
+    const depth = nodeInfo.depth + 1;
+    let x = 2 * nodeInfo.x;
+    let y = 2 * nodeInfo.y;
+    let z = 2 * nodeInfo.z;
 
     if (childIndex === 1) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
+        z += 1;
     } else if (childIndex === 3) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
+        y += 1;
+        z += 1;
     } else if (childIndex === 0) {
         //
     } else if (childIndex === 2) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
+        y += 1;
     } else if (childIndex === 5) {
-        childVoxelBBox.min.z += dHalfLength.z;
-        childVoxelBBox.max.z += dHalfLength.z;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
+        x += 1;
+        z += 1;
     } else if (childIndex === 7) {
-        childVoxelBBox.min.add(dHalfLength);
-        childVoxelBBox.max.add(dHalfLength);
+        x += 1;
+        y += 1;
+        z += 1;
     } else if (childIndex === 4) {
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
+        x += 1;
     } else if (childIndex === 6) {
-        childVoxelBBox.min.y += dHalfLength.y;
-        childVoxelBBox.max.y += dHalfLength.y;
-        childVoxelBBox.min.x += dHalfLength.x;
-        childVoxelBBox.max.x += dHalfLength.x;
+        x += 1;
+        y += 1;
     }
-
-    return childVoxelBBox;
+    return {
+        depth,
+        x,
+        y,
+        z,
+    };
 }
 
 export abstract class PotreeNodeBase extends PointCloudNode {
-    index: number;
+    /** X position within the octree */
+    x: number;
+    /** Y position within the octree */
+    y: number;
+    /** Z position within the octree */
+    z: number;
 
-    childrenBitField: number | undefined;
-    baseurl: string;
     crs: string;
-
-    private _hierarchyKey: string | undefined;
 
     constructor(
         depth: number,
-        index: number,
+        x: number, y: number, z: number,
         numPoints: number,
-        childrenBitField: number | undefined,
-        source: { baseurl: string },
         crs: string,
     ) {
         super(depth, numPoints);
 
-        this.childrenBitField = childrenBitField;
-
-        this.index = index;
-
-        this.baseurl = source.baseurl;
+        this.x = x;
+        this.y = y;
+        this.z = z;
 
         this.crs = crs;
     }
 
-    override get octreeIsLoaded(): boolean {
-        return !(this.childrenBitField !== 0 && this.children.length === 0);
-    }
-
-    override get id(): string {
-        return this.hierarchyKey;
-    }
-
-    get hierarchyKey(): string {
-        if (this._hierarchyKey != undefined) { return this._hierarchyKey; }
-        if (this.depth === 0) {
-            this._hierarchyKey = 'r';
-        } else {
-            this._hierarchyKey = `${this.parent?.hierarchyKey}${this.index}`;
-        }
-        return this._hierarchyKey;
-    }
-
-    override fetcher(url: string): Promise<ArrayBuffer> {
-        return this.source.fetcher(url, this.networkOptions);
-    }
-
-    override createChildAABB(childNode: this, childIndex: number): void {
-        const childVoxelBBox = computeChildBBox(this.voxelOBB.natBox, childIndex);
-        childNode.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
-
-        childNode.clampOBB.copy(childNode.voxelOBB);
-        childNode.clampOBB.clampZ(this.source.zmin, this.source.zmax);
+    override fetcher(url: string, networkOptions = this.networkOptions): Promise<ArrayBuffer> {
+        return this.source.fetcher(url, networkOptions);
     }
 }
 

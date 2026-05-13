@@ -1,0 +1,50 @@
+{
+	"id":         "IGN_MNT_HIGHRES",
+	"noDataValue" : -99999,
+	"clampValues": {
+        "min": 0
+    },
+	"updateStrategy": {
+		"type": 1,
+		"options": {
+			"groups": [11, 14]
+		}
+	},
+	"source": {
+		"url": "https://data.geopf.fr/wmts?",
+        "crs": "EPSG:4326",
+		"format": "image/x-bil;bits=32",
+		"attribution" : {
+			"name":"IGN",
+			"url":"http://www.ign.fr/"
+		},
+		"name": "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES",
+		"tileMatrixSet": "WGS84G",
+		"tileMatrixSetLimits": {
+			"11": {
+				"minTileRow": 442,
+				"maxTileRow": 1267,
+				"minTileCol": 1344,
+				"maxTileCol": 2683
+			},
+			"12": {
+				"minTileRow": 885,
+				"maxTileRow": 2343,
+				"minTileCol": 3978,
+				"maxTileCol": 5126
+			},
+			"13": {
+				"minTileRow": 1770,
+				"maxTileRow": 4687,
+				"minTileCol": 7957,
+				"maxTileCol": 10253
+			},
+			"14": {
+				"minTileRow": 3540,
+				"maxTileRow": 9375,
+				"minTileCol": 15914,
+				"maxTileCol": 20507
+			}
+		}
+	}
+}

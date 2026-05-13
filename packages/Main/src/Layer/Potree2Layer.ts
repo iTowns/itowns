@@ -95,14 +95,17 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
 
             const { boundingBox, hierarchy } = metadata;
             const bounds = [...boundingBox.min, ...boundingBox.max];
-            const root = new Potree2Node(0, 0, -1, undefined, this.source, this.crs);
-            root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
-            root.clampOBB.copy(root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+            const rootHierarchy = {
+                '0-0-0-0': {
+                    numPoints: -1,
+                    byteOffset: 0n,
+                    byteSize: BigInt(hierarchy.firstChunkSize),
+                },
+            };
+            this.root = new Potree2Node(0, 0, 0, 0, this.source, this.crs, rootHierarchy);
 
-            root.byteSize = BigInt(hierarchy.firstChunkSize);
-            root.byteOffset = 0n;
-
-            this.root = root;
+            this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
+            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
 
             return this.root;
         });
