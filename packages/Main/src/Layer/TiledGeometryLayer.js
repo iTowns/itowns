@@ -370,7 +370,6 @@ class TiledGeometryLayer extends GeometryLayer {
         this.renderTargetCache.dispose();
     }
 
-    // eslint-disable-next-line
     culling(node, camera) {
         return !camera.isBox3Visible(node.obb.box3D, node.matrixWorld);
     }

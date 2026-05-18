@@ -171,7 +171,6 @@ describe('TileMesh', function () {
         });
     });
 
-    // eslint-disable-next-line no-unused-vars
     const elevationLayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: new Source({ url: 'node' }) });
     elevationLayer.parent = planarlayer;
 

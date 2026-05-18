@@ -159,7 +159,7 @@ export default () => {
         plugins: [
             new ESLintPlugin({
                 files: include,
-                configType: 'eslintrc',
+                configType: 'flat',
             }),
         ],
         experiments: {

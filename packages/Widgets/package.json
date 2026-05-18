@@ -9,7 +9,6 @@
     ".": "./lib/Main.js"
   },
   "scripts": {
-    "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "copy_transpile": "npx copyfiles -u 1 \"./lib/**/*\" ../Main/lib/Utils/gui/",
     "transpileOnly": "cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "transpile": "npm run transpileOnly && npm run copy_transpile",

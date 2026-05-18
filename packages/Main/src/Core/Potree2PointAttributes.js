@@ -57,6 +57,7 @@ Object.keys(PointAttributeTypes).forEach((type, index) => {
 
 export { PointAttributeTypes };
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class PointAttribute {
     constructor(name, type, numElements) {
         this.name = name;

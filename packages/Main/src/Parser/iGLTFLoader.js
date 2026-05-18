@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 class iGLTFLoader extends THREE.Loader {

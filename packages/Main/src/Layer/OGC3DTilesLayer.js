@@ -4,21 +4,17 @@ import {
     GLTFStructuralMetadataExtension,
     GLTFMeshFeaturesExtension,
     GLTFCesiumRTCExtension,
-// eslint-disable-next-line import/no-unresolved
 } from '3d-tiles-renderer/three/plugins';
 import {
     CesiumIonAuthPlugin,
     GoogleCloudAuthPlugin,
     ImplicitTilingPlugin,
-// eslint-disable-next-line import/no-unresolved
 } from '3d-tiles-renderer/core/plugins';
 
 import GeometryLayer from 'Layer/GeometryLayer';
 
 import iGLTFLoader from 'Parser/iGLTFLoader';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import PointsMaterial, {
     PNTS_MODE,

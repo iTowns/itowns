@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 import { Object3D } from 'three';
 import { DOMParser } from '@xmldom/xmldom';
 import threads from 'worker_threads';
@@ -271,6 +270,7 @@ global.document.emitEvent = (event, params) => {
 global.document.documentElement = global.document.createElement();
 global.document.body = new DOMElement();
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 global.XRRigidTransform = class {};
 
 class Path2D {
