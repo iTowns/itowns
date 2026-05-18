@@ -418,53 +418,62 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      *
      * @returns The child nodes to update or [] if there is none.
      */
-    update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            return [];
-        }
-
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox as THREE.Box3;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-            if (!object3d.parent) {
-                this.obbes.add(object3d);
-                object3d.updateMatrixWorld(true);
+    update(context: Context, layer: this, root: PointCloudNode): PointCloudNode[] {
+        const rootWithWeight = { node: root, weight: Infinity };
+        const queue = new TinyQueue([rootWithWeight], (a, b) => b.weight - a.weight);
+        let numVisiblePoints = 0;
+        while (queue.length > 0 && numVisiblePoints < this.pointBudget) {
+            const { node } = queue.pop() as { node: PointCloudNode };
+            // get object on which to measure distance
+            let bbox;
+            let object3d;
+            if (node.obj) {
+                object3d = node.obj;
+                bbox = object3d.geometry.boundingBox as THREE.Box3;
+            } else {
+                object3d = node.clampOBB;
+                bbox = object3d.box3D;
+                if (!object3d.parent) {
+                    this.obbes.add(object3d);
+                    object3d.updateMatrixWorld(true);
+                }
             }
-        }
 
-        const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
+                continue;
+            }
 
-        if (!visible) {
-            return [];
-        }
+            const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
 
-        point.copy(context.camera.camera3D.position)
-            .applyMatrix4(object3d.matrixWorldInverse as THREE.Matrix4);
+            if (!visible) {
+                continue;
+            }
 
-        const distanceToCamera = bbox.distanceToPoint(point);
+            numVisiblePoints += node.numPoints;
 
-        elt.sse = computeScreenSpaceError(
-            context,
-            layer.pointSize,
-            elt.pointSpacing,
-            distanceToCamera,
-        ) / this.sseThreshold;
+            point.copy(context.camera.camera3D.position)
+                .applyMatrix4(object3d.matrixWorldInverse as THREE.Matrix4);
 
-        // The visibility here is not definitive, as it will be updated
-        // in the postUpdate phase
-        elt.visible = visible;
-        this._candidateNodes.push(elt);
-        this.loadData(elt, context, layer, distanceToCamera);
+            const distanceToCamera = bbox.distanceToPoint(point);
 
-        if (elt.children && elt.children.length) {
-            if (elt.sse >= 1) {
-                return elt.children;
+            node.sse = computeScreenSpaceError(
+                context,
+                layer.pointSize,
+                node.pointSpacing,
+                distanceToCamera,
+            ) / this.sseThreshold;
+
+            node.visible = visible;
+            node.notVisibleSince = undefined;
+            this._candidateNodes.push(node);
+            this.loadData(node, context, layer, distanceToCamera);
+
+            if (node.children && node.children.length) {
+                if (node.sse >= 1) {
+                    for (const child of node.children) {
+                        queue.push({ node: child, weight: node.sse });
+                    }
+                }
             }
         }
 
@@ -472,17 +481,13 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     }
 
     postUpdate() {
+        // TODO: Need to only change group meshes here + visibility event
         const visibleLastUpdate = this._visibleNodes;
         this._visibleNodes = new Set();
         this.displayedCount = 0;
 
-        // Push visible nodes until the point budget is reached
         while (this._candidateNodes.length > 0) {
             const node = this._candidateNodes.pop() as PointCloudNode;
-            if (this.displayedCount + node.numPoints > this.pointBudget) {
-                this._candidateNodes.push(node);
-                break;
-            }
             this.displayedCount += node.numPoints;
             this._visibleNodes.add(node);
             node.visible = true;
@@ -490,13 +495,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             if (!visibleLastUpdate.has(node)) {
                 this.setNodeVisible(node, true);
             }
-        }
-
-        // Hide remaining visible nodes that didn't fit in the budget
-        while (this._candidateNodes.length > 0) {
-            const node = this._candidateNodes.pop() as PointCloudNode;
-            node.visible = false;
-            if (node.obj) { node.obj.visible = false; }
         }
 
         // Set symmetric difference between visible nodes from last
