@@ -60,7 +60,6 @@ export const FeaturePickerService = {
             FeaturePickerService.container.innerHTML =
                 'Click on a feature to display informations.';
             FeaturePickerService.container.classList.add('no-feature-selected');
-            console.log(FeaturePickerService.container);
             return;
         }
 
@@ -100,16 +99,20 @@ export const FeaturePickerService = {
 
         FeaturePickerService.container.innerHTML = '';
 
+        // display the feature's attributes
         for (let i = 0; i < FeaturePickerService.pickingContent.length; i++) {
             const featureProps = FeaturePickerService.pickingContent[i];
 
+            // loop on each attribute
             for (const [key, value] of Object.entries(featureProps)) {
+                // give the name/ID of the feature a special style
                 if (key.includes('Name') || key.includes('ID')) {
                     const propH = document.createElement('h4');
                     propH.innerHTML = `${value}`;
                     propH.classList.add('feature-name');
                     FeaturePickerService.container!.appendChild(propH);
                 } else {
+                    // for other attributes, a simple <p> tag
                     const propP = document.createElement('p');
                     propP.innerHTML = `<strong>${key}:</strong> ${value}`;
                     propP.classList.add('feature-property');

@@ -6,27 +6,11 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <script>
-            (function () {
-                // escape iframe to retrieve the correct URL
-                const here = (window.location.href.indexOf("about:srcdoc") === 0)
-                    ? window.parent.location.href
-                    : window.location.href;
-                const idx = here.lastIndexOf("/examples/");
-                const rootURL = idx >= 0
-                    ? here.slice(0, idx + 1)
-                    : new URL("./", here).href;
-
-                document.write('<base href="' + rootURL + '">');
-                window.__itownsRoot = rootURL;
-            })();
-        </script>
-
         <script type="importmap">
         {
             "imports": {
-                "itowns": "./dist/itowns.js",
-                "demo": "./dist/demo.js",
+                "itowns": "../../dist/itowns.js",
+                "demo": "../../dist/demo.js",
                 "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                 "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
                 "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
@@ -34,41 +18,40 @@
         }
         </script>
 
-        <link rel="stylesheet" href="examples/css/example.css">
-        <link rel="stylesheet" href="examples/css/widgets.css">
-        <link rel="stylesheet" href="examples/demo/css/demo.css">
-        <link rel="stylesheet" href="examples/css/LoadingScreen.css">
+        <link rel="stylesheet" href="../css/example.css">
+        <link rel="stylesheet" href="../css/widgets.css">
+        <link rel="stylesheet" href="css/demo.css">
+        <link rel="stylesheet" href="../css/LoadingScreen.css">
     </head>
     <body>
         <div id="sceneDots"></div>
 
         <div id="prev-next-container">
-            <button class="nav-btn" id="prev-scene-btn">
-                <img src="examples/demo/assets/images/prev.svg" alt="Previous scene">
+            <button class="prev-next-btn nav-btn" id="prev-scene-btn">
+                <img src="assets/images/prev.svg" alt="Previous scene">
             </button>
             <p class="scene-number-info"></p>
-            <button class="nav-btn" id="next-scene-btn">
-                <img src="examples/demo/assets/images/next.svg" alt="Next scene">
+            <button class="prev-next-btn nav-btn" id="next-scene-btn">
+                <img src="assets/images/next.svg" alt="Next scene">
             </button>
         </div>
         <div id="scene-info">
             <div id="logo-container">
-                <img src="examples/demo/assets/images/itowns_logo.svg" id="itowns-logo" alt="iTowns logo">
+                <img src="../images/itowns_logo.svg" id="itowns-logo" alt="iTowns logo">
             </div>
             <div id="info-bottom-container">
                 <div id="textContainer">
-                    <p class="scene-number-info "></p>
+                    <p class="scene-number-info"></p>
                     <h1 id="sceneTitle"></h1>
                     <p id="sceneDescription"></p>
                 </div>
                 <div id="navigation-container">
-                    <!---->
-                    <button id="resetScene">
-                         <img src="examples/demo/assets/images/reset.svg" class="nav-logo" id="reset-logo" alt="Reset camera">
+                    <button class="nav-btn" id="resetScene">
+                         <img src="assets/images/reset.svg" class="nav-logo" id="reset-logo" alt="Reset camera">
                         Reset camera
                     </button>
-                    <button id="hardResetScene">
-                         <img src="examples/demo/assets/images/restart.svg" class="nav-logo" id="restart-logo" alt="Restart scene">
+                    <button class="nav-btn" id="hardResetScene">
+                         <img src="assets/images/restart.svg" class="nav-logo" id="restart-logo" alt="Restart scene">
                         Restart scene
                     </button>
                 </div>
@@ -79,7 +62,10 @@
             import * as itowns from "itowns";
             import { SceneTransitionUtils, SceneRepository, Config } from "demo";
 
-            Config.basePath = window.__itownsRoot + "examples";
+            // get parent URL
+            const absoluteUrl = new URL("..", window.location.href).href;
+            // remove potential end slash
+            Config.basePath = absoluteUrl.endsWith('/') ? absoluteUrl.slice(0, -1) : absoluteUrl;
 
             const resetSceneButton = document.getElementById("resetScene");
             const hardResetSceneButton =
@@ -87,6 +73,7 @@
             const sceneNumberInfo = document.querySelectorAll(".scene-number-info");
             const prevSceneBtn = document.getElementById("prev-scene-btn");
             const nextSceneBtn = document.getElementById("next-scene-btn");
+            const navBtns = document.querySelectorAll(".nav-btn");
 
 
             SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
@@ -112,24 +99,23 @@
                         index < 0 ||
                         index >= SceneRepository.length
                     ) {
-                        console.log(index === currentIndex);
-                        console.log(index< 0);
-                        console.log(index >= SceneRepository.length);
-                        console.log("goTo");
                         return;
                     }
                     const from = SceneRepository[currentIndex];
                     const to = SceneRepository[index];
                     currentIndex = index;
-                    updateUI();
 
+                    updateUI();
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
+
                     try {
                         await SceneTransitionUtils.transitionToScene(from, to);
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
+                        // update UI again to disable previous/next buttons if on first or last scene, respectively
+                        updateUI();
                     }
                 },
                 async softReset() {
@@ -211,12 +197,10 @@
              * @param {boolean} enable - Whether to enable or disable the buttons.
              */
             function toggleEnableButtons(enable) {
-                resetSceneButton.style.pointerEvents = enable ? "auto" : "none";
-                hardResetSceneButton.style.pointerEvents = enable
-                    ? "auto"
-                    : "none";
-                resetSceneButton.disabled = !enable;
-                hardResetSceneButton.disabled = !enable;
+                navBtns.forEach((btn) => {
+                    btn.style.pointerEvents = enable ? "auto" : "none";
+                    btn.disabled = !enable;
+                })
             }
 
 
@@ -249,7 +233,7 @@
                     element.textContent = "Scene " + (currentIndex + 1) + "/" +  SceneRepository.length
                 })
 
-                // disable buttons on first on last scene
+                // disable buttons on first and last scene
                 prevSceneBtn.disabled = (currentIndex === 0);
                 nextSceneBtn.disabled = (currentIndex === SceneRepository.length - 1);
             }

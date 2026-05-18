@@ -12,10 +12,19 @@ html.light {
     color-scheme: light;
 }
 
-html.dark {
+html.dark{
     color-scheme: dark;
     --icon-filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
     --arrow-filter: brightness(0) saturate(100%) invert(33%) sepia(55%) saturate(230%) hue-rotate(168deg) brightness(92%) contrast(89%);
+}
+
+/* necessary for standalone contexts, where there is no theme toggle */
+@media (prefers-color-scheme: dark){
+    :root {
+        color-scheme: dark;
+        --icon-filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
+        --arrow-filter: brightness(0) saturate(100%) invert(33%) sepia(55%) saturate(230%) hue-rotate(168deg) brightness(92%) contrast(89%);
+    }
 }
 
 
@@ -59,7 +68,7 @@ body.is-panning {
 
 
 
-.nav-btn {
+.prev-next-btn {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -71,12 +80,12 @@ body.is-panning {
     cursor: pointer;
 }
 
-.nav-btn:not(:disabled):hover {
+.prev-next-btn:not(:disabled):hover {
     background-color: #1052AD;
 }
 
 
-.nav-btn:disabled img {
+.prev-next-btn:disabled img {
     filter: var(--arrow-filter);
 }
 
@@ -89,8 +98,8 @@ body.is-panning {
 
 #scene-info {
     position: fixed;
-    right: 1rem;
-    bottom: 2rem;
+    right: 1.5vh;
+    bottom: 3vh;
 
     display: flex;
     flex-direction: column;
@@ -310,7 +319,6 @@ button:disabled {
     text-transform: uppercase;
     position: relative;
     z-index: 60;
-
 }
 
 
@@ -343,7 +351,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
 #feature-picking-info {
     position: fixed;
     top: 1vh;
-    right: 1vh;
+    right: 1.5vh;
     padding: 0.2vh 2vh 1vh 2vh;
     border-radius: 1rem;
     overflow-y: auto;
@@ -475,7 +483,7 @@ body.is-panning #scene-info {
         max-width: 25vw;
     }
 
-    .nav-btn {
+    .prev-next-btn {
         width: 2.5em;
         height: 2.5em;
     }
@@ -497,7 +505,7 @@ body.is-panning #scene-info {
         font-size: 0.8rem;
     }
 
-    .nav-btn {
+    .prev-next-btn {
         width: 2.2em;
         height: 2.2em;
     }

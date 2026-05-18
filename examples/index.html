@@ -87,26 +87,26 @@
         </label>
 
         <div id="sidebar">
-            <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page" target="_blank" rel="noopener noreferrer">
+            <a id="itowns-icon" href="https://www.itowns-project.org/" title="Homepage" target="_blank" rel="noopener noreferrer">
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
-                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">
-                     <img src="images/dashboard.svg" alt="Example gallery" />
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Examples gallery" aria-label="Open example gallery">
+                     <img src="images/dashboard.svg" alt="Examples gallery" />
                 </button>
-                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
+                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
-                <button id="demo-btn" class="sidebar-btn notalink" data-panel="demo-panel" title="iTowns demo" aria-label="Show iTowns demo">
+                <button id="demo-btn" class="sidebar-btn notalink" data-panel="demo-panel" title="iTowns demo" aria-label="Demo">
                      <img src="images/demo.svg" alt="iTowns demo" />
                 </button>
                 <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
-                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="Documentation">
                             <img src="images/book.svg" alt="Book icon "/>
                     </button>
                 </a>
                 <a href="https://github.com/iTowns/itowns" target="_blank" rel="noopener noreferrer">
-                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="iTowns GitHub repository">
+                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="GitHub repository">
                             <img src="images/github.svg" alt="GitHub logo" />
                     </button>
                 </a>
@@ -177,7 +177,7 @@
 
     <script type="text/javascript">
         const body = document.body;
-        const defaultExample = "view_3d_map";
+
         const iframe = document.getElementById("content");
         const codeEditorTextArea = document.getElementById("code-editor");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
@@ -195,6 +195,7 @@
         const themeToggle = document.getElementById("global-theme-toggle");
         const themeInput = themeToggle.querySelector("input");
 
+        let defaultExample = "";
         let examplesConfig = null;
         let editorHidden = false;
 
@@ -343,9 +344,9 @@
         function updateCodePanelHeader(slug) {
             if (!examplesConfig) return;
 
-            for (const category of Object.values(examplesConfig)) {
-                if (category.items && category.items[slug]) {
-                    const info = category.items[slug];
+            for (const category of examplesConfig) {
+                const info = category.items.find(item => item.id === slug);
+                if (info) {
                     codePanelTitle.textContent = info.label;
                     codePanelDesc.textContent = info.description;
                     return;
@@ -441,8 +442,10 @@
                 panels.forEach(panel => panel.classList.remove("active"));
 
                 sessionStorage.setItem("activePanelId", panelId);
-                document.getElementById(panelId).classList.add("active");
 
+                if (button.id !== "demo-btn"){
+                document.getElementById(panelId).classList.add("active");
+                }
                 // refresh editor when opening it, so it displays properly
                 if (panelId === "code-panel") {
                     setTimeout(() => {
@@ -554,49 +557,40 @@
             // dynamic example generation
             // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
             const examples = [
-                ...Object.entries(list).flatMap(
-                    ([categorySlug, category]) => {
-                        return [
-                            `<div class="category" data-slug='${categorySlug}'>`,
-                                `<button type='button' class="category-header">
+                list.map(category =>
+                            `<div class="category" data-slug='${category.id}'>
+                                <button type='button' class="category-header">
                                     <img src="images/down_arrow.svg" class="category-arrow" alt="Collapse/expand category"/>
-                                    <h3 class='category-title'> ${category.label} </h3>
-                                </button>`,
-                                `<div class="category-grid-wrapper">`,
-                                    `<div class="category-content">`,
-                                        `<ul>`,
-                                        ...Object.entries(category.items).map(
-                                            ([slug, info]) =>
-                                                `<li class="example-item" data-slug='${slug}' id="${slug}">
-                                                    <div class="example-img-container">
-                                                        <img src="images/thumbnails/${slug}.webp" alt="${info.label}"/>
-                                                    </div>
-                                                    <div class="example-info">
-                                                        <h3 class="example-title">${info.label}</h3>
-                                                        <p class="example-desc">${info.description}</p>
-                                                    </div>
-                                                </li>`,
-                                        ),
-                                        `</ul>`,
-                                    `</div>`,
-                                `</div>`,
-                                '<hr/>',
-                            `</div>`,
-                        ];
-                    },
-                ),
+                                    <h3 class='category-title'>${category.label}</h3>
+                                </button>
+                                <div class="category-grid-wrapper">
+                                    <div class="category-content">
+                                        <ul>
+                                        ${category.items.map(item =>
+                                            `<li class="example-item" data-slug='${item.id}' id="${item.id}">
+                                                <div class="example-img-container">
+                                                    <img src="images/thumbnails/${item.id}.webp" alt="${item.label}"/>
+                                                </div>
+                                                <div class="example-info">
+                                                    <h3 class="example-title">${item.label}</h3>
+                                                    <p class="example-desc">${item.description}</p>
+                                                </div>
+                                            </li>`
+                                        ).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <hr/>
+                            </div>`
+                ).join('')
             ];
 
             // filling the category selector
             const categories = [
-                `<option value="all">All categories</option>`,
-                ...Object.entries(list).flatMap(
-                    ([categorySlug, category]) => {
-                        return [
-                            `<option value="${categorySlug}">${category.label}</option>`
-                        ];
-                    },
-                ),
+                `<option value="all">All categories</option>
+                ${list.map(category =>
+                        `<option value="${category.id}">${category.label}</option>`
+                ).join('')}`
             ];
 
             exampleList.insertAdjacentHTML(
@@ -634,6 +628,7 @@
                     return response.json();
                 })
                 .then(function _(config) {
+                    defaultExample = config[0].items[0].id;
                     examplesConfig = config;
                     initNavigation(config);
 

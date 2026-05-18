@@ -791,7 +791,7 @@ input:checked + .version-slider:before {
 body.demo-mode #panel-content,
 body.demo-mode #editor-collapse,
 body.demo-mode #global-theme-toggle {
-    display: none !important; /
+    display: none !important;
 }
 
 body.demo-mode #editor-panel {
