@@ -242,6 +242,10 @@ const enableGLForTest = async () => {
 };
 
 const disableGLForTest = () => {
+    if (browserWithGl) {
+        browserWithGl.close();
+        browserWithGl = null;
+    }
     browser = browserWithoutGl;
 };
 
