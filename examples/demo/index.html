@@ -75,13 +75,11 @@
             const nextSceneBtn = document.getElementById("next-scene-btn");
             const navBtns = document.querySelectorAll(".nav-btn");
 
-
             SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
             await SceneRepository[0].onCreate();
             await SceneRepository[0].onEnter?.();
             SceneRepository[0].getView().setVisible(true);
             const iTownsView = SceneRepository[0].getItownsView();
-            const viewElement = iTownsView.domElement;
 
             await SceneTransitionUtils.moveCameraTo(
                 iTownsView,
@@ -239,9 +237,20 @@
             }
 
 
-            viewElement.addEventListener('mousedown', () => {
-                document.body.classList.add('is-panning');
-            });
+            // when panning the map, dot labels don't appear and text can't be selected 
+            window.addEventListener('mousedown', (event) => {
+                const path = event.composedPath();
+                // check if the user actually clicked on the map and not on other demo UI elements
+
+                // used this method instead of directly adding the listener to the viewerDiv element 
+                // because this doesn't work for scenes 10 & 11 (the click is not caught)
+                const wasMapClicked = path.some(element => element.id === "viewerDiv");
+
+                if (wasMapClicked){
+                    document.body.classList.add('is-panning');
+                }
+            }, true); 
+
 
             window.addEventListener('mouseup', () => {
                 document.body.classList.remove('is-panning');

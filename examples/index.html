@@ -444,7 +444,7 @@
                 sessionStorage.setItem("activePanelId", panelId);
 
                 if (button.id !== "demo-btn"){
-                document.getElementById(panelId).classList.add("active");
+                    document.getElementById(panelId).classList.add("active");
                 }
                 // refresh editor when opening it, so it displays properly
                 if (panelId === "code-panel") {
@@ -505,11 +505,19 @@
         });
 
 
-        // iframe theme
+        // set iframe theme and reload if opening demo
         iframe.addEventListener('load', () => {
             const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
             const iframeHtml = iframe.contentDocument.documentElement;
             iframeHtml.classList.add(currentTheme);
+
+            // when opening the demo, THREE sometimes tries to render elements before the iframe finished resizing,
+            // causing an error (screen goes black until resizing the window). here we send a resize event after 80ms to avoid this
+            if (iframe.contentWindow && body.classList.contains("demo-mode")) {
+                setTimeout(() => {
+                    iframe.contentWindow.dispatchEvent(new Event('resize'));
+                }, 80); 
+            }
         });
 
 
