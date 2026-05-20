@@ -90,10 +90,15 @@ export function optimizeGeometryGroups(object3D) {
             usedIndexMaterials.push(currentMaterialIndex);
             continue;
         } else {
-            // indeed same group merge with previous group
+            // Same materialIndex — only merge when the two groups are
+            // contiguous in vertex space.  Non-contiguous runs occur with
+            // per-feature styling when different feature types interleave.
             const previousGroup = object3D.geometry.groups[index + 1];
-            previousGroup.count += group.count; // previous group wrap the current one
-            object3D.geometry.groups.splice(index, 1); // remove group
+            if (group.start + group.count === previousGroup.start) {
+                previousGroup.start = group.start;
+                previousGroup.count += group.count;
+                object3D.geometry.groups.splice(index, 1);
+            }
         }
     }
 
