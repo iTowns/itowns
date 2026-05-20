@@ -210,7 +210,7 @@ export default {
     pickObjectsAt(view, viewCoords, radius, object, target = []) {
         // Raycaster use NDC coordinate
         view.viewToNormalizedCoords(viewCoords, normalized);
-        if (radius < 0) {
+        if (radius === 0) {
             raycaster.setFromCamera(normalized, view.camera3D);
 
             const intersects = raycaster.intersectObject(object, true);

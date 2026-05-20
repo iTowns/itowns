@@ -396,12 +396,9 @@ class TiledGeometryLayer extends GeometryLayer {
         let nodeLayer = node.material.getElevationTile();
 
         for (const e of context.elevationLayers) {
-            const extents = node.getExtentsByProjection(e.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > e.zoom.max || zoom < e.zoom.min) {
-                continue;
-            }
-            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            const tiles = node.getExtentsByProjection(e.crs);
+
+            if (!e.frozen && e.ready && tiles.some(t => e.source.hasData(t)) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
                     continue;
@@ -414,17 +411,14 @@ class TiledGeometryLayer extends GeometryLayer {
             if (c.frozen || !c.visible || !c.ready) {
                 continue;
             }
-            const extents = node.getExtentsByProjection(c.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > c.zoom.max || zoom < c.zoom.min) {
-                continue;
-            }
+            const tiles = node.getExtentsByProjection(c.crs);
+
             // no stop subdivision in the case of a loading error
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
             nodeLayer = node.material.getColorTile(c.id);
-            if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            if (tiles.some(t => c.source.hasData(t)) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;
             }
         }
