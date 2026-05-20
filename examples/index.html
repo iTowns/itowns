@@ -27,6 +27,14 @@
 </head>
 
 <body data-spy="scroll" data-target="nav">
+
+    <!-- prevent seeing the gallery panel retract when going directly to the demo -->
+    <script>
+        if (window.location.hash === "#demo") {
+            document.body.classList.add("demo-mode");
+        }
+    </script>
+
     <!-- Code Mirror Main -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.js"
         integrity="sha512-tXHFLFVaasTvIEFYN8K6UlGvb6Sh1ealAA8YxjpezWMio6u0vU9KfGFzKVth49xh2affuBfmLGY8t2G5pZH+zg=="
@@ -413,44 +421,118 @@
 
 
 
+
+        // TODO : JSDOC
+        function handleRouting() {
+            console.log("handRouting called");
+            const isInitialRoot = !window.location.hash;
+            let hash = window.location.hash.replace("#", "");
+
+            // if URL has no hash, load default example
+            if (isInitialRoot) {
+                console.log("handleRouting isInitialRoot");
+                hash = defaultExample;
+                // update URL without trigerring a 'hashchange' (would cause an infinite loop)
+                history.replaceState(null, null, `#${defaultExample}`);
+            }
+
+            // demo mode
+            if (hash === "demo") {
+                body.classList.add("demo-mode");
+                console.log("hash === demo");
+
+                // if user was viewing an example, remove the iframe's 'srcdoc' attribute so it doesn't prevail 
+                // on the 'src' attribute needed for the demo (demo is not a dynamic iframe)
+                if (iframe.hasAttribute("srcdoc")) {
+                    iframe.removeAttribute("srcdoc");
+                    iframe.src = "demo/index.html"; 
+                    console.log("iframe had srcdoc, now removed and replaced by src");
+                } 
+
+                // set up the iframe's source only if user was not already in demo, prevents unwanted reloading
+                else if (!iframe.src.includes("demo/index.html")) {
+                    iframe.src = "demo/index.html";
+                    console.log("user was NOT in demo, adding src attribute");
+                }
+
+                sidebarButtons.forEach(b => b.classList.remove("active"));
+                demoBtn.classList.add("active");
+                sessionStorage.setItem("activePanelId", "demo-panel");
+                return;
+            }
+
+            // gallery or code editor mode
+            body.classList.remove("demo-mode");
+            
+            let savedPanelId = sessionStorage.getItem("activePanelId");
+            
+            // open gallery panel by default, if no hash or no stored panel or exiting demo
+            if (!savedPanelId || savedPanelId === "demo-panel" || isInitialRoot) {
+                console.log("!savedPanelId || savedPanelId === 'demo-panel' || isInitialRoot");
+                savedPanelId = "gallery-panel";
+            }
+
+            panels.forEach(panel => panel.classList.remove("active"));
+            const activePanel = document.getElementById(savedPanelId);
+            if (activePanel) activePanel.classList.add("active");
+
+            // sync sidebar buttons
+            sidebarButtons.forEach(b => {
+                b.classList.toggle("active", b.dataset.panel === savedPanelId);
+            });
+
+            // save current active panel
+            sessionStorage.setItem("activePanelId", savedPanelId);
+
+            // load example
+            const localCode = sessionStorage.getItem("code");
+            const localExampleSlug = sessionStorage.getItem("exampleSlug");
+
+            if (localCode && hash === localExampleSlug) {
+                console.log("loading local example");
+                loadExample(hash, fromBase64(localCode));
+            } else {
+                console.log("loading example");
+                loadExample(hash);
+            }
+        }
+
+
+        // react to hash changes
+        window.addEventListener('hashchange', handleRouting);
+
+
         // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
+                console.log("sidebar was clicked");
                 const panelId = button.dataset.panel;
-                const wasInDemo = body.classList.contains("demo-mode");
-
+                
                 if (button.id === "demo-btn") {
-                    body.classList.add("demo-mode");
-                    iframe.src = "";
-                    iframe.removeAttribute("srcdoc");
-                    iframe.src = "demo/index.html";
                     window.location.hash = "demo";
+                    console.log("demo btn was clicked");
                 } else {
-                    body.classList.remove("demo-mode");
-
-                    // if user was in demo, load his last viewed example or the default
-                    if (wasInDemo || !sessionStorage.getItem("exampleSlug")){
+                    sessionStorage.setItem("activePanelId", panelId);
+                    
+                    // if user exits the demo, go to last viewed example or the default
+                    if (window.location.hash === "#demo" || window.location.hash === "demo") {
+                        console.log("was in demo, gallery or code was clicked");
                         const lastExampleSlug = sessionStorage.getItem("exampleSlug") || defaultExample;
-                        loadExample(lastExampleSlug);
+                        console.log("last example slug : " + lastExampleSlug);
+                        window.location.hash = lastExampleSlug;
+                    } else {
+                        // otherwise, open desired panel
+                        console.log("was NOT in demo, gallery or code was clicked");
+                        panels.forEach(panel => panel.classList.remove("active"));
+                        document.getElementById(panelId).classList.add("active");
+                        sidebarButtons.forEach(b => b.classList.remove("active"));
+                        button.classList.add("active");
+
+                        // refresh editor when opening it, so it displays properly
+                        if (panelId === "code-panel") {
+                            setTimeout(() => codeEditor.refresh(), 0);
+                        }
                     }
-                }
-
-
-                sidebarButtons.forEach(b => b.classList.remove("active"));
-                button.classList.add("active");
-
-                panels.forEach(panel => panel.classList.remove("active"));
-
-                sessionStorage.setItem("activePanelId", panelId);
-
-                if (button.id !== "demo-btn"){
-                    document.getElementById(panelId).classList.add("active");
-                }
-                // refresh editor when opening it, so it displays properly
-                if (panelId === "code-panel") {
-                    setTimeout(() => {
-                        codeEditor.refresh();
-                    }, 0);
                 }
             });
         });
@@ -477,8 +559,8 @@
             const item = event.target.closest('.example-item');
             if (item) {
                 const slug = item.dataset.slug;
-                loadExample(slug);
-                codeBtn.click();
+                sessionStorage.setItem("activePanelId", "code-panel"); 
+                window.location.hash = slug; 
                 return;
             }
             // category collapsing
@@ -616,8 +698,7 @@
 
 
         /**
-         * Initializes the application theme, fetches configuration,
-         * and restores the saved session state and content.
+         * Initializes the application theme and loads the configuration.
          */
         function onLoad() {
 
@@ -625,53 +706,26 @@
             const savedTheme = localStorage.getItem('theme-preference');
             if (savedTheme) {
                 setTheme(savedTheme);
-            }
-            else {
+            } else {
                 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 setTheme(isDarkMode ? 'dark' : 'light');
             }
-            // get the configuration
+
+            // get the configuration (list of examples)
             fetch("./config.json")
-                .then(function _(response) {
-                    return response.json();
-                })
-                .then(function _(config) {
+                .then(res => res.json())
+                .then(config => {
                     defaultExample = config[0].items[0].id;
                     examplesConfig = config;
                     initNavigation(config);
 
-                    const hash = window.location.hash.replace("#", "");
-                    const localCode = sessionStorage.getItem("code");
-                    const localExampleSlug = sessionStorage.getItem("exampleSlug");
-                    const targetSlug = hash || defaultExample;
-
-                    // if current URL hash is demo, load it
-                    if (hash === "demo"){
-                        demoBtn.click();
-                    }
-                    // if target slug corresponds to the saved example, load it
-                    else if (localCode && targetSlug === localExampleSlug) {
-                        loadExample(targetSlug, fromBase64(localCode));
-                    }
-                    // else, load the default example (current hash or fallback)
-                    else {
-                        loadExample(targetSlug);
-                    }
-
-                    // staying on the same panel even when hard refreshing
-                    const savedPanelId = sessionStorage.getItem("activePanelId");
-                    if (savedPanelId) {
-                        const targetBtn = document.querySelector(`.sidebar-btn[data-panel="${savedPanelId}"]`);
-                        if (targetBtn) {
-                            targetBtn.click();
-                        }
-                    }
-
+                    // handle routing based on current hash
+                    handleRouting();
                 });
         }
 
 
-        // waiting for DOM content to be loaded to start generating examples
+        // wait for DOM content to be loaded to start generating examples
         document.addEventListener('DOMContentLoaded', () => {
             onLoad();
         });
