@@ -92,19 +92,19 @@
             const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -80 } });
 
             // ADD A MINIMAP :
-            const minimap = new itowns_widgets.Minimap(
-                view,
-                new itowns.ColorLayer('minimap', {
-                    source: new itowns.VectorTilesSource({
-                        style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
-                        // We don't display mountains and plot related data to ease visualisation
-                        filter: (layer) => !layer['source-layer'].includes('oro_')
-                            && !layer['source-layer'].includes('parcellaire'),
-                    }),
-                    addLabelLayer: { performance: true },
-                }),
-                { cursor: '+' },
-            );
+            // const minimap = new itowns_widgets.Minimap(
+            //     view,
+            //     new itowns.ColorLayer('minimap', {
+            //         source: new itowns.VectorTilesSource({
+            //             style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
+            //             // We don't display mountains and plot related data to ease visualisation
+            //             filter: (layer) => !layer['source-layer'].includes('oro_')
+            //                 && !layer['source-layer'].includes('parcellaire'),
+            //         }),
+            //         addLabelLayer: { performance: true },
+            //     }),
+            //     { cursor: '+' },
+            // );
 
             // ADD NAVIGATION TOOLS :
             const navigation = new itowns_widgets.Navigation(view, {

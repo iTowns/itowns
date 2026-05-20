@@ -11,7 +11,7 @@ type Option<T> = T | undefined;
 
 type IndexArray = Option<Uint8Array | Uint16Array | Uint32Array>;
 
-export interface Buffers = {
+export interface Buffers {
     index: IndexArray;
     position: Float32Array;
     normal: Float32Array;
