@@ -6,11 +6,25 @@ import type { Extent } from '@itowns/geographic';
 import type { TileGeometry } from 'Core/TileGeometry';
 import type Tile from 'Core/Tile/Tile';
 import OBB from 'Renderer/OBB';
-import type { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import type LayerUpdateState from 'Layer/LayerUpdateState';
 
-interface TileLayerLike {
+import type { LayeredMaterial, LayeredMaterialParameters } from 'Renderer/LayeredMaterial';
+import type LayerUpdateState from 'Layer/LayerUpdateState';
+import { TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
+
+// A simplified interface for TiledGeometryLayer.
+// It is used to avoid a dependency on the full TiledGeometryLayer type.
+export interface TileLayerLike {
+    diffuse: THREE.Color;
+    showOutline: boolean;
+    isGlobeLayer: boolean;
+    segments: number;
+    disableSkirt: boolean;
+    hideSkirt: boolean;
     tileMatrixSets: string[];
+    materialOptions: LayeredMaterialParameters;
+    builder: TileBuilder<TileBuilderParams>;
+    castShadow: boolean;
+    receiveShadow: boolean;
 }
 
 /**
@@ -58,7 +72,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
 
         this.material.setUniform('objectId', this.id);
 
-        this.obb = this.geometry.OBB!.clone();
+        this.obb = (this.geometry.OBB as OBB).clone();
         this.boundingSphere = new THREE.Sphere();
         this.obb.box3D.getBoundingSphere(this.boundingSphere);
 
@@ -93,8 +107,12 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      * and updates accordingly the bounding sphere and the geometric error.
      *
      * @param elevation - Elevation parameters
+     * @param elevation.min - The minimum elevation
+     * @param elevation.max - The maximum elevation
+     * @param elevation.scale - The scale of the elevation
+     * @param elevation.geoidHeight - The geoid height
      */
-    setBBoxZ(elevation: { min?: number, max?: number, scale?: number, geoidHeight?: number }) {
+    setBBoxZ(elevation: { min?: number; max?: number; scale?: number; geoidHeight?: number }) {
         elevation.geoidHeight = geoidLayerIsVisible(this.layer) ? this.geoidHeight : 0;
         this.obb.updateZ(elevation);
         if (this.horizonCullingPointElevationScaled && this.horizonCullingPoint) {

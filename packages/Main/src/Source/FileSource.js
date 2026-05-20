@@ -98,7 +98,7 @@ import { LRUCache } from 'lru-cache';
  */
 class FileSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
+     * @param {object} source - An object that can contain all properties of a
      * FileSource and {@link Source}. Only `crs` is mandatory, but if it
      * presents in `features` under the property `crs`, it is fine.
      */
@@ -178,14 +178,10 @@ class FileSource extends Source {
      *
      * @param      {Extent}  extent   extent requested parsed data.
      * @param      {FeatureBuildingOptions|Layer}  out  The feature returned options
-     * @return     {FeatureCollection|Texture}  The parsed data.
+     * @returns     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {
         return this._featuresCaches[out.crs].get(0);
-    }
-
-    extentInsideLimit(extent) {
-        return this.extent.intersectsExtent(extent);
     }
 }
 

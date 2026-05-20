@@ -2,16 +2,18 @@ import Layer from 'Layer/Layer';
 import Picking from 'Core/Picking';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
 
 /**
  * Fires when the opacity of the layer has changed.
- * @event GeometryLayer#opacity-property-changed
+ * @event GeometryLayer#"opacity-property-changed"
  */
 
 /**
  * @property {boolean} isGeometryLayer - Used to checkout whether this layer is
  * a GeometryLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @property {object} zoom - zoom properties.
  * @property {number} [zoom.max=Infinity] - this is the maximum zoom beyond which it'll be hidden.
  * The `max` is constant and the value is `Infinity` because there's no maximum display level after which it is hidden.
  * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
@@ -29,7 +31,7 @@ class GeometryLayer extends Layer {
      * @param {THREE.Object3D} object3d - The object3D used to contain the
      * geometry of the GeometryLayer. It is usually a `THREE.Group`, but it can
      * be anything inheriting from a `THREE.Object3D`.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
@@ -119,6 +121,32 @@ class GeometryLayer extends Layer {
         // Feature options
         this.filteringExtent = !this.source.isFileSource;
         this.structure = '3d';
+
+        /**
+         * Whether the object gets rendered into shadow map.
+         * @type {boolean}
+         */
+        this.castShadow = true;
+
+        /**
+         * Whether the material receives shadows.
+         * @type {boolean}
+         */
+        this.receiveShadow = true;
+
+        // Centralized shadow property referencing: when any object is added
+        // to the object3d hierarchy, automatically apply referShadowProperties.
+        const applyOnAdd = (event) => {
+            const child = event.child;
+            referShadowProperties(child, this);
+            child.traverse((descendant) => {
+                referShadowProperties(descendant, this);
+                descendant.addEventListener('childadded', applyOnAdd);
+            });
+            // Listen for future additions deeper in the tree
+            child.addEventListener('childadded', applyOnAdd);
+        };
+        this.object3d.addEventListener('childadded', applyOnAdd);
     }
 
     get visible() {
@@ -141,7 +169,6 @@ class GeometryLayer extends Layer {
     // getObjectToUpdateForAttachedLayers function that returns the correct
     // object to update for attached layer.
     // See 3dtilesLayer or PotreeLayer for examples.
-    // eslint-disable-next-line arrow-body-style
     /**
      * @param {THREE.Object3D} obj
      * @returns { { elements: THREE.Object3D[], parent: THREE.Object3D } }
@@ -188,7 +215,7 @@ class GeometryLayer extends Layer {
      *
      * @param {Layer} layer - The layer to detach.
      *
-     * @return {boolean} Confirmation of the detachment of the layer.
+     * @returns {boolean} Confirmation of the detachment of the layer.
      */
     detach(layer) {
         const count = this.attachedLayers.length;
@@ -221,12 +248,12 @@ class GeometryLayer extends Layer {
      * Picking method for this layer.
      *
      * @param {View} view - The view instance.
-     * @param {Object} coordinates - The coordinates to pick in the view. It
+     * @param {object} coordinates - The coordinates to pick in the view. It
      * should have at least `x` and `y` properties.
      * @param {number} radius - Radius of the picking circle.
      * @param {Array} target - target to push result.
      *
-     * @return {Array} An array containing all targets picked under the
+     * @returns {Array} An array containing all targets picked under the
      * specified coordinates.
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {

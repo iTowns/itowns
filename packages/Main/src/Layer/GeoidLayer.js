@@ -26,16 +26,16 @@ class GeoidLayer extends Layer {
      * Creates a new instance of `GeoidLayer`.
      *
      * @param   {string}    id              An unique identifier for the layer.
-     * @param   {Object}    config          The layer configuration. All elements in it will be merged as is in the
-                                            * layer. For example, if the configuration contains three elements `name,
-                                            * protocol, extent`, these elements will be available using `layer.name` or
-                                            * something else depending on the property name. Only `config.source`
-                                            * parameter is mandatory.
-     * @param   {Object}    config.source   The source of the geoid data displayed by the `GeoidLayer`. It is mandatory
-                                            * that the source data for a `GeoidLayer` be parsed into a
-                                            * `{@link GeoidGrid}`. You can refer to `{@link GTXParser}`,
-                                            * `{@link GDFParser}` and `{@link ISGParser}` to see how three standard
-                                            * geoid height grid file formats are parsed into `{@link GeoidGrid}`.
+     * @param   {object}    config          The layer configuration. All elements in it will be merged as is in the
+     * layer. For example, if the configuration contains three elements `name,
+     * protocol, extent`, these elements will be available using `layer.name` or
+     * something else depending on the property name. Only `config.source`
+     * parameter is mandatory.
+     * @param   {object}    config.source   The source of the geoid data displayed by the `GeoidLayer`. It is mandatory
+     * that the source data for a `GeoidLayer` be parsed into a
+     * `{@link GeoidGrid}`. You can refer to `{@link GTXParser}`,
+     * `{@link GDFParser}` and `{@link ISGParser}` to see how three standard
+     * geoid height grid file formats are parsed into `{@link GeoidGrid}`.
      */
     constructor(id, config = {}) {
         super(id, config);

@@ -1,7 +1,7 @@
 import { Vector2, Vector3, Vector4 } from 'three';
 
 /**
- * @enum {Object} componentTypeBytesSize - Size in byte of a component type.
+ * @enum {object} componentTypeBytesSize - Size in byte of a component type.
  */
 const componentTypeBytesSize = {
     BYTE: 1,
@@ -15,7 +15,7 @@ const componentTypeBytesSize = {
 };
 
 /**
- * @enum {Object} componentTypeConstructor - TypedArray constructor for each 3D Tiles binary componentType
+ * @enum {object} componentTypeConstructor - TypedArray constructor for each 3D Tiles binary componentType
  */
 const componentTypeConstructor = {
     BYTE: Int8Array,
@@ -30,7 +30,7 @@ const componentTypeConstructor = {
 
 
 /**
- * @enum {Object} typeComponentsNumber - Number of components for a given type.
+ * @enum {object} typeComponentsNumber - Number of components for a given type.
  */
 const typeComponentsNumber = {
     SCALAR: 1,
@@ -40,7 +40,7 @@ const typeComponentsNumber = {
 };
 
 /**
- * @enum {Object} typeConstructor - constructor for types (only for vectors since scalar will be converted to a single
+ * @enum {object} typeConstructor - constructor for types (only for vectors since scalar will be converted to a single
  * value)
  */
 const typeConstructor = {
@@ -55,10 +55,10 @@ const typeConstructor = {
  * information on how these values are encoded:
  * [3D Tiles spec](https://github.com/CesiumGS/3d-tiles/blob/main/specification/TileFormats/BatchTable/README.md#binary-body))
  * @param {ArrayBuffer} buffer The buffer to parse values from.
- * @param {Number} batchLength number of objects in the batch (= number of elements to parse).
- * @param {Number} byteOffset the offset in bytes into the buffer.
- * @param {String} componentType the type of component to parse (one of componentTypeBytesSize keys)
- * @param {String} type the type of element to parse (one of typeComponentsNumber keys)
+ * @param {number} batchLength number of objects in the batch (= number of elements to parse).
+ * @param {number} byteOffset the offset in bytes into the buffer.
+ * @param {string} componentType the type of component to parse (one of componentTypeBytesSize keys)
+ * @param {string} type the type of element to parse (one of typeComponentsNumber keys)
  * @returns {Array} an array of values parsed from the buffer. An array of componentType if type is SCALAR. An array
  * of Threejs Vector2, Vector3 or Vector4 if type is VEC2, VEC3 or VEC4 respectively.
  */

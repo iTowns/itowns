@@ -6,7 +6,7 @@ import COGParser from 'Parser/CogParser';
 import Source from 'Source/Source';
 
 
-type CogSourceConfig = {
+interface CogSourceConfig {
     /**
      * URL of the COG resource.
      */
@@ -56,7 +56,7 @@ class CogSource extends Source {
     /**
      * An array storing one node for each image of the COG data.
      */
-    overviews: Array<GeotiffNode>;
+    overviews: GeotiffNode[];
 
     defaultAlpha: number;
     resampleMethod: string;

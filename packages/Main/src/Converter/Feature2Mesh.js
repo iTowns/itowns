@@ -231,8 +231,8 @@ function featureToPoint(feature, options) {
 /**
  * Update vertex data for POINT features.
  *
- * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object.
+ * @param {object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {object} buffers - Buffer management object.
  * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
  * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
  * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
@@ -350,8 +350,8 @@ function featureToLine(feature, options) {
 /**
  * Update vertex and index data for LINE features.
  *
- * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object.
+ * @param {object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {object} buffers - Buffer management object.
  * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
  * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
  * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
@@ -458,8 +458,8 @@ function featureToPolygon(feature, options) {
 /**
  * Update base (non-extruded) polygon vertex and index data.
  *
- * @param {Object} featureMesh - Object carrying the feature (expects { feature }).
- * @param {Object} buffers - Buffer management object.
+ * @param {object} featureMesh - Object carrying the feature (expects { feature }).
+ * @param {object} buffers - Buffer management object.
  * @param {Float32Array} [buffers.vertices] - Target positions buffer to write into.
  * @param {Uint8Array} [buffers.colors] - Target color buffer (rgb Uint8, normalized).
  * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
@@ -582,8 +582,8 @@ function featureToExtrudedPolygon(feature, options) {
 /**
  * Update base and top vertex data for extruded polygons, including indices.
  *
- * @param {Object} featureMesh - The feature mesh providing feature and collection context.
- * @param {Object} buffers - Buffer management object.
+ * @param {object} featureMesh - The feature mesh providing feature and collection context.
+ * @param {object} buffers - Buffer management object.
  * @param {Float32Array} [buffers.vertices] - Target positions buffer (xyz) to write into.
  * @param {Uint8Array} [buffers.colors] - Target colors buffer (rgb, Uint8, normalized) to write into.
  * @param {Uint32Array} [buffers.batchIds] - Target per-vertex batch id buffer.
@@ -721,7 +721,7 @@ function createInstancedMesh(mesh, count, ptsIn) {
 /**
  * Convert a {@link Feature} of type POINT to a Instanced meshes
  *
- * @param {Object} feature
+ * @param {object} feature
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function pointsToInstancedMeshes(feature) {
@@ -745,9 +745,9 @@ function pointsToInstancedMeshes(feature) {
 /**
  * Convert a {@link Feature} to a Mesh
  * @param {Feature} feature - the feature to convert
- * @param {Object} options - options controlling the conversion
+ * @param {object} options - options controlling the conversion
  *
- * @return {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
+ * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function featureToMesh(feature, options) {
     if (!feature.vertices) {
@@ -761,7 +761,7 @@ function featureToMesh(feature, options) {
                 try {
                     mesh = pointsToInstancedMeshes(feature);
                     mesh.isInstancedMesh = true;
-                } catch (e) {
+                } catch {
                     mesh = featureToPoint(feature, options);
                 }
             } else {
@@ -785,6 +785,7 @@ function featureToMesh(feature, options) {
         mesh.material.vertexColors = true;
         mesh.material.color = new THREE.Color(0xffffff);
     }
+
     mesh.feature = feature;
 
     return mesh;
@@ -798,13 +799,13 @@ export default {
      * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
      * a THREE.Group.
      *
-     * @param {Object} options - options controlling the conversion
-     * @param {function} [options.batchId] - optional function to create batchId attribute.
+     * @param {object} options - options controlling the conversion
+     * @param {Function} [options.batchId] - optional function to create batchId attribute.
      * It is passed the feature property and the feature index. As the batchId is using an unsigned int structure on 32 bits,
      * the batchId could be between 0 and 4,294,967,295.
      * @param {StyleOptions} [options.style] - optional style properties. Only needed if the convert is used without instancing
      * a layer beforehand.
-     * @return {function}
+     * @returns {Function}
      * @example <caption>Example usage of batchId with featureId.</caption>
      * view.addLayer({
      *     id: 'WFS Buildings',
@@ -853,9 +854,10 @@ export default {
             const features = collection.features;
             if (!features || features.length == 0) { return; }
 
+            const layer = this;
             const meshes = features.map((feature) => {
                 const mesh = featureToMesh(feature, options);
-                mesh.layer = this;
+                mesh.layer = layer;
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);

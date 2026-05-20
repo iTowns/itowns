@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import proj4 from 'proj4';
 import { TileGeometry } from 'Core/TileGeometry';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
@@ -21,7 +20,7 @@ let _obb: OBB;
 class OBB extends THREE.Object3D {
     box3D: THREE.Box3;
     natBox: THREE.Box3;
-    z: { min: number, max: number, scale: number, delta: number };
+    z: { min: number; max: number; scale: number; delta: number };
 
     private _center: undefined | THREE.Vector3;
     matrixWorldInverse: THREE.Matrix4;
@@ -65,6 +64,7 @@ class OBB extends THREE.Object3D {
      * Copies the property from cOBB to this OBB.
      *
      * @param cOBB - OBB to copy
+     * @returns
      */
     override copy(cOBB: OBB): this {
         super.copy(cOBB);
@@ -80,8 +80,12 @@ class OBB extends THREE.Object3D {
      * Updates the z min, z max and z scale of oriented bounding box.
      *
      * @param elevation - Elevation parameters
+     * @param elevation.min - The minimum elevation
+     * @param elevation.max - The maximum elevation
+     * @param elevation.scale - The scale of the elevation
+     * @param elevation.geoidHeight - The geoid height
      */
-    updateZ(elevation: { min?: number, max?: number, scale?: number, geoidHeight?: number } = {}) {
+    updateZ(elevation: { min?: number; max?: number; scale?: number; geoidHeight?: number } = {}) {
         this.z.min = elevation.min ?? this.z.min;
         this.z.max = elevation.max ?? this.z.max;
 
@@ -196,7 +200,9 @@ class OBB extends THREE.Object3D {
             try {
                 forward = CRS.transform(crsIn, crsOut).forward;
             } catch (err) {
-                throw new Error(`${err} is not defined in proj4`);
+                throw new Error(`${err} is not defined in proj4`, {
+                    cause: err,
+                });
             }
         }
 
@@ -216,16 +222,19 @@ class OBB extends THREE.Object3D {
         const origin = forward([(min.x + max.x) * 0.5, (min.y + max.y) * 0.5, 0]);
 
         // get LocalRotation
-        const isGeocentric = proj4.defs(crsOut).projName === 'geocent';
+        const isGeocentric = CRS.isGeocentric(crsOut);
         let quaternion = new THREE.Quaternion();
         if (isGeocentric) {
             const coordOrigin = new Coordinates(crsOut).setFromArray(origin);
             quaternion = OrientationUtils.quaternionFromCRSToCRS(crsOut, crsIn)(coordOrigin);
+            // add the middle top for the curvature
+            corners.push(...forward([(min.x + max.x) * 0.5, (min.y + max.y) * 0.5, max.z]));
         }
 
         // project corners in local referentiel
         const cornersLocal = [];
-        for (let i = 0; i < 24; i += 3) {
+        const nbCorner = corners.length;
+        for (let i = 0; i < nbCorner; i += 3) {
             const cornerLocal = new THREE.Vector3(
                 corners[i] - origin[0],
                 corners[i + 1] - origin[1],

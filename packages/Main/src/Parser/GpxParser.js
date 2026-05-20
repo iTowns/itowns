@@ -16,7 +16,7 @@ export default {
      * @param {XMLDocument} gpxFile - The GPX file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
      *
-     * @return {Promise} A promise resolving with a {@link FeatureCollection}.
+     * @returns {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(gpxFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);

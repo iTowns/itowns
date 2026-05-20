@@ -47,6 +47,7 @@ class Ellipsoid {
      * @param cartesian - The given cartesian coordinate.
      * @param target - An object to store this vector to. If this is not
      * specified, a new vector will be created.
+     * @returns
      */
     geodeticSurfaceNormal(
         cartesian: Coordinates,
@@ -62,6 +63,7 @@ class Ellipsoid {
      * @param coordCarto - The given geographic coordinate.
      * @param target - An object to store this vector to. If this is not
      * specified, a new vector will be created.
+     * @returns
      */
     geodeticSurfaceNormalCartographic(
         coordCarto: Coordinates,
@@ -82,6 +84,7 @@ class Ellipsoid {
      * properties.
      *
      * @param size - The source vector.
+     * @returns
      */
     setSize(size: Vector3Like): this {
         this.size.set(size.x, size.y, size.z);
@@ -146,7 +149,7 @@ class Ellipsoid {
 
         const phi = Math.atan(
             (position.z * (1 - f) + e * a * sinu * sinu * sinu) /
-                ((1 - f) * (rsqXY - e * a * cosu * cosu * cosu)));
+            ((1 - f) * (rsqXY - e * a * cosu * cosu * cosu)));
 
         const h = (rsqXY * Math.cos(phi)) +
             position.z * Math.sin(phi) -
@@ -202,7 +205,7 @@ class Ellipsoid {
             return false;
         }
 
-        let t = 0;
+        let t;
         if (t1 <= EPSILON) { t = t2; } else
             if (t2 <= EPSILON) { t = t1; } else { t = (t1 < t2) ? t1 : t2; }
 
@@ -236,7 +239,7 @@ class Ellipsoid {
 
         const distRad = Math.acos(
             Math.sin(latitude1) * Math.sin(latitude2) +
-                Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
+            Math.cos(latitude1) * Math.cos(latitude2) * Math.cos(longitude2 - longitude1));
 
         const e = this.eccentricity;
         const latMoy = (latitude1 + latitude2) * 0.5;

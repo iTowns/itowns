@@ -38,19 +38,19 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
     /**
      * @param { OrientedImageCamera[]} cameras - Array of {@link OrientedImageCamera}. Each camera will project a texture.
      * [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse} can used to create this array of camera from a configuration file.
-     * @param {Object} [options={}] - Object with one or more properties defining the material's appearance.
+     * @param {object} [options={}] - Object with one or more properties defining the material's appearance.
      * Any property of the material (including any property inherited from
      * [THREE.Material]{@link https://threejs.org/docs/#api/en/materials/Material} and
      * [THREE.ShaderMaterial]{@link https://threejs.org/docs/#api/en/materials/ShaderMaterial}) can be passed in here.
-     * @param {Number} [options.side=THREE.DoubleSide] - We override default
+     * @param {number} [options.side=THREE.DoubleSide] - We override default
      * [THREE.Material.side]{@link https://threejs.org/docs/#api/en/materials/Material.side} from FrontSide to DoubleSide.
-     * @param {Boolean} [options.transparent=true] - We override default
+     * @param {boolean} [options.transparent=true] - We override default
      * [THREE.Material.transparent]{@link https://threejs.org/docs/#api/en/materials/Material.transparent} from false to true.
-     * @param {Number} [options.opacity=0.1] - We override default
+     * @param {number} [options.opacity=0.1] - We override default
      * [THREE.Material.opacity]{@link https://threejs.org/docs/#api/en/materials/Material.opacity} from 1 to 0.1.
-     * @param {Number} [options.alphaBorder=20] - Part of the texture that is blended, when texture crosses each other.
+     * @param {number} [options.alphaBorder=20] - Part of the texture that is blended, when texture crosses each other.
      * For example, 10 means a border as large as 1 / 10 of the size of the texture is used to blend colors.
-     * @param {Number} [options.debugAlphaBorder=0] - Set this option to 1 to see influence of alphaBorder option.
+     * @param {number} [options.debugAlphaBorder=0] - Set this option to 1 to see influence of alphaBorder option.
      */
     constructor(cameras, options = {}) {
         options.side = options.side ?? THREE.DoubleSide;
@@ -128,7 +128,7 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
     /**
      * Set new textures and new position/orientation of the camera set.
      * @param {THREE.Texture} textures - Array of [THREE.Texture]{@link https://threejs.org/docs/#api/en/textures/Texture}.
-     * @param {Object} feature - New position / orientation of the set of cameras
+     * @param {object} feature - New position / orientation of the set of cameras
      * @param {THREE.Vector3} feature.position - New position.
      * @param {THREE.Quaternion} feature.quaternion - New orientation.
      * @param {Array} camerasNames - camera names of panoramic feature

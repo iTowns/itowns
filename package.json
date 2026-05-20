@@ -31,6 +31,7 @@
     "prepare": "cross-env NO_UPDATE_NOTIFIER=true node ./config/prepare.mjs",
     "watch": "node ./config/concurrently.mjs watch",
     "changelog": "conventional-changelog -n ./config/conventionalChangelog/config.mjs -i changelog.md -s",
+    "typecheck": "tsc -b --noEmit",
     "bump": "npm version ${npm_config_level:-minor} -m \"release v%s\"",
     "version": "node ./config/version.mjs",
     "prerelease-next": "npm version prerelease --preid next",
@@ -64,7 +65,7 @@
   },
   "homepage": "https://itowns.github.io/",
   "engines": {
-    "node": ">=20"
+    "node": "^20.12.0 || >=22"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
@@ -86,7 +87,6 @@
     "babel-plugin-module-extension-resolver": "^1.0.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "c8": "^11.0.0",
-    "chalk": "^5.6.2",
     "concurrently": "^9.2.1",
     "conventional-changelog-cli": "^5.0.0",
     "copyfiles": "^2.4.1",
@@ -95,7 +95,6 @@
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-import-resolver-babel-module": "^5.3.2",
     "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-tsdoc": "^0.5.0",
     "eslint-webpack-plugin": "^5.0.2",
     "github-url-from-git": "^1.5.0",
     "global-jsdom": "^28.0.0",

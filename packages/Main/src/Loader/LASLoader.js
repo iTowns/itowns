@@ -3,8 +3,7 @@ import { Vector3, Quaternion, Box3 } from 'three';
 import { LazPerf } from 'laz-perf';
 import { Las } from 'copc';
 import proj4 from 'proj4';
-// eslint-disable-next-line import/extensions
-import { LASAttributes } from './LASConstant.js';
+import { LASAttributes } from './LASConstant';
 
 const LASAttributesName = LASAttributes.filter(a => a.size === undefined).map(a => a.name);
 
@@ -15,16 +14,16 @@ const position = /* @__PURE__ */ new Vector3();
 const scalarDepth16 = 1 / 256;
 
 /**
- * @typedef {Object} Header - Partial LAS header.
- * @property {number} header.pointDataRecordFormat - Type of point data
+ * @typedef {object} Header - Partial LAS header.
+ * @property {number} pointDataRecordFormat - Type of point data
  * records contained by the buffer.
- * @property {number} header.pointDataRecordLength - Size (in bytes) of the
+ * @property {number} pointDataRecordLength - Size (in bytes) of the
  * point data records. If the specified size is larger than implied by the
  * point data record format (see above) the remaining bytes are user-specfic
  * "extra bytes". Those are described by an Extra Bytes VLR.
- * @property {number[]} header.scale - Scale factors (an array `[xScale,
+ * @property {number[]} scale - Scale factors (an array `[xScale,
  * yScale, zScale]`) multiplied to the X, Y, Z point record values.
- * @property {number[]} header.offset - Offsets (an array `[xOffset,
+ * @property {number[]} offset - Offsets (an array `[xOffset,
  * xOffset, zOffset]`) added to the scaled X, Y, Z point record values.
  */
 
@@ -138,7 +137,7 @@ class LASLoader {
      * Parses a LAS or LAZ (LASZip) chunk. Note that this function is
      * **CPU-bound** and shall be parallelised in a dedicated worker.
      * @param {Uint8Array} data - File chunk data.
-     * @param {Object} options - Parsing options.
+     * @param {object} options - Parsing options.
      * @param {Header} options.header - Partial LAS header.
      * @param {number} options.pointCount - Number of points encoded in this
      * data chunk.
@@ -147,6 +146,7 @@ class LASLoader {
      * @param {8 | 16} [options.colorDepth] - Color depth encoding (in bits).
      * Either 8 or 16 bits. Defaults to 8 bits for LAS 1.2 and 16 bits for later
      * versions (as mandatory by the specification).
+     * @returns {Promise<object>}
      */
     async parseChunk(data, options) {
         const { header, eb, pointCount } = options;
@@ -167,10 +167,11 @@ class LASLoader {
      * Parses a LAS or LAZ (LASZip) file. Note that this function is
      * **CPU-bound** and shall be parallelised in a dedicated worker.
      * @param {ArrayBuffer} data - Binary data to parse.
-     * @param {Object} [options] - Parsing options.
+     * @param {object} [options] - Parsing options.
      * @param {8 | 16} [options.colorDepth] - Color depth encoding (in bits).
      * Either 8 or 16 bits. Defaults to 8 bits for LAS 1.2 and 16 bits for later
      * versions (as mandatory by the specification)
+     * @returns {Promise<object>}
      */
     async parseFile(data, options = {}) {
         const bytes = new Uint8Array(data);

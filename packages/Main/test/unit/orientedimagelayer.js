@@ -3,7 +3,7 @@ import OrientedImageLayer from 'Layer/OrientedImageLayer';
 import OrientedImageSource from 'Source/OrientedImageSource';
 import { Coordinates, CRS } from '@itowns/geographic';
 import GlobeView from 'Core/Prefab/GlobeView';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 

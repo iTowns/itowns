@@ -87,46 +87,45 @@ if (enableTargetHelper) {
 
 /**
  * Globe control pan event. Fires after camera pan
- * @event GlobeControls#pan-changed
- * @property target {GlobeControls} dispatched on controls
- * @property type {string} orientation-changed
+ * @event GlobeControls#"pan-changed"
+ * @property {GlobeControls} target - the controls that dispatched the event
+ * @property {string} type - pan-changed
  */
 /**
  * Globe control orientation event. Fires when camera's orientation change
- * @event GlobeControls#orientation-changed
- * @property new {object}
- * @property new.tilt {number} the new value of the tilt of the camera
- * @property new.heading {number} the new value of the heading of the camera
- * @property previous {object}
- * @property previous.tilt {number} the previous value of the tilt of the camera
- * @property previous.heading {number} the previous value of the heading of the camera
- * @property target {GlobeControls} dispatched on controls
- * @property type {string} orientation-changed
+ * @event GlobeControls#"orientation-changed"
+ * @property {object} new - the new orientation
+ * @property {number} new.tilt - the new value of the tilt of the camera
+ * @property {number} new.heading - the new value of the heading of the camera
+ * @property {object} previous - the previous orientation
+ * @property {number} previous.tilt - the previous value of the tilt of the camera
+ * @property {number} previous.heading - the previous value of the heading of the camera
+ * @property {GlobeControls} target - the controls that dispatched the event
+ * @property {string} type - orientation-changed
  */
 /**
  * Globe control range event. Fires when camera's range to target change
- * @event GlobeControls#range-changed
- * @property new {number} the new value of the range
- * @property previous {number} the previous value of the range
- * @property target {GlobeControls} dispatched on controls
- * @property type {string} range-changed
+ * @event GlobeControls#"range-changed"
+ * @property {number} new - the new value of the range
+ * @property {number} previous - the previous value of the range
+ * @property {GlobeControls} target - the controls that dispatched the event
+ * @property {string} type - range-changed
  */
 /**
  * Globe control camera's target event. Fires when camera's target change
- * @event GlobeControls#camera-target-changed
- * @property new {object}
- * @property new {Coordinates} the new camera's target coordinates
- * @property previous {Coordinates} the previous camera's target coordinates
- * @property target {GlobeControls} dispatched on controls
- * @property type {string} camera-target-changed
+ * @event GlobeControls#"camera-target-changed"
+ * @property {Coordinates} new - the new camera's target coordinates
+ * @property {Coordinates} previous - the previous camera's target coordinates
+ * @property {GlobeControls} target - the controls that dispatched the event
+ * @property {string} type - camera-target-changed
  */
 
 /**
  * globe controls events
- * @property PAN_CHANGED {string} Fires after camera pan
- * @property ORIENTATION_CHANGED {string} Fires when camera's orientation change
- * @property RANGE_CHANGED {string} Fires when camera's range to target change
- * @property CAMERA_TARGET_CHANGED {string} Fires when camera's target change
+ * @property {string} PAN_CHANGED - Fires after camera pan
+ * @property {string} ORIENTATION_CHANGED - Fires when camera's orientation change
+ * @property {string} RANGE_CHANGED - Fires when camera's range to target change
+ * @property {string} CAMERA_TARGET_CHANGED - Fires when camera's target change
  */
 
 export const CONTROL_EVENTS = {
@@ -179,7 +178,7 @@ let previous;
  * @property      {boolean} enableDamping Enable damping or not (simulates the lag that a real camera
  * operator introduces while operating a heavy physical camera). Default is true.
  * @property      {boolean} dampingMoveFactor the damping move factor. Default is 0.25.
- * @property      {StateControl~State} stateControl redefining which controls state is triggered by the keyboard/mouse
+ * @property      {StateControl.State} stateControl redefining which controls state is triggered by the keyboard/mouse
  * event (For example, rewrite the PAN movement to be triggered with the 'left' mouseButton instead of 'right').
  */
 class GlobeControls extends THREE.EventDispatcher {
@@ -936,7 +935,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Changes the tilt of the current camera, in degrees.
      * @param {number}  tilt
      * @param {boolean} isAnimated
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     setTilt(tilt, isAnimated) {
         return this.lookAtCoordinate({ tilt }, isAnimated);
@@ -946,7 +945,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Changes the heading of the current camera, in degrees.
      * @param {number} heading
      * @param {boolean} isAnimated
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     setHeading(heading, isAnimated) {
         return this.lookAtCoordinate({ heading }, isAnimated);
@@ -956,7 +955,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Sets the "range": the distance in meters between the camera and the current central point on the screen.
      * @param {number} range
      * @param {boolean} isAnimated
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     setRange(range, isAnimated) {
         return this.lookAtCoordinate({ range }, isAnimated);
@@ -964,7 +963,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the {@linkcode Coordinates} of the globe point targeted by the camera in EPSG:4978 projection. See {@linkcode Coordinates} for conversion
-     * @return {THREE.Vector3} position
+     * @returns {THREE.Vector3} position
      */
     getCameraTargetPosition() {
         return cameraTarget.position;
@@ -974,7 +973,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Returns the "range": the distance in meters between the camera and the current central point on the screen.
      * @param {THREE.Vector3} [position] - The position to consider as picked on
      * the ground.
-     * @return {number} number
+     * @returns {number} number
      */
     getRange(position) {
         return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).range;
@@ -984,7 +983,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Returns the tilt of the current camera in degrees.
      * @param {THREE.Vector3} [position] - The position to consider as picked on
      * the ground.
-     * @return {number} The angle of the rotation in degrees.
+     * @returns {number} The angle of the rotation in degrees.
      */
     getTilt(position) {
         return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).tilt;
@@ -994,7 +993,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Returns the heading of the current camera in degrees.
      * @param {THREE.Vector3} [position] - The position to consider as picked on
      * the ground.
-     * @return {number} The angle of the rotation in degrees.
+     * @returns {number} The angle of the rotation in degrees.
      */
     getHeading(position) {
         return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera, position).heading;
@@ -1004,7 +1003,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Displaces the central point to a specific amount of pixels from its current position.
      * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
      * @param      {vector}  pVector  The vector
-     * @return {Promise}
+     * @returns {Promise}
      */
     pan(pVector) {
         this.mouseToPan(pVector.x, pVector.y);
@@ -1014,7 +1013,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the orientation angles of the current camera, in degrees.
-     * @return {Array<number>}
+     * @returns {Array<number>}
      */
     getCameraOrientation() {
         this.view.getPickingPositionFromDepth(null, pickedPosition);
@@ -1023,7 +1022,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the camera location projected on the ground in lat,lon. See {@linkcode Coordinates} for conversion.
-     * @return {Coordinates} position
+     * @returns {Coordinates} position
      */
 
     getCameraCoordinate() {
@@ -1034,7 +1033,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the {@linkcode Coordinates} of the central point on screen in lat,lon. See {@linkcode Coordinates} for conversion.
-     * @return {Coordinates} coordinate
+     * @returns {Coordinates} coordinate
      */
     getLookAtCoordinate() {
         return CameraUtils.getTransformCameraLookingAtTarget(this.view, this.camera).coord;
@@ -1050,7 +1049,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Determines if animation enabled.
-     * @return     {boolean}  True if animation enabled, False otherwise.
+     * @returns     {boolean}  True if animation enabled, False otherwise.
      */
     isAnimationEnabled() {
         return enableAnimation;
@@ -1058,7 +1057,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Returns the actual zoom. The zoom will always be between the [getMinZoom(), getMaxZoom()].
-     * @return     {number}  The zoom .
+     * @returns     {number}  The zoom .
      */
     getZoom() {
         return this.view.tileLayer.computeTileZoomFromDistanceCamera(this.getRange(), this.view.camera);
@@ -1070,7 +1069,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * The zoom is always in the [getMinZoom(), getMaxZoom()] range.
      * @param      {number}  zoom    The zoom
      * @param      {boolean}  isAnimated  Indicates if animated
-     * @return     {Promise}
+     * @returns     {Promise}
      */
     setZoom(zoom, isAnimated) {
         return this.lookAtCoordinate({ zoom }, isAnimated);
@@ -1080,7 +1079,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Return the current zoom scale at the central point of the view.
      * This function compute the scale of a map
      * @param      {number}  pitch   Screen pitch, in millimeters ; 0.28 by default
-     * @return     {number}  The zoom scale.
+     * @returns     {number}  The zoom scale.
      *
      * @deprecated Use View#getScale instead.
      */
@@ -1093,7 +1092,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * To convert the projection in meters on the globe of a number of pixels of screen
      * @param      {number} pixels count pixels to project
      * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
-     * @return     {number} projection in meters on globe
+     * @returns     {number} projection in meters on globe
      *
      * @deprecated Use `View#getPixelsToMeters` instead.
      */
@@ -1108,7 +1107,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * To convert the projection a number of horizontal pixels of screen to longitude degree WGS84 on the globe
      * @param      {number} pixels count pixels to project
      * @param      {number} pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
-     * @return     {number} projection in degree on globe
+     * @returns     {number} projection in degree on globe
      *
      * @deprecated Use `View#getPixelsToMeters` and `GlobeControls#metersToDegrees`
      * instead.
@@ -1123,7 +1122,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * Projection on screen in pixels of length in meter on globe
      * @param      {number}  value Length in meter on globe
      * @param      {number}  pixelPitch Screen pixel pitch, in millimeters (default = 0.28 mm / standard pixel size of 0.28 millimeters as defined by the OGC)
-     * @return     {number}  projection in pixels on screen
+     * @returns     {number}  projection in pixels on screen
      *
      * @deprecated Use `View#getMetersToPixels` instead.
      */
@@ -1140,7 +1139,7 @@ class GlobeControls extends THREE.EventDispatcher {
      * @param      {number}  scale  The scale
      * @param      {number}  pitch  The pitch
      * @param      {boolean}  isAnimated  Indicates if animated
-     * @return     {Promise}
+     * @returns     {Promise}
      */
     setScale(scale, pitch, isAnimated) {
         return this.lookAtCoordinate({ scale, pitch }, isAnimated);
@@ -1153,11 +1152,11 @@ class GlobeControls extends THREE.EventDispatcher {
      * Zoom parameter is ignored if range is set
      * The tilt's interval is between 4 and 89.5 degree
      *
-     * @param {CameraUtils~CameraTransformOptions|Extent} [params] - camera transformation to apply
+     * @param {CameraTransformOptions|Extent} [params] - camera transformation to apply
      * @param {number} [params.zoom] - zoom
      * @param {number} [params.scale] - scale
      * @param {boolean} [isAnimated] - Indicates if animated
-     * @return {Promise} A promise that resolves when transformation is complete
+     * @returns {Promise} A promise that resolves when transformation is complete
      */
     lookAtCoordinate(params = {}, isAnimated = this.isAnimationEnabled()) {
         this.player.stop();
@@ -1207,8 +1206,7 @@ class GlobeControls extends THREE.EventDispatcher {
     /**
      * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
      * @param {Vector2} windowCoords - window coordinates
-     * @param {number=} y - The y-position inside the Globe element.
-     * @return {Coordinates} position
+     * @returns {Coordinates} position
      */
     pickGeoPosition(windowCoords) {
         const pickedPosition = this.view.getPickingPositionFromDepth(windowCoords);

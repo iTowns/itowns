@@ -25,7 +25,7 @@ export const FeaturePickerService = {
         }
 
         if (!FeaturePickerService.view ||
-        !FeaturePickerService.layers.length || !FeaturePickerService.container) {
+            !FeaturePickerService.layers.length || !FeaturePickerService.container) {
             return;
         }
 
@@ -110,13 +110,13 @@ export const FeaturePickerService = {
                     const propH = document.createElement('h4');
                     propH.innerHTML = `${value}`;
                     propH.classList.add('feature-name');
-                    FeaturePickerService.container!.appendChild(propH);
+                    FeaturePickerService.container?.appendChild(propH);
                 } else {
                     // for other attributes, a simple <p> tag
                     const propP = document.createElement('p');
                     propP.innerHTML = `<strong>${key}:</strong> ${value}`;
                     propP.classList.add('feature-property');
-                    FeaturePickerService.container!.appendChild(propP);
+                    FeaturePickerService.container?.appendChild(propP);
                 }
             }
             FeaturePickerService.container.classList.remove('no-feature-selected');

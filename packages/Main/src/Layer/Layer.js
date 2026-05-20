@@ -12,8 +12,8 @@ import { LRUCache } from 'lru-cache';
  * @property {Source} source - This source determines the datas to be displayed with the layer.
  * The layer determines how this data are displayed.
  * By example:
- * * For ColorLayer/ElevationLayer, the source datas are rasterised (if it's necessary).
- * * For GeometryLayer, the source datas are converted to meshes (not possible for the raster data sources).
+ * - For ColorLayer/ElevationLayer, the source datas are rasterised (if it's necessary).
+ * - For GeometryLayer, the source datas are converted to meshes (not possible for the raster data sources).
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
  * This promise is returned by [View#addLayer]{@link View}.
@@ -42,7 +42,7 @@ class Layer extends THREE.EventDispatcher {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {Object} config - configuration, all elements in it
+     * @param {object} config - configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
@@ -183,7 +183,6 @@ class Layer extends THREE.EventDispatcher {
     /**
      * The startup stage is the first stage of the layer lifecycle. It is called
      * internally when the layer is added to the view.
-     * @param {View} context - the context the layer has been added to.
      * @returns {Promise<void>}
      */
     async startup(/* context */) {
@@ -219,7 +218,7 @@ class Layer extends THREE.EventDispatcher {
      * @param {string} propertyName - The name of the property, also used in
      * the emitted event name.
      * @param {*} defaultValue - The default set value.
-     * @param {function} [onChange] - The function executed when the property is
+     * @param {Function} [onChange] - The function executed when the property is
      * changed. Parameters are the layer the property is defined on, and the
      * name of the property.
      */

@@ -1,10 +1,7 @@
 import Source from 'Source/Source';
 import URLBuilder from 'Provider/URLBuilder';
-import { Extent } from '@itowns/geographic';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import Tile from 'Core/Tile/Tile';
-
-const _tile = new Tile('EPSG:4326', 0, 0, 0);
+import { TileMatrixSetLimits } from 'Core/Tile/Tile';
 
 /**
  * An object defining the source of resources to get from a
@@ -22,15 +19,15 @@ const _tile = new Tile('EPSG:4326', 0, 0, 0);
  * or other system. See [this link](
  * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/)
  * for more information.
- * @property {Object} tileMatrixSetLimits - it describes the available tile for this layer
- * @property {Object} extentSetlimits - these are the extents of the set of identical zoom tiles.
- * @property {Object} zoom - Object containing the minimum and maximum values of
+ * @property {object} tileMatrixSetLimits - it describes the available tile for this layer
+ * @property {object} extentSetlimits - these are the extents of the set of identical zoom tiles.
+ * @property {object} zoom - Object containing the minimum and maximum values of
  * the level, to zoom in the source.
  * @property {number} zoom.min - The minimum level of the source. Default value
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
- * @property {function} tileMatrixCallback - a method that create a TileMatrix
+ * @property {Function} tileMatrixCallback - a method that create a TileMatrix
  * identifier from the zoom level. For example, if set to `(zoomLevel) => 'EPSG:4326:' + zoomLevel`,
  * the TileMatrix that will be fetched at zoom level 5 will be the one with identifier `EPSG:4326:5`.
  * By default, the method returns the input zoom level.
@@ -72,7 +69,7 @@ const _tile = new Tile('EPSG:4326', 0, 0, 0);
  */
 class TMSSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
+     * @param {object} source - An object that can contain all properties of a
      * TMSSource and {@link Source}. Only `url` is mandatory.
      */
     constructor(source) {
@@ -91,59 +88,23 @@ class TMSSource extends Source {
             this.extent = globalExtentTMS.get(source.crs);
         }
 
-        this.zoom = source.zoom;
-
         this.isInverted = source.isInverted || false;
-        this.crs = source.crs;
-        this.tileMatrixSetLimits = source.tileMatrixSetLimits;
-        this.extentSetlimits = {};
+
+        this.tileMatrixSetLimits = TileMatrixSetLimits.fromCapabilities(source.tileMatrixSetLimits, this.crs);
+
         this.tileMatrixCallback = source.tileMatrixCallback || (zoomLevel => zoomLevel);
 
-        if (!this.zoom) {
-            if (this.tileMatrixSetLimits) {
-                const arrayLimits = Object.keys(this.tileMatrixSetLimits);
-                const size = arrayLimits.length;
-                const maxZoom = Number(arrayLimits[size - 1]);
-                const minZoom = maxZoom - size + 1;
-
-                this.zoom = {
-                    min: minZoom,
-                    max: maxZoom,
-                };
-            } else {
-                this.zoom = { min: 0, max: Infinity };
-            }
-        }
+        this.zoom = source.zoom || this.tileMatrixSetLimits.zoom;
     }
 
     urlFromExtent(tile) {
         return URLBuilder.xyz(tile, this);
     }
 
-    onLayerAdded(options) {
-        super.onLayerAdded(options);
-        // Build extents of the set of identical zoom tiles.
-        const parent = options.out.parent;
-        // The extents crs is chosen to facilitate in raster tile process.
-        const crs = parent ? parent.extent.crs : options.out.crs;
-        if (this.tileMatrixSetLimits && !this.extentSetlimits[crs]) {
-            this.extentSetlimits[crs] = {};
-            _tile.crs = this.crs;
-            for (let i = this.zoom.max; i >= this.zoom.min; i--) {
-                const tmsl = this.tileMatrixSetLimits[i];
-                const { west, north } = _tile.set(i, tmsl.minTileRow, tmsl.minTileCol).toExtent(crs);
-                const { east, south } = _tile.set(i, tmsl.maxTileRow, tmsl.maxTileCol).toExtent(crs);
-                this.extentSetlimits[crs][i] = new Extent(crs, west, east, south, north);
-            }
-        }
-    }
-
-    extentInsideLimit(extent, zoom) {
-        // This layer provides data starting at level = layer.source.zoom.min
-        // (the zoom.max property is used when building the url to make
-        //  sure we don't use invalid levels)
-        return zoom >= this.zoom.min && zoom <= this.zoom.max &&
-                (this.extentSetlimits[extent.crs] == undefined || this.extentSetlimits[extent.crs][zoom].intersectsExtent(extent));
+    hasData(tile) {
+        return  tile.zoom >= this.zoom.min &&
+            tile.zoom <= this.zoom.max &&
+            this.tileMatrixSetLimits.isInside(tile);
     }
 }
 

@@ -57,15 +57,15 @@ export default {
      * // The resulting url is:
      * // http://server.geo/tms/15/2142/3412.jpg;
      *
-     * @param {Object} coords - tile coordinates
+     * @param {object} coords - tile coordinates
      * @param {number} coords.row - tile row
      * @param {number} coords.col - tile column
      * @param {number} coords.zoom - tile zoom
-     * @param {Object} source
+     * @param {object} source
      * @param {string} source.url
      * @param {Function} source.tileMatrixCallback
      *
-     * @return {string} the formed url
+     * @returns {string} the formed url
      */
     xyz: function xyz(coords, source) {
         return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, source.tileMatrixCallback(coords.zoom))
@@ -93,18 +93,18 @@ export default {
      * // The resulting url is:
      * // http://server.geo/wms/BBOX=12,35,14,46&FORMAT=jpg&SERVICE=WMS
      *
-     * @param {Object} bbox - the bounding box
+     * @param {object} bbox - the bounding box
      * @param {number} bbox.west
      * @param {number} bbox.south
      * @param {number} bbox.east
      * @param {number} bbox.north
-     * @param {Object} source - the source of data
+     * @param {object} source - the source of data
      * @param {string} source.crs
      * @param {number} source.bboxDigits
      * @param {string} source.url
      * @param {string} source.axisOrder
      *
-     * @return {string} the formed url
+     * @returns {string} the formed url
      */
     bbox: function bbox(bbox, source) {
         let precision = source.crs == 'EPSG:4326' ? 9 : 2;

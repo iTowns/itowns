@@ -5,18 +5,18 @@ import LASParser from 'Parser/LASParser';
 import Source from 'Source/Source';
 
 /**
-* @param url - URL of the COPC resource.
-* @param colorDepth - Encoding of the `color`
-* attribute. Either `8` or `16` bits. By default it is to 16.
-* @param _lazPerfBaseUrl - (experimental) Overrides base
-* url of the `las-zip.wasm` file of the `laz-perf` library.
-* @param crs - Native CRS of the COPC
-* ressource. Note that this is not for now inferred from the COPC header.
-* @param networkOptions - Fetch options (passed
-* directly to `fetch()`), see [the syntax for more information](
-* https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
-* @param attribution - Attribution of the data.
-*/
+ * @param url - URL of the COPC resource.
+ * @param colorDepth - Encoding of the `color`
+ * attribute. Either `8` or `16` bits. By default it is to 16.
+ * @param _lazPerfBaseUrl - (experimental) Overrides base
+ * url of the `las-zip.wasm` file of the `laz-perf` library.
+ * @param crs - Native CRS of the COPC
+ * ressource. Note that this is not for now inferred from the COPC header.
+ * @param networkOptions - Fetch options (passed
+ * directly to `fetch()`), see [the syntax for more information](
+ * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
+ * @param attribution - Attribution of the data.
+ */
 interface COPCSourceParameters {
     url: string;
     crs: string;
@@ -25,11 +25,11 @@ interface COPCSourceParameters {
 }
 
 interface Header {
-        header: Las.Header,
-        info: Info,
-        wkt: string,
-        eb: Las.ExtraBytes[],
-    }
+    header: Las.Header;
+    info: Info;
+    wkt: string;
+    eb: Las.ExtraBytes[];
+}
 
 async function getHeaders(
     fetcher: (begin: number, end: number) => Promise<Uint8Array>): Promise<Header> {
@@ -79,7 +79,8 @@ class CopcSource extends Source {
     // Properties initialized after fetching header portion of the file
     /** LAS header of the source. */
     header!: Las.Header;
-    /** COPC `info` VLR.
+    /**
+     * COPC `info` VLR.
      * @param cube - Bounding box of the octree as a 6-elements.
      * tuple `[minX, minY, minZ, maxX, maxY, maxZ]`. Computed from `center_x`,
      * `center_y`, `center_z` and `halfSize` properties.
@@ -90,7 +91,7 @@ class CopcSource extends Source {
      * root node data chunk.
      * @param gpsTimeRange - A 2-element tuple denoting the
      * minimum and maximum values of attribute `gpsTime`.
-    */
+     */
     info!: Info;
     /** List of headers of each Variable Length Records (VLRs). */
     eb!: Las.ExtraBytes[];

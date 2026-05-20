@@ -16,7 +16,10 @@ export interface PointCloudSource {
 }
 
 export interface PointCloudLayerParameters {
-    /** Description and options of the source. @see {@link Layer}. */
+    /**
+     * Description and options of the source.
+     * @see {@link Layer}.
+     */
     source: PointCloudSource;
     object3d?: THREE.Group;
     group?: THREE.Group;
@@ -24,25 +27,35 @@ export interface PointCloudLayerParameters {
     pointBudget?: number;
     pointSize?: number;
     sseThreshold?: number;
-    /** The minimal intensity of the
-     * layer. Changing this value will affect the material, if it has the
-     * corresponding uniform. The value is normalized between 0 and 1. */
+    /**
+     * The minimal intensity of the layer. Changing this value will affect the
+     * material, if it has the corresponding uniform. The value is normalized
+     * between 0 and 1.
+     */
     minIntensityRange?: number;
-    /** The maximal intensity of the
-     * layer. Changing this value will affect the material, if it has the
-     * corresponding uniform. The value is normalized between 0 and 1. */
+    /**
+     * The maximal intensity of the layer. Changing this value will affect the
+     * material, if it has the corresponding uniform. The value is normalized
+     * between 0 and 1.
+     */
     maxIntensityRange?: number;
-    /** Min value for the elevation range
-     * (default value taken from the source.metadata). */
+    /**
+     * Min value for the elevation range (default value taken from the
+     * source.metadata).
+     */
     minElevationRange?: number;
-    /** Max value for the elevation range
-     * (default value taken from the source.metadata). */
+    /**
+     * Max value for the elevation range (default value taken from the
+     * source.metadata).
+     */
     maxElevationRange?: number;
     minAngleRange?: number;
     maxAngleRange?: number;
     material?: THREE.Material;
-    /** The displaying mode of the points.
-    * Values are specified in `PointsMaterial`. */
+    /**
+     * The displaying mode of the points. Values are specified in
+     * `PointsMaterial`.
+     */
     mode?: number;
 }
 
@@ -118,21 +131,6 @@ function computeScreenSpaceError(
     return computeSSEPerspective(context, pointSize, pointSpacing, distance);
 }
 
-function markForDeletion(elt: PointCloudNode) {
-    elt.visible = false;
-    if (elt.obj) {
-        elt.obj.visible = false;
-    }
-
-    if (!elt.notVisibleSince) {
-        elt.notVisibleSince = Date.now();
-        // Set .sse to an invalid value
-        elt.sse = -1;
-    }
-    for (const child of elt.children) {
-        markForDeletion(child);
-    }
-}
 
 function changeIntensityRange(layer: PointCloudLayer) {
     // @ts-expect-error PointsMaterial is not typed yet
@@ -222,12 +220,14 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     /** Root node of the point cloud tree. */
     root: PointCloudNode | undefined;
 
-    /** The material to use to display the points of the cloud.
-     * Be default it is a new `PointsMaterial`. */
+    /**
+     * The material to use to display the points of the cloud.
+     * Be default it is a new `PointsMaterial`.
+     */
     material: THREE.PointsMaterial;
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
-    private _visibleNodes: Set<PointCloudNode> = new Set();
+    private _visibleNodes = new Set<PointCloudNode>();
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -327,6 +327,12 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             visible,
         });
         node.visible = visible;
+        if (visible) {
+            node.notVisibleSince = undefined;
+        } else {
+            node.notVisibleSince = Date.now();
+            node.sse = -1;
+        }
     }
 
     preUpdate(context: Context) {
@@ -394,6 +400,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     elt.obj = pts;
                     elt.obj.visible = false;
 
+                    if (!elt.visible) {
+                        elt.notVisibleSince = Date.now();
+                    }
+
                     // make sure to add it here, otherwise it might never
                     // be added nor cleaned
                     this.group.add(elt.obj);
@@ -419,65 +429,66 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      *
      * @param context - The context.
      * @param layer - The layer on wich the node is attach.
-     * @param elt - The element (node) to render.
+     * @param root - The element (node) to render.
      *
      * @returns The child nodes to update or [] if there is none.
      */
-    update(context: Context, layer: this, elt: PointCloudNode): PointCloudNode[] {
-        if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < elt.depth) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        // get object on which to measure distance
-        let bbox;
-        let object3d;
-        if (elt.obj) {
-            object3d = elt.obj;
-            bbox = object3d.geometry.boundingBox as THREE.Box3;
-        } else {
-            object3d = elt.clampOBB;
-            bbox = object3d.box3D;
-            if (!object3d.parent) {
-                this.obbes.add(object3d);
-                object3d.updateMatrixWorld(true);
-            }
-        }
-
-        const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
-
-        if (!visible) {
-            markForDeletion(elt);
-            return [];
-        }
-
-        point.copy(context.camera.camera3D.position)
-            .applyMatrix4(object3d.matrixWorldInverse as THREE.Matrix4);
-
-        const distanceToCamera = bbox.distanceToPoint(point);
-
-        elt.sse = computeScreenSpaceError(
-            context,
-            layer.pointSize,
-            elt.pointSpacing,
-            distanceToCamera,
-        ) / this.sseThreshold;
-
-        // The visibility here is not definitive, as it will be updated
-        // in the postUpdate phase
-        elt.visible = visible;
-        elt.notVisibleSince = undefined;
-        this._candidateNodes.push(elt);
-        this.loadData(elt, context, layer, distanceToCamera);
-
-        if (elt.children && elt.children.length) {
-            if (elt.sse >= 1) {
-                return elt.children;
+    update(context: Context, layer: this, root: PointCloudNode): PointCloudNode[] {
+        const rootWithWeight = { node: root, weight: Infinity };
+        const queue = new TinyQueue([rootWithWeight], (a, b) => b.weight - a.weight);
+        let numVisiblePoints = 0;
+        while (queue.length > 0 && numVisiblePoints < this.pointBudget) {
+            const { node } = queue.pop() as { node: PointCloudNode };
+            // get object on which to measure distance
+            let bbox;
+            let object3d;
+            if (node.obj) {
+                object3d = node.obj;
+                bbox = object3d.geometry.boundingBox as THREE.Box3;
             } else {
-                for (const child of elt.children) {
-                    markForDeletion(child);
+                object3d = node.clampOBB;
+                bbox = object3d.box3D;
+                if (!object3d.parent) {
+                    this.obbes.add(object3d);
+                    object3d.updateMatrixWorld(true);
                 }
-                return [];
+            }
+
+            if (this.octreeDepthLimit >= 0 && this.octreeDepthLimit < node.depth) {
+                continue;
+            }
+
+            const visible = context.camera.isBox3Visible(bbox, object3d.matrixWorld);
+
+            if (!visible) {
+                continue;
+            }
+
+            numVisiblePoints += node.numPoints;
+
+            point.copy(context.camera.camera3D.position)
+                .applyMatrix4(object3d.matrixWorldInverse as THREE.Matrix4);
+
+            const distanceToCamera = bbox.distanceToPoint(point);
+
+            node.sse = computeScreenSpaceError(
+                context,
+                layer.pointSize,
+                node.pointSpacing,
+                distanceToCamera,
+            ) / this.sseThreshold;
+
+            node.visible = visible;
+            node.notVisibleSince = undefined;
+            this._candidateNodes.push(node);
+            this.loadData(node, context, layer, distanceToCamera);
+
+            if (node.children && node.children.length) {
+                if (node.sse >= 1) {
+                    for (const child of node.children) {
+                        queue.push({ node: child, weight: node.sse });
+                    }
+                }
             }
         }
 
@@ -485,17 +496,13 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     }
 
     postUpdate() {
+        // TODO: Need to only change group meshes here + visibility event
         const visibleLastUpdate = this._visibleNodes;
         this._visibleNodes = new Set();
         this.displayedCount = 0;
 
-        // Push visible nodes until the point budget is reached
         while (this._candidateNodes.length > 0) {
             const node = this._candidateNodes.pop() as PointCloudNode;
-            if (this.displayedCount + node.numPoints > this.pointBudget) {
-                this._candidateNodes.push(node);
-                break;
-            }
             this.displayedCount += node.numPoints;
             this._visibleNodes.add(node);
             node.visible = true;
@@ -503,15 +510,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             if (!visibleLastUpdate.has(node)) {
                 this.setNodeVisible(node, true);
             }
-        }
-
-        const nonVisibleNodes = new Set<PointCloudNode>();
-        // Hide remaining visible nodes that didn't fit in the budget
-        while (this._candidateNodes.length > 0) {
-            const node = this._candidateNodes.pop() as PointCloudNode;
-            node.visible = false;
-            if (node.obj) { node.obj.visible = false; }
-            nonVisibleNodes.add(node);
         }
 
         // Set symmetric difference between visible nodes from last
@@ -528,10 +526,11 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         const now = Date.now();
         for (let i = this.group.children.length - 1; i >= 0; i--) {
             const obj = this.group.children[i] as THREE.Points;
-            if (!obj.visible && (now - obj.userData.node.notVisibleSince > 10000)) {
+            const node = obj.userData.node as PointCloudNode;
+            if (node.notVisibleSince && (now - node.notVisibleSince > 10000)) {
                 this.group.remove(obj);
                 obj.geometry.dispose();
-                obj.userData.node.obj = null;
+                node.obj = undefined;
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
         }

@@ -53,7 +53,7 @@ function _instantiateSubRoot(source, crs) {
 class VpcLayer extends PointCloudLayer {
     /**
      * @param {string} id - Unique id of the layer.
-     * @param {Object} config - See {@link PointCloudLayer} for base pointcloud
+     * @param {object} config - See {@link PointCloudLayer} for base pointcloud
      * options.
      */
     constructor(id, config) {
@@ -75,9 +75,11 @@ class VpcLayer extends PointCloudLayer {
             const boundsConforming = this.source.boundsConforming;
             this.root = new PointCloudNode(-1, 0);
             this.root.source = this.source;
+            this.root.voxelKey = 'vpcRoot';
 
-            this.root.voxelOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
-            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+            // We don't have acces to the VoxelOBB in vpcLayer (and it won't have any sens to calculate it)
+            this.root.clampOBB.setFromArray(boundsConforming).projOBB(this.source.crs, this.crs);
+
             this.object3d.add(this.root.clampOBB);
             this.root.clampOBB.updateMatrixWorld(true);
 

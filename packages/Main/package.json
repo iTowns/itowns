@@ -21,10 +21,10 @@
     "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "watch": "npm run transpile -- --watch",
     "prepublishOnly": "npx copyfiles -u 1 \"../../examples/**/*\" ./examples/ && npx copyfiles -u 1 \"../../docs/**/*\" ./docs/ && npx copyfiles -u 1 \"../../dist/**/*\" ./dist/ ",
-    "postpublish": "node clean.cjs",
+    "postpublish": "node clean.mjs",
     "publish-latest": "npm publish --access public --tag=latest --provenance",
     "publish-next": "npm publish --access public --tag=next --provenance",
-    "version": "cross-env-shell npm install @itowns/geographic@$npm_package_version && node scripts/version.mjs"
+    "version": "cross-env-shell npm pkg set dependencies.@itowns/geographic=^$npm_package_version && node scripts/version.mjs"
   },
   "c8": {
     "exclude": [
@@ -53,7 +53,7 @@
     "@itowns/geographic": "^2.46.0",
     "@mapbox/vector-tile": "^2.0.4",
     "@maplibre/maplibre-gl-style-spec": "^24.7.0",
-    "@takram/three-atmosphere": "^0.17.1",
+    "@takram/three-atmosphere": "^0.19.1",
     "@tmcw/togeojson": "^7.1.2",
     "@tweenjs/tween.js": "^25.0.0",
     "3d-tiles-renderer": "^0.4.22",

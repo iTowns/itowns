@@ -29,8 +29,7 @@ function filterUnsupportedSemantics(obj) {
 
     if (obj.gltfShader) {
         const names = [];
-        // eslint-disable-next-line guard-for-in
-        for (const name in obj.gltfShader.boundUniforms) {
+        for (const [name] of Object.entries(obj.gltfShader.boundUniforms)) {
             names.push(name);
         }
         for (const name of names) {
@@ -46,7 +45,7 @@ function filterUnsupportedSemantics(obj) {
  * Transforms loaded gltf model to z-up (either from y-up or from the up axis defined in gltfUpAxis). Note that
  * gltfUpAxis was an attribut of pre-1.0 3D Tiles and is now deprecated.
  * @param {THREE.Object3D} gltfScene - the parsed glTF scene
- * @param {String} gltfUpAxis - the gltfUpAxis parameter
+ * @param {string} gltfUpAxis - the gltfUpAxis parameter
  */
 function transformToZUp(gltfScene, gltfUpAxis) {
     if (!gltfUpAxis  || gltfUpAxis === 'Y') {
@@ -61,9 +60,10 @@ function transformToZUp(gltfScene, gltfUpAxis) {
  */
 
 export default {
-    /** Parse b3dm buffer and extract THREE.Scene and batch table
+    /**
+     * Parse b3dm buffer and extract THREE.Scene and batch table
      * @param {ArrayBuffer} buffer - the b3dm buffer.
-     * @param {Object} options - additional properties.
+     * @param {object} options - additional properties.
      * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
      * @param {string} options.urlBase - the base url of the b3dm file (used to fetch textures for the embedded glTF model).
      * @param {boolean=} [options.doNotPatchMaterial=false] - disable patching material with logarithmic depth buffer support.
@@ -73,7 +73,7 @@ export default {
      * true, a threejs [MeshBasicMaterial](https://threejs.org/docs/index.html?q=meshbasic#api/en/materials/MeshBasicMaterial)
      * is set up. config.overrideMaterials can also be a threejs [Material](https://threejs.org/docs/index.html?q=material#api/en/materials/Material)
      * in which case it will be the material used to override.
-     * @return {Promise} - a promise that resolves with an object containig a THREE.Scene (gltf) and a batch table (batchTable).
+     * @returns {Promise} - a promise that resolves with an object containig a THREE.Scene (gltf) and a batch table (batchTable).
      *
      */
     parse(buffer, options) {

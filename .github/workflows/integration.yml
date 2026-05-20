@@ -74,6 +74,24 @@ jobs:
           checkAllCommitMessages: true
           accessToken: ${{ secrets.GITHUB_TOKEN }}
 
+  # Typecheck
+  typecheck:
+    name: Typecheck
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Use Node.js 24
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'npm'
+      - name: Install packages
+        run: npm ci
+      - name: Transpile
+        run: npm run transpile
+      - name: Typecheck
+        run: npm run typecheck
 
   # Unit and coverage tests
   unit-and-coverage-tests:

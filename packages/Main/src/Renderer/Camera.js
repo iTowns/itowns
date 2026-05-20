@@ -3,7 +3,7 @@ import { Coordinates } from '@itowns/geographic';
 import DEMUtils from 'Utils/DEMUtils';
 
 /**
- * @typedef     {object}    Camera~CAMERA_TYPE
+ * @typedef     {object}    CAMERA_TYPE
  * Stores the different types of camera usable in iTowns.
  *
  * @property    {number}    PERSPECTIVE     Perspective type of camera
@@ -88,15 +88,15 @@ class Camera {
     /**
      * @param   {string}                crs                                     The camera's coordinate projection system.
      * @param   {number}                width                                   The width (in pixels) of the view the
-        * camera is associated to.
+     * camera is associated to.
      * @param   {number}                height                                  The height (in pixels) of the view the
-        * camera is associated to.
-     * @param   {Object}                [options]                               Options for the camera.
+     * camera is associated to.
+     * @param   {object}                [options]                               Options for the camera.
      * @param   {THREE.Camera}          [options.cameraThree]                   A custom Three.js camera object to wrap
-        * around.
-     * @param   {Camera~CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
-        * CAMERA_TYPE}.
-     * @constructor
+     * around.
+     * @param   {Camera.CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
+     * CAMERA_TYPE}.
+     * @class
      */
     constructor(crs, width, height, options = {}) {
         this.crs = crs;
@@ -185,7 +185,7 @@ class Camera {
      *
      * @param   {string}        [crs]   If defined (e.g 'EPSG:4326'), the camera position will be returned in this CRS.
      *
-     * @return  {Coordinates}   Coordinates object holding camera's position.
+     * @returns  {Coordinates}   Coordinates object holding camera's position.
      */
     position(crs) {
         return new Coordinates(this.crs)

@@ -10,7 +10,7 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
 
     viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
-    /** @type THREE.RenderTarget */
+    /** @type {THREE.RenderTarget} */
     const buffer = RenderMode.scope(tileLayer.level0Nodes, RenderMode.MODES.ID, () => view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {
@@ -210,7 +210,7 @@ export default {
     pickObjectsAt(view, viewCoords, radius, object, target = []) {
         // Raycaster use NDC coordinate
         view.viewToNormalizedCoords(viewCoords, normalized);
-        if (radius < 0) {
+        if (radius === 0) {
             raycaster.setFromCamera(normalized, view.camera3D);
 
             const intersects = raycaster.intersectObject(object, true);

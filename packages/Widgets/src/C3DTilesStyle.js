@@ -23,10 +23,10 @@ const DEFAULT_OPTIONS = {
  */
 class C3DTilesStyle extends Widget {
 /**
-   *
-   * @param {View} view view
-   * @param {*} options options
-   */
+ *
+ * @param {View} view view
+ * @param {*} options options
+ */
     constructor(view, options) {
         super(view, options, DEFAULT_OPTIONS);
 
@@ -68,14 +68,12 @@ class C3DTilesStyle extends Widget {
                 const buffer = new Map(); // record what are the possible values for a key in batchTable
                 for (const [, tileC3DTileFeatures] of c3DTilesLayer.tilesC3DTileFeatures) {
                     for (const [, c3DTileFeature] of tileC3DTileFeatures) {
-                        // eslint-disable-next-line guard-for-in
-                        for (const key in c3DTileFeature.getInfo().batchTable) {
+                        for (const [key, value] of Object.entries(c3DTileFeature.getInfo().batchTable)) {
                             if (!buffer.has(key)) {
                                 buffer.set(key, []);
                             }
 
                             // check possible value for this key
-                            const value = c3DTileFeature.getInfo().batchTable[key];
                             if (!buffer.get(key).includes(value)) {
                                 buffer.get(key).push(value);
                             }
@@ -232,6 +230,7 @@ class C3DTilesStyle extends Widget {
         updateSelectedLayer();
     }
 
+    // eslint-disable-next-line @typescript-eslint/class-literal-property-style
     static get MAX_SELECT_VALUE() {
         return 10;
     }

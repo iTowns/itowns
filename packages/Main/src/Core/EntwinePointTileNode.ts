@@ -10,8 +10,10 @@ class EntwinePointTileNode extends LasNodeBase {
 
     hierarchy: Record<string, number>;
 
-    /** The string id of the node, constituted of the four
-    * components: `depth-x-y-z`. */
+    /**
+     * The string id of the node, constituted of the four components:
+     * `depth-x-y-z`.
+     */
     override voxelKey: string;
 
     /**
@@ -30,6 +32,7 @@ class EntwinePointTileNode extends LasNodeBase {
      * `-1`, it means that the octree hierarchy associated to this node needs to
      * be loaded.
      * @param crs - The crs of the node.
+     * @param hierarchy
      */
     constructor(
         depth: number,

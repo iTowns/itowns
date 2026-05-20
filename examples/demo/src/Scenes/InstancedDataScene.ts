@@ -9,7 +9,7 @@ import type { SceneType } from '../Types';
 export const InstancedDataScene: SceneType = {
     title: 'Populate Your City Model',
     description: 'Add thousands of 3D objects efficiently using instancing. '
-    + 'Perfect for trees, street furniture, or any repeating elements.',
+        + 'Perfect for trees, street furniture, or any repeating elements.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
@@ -28,15 +28,16 @@ export const InstancedDataScene: SceneType = {
     },
     getItownsView: () => InstancedDataScene.getView().getItownsView(),
     event: function update(/* dt */) {
-        if (InstancedDataScene.meshes!.length) {
-            for (let i = 0; i < InstancedDataScene.meshes!.length; i++) {
-                const mesh = InstancedDataScene.meshes![i];
+        const meshes = InstancedDataScene.meshes ?? [];
+        if (meshes.length) {
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
                 if (mesh && mesh.scale.z < 1) {
                     mesh.scale.z = Math.min(1.0, mesh.scale.z + 0.005);
                     mesh.updateMatrixWorld(true);
                 }
             }
-            InstancedDataScene.meshes = InstancedDataScene.meshes!.filter(m => m.scale.z < 1);
+            InstancedDataScene.meshes = InstancedDataScene.meshes?.filter(m => m.scale.z < 1);
             InstancedDataScene.getItownsView()
                 .notifyChange(InstancedDataScene.getItownsView().camera3D, true);
         }
@@ -61,7 +62,7 @@ export const InstancedDataScene: SceneType = {
         function scaleZ(mesh: THREE.Mesh) {
             mesh.children.forEach((c) => {
                 c.scale.z = 0.01;
-                InstancedDataScene.meshes!.push(c);
+                InstancedDataScene.meshes?.push(c);
             });
         }
 

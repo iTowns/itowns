@@ -151,6 +151,20 @@ describe('Extent', function () {
         assert.ok(withValues.intersectsExtent(inter));
     });
 
+    it('intersectsExtent should return false when extents touch at edges -------', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 10, 20, 0, 10);
+
+        assert.strictEqual(Extent.intersectsExtent(a, b), false);
+    });
+
+    it('intersectsExtent should return false when extents touch at corners', () => {
+        const a = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const b = new Extent('EPSG:4326', 10, 20, 10, 20);
+
+        assert.strictEqual(Extent.intersectsExtent(a, b), false);
+    });
+
     it('should intersect like expected', function () {
         const withValues = new Extent('EPSG:4326', minX, maxX, minY, maxY);
         const extent = new Extent('EPSG:4326', minX + 1, maxX - 1, maxY - 1, maxY + 2);

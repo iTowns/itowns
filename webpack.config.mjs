@@ -1,5 +1,9 @@
-const path = require('path');
-const ESLintPlugin = require('eslint-webpack-plugin');
+import path from 'node:path';
+import process from 'node:process';
+import { fileURLToPath } from 'url';
+import ESLintPlugin from 'eslint-webpack-plugin';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const mode = process.env.NODE_ENV;
 const noInline = process.env.noInline;
@@ -38,7 +42,7 @@ const exclude = [
     path.resolve(__dirname, 'node_modules'),
 ];
 
-module.exports = () => {
+export default () => {
     const babelLoaderOptions = [];
     if (!noInline) {
         babelLoaderOptions.push('babel-inline-import-loader');

@@ -16,13 +16,13 @@ import CopcSource from 'Source/CopcSource';
  * this, as it is used internally for optimisation.
  * @property {string} url - The URL of the directory containing the whole
  * Entwine Point Tile structure.
- * @property {Object[]|PointCloudSource[]} sources - Array of all the source described in the VPC.
+ * @property {object[] | PointCloudSource[]} sources - Array of all the source described in the VPC.
  * initialized with mockSource that will be replace by COPC or EPT Source as soon as any data need
  * to be loaded.
  */
 class VpcSource extends Source {
     /**
-     * @param {Object} config - The configuration, see {@link Source} for
+     * @param {object} config - The configuration, see {@link Source} for
      * available values.
      * @param {number} [config.colorDepth] - Color depth (in bits).
      * Either 8 or 16 bits. By defaults it will be set to 8 bits for LAS 1.2 and

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import PointCloudNode, { buildVoxelKey } from 'Core/PointCloudNode';
 import { Box3, Vector3 } from 'three';
 

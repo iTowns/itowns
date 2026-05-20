@@ -81,7 +81,8 @@ function getQuaternion(origin, crsIn, crsOut) {
     return quaternion;
 }
 
-/** The LASParser module provides a [parse]{@link
+/**
+ * The LASParser module provides a [parse]{@link
  * module:LASParser.parse} method that takes a LAS or LAZ (LASZip) file in, and
  * gives a `THREE.BufferGeometry` containing all the necessary attributes to be
  * displayed in iTowns. It uses the
@@ -116,22 +117,22 @@ export default {
      * `THREE.BufferGeometry`.
      *
      * @param {ArrayBuffer} data - The file content to parse.
-     * @param {Object} options
-     * @param {Object} options.in - Options to give to the parser.
+     * @param {object} options
+     * @param {object} options.in - Options to give to the parser.
      * @param {number} options.in.numPoints - Number of points encoded in this
      * data chunk.
-     * @param {Object} options.in.source - Source information.
-     * @param {Object} options.in.source.header - Partial LAS file header.
+     * @param {object} options.in.source - Source information.
+     * @param {object} options.in.source.header - Partial LAS file header.
      * @param {number} options.in.source.header.pointDataRecordFormat - Type of
      * Point Data Record contained in the LAS file.
      * @param {number} options.in.source.header.pointDataRecordLength - Size
      * (in bytes) of the Point Data Record.
-     * @param {Object} [options.in.source.eb] - Extra bytes LAS VLRs headers.
+     * @param {object} [options.in.source.eb] - Extra bytes LAS VLRs headers.
      * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
      *
-     * @return {Promise<THREE.BufferGeometry>} A promise resolving with a
+     * @returns {Promise<THREE.BufferGeometry>} A promise resolving with a
      * `THREE.BufferGeometry`.
      */
     async parseChunk(data, options = {}) {
@@ -154,19 +155,19 @@ export default {
      * `THREE.BufferGeometry`.
      *
      * @param {ArrayBuffer} data - The file content to parse.
-     * @param {Object} [options]
-     * @param {Object} [options.in] - Options to give to the parser.
-     * @param {String} options.in.crs - Crs of the source.
+     * @param {object} [options]
+     * @param {object} [options.in] - Options to give to the parser.
+     * @param {string} options.in.crs - Crs of the source.
      * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
-     * @param {String} options.out.crs - Crs of the view.
-     * @param {String} options.out.origin - The coordinate of the local origin
+     * @param {string} options.out.crs - Crs of the view.
+     * @param {string} options.out.origin - The coordinate of the local origin
      * in the world referentiel.
-     * @param {String} options.out.rotation - Rotation to go from the local referetiel
+     * @param {string} options.out.rotation - Rotation to go from the local referetiel
      * to a geocentrique one (in appliable).
      *
-     * @return {Promise} A promise resolving with a `THREE.BufferGeometry`. The
+     * @returns {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
      */
     async parse(data, options = {}) {

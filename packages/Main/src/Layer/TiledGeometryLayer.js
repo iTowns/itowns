@@ -50,8 +50,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * geometry of the TiledGeometryLayer. It is usually a `THREE.Group`, but it
      * can be anything inheriting from a `THREE.Object3d`.
      * @param {Array} schemeTile - extents Array of root tiles
-     * @param {Object} builder - builder geometry object
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {object} builder - builder geometry object
+     * @param {object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
@@ -191,12 +191,12 @@ class TiledGeometryLayer extends GeometryLayer {
      * method.
      *
      * @param {View} view - The view instance.
-     * @param {Object} coordinates - The coordinates to pick in the view. It
+     * @param {object} coordinates - The coordinates to pick in the view. It
      * should have at least `x` and `y` properties.
      * @param {number} radius - Radius of the picking circle.
      * @param {Array} target - Array to push picking result.
      *
-     * @return {Array} An array containing all targets picked under the
+     * @returns {Array} An array containing all targets picked under the
      * specified coordinates.
      */
     pickObjectsAt(view, coordinates, radius = this.options.defaultPickingRadius, target = []) {
@@ -224,12 +224,12 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>else it returns the whole tree</li>
      * </ul>
      *
-     * @param {Object} context - The context of the update; see the {@link
+     * @param {object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {Set<GeometryLayer|TileMesh>} sources - A list of sources to
      * generate a list of nodes to update.
      *
-     * @return {TileMesh[]} The array of nodes to update.
+     * @returns {TileMesh[]} The array of nodes to update.
      */
     preUpdate(context, sources) {
         if (sources.has(undefined) || sources.size == 0) {
@@ -301,13 +301,13 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>is not visible in the camera</li>
      * </ul>
      *
-     * @param {Object} context - The context of the update; see the {@link
+     * @param {object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {Layer} layer - Parameter to be removed once all update methods
      * have been aligned.
      * @param {TileMesh} node - The node to update.
      *
-     * @returns {Object}
+     * @returns {object}
      */
     update(context, layer, node) {
         if (!node.parent) {
@@ -384,7 +384,7 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>a color texture is missing</li>
      * </ul>
      *
-     * @param {Object} context - The context of the update; see the {@link
+     * @param {object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {TileMesh} node - The node to subdivide.
      *
@@ -396,12 +396,9 @@ class TiledGeometryLayer extends GeometryLayer {
         let nodeLayer = node.material.getElevationTile();
 
         for (const e of context.elevationLayers) {
-            const extents = node.getExtentsByProjection(e.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > e.zoom.max || zoom < e.zoom.min) {
-                continue;
-            }
-            if (!e.frozen && e.ready && e.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            const tiles = node.getExtentsByProjection(e.crs);
+
+            if (!e.frozen && e.ready && tiles.some(t => e.source.hasData(t)) && (!nodeLayer || nodeLayer.level < 0)) {
                 // no stop subdivision in the case of a loading error
                 if (layerUpdateState[e.id] && layerUpdateState[e.id].inError()) {
                     continue;
@@ -414,17 +411,14 @@ class TiledGeometryLayer extends GeometryLayer {
             if (c.frozen || !c.visible || !c.ready) {
                 continue;
             }
-            const extents = node.getExtentsByProjection(c.crs);
-            const zoom = extents[0].zoom;
-            if (zoom > c.zoom.max || zoom < c.zoom.min) {
-                continue;
-            }
+            const tiles = node.getExtentsByProjection(c.crs);
+
             // no stop subdivision in the case of a loading error
             if (layerUpdateState[c.id] && layerUpdateState[c.id].inError()) {
                 continue;
             }
             nodeLayer = node.material.getColorTile(c.id);
-            if (c.source.extentInsideLimit(node.extent, zoom) && (!nodeLayer || nodeLayer.level < 0)) {
+            if (tiles.some(t => c.source.hasData(t)) && (!nodeLayer || nodeLayer.level < 0)) {
                 return false;
             }
         }
@@ -439,10 +433,10 @@ class TiledGeometryLayer extends GeometryLayer {
      * south-east. Once all four nodes are created, they will be added to the
      * current node and the view of the context will be notified of this change.
      *
-     * @param {Object} context - The context of the update; see the {@link
+     * @param {object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {TileMesh} node - The node to subdivide.
-     * @return {Promise}  { description_of_the_return_value }
+     * @returns {Promise}  { description_of_the_return_value }
      */
     subdivideNode(context, node) {
         if (!node.pendingSubdivision && !node.children.some(n => n.layer == this)) {
@@ -481,12 +475,12 @@ class TiledGeometryLayer extends GeometryLayer {
     /**
      * Test the subdvision of a node, compared to this layer.
      *
-     * @param {Object} context - The context of the update; see the {@link
+     * @param {object} context - The context of the update; see the {@link
      * MainLoop} for more informations.
      * @param {PlanarLayer} layer - This layer, parameter to be removed.
      * @param {TileMesh} node - The node to test.
      *
-     * @return {boolean} - True if the node is subdivisable, otherwise false.
+     * @returns {boolean} - True if the node is subdivisable, otherwise false.
      */
     subdivision(context, layer, node) {
         if (node.level < this.minSubdivisionLevel) {

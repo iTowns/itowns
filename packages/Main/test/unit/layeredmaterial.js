@@ -9,7 +9,7 @@ import * as THREE from 'three';
 import Tile from 'Core/Tile/Tile';
 import OBB from 'Renderer/OBB';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 

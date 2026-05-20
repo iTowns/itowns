@@ -11,7 +11,7 @@ import OBB from 'Renderer/OBB';
 
 type PartialParams<
     Params extends TileBuilderParams,
-    Keys extends keyof Params = 'extent' | 'level'
+    Keys extends keyof Params = 'extent' | 'level',
 > = Pick<Params, Keys> & Partial<Params>;
 
 function defaultBuffers(
@@ -24,7 +24,7 @@ function defaultBuffers(
         buildIndexAndUv_0: true,
         segments: 16,
         coordinates: new Coordinates(builder.crs),
-        center: builder.center(params.extent!).clone(),
+        center: builder.center(params.extent as Extent).clone(),
         ...params,
     };
 
@@ -66,8 +66,8 @@ export class TileGeometry extends THREE.BufferGeometry {
     // https://github.com/iTowns/itowns/pull/2440#discussion_r1860743294
     // TODO: Remove nullability by reworking OBB:setFromExtent
     private _refCount: {
-        count: number,
-        fn: () => void,
+        count: number;
+        fn: () => void;
     } | null;
 
     public constructor(
@@ -107,7 +107,7 @@ export class TileGeometry extends THREE.BufferGeometry {
      * Initialize reference count for this geometry if it is currently null.
      *
      * @param cacheTile - The [Cache] used to store this geometry.
-     * @param keys - The [south, level, epsg] key of this geometry.
+     * @param key - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
         cacheTile: LRUCache<string, Promise<this>>,
@@ -120,8 +120,9 @@ export class TileGeometry extends THREE.BufferGeometry {
         this._refCount = {
             count: 0,
             fn: () => {
-                this._refCount!.count--;
-                if (this._refCount!.count <= 0) {
+                const refCount = this._refCount as { count: number };
+                refCount.count--;
+                if (refCount.count <= 0) {
                     // To avoid remove index buffer and attribute buffer uv
                     //  error un-bound buffer in webgl with VAO rendering.
                     // Could be removed if the attribute buffer deleting is
@@ -140,7 +141,7 @@ export class TileGeometry extends THREE.BufferGeometry {
     /**
      * Increase reference count.
      *
-     * @throws If reference count has not been initialized.
+     * @throws {Error} if reference count has not been initialized.
      */
     public increaseRefCount(): void {
         if (this._refCount === null) {
@@ -153,6 +154,7 @@ export class TileGeometry extends THREE.BufferGeometry {
     /**
      * The current reference count of this [TileGeometry] if it has been
      * initialized.
+     * @returns
      */
     public get refCount(): number | undefined {
         return this._refCount?.count;

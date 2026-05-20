@@ -1,13 +1,14 @@
 {
   "name": "@itowns/demo",
-  "version": "0.1.0",
+  "version": "2.46.0",
   "description": "Itowns Demo",
   "type": "module",
   "scripts": {
     "build": "",
     "lint": "eslint \"src/**/*.{js,ts,tsx}\"",
     "transpile": "tsc && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir dist --extensions .js,.ts",
-    "watch": "npm run transpile -- --watch"
+    "watch": "npm run transpile -- --watch",
+    "version": "cross-env-shell npm pkg set dependencies.itowns=^$npm_package_version"
   },
   "files": [
     "src"

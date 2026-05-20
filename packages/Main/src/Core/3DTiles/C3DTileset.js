@@ -22,7 +22,7 @@ const tileMatrixInverse = new THREE.Matrix4();
  *  specification](https://github.com/CesiumGS/3d-tiles/blob/master/specification/schema/tileset.schema.json#L18)
  *  @property {string[]} extensionsUsed - see [tileset
  *  specification](https://github.com/CesiumGS/3d-tiles/blob/master/specification/schema/tileset.schema.json#L27)
- *  @property {array} extensionsRequired - see [tileset specification](https://github.com/CesiumGS/3d-tiles/blob/master/specification/schema/tileset.schema.json#L36)
+ *  @property {Array} extensionsRequired - see [tileset specification](https://github.com/CesiumGS/3d-tiles/blob/master/specification/schema/tileset.schema.json#L36)
  *  @property {object[]} tiles - an array holding all the
  *  [tiles](https://github.com/AnalyticalGraphicsInc/3d-tiles/blob/master/specification/schema/tile.schema.json)
  *  (not their content which is stored in the attribute object3d of the

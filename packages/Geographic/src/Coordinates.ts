@@ -77,7 +77,7 @@ class Coordinates {
      * @param y - y or latitude value.
      * @param z - z or altitude value.
      */
-    constructor(crs: ProjectionLike, x: number = 0, y: number = 0, z: number = 0) {
+    constructor(crs: ProjectionLike, x = 0, y = 0, z = 0) {
         this.isCoordinates = true;
 
         CRS.isValid(crs);
@@ -118,6 +118,7 @@ class Coordinates {
     /**
      * Sets the Coordinate Reference System.
      * @param crs - Coordinate Reference System (e.g. 'EPSG:4978')
+     * @returns
      */
     setCrs(crs: ProjectionLike): this {
         CRS.isValid(crs);
@@ -131,8 +132,9 @@ class Coordinates {
      * @param x - x or longitude value.
      * @param y - y or latitude value.
      * @param z - z or altitude value.
+     * @returns
      */
-    setFromValues(x: number = 0, y: number = 0, z: number = 0): this {
+    setFromValues(x = 0, y = 0, z = 0): this {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -149,8 +151,9 @@ class Coordinates {
      *
      * @param array - The source array.
      * @param offset - Optional offset into the array. Default is 0.
+     * @returns
      */
-    setFromArray(array: number[], offset: number = 0): this {
+    setFromArray(array: number[], offset = 0): this {
         return this.setFromValues(
             array[offset],
             array[offset + 1],
@@ -164,6 +167,7 @@ class Coordinates {
      * properties.
      *
      * @param v - The source object.
+     * @returns
      */
     setFromVector3(v: Vector3Like): this {
         return this.setFromValues(v.x, v.y, v.z);
@@ -172,6 +176,7 @@ class Coordinates {
     /**
      * Returns a new coordinate with the same `(x, y, z)` vector and crs as this
      * one.
+     * @returns
      */
     clone(): Coordinates {
         return new Coordinates(this.crs, this.x, this.y, this.z);
@@ -182,6 +187,7 @@ class Coordinates {
      * to this coordinate.
      *
      * @param src - The source coordinate to copy from.
+     * @returns
      */
     copy(src: CoordinatesLike): this {
         this.crs = src.crs;
@@ -206,6 +212,7 @@ class Coordinates {
 
     /**
      * The geodesic normal of the coordinate.
+     * @returns
      */
     get geodesicNormal() {
         if (this._normalNeedsUpdate) {
@@ -246,7 +253,7 @@ class Coordinates {
      * @returns An array [x, y, z], or copies x, y and z into the provided
      * array.
      */
-    toArray(array: number[] = [], offset: number = 0): ArrayLike<number> {
+    toArray(array: number[] = [], offset = 0): ArrayLike<number> {
         return Vector3.prototype.toArray.call(this, array, offset);
     }
 
@@ -254,6 +261,8 @@ class Coordinates {
      * Computes the planar distance from this coordinates to `coord`.
      * **Planar distance** is the straight-line euclidean distance calculated in
      * a 2D cartesian coordinate system.
+     * @param coord
+     * @returns
      */
     planarDistanceTo(coord: Coordinates): number {
         this.toVector3(v0).setZ(0);
@@ -265,6 +274,8 @@ class Coordinates {
      * Computes the geodetic distance from this coordinates to `coord`.
      * **Geodetic distance** is calculated in an ellipsoid space as the shortest
      * distance across the curved surface of the ellipsoid.
+     * @param coord
+     * @returns
      */
     geodeticDistanceTo(coord: Coordinates): number {
         this.as('EPSG:4326', coord0);
@@ -290,6 +301,7 @@ class Coordinates {
      * by `mat`, and divides by perspective.
      *
      * @param mat - The matrix.
+     * @returns
      */
     applyMatrix4(mat: Matrix4): this {
         Vector3.prototype.applyMatrix4.call(this, mat);

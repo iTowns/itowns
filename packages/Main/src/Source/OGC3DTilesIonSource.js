@@ -11,7 +11,7 @@ class OGC3DTilesIonSource extends OGC3DTilesSource {
      * @property {string} accessToken - The Cesium ion access token used to retrieve the resource.
      * @property {string} assetId - The id of the asset on Cesium ion.
      *
-     * @param {Object} source An object that can contain all properties of an OGC3DTilesIonSource and {@link Source}.
+     * @param {object} source An object that can contain all properties of an OGC3DTilesIonSource and {@link Source}.
      * Only `accessToken` and `assetId` are mandatory.
      * @param {string} source.accessToken - The Cesium ion access token used to retrieve the resource.
      * @param {string} source.assetId - The id of the asset on Cesium ion.

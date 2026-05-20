@@ -65,13 +65,13 @@ export default {
      * Description of a camera calibration in a JSON file.
      *
      * @typedef CameraCalibrationJson
-     * @type {Object}
+     * @type {object}
      *
      * @property {number[]} projection - projection matrix,
      * @property {number[]} size - image size in pixel.
      * @property {number[]} position - position of the camera.
      * @property {number[]} rotation - rotation matrix
-     * @property {Object} [distorsion={}] - distorsion
+     * @property {object} [distorsion={}] - distorsion
      * @property {number[]} [distorsion.pps]
      * @property {number[]} [distorsion.poly357]
      * @property {number[]} [distorsion.limit]
@@ -81,10 +81,10 @@ export default {
     /**
      * Parser a JSON array of camera calibrations and return an array of {@link OrientedImageCamera}.
      * @param {string|JSON} json - the json content of the calibration file.
-     * @param {Object} [options={}] - Options controlling the parsing.
+     * @param {object} [options={}] - Options controlling the parsing.
      * @param {string} [options.near=0.1] - Near of the created cameras. Default value comes from created {@link OrientedImageCamera}
      * @param {string} [options.far=1000] - Far of the created cameras. Default value comes from created {@link OrientedImageCamera}
-     * @return {Promise} - A promise resolving with an array of {@link OrientedImageCamera}.
+     * @returns {Promise} - A promise resolving with an array of {@link OrientedImageCamera}.
      */
     parse(json, options = {}) {
         if (typeof (json) === 'string') {

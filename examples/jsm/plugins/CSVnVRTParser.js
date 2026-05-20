@@ -169,13 +169,13 @@ const CSVnVRTParser = (function _() {
          * Parse a CSV associated to a VRT and return a {@link
          * FeatureCollection}.
          *
-         * @param {Object} data - The data needed.
+         * @param {object} data - The data needed.
          * @param {string} data.csv - Data from the CSV, with values separated
          * by comma, semicolon or tabulation.
          * @param {Document} data.vrt - The OGR VRT file, describing the CSV.
          * @param {geojsonParserOptions} [options]
          *
-         * @return {Promise} A promise resolving with a [FeatureCollection]{@link
+         * @returns {Promise} A promise resolving with a [FeatureCollection]{@link
          * module:GeoJsonParser~FeatureCollection}.
          *
          * @memberof module:CSVnVRTParser

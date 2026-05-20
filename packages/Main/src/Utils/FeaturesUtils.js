@@ -141,7 +141,7 @@ export default {
      * @param {number} [epsilon=0.1] Tolerance around the coordinate (in
      * coordinate's unit).
      *
-     * @return {Feature[]} Array of filtered features.
+     * @returns {Feature[]} Array of filtered features.
      */
     filterFeaturesUnderCoordinate(coordinate, collection, epsilon = 0.1) {
         const result = [];

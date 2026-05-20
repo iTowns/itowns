@@ -8,7 +8,7 @@ import { Coordinates, Extent } from '@itowns/geographic';
 import GlobeView from 'Core/Prefab/GlobeView';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import Renderer from './bootstrap';
 

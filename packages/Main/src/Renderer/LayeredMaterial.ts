@@ -58,8 +58,8 @@ interface StructElevationLayer {
 
 /** Default GPU struct values for initialization QoL */
 const defaultStructLayers: Readonly<{
-    color: StructColorLayer,
-    elevation: StructElevationLayer
+    color: StructColorLayer;
+    elevation: StructElevationLayer;
 }> = {
     color: {
         textureOffset: 0,
@@ -91,7 +91,7 @@ const defaultStructLayers: Readonly<{
  * @param renderTargetCache - Cache for managing render targets.
  */
 function updateLayersUniformsForType<Type extends 'c' | 'e'>(
-    uniforms: { [name: string]: THREE.IUniform },
+    uniforms: Record<string, THREE.IUniform>,
     tiles: RasterTile[],
     max: number,
     type: Type,
@@ -221,15 +221,15 @@ interface LayeredMaterialRawUniforms {
     outlineColors: THREE.Color[];
 
     // Elevation layers
-    elevationLayers: Array<StructElevationLayer>;
+    elevationLayers: StructElevationLayer[];
     elevationTextures: THREE.DataArrayTexture | null;
-    elevationOffsetScales: Array<THREE.Vector4>;
+    elevationOffsetScales: THREE.Vector4[];
     elevationTextureCount: number;
 
     // Color layers
-    colorLayers: Array<StructColorLayer>;
+    colorLayers: StructColorLayer[];
     colorTextures: THREE.DataArrayTexture | null;
-    colorOffsetScales: Array<THREE.Vector4>;
+    colorOffsetScales: THREE.Vector4[];
     colorTextureCount: number;
 }
 
@@ -245,7 +245,12 @@ type DefineMapping<Prefix extends string, Mapping extends Record<string, unknown
     [Name in Extract<keyof Mapping, string> as `${Prefix}_${Name}`]: Mapping[Name]
 };
 
-/** Fills in a Partial object's field and narrows the type accordingly. */
+/**
+ * Fills in a Partial object's field and narrows the type accordingly.
+ * @param obj
+ * @param name
+ * @param value
+ */
 function fillInProp<
     Obj extends Partial<Record<PropertyKey, unknown>>,
     Name extends keyof Obj,
@@ -254,7 +259,7 @@ function fillInProp<
     obj: Obj,
     name: Name,
     value: Value,
-): asserts obj is Obj & { [P in Name]: Value } {
+): asserts obj is Obj & Record<Name, Value> {
     if (obj[name] === undefined) {
         (obj as Record<Name, Value>)[name] = value;
     }
@@ -268,12 +273,12 @@ type LayeredMaterialDefines = {
     NUM_CRS: number;
     DEBUG: number;
     MODE: number;
-} & ElevationModeDefines
-    & RenderModeDefines;
+} & ElevationModeDefines & RenderModeDefines;
 
 /**
  * Initialiszes elevation and render mode defines and narrows the type
  * accordingly.
+ * @param defines
  */
 function initModeDefines(
     defines: Partial<LayeredMaterialDefines>,
@@ -472,14 +477,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     public getLayerUniforms<Type extends 'color' | 'elevation'>(type: Type):
-        MappedUniforms<{
-            layers: Array<Type extends 'color'
-                ? StructColorLayer
-                : StructElevationLayer>,
-            textures: Array<THREE.Texture>,
-            offsetScales: Array<THREE.Vector4>,
-            textureCount: number,
-        }> {
+    MappedUniforms<{
+        layers: (Type extends 'color'
+            ? StructColorLayer
+            : StructElevationLayer)[];
+        textures: THREE.Texture[];
+        offsetScales: THREE.Vector4[];
+        textureCount: number;
+    }> {
         return {
             layers: this.uniforms[`${type}Layers`],
             textures: this.uniforms[`${type}Textures`],

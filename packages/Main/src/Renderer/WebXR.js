@@ -65,16 +65,16 @@ function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
 }
 /**
  * @property {VRControls} vrControls - WebXR controllers handler
- * */
+ */
 class WebXR extends THREE.EventDispatcher {
     /**
      * Handler of a webXR session
      *
      *
      * @param {GlobeView} view - The view where the webXR session will be started
-     * @param {Object} [options] - WebXR configuration - its presence alone
+     * @param {object} [options] - WebXR configuration - its presence alone
      * enable WebXR to switch on VR visualization.
-     * @param {function} [options.callback] - WebXR rendering callback.
+     * @param {Function} [options.callback] - WebXR rendering callback.
      * @param {boolean} [options.controllers] - Enable the webXR controllers handling.
      */
     constructor(view, options) {

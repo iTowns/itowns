@@ -12,14 +12,14 @@ import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
 export const C3DTILES_LAYER_EVENTS = {
     /**
      * Fires when a tile content has been loaded
-     * @event C3DTilesLayer#on-tile-content-loaded
+     * @event C3DTilesLayer#"on-tile-content-loaded"
      * @type {object}
      * @property {THREE.Object3D} tileContent - object3D of the tile
      */
     ON_TILE_CONTENT_LOADED: 'on-tile-content-loaded',
     /**
      * Fires when a tile is requested
-     * @event C3DTilesLayer#on-tile-requested
+     * @event C3DTilesLayer#"on-tile-requested"
      * @type {object}
      * @property {object} metadata - tile
      */
@@ -91,18 +91,18 @@ class C3DTilesLayer extends GeometryLayer {
      * @param {C3DTilesSource} config.source The source of 3d Tiles.
      *
      * name.
-     * @param {Number} [config.sseThreshold=16] The [Screen Space Error](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error)
+     * @param {number} [config.sseThreshold=16] The [Screen Space Error](https://github.com/CesiumGS/3d-tiles/blob/main/specification/README.md#geometric-error)
      * threshold at which child nodes of the current node will be loaded and added to the scene.
-     * @param {Number} [config.cleanupDelay=1000] The time (in ms) after which a tile content (and its children) are
+     * @param {number} [config.cleanupDelay=1000] The time (in ms) after which a tile content (and its children) are
      * removed from the scene.
      * @param {C3DTExtensions} [config.registeredExtensions] 3D Tiles extensions managers registered for this tileset.
-     * @param {String} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterial} Point cloud coloring mode.
+     * @param {string} [config.pntsMode= PNTS_MODE.COLOR] {@link PointsMaterial} Point cloud coloring mode.
      *      Only 'COLOR' or 'CLASSIFICATION' are possible. COLOR uses RGB colors of the points,
      *      CLASSIFICATION uses a classification property of the batch table to color points.
-     * @param {String} [config.pntsShape= PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
-     * @param {String} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
-     * @param {Number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode
-     * @param {Number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode
+     * @param {string} [config.pntsShape= PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
+     * @param {string} [config.pntsSizeMode= PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
+     * @param {number} [config.pntsMinAttenuatedSize=3] Minimum scale used by 'ATTENUATED' size mode
+     * @param {number} [config.pntsMaxAttenuatedSize=10] Maximum scale used by 'ATTENUATED' size mode
      * @param {Style} [config.style=null] - style used for this layer
      * @param  {View}  view  The view
      */
@@ -229,7 +229,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Get the closest c3DTileFeature of an intersects array.
-     * @param {Array} intersects - @return An array containing all
+     * @param {Array} intersects - An array containing all
      * targets picked under specified coordinates. Intersects can be
      * computed with view.pickObjectsAt(..). See fillHTMLWithPickingInfo()
      * in 3dTilesHelper.js for an example.
@@ -402,7 +402,7 @@ class C3DTilesLayer extends GeometryLayer {
 
                     const materialId = color.getHexString() + opacity;
 
-                    let material = null;
+                    let material;
                     if (this.#fillColorMaterialsBuffer.has(materialId)) {
                         material = this.#fillColorMaterialsBuffer.get(materialId);
                     } else {

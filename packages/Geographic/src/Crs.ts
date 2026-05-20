@@ -2,12 +2,12 @@ import proj4 from 'proj4';
 import type { Converter } from 'proj4';
 import type { ProjectionDefinition } from 'proj4/dist/lib/defs';
 
-type proj4Def = {
-    type: string,
-    PROJCS: proj4Def,
-    unknown?: string,
-    (alias: string): proj4Def & { name: string },
-    title: string,
+interface proj4Def {
+    type: string;
+    PROJCS: proj4Def;
+    unknown?: string;
+    (alias: string): proj4Def & { name: string };
+    title: string;
 }
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
@@ -74,6 +74,7 @@ export const UNIT = {
  * @internal
  *
  * @param crs - The CRS to test.
+ * @returns
  */
 export function is4326(crs: ProjectionLike) {
     return crs === 'EPSG:4326';
@@ -114,7 +115,8 @@ export function getUnit(crs: ProjectionLike) {
  * Asserts that the CRS is using metric units.
  *
  * @param crs - The CRS to check.
- * @throws {@link Error} if the CRS is not valid.
+ * @returns
+ * @throws {Error} if the CRS is not valid.
  */
 export function isMetricUnit(crs: ProjectionLike) {
     return getUnit(crs) === UNIT.METER;
@@ -124,7 +126,8 @@ export function isMetricUnit(crs: ProjectionLike) {
  * Asserts that the CRS is geographic.
  *
  * @param crs - The CRS to check.
- * @throws {@link Error} if the CRS is not valid.
+ * @returns
+ * @throws {Error} if the CRS is not valid.
  */
 export function isGeographic(crs: ProjectionLike) {
     return getUnit(crs) === UNIT.DEGREE;
@@ -147,7 +150,7 @@ export function isGeocentric(crs: ProjectionLike) {
  * includes an unit.
  *
  * @param crs - The CRS to test.
- * @throws {@link Error} if the crs is not valid.
+ * @throws {Error} if the crs is not valid.
  */
 export function isValid(crs: ProjectionLike) {
     const proj = proj4.defs(crs);

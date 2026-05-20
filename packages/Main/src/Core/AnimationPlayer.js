@@ -75,7 +75,7 @@ class AnimationPlayer extends THREE.EventDispatcher {
     /**
      * Set the Player `callback` property. This callback is executed at each animation frame.
      *
-     * @param {function} callback - The callback to execute at each animation frame.
+     * @param {Function} callback - The callback to execute at each animation frame.
      */
     setCallback(callback) {
         this.callback = callback;

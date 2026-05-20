@@ -35,12 +35,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import type Potree2Source from 'Source/Potree2Source';
 import { buildVoxelKey } from 'Core/PointCloudNode';
-import PotreeNodeBase, { getChildVoxelKey, type NodeKeyInfo } from 'Core/PotreeNodeBase';
+import { PotreeNodeBase, getChildVoxelKey, type NodeKeyInfo } from 'Core/PotreeNodeBase';
 
-export type Potree2NodeHierarchy = {
-    numPoints: number, // uint32
-    byteOffset: bigint,
-    byteSize: bigint,
+export interface Potree2NodeHierarchy {
+    numPoints: number; // uint32
+    byteOffset: bigint;
+    byteSize: bigint;
 }
 
 const NODE_TYPE = {
@@ -51,8 +51,8 @@ const NODE_TYPE = {
 
 type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 
-function parseHierarchy(view: DataView, nodeInfo: NodeKeyInfo)
-        : Record<string, Potree2NodeHierarchy> {
+function parseHierarchy(view: DataView, nodeInfo: NodeKeyInfo):
+Record<string, Potree2NodeHierarchy> {
     // parse and create Hierarchy
     const stack = [];
 

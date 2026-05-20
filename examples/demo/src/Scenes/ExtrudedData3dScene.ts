@@ -7,7 +7,7 @@ import type { SceneType } from '../Types';
 export const ExtrudedData3dScene: SceneType = {
     title: 'Build Cities in Seconds',
     description: 'Bring your city to life by extruding building footprints '
-    + 'based on height attributes. Create realistic urban landscapes in real-time.',
+        + 'based on height attributes. Create realistic urban landscapes in real-time.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,
@@ -20,9 +20,10 @@ export const ExtrudedData3dScene: SceneType = {
     ready: false,
     event: function update(/* dt */) {
         const itownsView = ExtrudedData3dScene.getItownsView();
-        if (ExtrudedData3dScene.meshes!.length) {
-            for (let i = 0; i < ExtrudedData3dScene.meshes!.length; i++) {
-                const mesh = ExtrudedData3dScene.meshes![i];
+        const meshes = ExtrudedData3dScene.meshes ?? [];
+        if (meshes.length) {
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
                 if (mesh && mesh.scale.z < 1) {
                     mesh.scale.z = Math.min(1.0, mesh.scale.z + 0.005);
                     mesh.updateMatrixWorld(true);
@@ -50,7 +51,7 @@ export const ExtrudedData3dScene: SceneType = {
             for (let i = 0; i < mesh.children.length; i++) {
                 const c = mesh.children[i];
                 c.scale.z = 0.01;
-                ExtrudedData3dScene.meshes!.push(c);
+                ExtrudedData3dScene.meshes?.push(c);
             }
         }
 
@@ -66,7 +67,7 @@ export const ExtrudedData3dScene: SceneType = {
     },
     onEnter: async () => {
         const itownsView = ExtrudedData3dScene.getItownsView();
-        for (const mesh of ExtrudedData3dScene.meshes!) {
+        for (const mesh of ExtrudedData3dScene.meshes ?? []) {
             itownsView.scene.add(mesh);
         }
         itownsView.addFrameRequester(
@@ -74,7 +75,7 @@ export const ExtrudedData3dScene: SceneType = {
     },
     onExit: async () => {
         const itownsView = ExtrudedData3dScene.getItownsView();
-        for (const mesh of ExtrudedData3dScene.meshes!) {
+        for (const mesh of ExtrudedData3dScene.meshes ?? []) {
             itownsView.scene.remove(mesh);
         }
         itownsView.removeFrameRequester(

@@ -26,7 +26,7 @@ import type {
 
 type Reader = (options: ReadRGBOptions & { interleave: true }) => Promise<TypedArrayWithDimensions>;
 
-export type TextureWithExtent = DataTexture & { extent: Extent }
+export type TextureWithExtent = DataTexture & { extent: Extent };
 
 
 function selectDataType(format: number, bitsPerSample: number) {
@@ -88,7 +88,7 @@ function rgbArrayToRGBAArray(
     const newBufferLength = width * height * 4;
 
     const newBufferConstructor = Object.getPrototypeOf(typedArray).constructor;
-    const newBuffer = <TypedArrayWithDimensions> new newBufferConstructor(newBufferLength);
+    const newBuffer = new newBufferConstructor(newBufferLength) as TypedArrayWithDimensions;
 
     let newAlpha;
     switch (dataType) {
@@ -151,12 +151,12 @@ class GeotiffNode {
      * stored in a array containing in order the horizontal resolution and the
      * vertical resolution.
      */
-    resolution: Array<number>;
+    resolution: number[];
     /**
      * The coordinates of the top-left corner of the image, expressed in the
      * GeoTIFF data CRS.
      */
-    origin: Array<number>;
+    origin: number[];
 
     /**
      * The Three.js TextureDataType that matches the format of the image.
@@ -169,11 +169,11 @@ class GeotiffNode {
     samplesPerPixel: number;
 
     constructor(
-        config:{
-            image: GeoTIFFImage,
-            resolution?: Array<number>,
-            origin?: Array<number>,
-            dataType?: TextureDataType,
+        config: {
+            image: GeoTIFFImage;
+            resolution?: number[];
+            origin?: number[];
+            dataType?: TextureDataType;
         },
     ) {
         const {
@@ -204,14 +204,21 @@ class GeotiffNode {
      * Extract a portion of the image into a Three.js Texture. The portion is
      * delimited by a window. This window is a set of four boundaries (Xmin,
      * Ymin, Xmax, Ymax) expressed in the image pixel space.
+     * @param options
+     * @param options.imageWindow
+     * @param options.textureDimensions
+     * @param options.resampleMethod
+     * @param options.defaultAlpha
+     * @param options.pool
+     * @returns
      */
     async extractTexture(
         options: {
-            imageWindow?: Array<number>,
-            textureDimensions: Vector2,
-            resampleMethod?: string,
-            defaultAlpha?: number,
-            pool?: Pool,
+            imageWindow?: number[];
+            textureDimensions: Vector2;
+            resampleMethod?: string;
+            defaultAlpha?: number;
+            pool?: Pool;
         },
     ): Promise<DataTexture> {
         const {
@@ -222,14 +229,14 @@ class GeotiffNode {
             pool,
         } = options;
 
-        let typedArray = <TypedArrayWithDimensions> await this.reader({
+        let typedArray = await this.reader({
             window: imageWindow,
             pool,
             width: textureDimensions.x,
             height: textureDimensions.y,
             resampleMethod,
             interleave: true,
-        });
+        }) as TypedArrayWithDimensions;
 
         // If TypedArray is an RGB buffer, convert it to RGBA.
         if (this.samplesPerPixel === 3) {
@@ -258,6 +265,8 @@ class GeotiffNode {
     /**
      * Converts an extent expressed in the GeoTIFF data CRS to an image window,
      * so the same extent expressed in the image pixel space.
+     * @param extent
+     * @returns
      */
     extentToImageWindow(extent: Extent) {
         const [oX, oY] = this.origin;
@@ -291,6 +300,9 @@ class GeotiffNode {
  * At the moment, iTowns only displays data either as single band or RGBA
  * textures. Therefore, a GeoTIFF image with a number of samples other than 1,
  * 2 or 3 won't be displayed.
+ * @param data
+ * @param options
+ * @returns
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function parse(data: GeoTIFFImage, options: any) {
@@ -307,13 +319,13 @@ async function parse(data: GeoTIFFImage, options: any) {
 
     const geotiffNode = new GeotiffNode({ image });
 
-    const texture = <TextureWithExtent> await geotiffNode.extractTexture({
+    const texture = await geotiffNode.extractTexture({
         // No texture extent is passed. We assume the image covers the tile as
         // it is the case with all other raster format.
         textureDimensions: tileRasterDimensions,
         resampleMethod,
         defaultAlpha,
-    });
+    }) as TextureWithExtent;
     texture.extent = extent;
 
     return texture;

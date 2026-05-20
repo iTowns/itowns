@@ -7,7 +7,7 @@ import Fetcher from 'Provider/Fetcher';
  */
 class OrientedImageSource extends Source {
     /**
-     * @param { Object } source - Configuration object
+     * @param {object} source - Configuration object
      * @param { string } source.url - Url for all the textures.
      * @param { string } source.orientationsUrl - Json Url, using GeoJSon format to represent points,
      * it's a set of panoramic position and orientation.
@@ -33,10 +33,10 @@ class OrientedImageSource extends Source {
     /**
      * Build the url of the texture, but not from extent.
      *
-     * @param      {Object}  imageInfo - Information about the texture
+     * @param      {object}  imageInfo - Information about the texture
      * @param      {string}  imageInfo.camera - Id of the camera
      * @param      {string}  imageInfo.pano - Id of the panoramic
-     * @return     {string}  Url of the image
+     * @returns     {string}  Url of the image
      */
     urlFromExtent(imageInfo) {
         return this.imageUrl(imageInfo.cameraId, imageInfo.panoId);
@@ -51,7 +51,7 @@ class OrientedImageSource extends Source {
      *
      * @param      {string}  cameraId  Id of the camera
      * @param      {string}  panoId   Id of the panoramic
-     * @return     {string}  Url of the image
+     * @returns     {string}  Url of the image
      */
     imageUrl(cameraId, panoId) {
         return this.url.replace('{cameraId}', cameraId).replace('{panoId}', panoId);

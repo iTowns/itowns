@@ -29,8 +29,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract source: PointCloudSource;
 
     depth: number;
-    /** The number of points in this node.
-    * '-1' is the node has been loaded yet */
+    /**
+     * The number of points in this node.
+     * '-1' is the node has been loaded yet
+     */
     numPoints: number;
 
     /** The children nodes of this node. */
@@ -57,13 +59,15 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract y: number;
     abstract z: number;
 
-    /** The string id of the node, constituted of the four
-    * components: `depth-x-y-z`. */
+    /**
+     * The string id of the node, constituted of the four
+     * components: `depth-x-y-z`.
+     */
     abstract voxelKey: string;
 
     private _childrenCreated: boolean;
 
-    constructor(depth: number, numPoints: number = -1) {
+    constructor(depth: number, numPoints = -1) {
         super();
 
         this.depth = depth;
