@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-// eslint-disable-next-line import/extensions
 import { CopyShader } from 'three/examples/jsm/shaders/CopyShader.js';
 import { Extent } from '@itowns/geographic';
 import geoTransfomerfragmentShader from './Shader/geoTransformFS.glsl';

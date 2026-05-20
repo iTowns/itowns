@@ -53,10 +53,9 @@ const defaultStructElevationLayer: StructElevationLayer = {
  *
  * @param uniforms - The uniforms object for your material.
  * @param tiles - An array of RasterTile objects, each containing textures.
- * @param max - The maximum number of layers for the DataArrayTexture.
- * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
  * @param renderer - The renderer used to render textures.
  * @param renderTargetCache - Cache for managing render targets.
+ * @param extent - tile extent
  */
 function updateLayersUniforms(
     uniforms: Record<string, THREE.IUniform>,
