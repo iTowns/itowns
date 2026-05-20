@@ -21,7 +21,7 @@
     "test-with-coverage_lcov": "c8 -n src --reporter=lcov cross-env npm run test-unit",
     "watch": "npm run transpile -- --watch",
     "prepublishOnly": "npx copyfiles -u 1 \"../../examples/**/*\" ./examples/ && npx copyfiles -u 1 \"../../docs/**/*\" ./docs/ && npx copyfiles -u 1 \"../../dist/**/*\" ./dist/ ",
-    "postpublish": "node clean.cjs",
+    "postpublish": "node clean.mjs",
     "publish-latest": "npm publish --access public --tag=latest --provenance",
     "publish-next": "npm publish --access public --tag=next --provenance",
     "version": "cross-env-shell npm pkg set dependencies.@itowns/geographic=^$npm_package_version && node scripts/version.mjs"
