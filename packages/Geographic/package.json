@@ -1,6 +1,6 @@
 {
   "name": "@itowns/geographic",
-  "version": "2.46.1-next.54",
+  "version": "2.46.1-next.55",
   "description": "Proj4-based three.js geodesy toolkit",
   "type": "module",
   "main": "lib/index.js",
