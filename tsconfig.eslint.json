@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig-base.json",
+    "compilerOptions": {
+        "noEmit": true,
+        "paths": {
+            "@itowns/geographic": ["packages/Geographic/src/index.ts"],
+            "itowns": ["packages/Main/src/Main.js"]
+        }
+    },
+    "include": [
+        "packages/*/src/**/*",
+        "packages/*/test/**/*",
+        "examples/**/*"
+    ]
+}

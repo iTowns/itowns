@@ -1,9 +1,7 @@
 import assert from 'assert';
 import fs from 'fs';
 import iGLTFLoader from 'Parser/iGLTFLoader';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 
 describe('iGLTFLoader', function () {

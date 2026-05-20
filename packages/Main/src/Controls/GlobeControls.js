@@ -1167,7 +1167,6 @@ class GlobeControls extends THREE.EventDispatcher {
             } else if (params.scale) {
                 params.range = this.view.getScaleFromDistance(params.pitch, params.scale);
                 if (params.range < this.minDistance || params.range > this.maxDistance) {
-                    // eslint-disable-next-line no-console
                     console.warn(`This scale ${params.scale} can not be reached`);
                     params.range = THREE.MathUtils.clamp(params.range, this.minDistance, this.maxDistance);
                 }
@@ -1178,7 +1177,6 @@ class GlobeControls extends THREE.EventDispatcher {
                 const maxTilt = 90 - THREE.MathUtils.radToDeg(this.minPolarAngle);
                 if (params.tilt < minTilt || params.tilt > maxTilt) {
                     params.tilt = THREE.MathUtils.clamp(params.tilt, minTilt, maxTilt);
-                    // eslint-disable-next-line no-console
                     console.warn('Tilt was clamped to ', params.tilt, ` the interval is between ${minTilt} and ${maxTilt} degree`);
                 }
             }

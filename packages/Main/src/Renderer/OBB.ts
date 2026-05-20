@@ -11,7 +11,6 @@ const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
-let _obb: OBB;
 
 // it could be considered to remove THREE.Object3D extend.
 /**
@@ -271,6 +270,6 @@ class OBB extends THREE.Object3D {
     }
 }
 
-_obb = new OBB();
+const _obb = new OBB();
 
 export default OBB;

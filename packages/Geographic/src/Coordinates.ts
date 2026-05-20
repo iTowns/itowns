@@ -9,9 +9,6 @@ const ellipsoid = /* @__PURE__ */ new Ellipsoid();
 const v0 = /* @__PURE__ */ new Vector3();
 const v1 = /* @__PURE__ */ new Vector3();
 
-let coord0: Coordinates;
-let coord1: Coordinates;
-
 export interface CoordinatesLike {
     readonly crs: string;
     readonly x: number;
@@ -356,7 +353,7 @@ class Coordinates {
     }
 }
 
-coord0 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
-coord1 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const coord0 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
+const coord1 = /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
 
 export default Coordinates;
