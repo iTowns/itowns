@@ -103,7 +103,7 @@ function getShortName(longname) {
  * @param {string} longname - The longname (or URL) that is the target of the link.
  * @param {string=} linkText - The text to display for the link, or `longname` if no text is
  * provided.
- * @param {Object} options - Options for building the link.
+ * @param {object} options - Options for building the link.
  * @param {string=} options.cssClass - The CSS class (or classes) to include in the link's `<a>`
  * tag.
  * @param {string=} options.fragmentId - The fragment identifier (for example, `name` in
@@ -113,7 +113,7 @@ function getShortName(longname) {
  * font.
  * @param {boolean=} options.shortenName - Indicates whether to extract the short name from the
  * longname and display the short name in the link text. Ignored if `linkText` is specified.
- * @return {string} The HTML link, or the link text if the link is not available.
+ * @returns {string} The HTML link, or the link text if the link is not available.
  */
 function buildLink(longname, linkText, options) {
     const classString = options.cssClass ? util.format(' class="%s"', options.cssClass) : '';
@@ -219,7 +219,7 @@ function shouldShortenLongname() {
  * Find `{@link ...}` and `{@tutorial ...}` inline tags and turn them into HTML links.
  *
  * @param {string} str - The string to search for `{@link ...}` and `{@tutorial ...}` tags.
- * @return {string} The linkified text.
+ * @returns {string} The linkified text.
  */
 exports.resolveLinks = function resolveLinks(str) {
     function extractLeadingText(string, completeTag) {

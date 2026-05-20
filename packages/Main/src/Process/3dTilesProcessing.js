@@ -3,8 +3,9 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { C3DTilesBoundingVolumeTypes } from 'Core/3DTiles/C3DTilesEnums';
 import { C3DTILES_LAYER_EVENTS } from '../Layer/C3DTilesLayer';
 
-/** @module 3dTilesProcessing
-*/
+/**
+  @module 3dTilesProcessing
+ */
 
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
@@ -109,7 +110,7 @@ function _subdivideNodeSubstractive(context, layer, node) {
  * @param      {Camera}   camera           camera
  * @param      {THREE.Object3D}   node             The 3d tile node to check.
  * @param      {THREE.Matrix4}   tileMatrixWorld  The node matrix world
- * @return     {boolean}  return true if the node is visible
+ * @returns     {boolean}  return true if the node is visible
  */
 export function $3dTilesCulling(layer, camera, node, tileMatrixWorld) {
     // For viewer Request Volume
@@ -212,7 +213,7 @@ export function computeNodeSSE(camera, node) {
         boundingVolumeBox.applyMatrix4(node.matrixWorld);
         node.distance = boundingVolumeBox.distanceToPoint(camera.camera3D.position);
     } else if (node.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.sphere ||
-               node.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
+        node.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
         boundingVolumeSphere.copy(node.boundingVolume.volume);
         boundingVolumeSphere.applyMatrix4(node.matrixWorld);
         // TODO: see https://github.com/iTowns/itowns/issues/800
@@ -263,7 +264,7 @@ function markForDeletion(layer, elt) {
  *
  * @param      {Function}  [cullingTest=$3dTilesCulling]                 The culling test method.
  * @param      {Function}  [subdivisionTest=$3dTilesSubdivisionControl]  The subdivision test method.
- * @return     {Function}    { description_of_the_return_value }
+ * @returns     {Function}    { description_of_the_return_value }
  */
 export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTest = $3dTilesSubdivisionControl) {
     return function _process3dTilesNodes(context, layer, node) {
@@ -313,7 +314,7 @@ export function process3dTilesNode(cullingTest = $3dTilesCulling, subdivisionTes
  * @param      {Camera}   context.camera  The current camera
  * @param      {C3DTilesLayer}   layer  The 3d tile layer
  * @param      {THREE.Object3D}  node  The 3d tile node
- * @return     {boolean}
+ * @returns     {boolean}
  */
 export function $3dTilesSubdivisionControl(context, layer, node) {
     if (layer.tileset.tiles[node.tileId].children === undefined) {

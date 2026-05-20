@@ -1,6 +1,6 @@
 import assert from 'assert';
 import CopcNode from 'Core/CopcNode';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import { Hierarchy } from 'copc';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 

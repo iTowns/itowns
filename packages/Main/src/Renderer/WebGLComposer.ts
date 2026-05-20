@@ -86,7 +86,7 @@ export function makeDataArrayRenderTarget(
             if (!texture) { continue; }
 
             // Set the current source 2D texture on the quad's material
-            material!.uniforms.sourceTexture.value = texture;
+            (material as THREE.ShaderMaterial).uniforms.sourceTexture.value = texture;
 
             if (!currentLayerIndex) {
                 // Set parameters from the first found texture

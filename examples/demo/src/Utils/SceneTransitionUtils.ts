@@ -41,7 +41,8 @@ const cameraWorldToCoordinates = (view: itowns.View, targetCrs: string) => {
 /**
  * Moves the camera of a view to a given placement over a specified duration.
  * @param view - current view whose camera will be moved
- * @param placement - @see SceneType.placement - tilt and heading are optional
+ * @param placement - See {@link SceneType.placement} - tilt and heading are
+ * optional
  * @param duration - duration of the animation in ms
  * @returns Promise<any>
  */
@@ -69,7 +70,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
     updateUIForScene(nextScene);
 
     const controls = transitionView.controls as itowns.GlobeControls
-    & { states: { enabled: boolean }; };
+        & { states: { enabled: boolean } };
 
     // disable camera controls during transition
     controls.states.enabled = false;
@@ -136,7 +137,7 @@ export const transitionToScene = async (currentScene: SceneType, nextScene: Scen
         for (const layer of nextScene.layers) {
             layer.visible = true;
             if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
-            nextView instanceof View3D) {
+                nextView instanceof View3D) {
                 FeaturePickerService.enable(nextView);
                 featurePickingInScene = true;
             }
@@ -216,7 +217,7 @@ export const hardResetScene = async (scene: SceneType) => {
         layer.visible = true;
 
         if (FeaturePickerService.layers.find(l => l.id === layer.id) &&
-        view instanceof View3D) {
+            view instanceof View3D) {
             FeaturePickerService.enable(view);
         }
     }
@@ -254,7 +255,7 @@ export const resetScene = async (scene: SceneType) => {
         }
 
         const controls = iTownsView.controls as itowns.GlobeControls
-        & { states: { enabled: boolean }; };
+            & { states: { enabled: boolean } };
 
         // disable camera controls during transition
         controls.states.enabled = false;

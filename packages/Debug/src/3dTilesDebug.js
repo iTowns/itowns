@@ -43,7 +43,7 @@ export default function create3dTilesDebugUI(datDebugTool, view, _3dTileslayer) 
                     helper.updateMatrix();
                 }
             } else if (tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.sphere ||
-                       tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
+                tile.boundingVolume.initialVolumeType === C3DTilesBoundingVolumeTypes.region) {
                 const geometry = new THREE.SphereGeometry(tile.boundingVolume.volume.radius, 32, 32);
                 const material = new THREE.MeshBasicMaterial({ wireframe: true, color: Math.random() * 0xffffff });
                 helper = new THREE.Mesh(geometry, material);

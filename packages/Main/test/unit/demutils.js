@@ -12,7 +12,7 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import DEMUtils from 'Utils/DEMUtils';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Renderer from './bootstrap';
 
 const BIL_ROWS = 256;

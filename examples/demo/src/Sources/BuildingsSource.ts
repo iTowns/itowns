@@ -13,10 +13,10 @@ export async function getSource() {
                 style: 'https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json',
                 // @ts-expect-error filter property undefined
                 filter: (layer: {
-                    'source-layer': string,
-                    paint: { 'fill-color': unknown },
+                    'source-layer': string;
+                    paint: { 'fill-color': unknown };
                 }) => layer['source-layer'].includes('bati_surf')
-                        && layer.paint['fill-color'],
+                    && layer.paint['fill-color'],
             });
             return cachedSource;
         })();

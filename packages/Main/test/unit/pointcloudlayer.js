@@ -1,5 +1,5 @@
 import assert from 'assert';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
 

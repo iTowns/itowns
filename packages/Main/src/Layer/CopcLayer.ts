@@ -3,7 +3,7 @@ import CopcNode from 'Core/CopcNode';
 import type CopcSource from 'Source/CopcSource';
 
 interface CopcLayerParameters extends PointCloudLayerParameters {
-    source : CopcSource;
+    source: CopcSource;
 }
 
 /**

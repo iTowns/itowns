@@ -50,7 +50,7 @@ const itownsShaderChunk = {
  * const ShaderChunk = itowns.ShaderChunk';
  * ```
  *
- * @property {Object} target - The target to install the chunks into.
+ * @property {object} target - The target to install the chunks into.
  * @property {string} [path] - A path to add before a chunk name as a prefix.
  *
  */
@@ -58,9 +58,9 @@ class ShaderChunkManager {
     /**
      * Constructs a new instance ShaderChunkManager.
      *
-     * @constructor
+     * @class
      *
-     * @param {Object} target - The target to install the chunks into.
+     * @param {object} target - The target to install the chunks into.
      * @param {string} [path] - A path to add before a chunk name as a prefix.
      *
      */
@@ -112,12 +112,12 @@ class ShaderChunkManager {
      * Install chunks in a target, for example THREE.ShaderChunk, with adding an
      * optional path.
      *
-     * @param {Object} target - The target to install the chunks into.
-     * @param {Object} chunks - The chunks to install. The key of each chunk will be
+     * @param {object} target - The target to install the chunks into.
+     * @param {object} chunks - The chunks to install. The key of each chunk will be
      * the name of installation of the chunk in the target (plus an optional path).
      * @param {string} [path] - A path to add before a chunk name as a prefix.
      *
-     * @return {Object} The target with installed chunks.
+     * @returns {object} The target with installed chunks.
      */
     install(target = this.target, chunks = itownsShaderChunk, path = this.path) {
         Object.keys(chunks).forEach((key) => {

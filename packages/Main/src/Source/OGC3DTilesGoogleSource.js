@@ -10,11 +10,8 @@ class OGC3DTilesGoogleSource extends OGC3DTilesSource {
      * You should not change this, as it is used internally for optimisation.
      * @property {string} url - The URL to the tileset json.
      * @property {string} baseUrl - The base URL to access tiles.
-     *
-     * @property {boolean} isOGC3DTilesGoogleSource - Used to check if this source is an OGC3DTilesGoogleSource. Set to
-     * true. You should not change this, as it is used internally for optimisation.
-     * @param {Object} source An object that can contain all properties of an OGC3DTilesGoogleSource and {@link Source}.
-     * @param {String} source.key Your google tiles map API access key
+     * @param {object} source An object that can contain all properties of an OGC3DTilesGoogleSource and {@link Source}.
+     * @param {string} source.key Your google tiles map API access key
      */
     constructor(source) {
         if (!source.key) {

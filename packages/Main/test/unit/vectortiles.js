@@ -5,7 +5,7 @@ import VectorTilesSource from 'Source/VectorTilesSource';
 import Tile from 'Core/Tile/Tile';
 import urlParser from 'Parser/MapBoxUrlParser';
 import Fetcher from 'Provider/Fetcher';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 
 import style from '../data/vectortiles/style.json';
 import tilejson from '../data/vectortiles/tilejson.json';

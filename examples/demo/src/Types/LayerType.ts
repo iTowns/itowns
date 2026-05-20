@@ -11,8 +11,8 @@ type LayerType = (
     itowns.LabelLayer |
     itowns.EntwinePointTileSource
 ) & {
-    id: string, // EntwinePointTileSource doesn't define id
-    visible?: boolean,
-}
+    id: string; // EntwinePointTileSource doesn't define id
+    visible?: boolean;
+};
 
 export default LayerType;

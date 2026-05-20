@@ -9,11 +9,11 @@ import {
 const quaternion = new THREE.Quaternion();
 const center = new THREE.Vector3();
 
-type Transform = {
-    coords: Coordinates,
-    position: THREE.Vector3,
-    normal: THREE.Vector3,
-};
+interface Transform {
+    coords: Coordinates;
+    position: THREE.Vector3;
+    normal: THREE.Vector3;
+}
 
 /** Specialized parameters for the [PlanarTileBuilder]. */
 export interface PlanarTileBuilderParams extends TileBuilderParams {
@@ -31,9 +31,9 @@ export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
     private _crs: string;
 
     public constructor(options: {
-        projection?: string,
-        crs: string,
-        uvCount?: number,
+        projection?: string;
+        crs: string;
+        uvCount?: number;
     }) {
         if (options.projection) {
             console.warn('PlanarTileBuilder projection parameter is deprecated,'

@@ -10,7 +10,7 @@ class OGC3DTilesSource extends Source {
      * You should not change this, as it is used internally for optimisation.
      * @property {string} url - The URL of the tileset json.
      *
-     * @param {Object} source An object that can contain all properties of OGC3DTilesSource and of {@link Source}.
+     * @param {object} source An object that can contain all properties of OGC3DTilesSource and of {@link Source}.
      * Only `url` is mandatory.
      * @param {string} source.url - The URL of the tileset json.
      */

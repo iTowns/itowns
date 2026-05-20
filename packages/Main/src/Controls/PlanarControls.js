@@ -473,8 +473,8 @@ class PlanarControls extends THREE.EventDispatcher {
 
         if (thetaDelta !== 0 || phiDelta !== 0) {
             if ((phi + phiDelta >= this.minZenithAngle)
-            && (phi + phiDelta <= this.maxZenithAngle)
-            && (phiDelta !== 0)) {
+                && (phi + phiDelta <= this.maxZenithAngle)
+                && (phiDelta !== 0)) {
                 // rotation around X (altitude)
                 phi += phiDelta;
 
@@ -850,7 +850,7 @@ class PlanarControls extends THREE.EventDispatcher {
      * @param   {THREE.Vector2} posXY       the mouse position in screen space (unit : pixel)
      * @param   {number}        altitude    the altitude (z) of the mathematical plane
      * @param   {THREE.Vector3} target      the target vector3
-     * @return  {THREE.Vector3}
+     * @returns  {THREE.Vector3}
      * @ignore
      */
     getWorldPointFromMathPlaneAtScreenXY(posXY, altitude, target = new THREE.Vector3()) {
@@ -869,7 +869,7 @@ class PlanarControls extends THREE.EventDispatcher {
      *
      * @param   {THREE.Vector2} posXY   the mouse position in screen space (unit : pixel)
      * @param   {THREE.Vector3} target  the target World coordinates.
-     * @return  {THREE.Vector3}
+     * @returns  {THREE.Vector3}
      * @ignore
      */
     getWorldPointAtScreenXY(posXY, target = new THREE.Vector3()) {
@@ -1125,7 +1125,7 @@ class PlanarControls extends THREE.EventDispatcher {
      * Smoothing function (sigmoid) : based on h01 Hermite function.
      *
      * @param   {number}    value   the value to be smoothed, between 0 and 1.
-     * @return  {number}            a value between 0 and 1.
+     * @returns  {number}            a value between 0 and 1.
      * @ignore
      */
     smooth(value) {

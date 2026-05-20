@@ -185,15 +185,15 @@ const FeatureToolTip = (function _() {
          * Add a layer to be picked by the tooltip.
          *
          * @param {Layer} layer - The layer to add.
-         * @param {Object} options - Options to have more custom content displayed.
-         * @param {function} [options.filterGeometries] - A callback to filter
+         * @param {object} options - Options to have more custom content displayed.
+         * @param {Function} [options.filterGeometries] - A callback to filter
          * geometries following a criteria, like an id found on FeatureGeometry
          * properties.  This is useful to remove duplicates, for example when a
          * feature is present on multiple tiles at the same time (see the
          * example below).  This function takes two parameters: a list of
          * features (usually a `Array<Feature>`) and the `Layer` associated to
          * these features.
-         * @param {function} [options.format] - A function that takes the name
+         * @param {Function} [options.format] - A function that takes the name
          * of the property currently being processed and its value, and gives
          * the appropriate HTML output to it. If this method is specified, no
          * others properties other than the ones handled in it will be
@@ -204,7 +204,7 @@ const FeatureToolTip = (function _() {
          * properties, and don't display anything besides the name of the layer
          * the feature is attached to.
          *
-         * @return {Layer} The added layer.
+         * @returns {Layer} The added layer.
          *
          * @example
          * FeatureToolTip.addLayer(wfsLayer, {

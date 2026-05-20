@@ -103,7 +103,7 @@ function _instanciateQueue() {
  * There is only one instance of a Scheduler per webview, and it is instanciated
  * with the creation of the first view.
  *
- * @constructor
+ * @class
  */
 function Scheduler() {
     // Constructor
@@ -223,14 +223,14 @@ Scheduler.prototype.execute = function execute(command) {
  * @function
  * @name Provider#executeCommand
  *
- * @param {Object} command
+ * @param {object} command
  * @param {View} command.view
  * @param {Layer} command.layer
  * @param {TileMesh} [command.requester] - Every layer is attached to a tile.
  * @param {number} [command.targetLevel] - The target level is used when there
  * is a tiled layer, such as WMTS or TMS, but not in case like a GPX layer.
  *
- * @return {Promise} The {@link Scheduler} always expect a Promise as a result,
+ * @returns {Promise} The {@link Scheduler} always expect a Promise as a result,
  * resolving to an object containing sufficient information for the associated
  * processing to the current layer. For example, see the
  * [LayeredMaterialNodeProcessing#updateLayeredMaterialNodeElevation]{@link
@@ -270,7 +270,7 @@ Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol,
  *
  * @param {string} protocol
  *
- * @return {Provider}
+ * @returns {Provider}
  */
 Scheduler.prototype.getProtocolProvider = function getProtocolProvider(protocol) {
     return this.providers[protocol] || DataSourceProvider;

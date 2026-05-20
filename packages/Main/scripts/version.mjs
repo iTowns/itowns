@@ -23,7 +23,7 @@ try {
     const content = fs.readFileSync(mainPath, 'utf8');
     const updatedContent = content.replace(
         /const conf = \{\s*version: ['"`][^'"`]+['"`],\s*\};/,
-        `const conf = {\n    version: '${npm_package_version}',\n};`
+        `const conf = {\n    version: '${npm_package_version}',\n};`,
     );
     fs.writeFileSync(mainPath, updatedContent, 'utf8');
 } catch (error) {
@@ -34,9 +34,9 @@ try {
 if (npm_config_git_tag_version === 'false') {
     try {
         execSync(`git add ${mainPath}`, {
-            stdio: 'inherit'
+            stdio: 'inherit',
         });
-    } catch (error) {
+    } catch {
         process.exit(1);
     }
 }

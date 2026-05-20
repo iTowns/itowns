@@ -53,7 +53,7 @@ function _instantiateSubRoot(source, crs) {
 class VpcLayer extends PointCloudLayer {
     /**
      * @param {string} id - Unique id of the layer.
-     * @param {Object} config - See {@link PointCloudLayer} for base pointcloud
+     * @param {object} config - See {@link PointCloudLayer} for base pointcloud
      * options.
      */
     constructor(id, config) {

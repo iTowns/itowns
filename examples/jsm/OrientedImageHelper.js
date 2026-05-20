@@ -69,7 +69,6 @@ function initCamera(view, image, coord, EnhToOrientationUp, EnhToOrientationLook
     return camera;
 }
 
-// eslint-disable-next-line no-unused-vars
 function setupPictureFromCamera(camera, imageUrl, opacity, distance) {
     // create a textured plane, representing the picture.
     const plane = createTexturedPlane(imageUrl, opacity);
@@ -82,7 +81,6 @@ function setupPictureFromCamera(camera, imageUrl, opacity, distance) {
 
 // set camera settings to view.camera,
 // BUT keep the geodesic normal as Up vector
-// eslint-disable-next-line no-unused-vars
 function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
     camera.position.copy(coord);
     camera.up.copy(coord.geodesicNormal);
@@ -90,7 +88,6 @@ function setupViewCameraLookingAtObject(camera, coord, objectToLookAt) {
 }
 
 // set camera settings to view.camera, even the up vector !
-// eslint-disable-next-line no-unused-vars
 function setupViewCameraDecomposing(view, camera) {
     let upWorld;
     camera.matrixWorld.decompose(view.camera3D.position, view.camera3D.quaternion, view.camera3D.scale);
@@ -102,14 +99,12 @@ function setupViewCameraDecomposing(view, camera) {
 }
 
 // add a camera helper to debug camera position..
-// eslint-disable-next-line no-unused-vars
 function addCameraHelper(view, camera) {
     const cameraHelper = new THREE.CameraHelper(camera);
     view.scene.add(cameraHelper);
     cameraHelper.updateMatrixWorld(true);
 }
 
-// eslint-disable-next-line no-unused-vars
 function setupPictureUI(menu, pictureInfos, plane, updateDistanceCallback, view, min, max) {
     const orientedImageGUI = menu.gui.addFolder('Oriented Image');
     orientedImageGUI.add(pictureInfos, 'distance', min, max).name('Distance').onChange(function distanceChanged(value) {

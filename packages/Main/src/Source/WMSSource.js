@@ -29,7 +29,7 @@ const projAxisToBboxMappings = {
  * @returns {string} the corresponding bbox axis order to use for WMS 1.3.0
  */
 function projAxisToWmsBbox(projAxis) {
-    return projAxis && projAxisToBboxMappings[projAxis.slice(0, 2)] || 'wsen';
+    return (projAxis && projAxisToBboxMappings[projAxis.slice(0, 2)]) || 'wsen';
 }
 
 /**
@@ -57,14 +57,14 @@ function projAxisToWmsBbox(projAxis) {
  * value can be 'swne'.
  * @property {boolean} transparent - Tells if the image to fetch needs
  * transparency support. Default value is false.
- * @property {Object} zoom - Object containing the minimum and maximum values of
+ * @property {object} zoom - Object containing the minimum and maximum values of
  * the level, to zoom in the source.
  * @property {number} zoom.min - The minimum level of the source. Default value
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 21.
  * @property {string} bboxDigits - The bbox digits precision used in URL
- * @property {Object} vendorSpecific - An object containing vendor specific
+ * @property {object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer](
  * https://docs.geoserver.org/latest/en/user/services/wms/vendor.html). This
  * object is read simply with the `key` being the name of the parameter and
@@ -98,7 +98,7 @@ function projAxisToWmsBbox(projAxis) {
  */
 class WMSSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of
+     * @param {object} source - An object that can contain all properties of
      * WMSSource and {@link Source}. `url`, `name`, `extent` and `crs`
      * are mandatory.
      */

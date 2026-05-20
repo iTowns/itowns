@@ -29,7 +29,6 @@ describe('view_multiglobe', function _() {
         // verify that we properly updated the globe
         const { layer, level } = await page.evaluate(() => {
             const pick = view.pickObjectsAt({ x: 200, y: 150 })[0];
-            console.log('pick', pick);
             return {
                 layer: pick.layer.id,
                 level: pick.object.level,

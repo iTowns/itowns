@@ -1,6 +1,5 @@
 import * as itowns from 'itowns';
 
-// eslint-disable-next-line no-unused-vars
 function setupLoadingScreen(viewerDiv, view) {
     let loadingScreenContainer;
 

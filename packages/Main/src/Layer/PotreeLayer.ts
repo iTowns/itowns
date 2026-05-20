@@ -3,17 +3,20 @@ import PotreeNode from 'Core/PotreeNode';
 import type PotreeSource from 'Source/PotreeSource';
 
 interface PotreeLayerParameters extends PointCloudLayerParameters {
-    /** he CRS of the View this layer will be attached to.
-     * This is used to determine the extent of this
-     * layer.  Default to `EPSG:4326`. */
+    /**
+     * The CRS of the View this layer will be attached to.
+     * This is used to determine the extent of this layer.
+     * Default to `EPSG:4326`.
+     */
     crs?: string;
     source: PotreeSource;
 }
 
 class PotreeLayer extends PointCloudLayer<PotreeSource> {
-    /** Used to checkout whether this layer is a PotreeLayer.
-     * Default is `true`. You should not change this, as it is
-     * used internally for optimisation. */
+    /**
+     * Used to checkout whether this layer is a PotreeLayer. Default is `true`.
+     * You should not change this, as it is used internally for optimisation.
+     */
     readonly isPotreeLayer: true;
 
     /**

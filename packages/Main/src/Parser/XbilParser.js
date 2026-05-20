@@ -26,11 +26,11 @@ function minMax4Corners(texture, pitch, options) {
  *
  * @param      {THREE.Texture}   texture                     The texture to parse
  * @param      {THREE.Vector4}   pitch                       The pitch,  restrict zone to parse
- * @param      {Object}          options                     No data value and clamp values
+ * @param      {object}          options                     No data value and clamp values
  * @param      {number}          options.noDataValue         No data value
  * @param      {number}          [options.zmin]   The minimum elevation value after which it will be clamped
  * @param      {number}          [options.zmax]   The maximum elevation value after which it will be clamped
- * @return     {Object}  The minimum and maximum elevation.
+ * @returns     {object}  The minimum and maximum elevation.
  */
 export function computeMinMaxElevation(texture, pitch, options) {
     const { width, height, data } = texture.image;
@@ -91,9 +91,9 @@ export function computeMinMaxElevation(texture, pitch, options) {
 export function checkNodeElevationTextureValidity(data, noDataValue) {
     const l = data.length;
     return data[0] > noDataValue &&
-           data[l - 1] > noDataValue &&
-           data[Math.sqrt(l) - 1] > noDataValue &&
-           data[l - Math.sqrt(l)] > noDataValue;
+        data[l - 1] > noDataValue &&
+        data[Math.sqrt(l) - 1] > noDataValue &&
+        data[l - Math.sqrt(l)] > noDataValue;
 }
 
 // This function replaces noDataValue by significant values from parent texture (or 0)

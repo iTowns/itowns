@@ -2,7 +2,7 @@
  * Cache policies for flushing. Those policies can be used when something is
  * [set]{@link Cache.set} into the Cache, as the lifetime property.
  *
- * @typedef {Object} CACHE_POLICIES
+ * @typedef {object} CACHE_POLICIES
  *
  * @property {number} INFINITE - The entry is never flushed, except when the
  * `all` flag is set to `true` when calling {@link Cache.flush}.

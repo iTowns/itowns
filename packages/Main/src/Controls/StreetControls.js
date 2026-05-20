@@ -1,4 +1,4 @@
-import TWEEN from '@tweenjs/tween.js';
+import * as TWEEN from '@tweenjs/tween.js';
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import FirstPersonControls from 'Controls/FirstPersonControls';
@@ -112,13 +112,13 @@ function computeTime(distance) {
 class StreetControls extends FirstPersonControls {
     /**
      * @param { View } view - View where this control will be used
-     * @param { Object } options - Configuration of this controls
+     * @param {object} options - Configuration of this controls
      * @param { number } [options.wallMaxDistance=1000] - Maximum distance to click on a wall, in meter.
      * @param { number } [options.animationDurationWall=200] - Time in millis for the animation when clicking on a wall.
      * @param { THREE.Mesh } [options.surfaceGround] - Surface helper to see when mouse is on the ground, default is a transparent circle.
      * @param { THREE.Mesh } [options.surfaceWall] - Surface helper to see when mouse is on a wall, default is a transparent rectangle.
      * @param { string } [options.buildingsLayer='Buildings'] - Name of the building layer (used to pick on wall).
-     * @param { function } [options.computeTime] - Function to compute time (in millis), used for the animation to move to a distance (in meter)
+     * @param { Function } [options.computeTime] - Function to compute time (in millis), used for the animation to move to a distance (in meter)
      * @param { number } [options.offset=4] - Altitude in meter up to the ground to move to when click on a target on the ground.
      */
     constructor(view, options = {}) {
@@ -328,7 +328,7 @@ class StreetControls extends FirstPersonControls {
      *
      * @param { THREE.Vector3 }  position - Destination of the movement.
      * @param { number } time - Time in millisecond
-     * @return { Promise }
+     * @returns { Promise }
      */
     moveCameraTo(position, time = 50) {
         if (!position) {

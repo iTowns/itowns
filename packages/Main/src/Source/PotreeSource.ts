@@ -2,7 +2,7 @@ import Source from 'Source/Source';
 import Fetcher from 'Provider/Fetcher';
 import PotreeBinParser from 'Parser/PotreeBinParser';
 
-type PotreeBBox = {
+interface PotreeBBox {
     lx: number; ly: number; lz: number;
     ux: number; uy: number; uz: number;
 }
@@ -59,22 +59,22 @@ class PotreeSource extends Source {
      *
      * This `cloud` file stores information about the potree cloud in
      * JSON format. The structure is :
-     * * __`version`__ - The cloud.js format may change over time. The version
+     * - __`version`__ - The cloud.js format may change over time. The version
      * number is necessary so that parsers know how to interpret the data.
-     * * __`octreeDir`__ - Directory or URL where node data is stored.
+     * - __`octreeDir`__ - Directory or URL where node data is stored.
      *          Usually points to "data".
-     * * __`boundingBox`__ - Contains the minimum and maximum of the axis
+     * - __`boundingBox`__ - Contains the minimum and maximum of the axis
      *          aligned bounding box.
      * This bounding box is cubic and aligned to fit to the octree root.
-     * * __`tightBoundingBox`__ - This bounding box thightly fits
+     * - __`tightBoundingBox`__ - This bounding box thightly fits
      *          the point data.
-     * * __`pointAttributes`__ - Declares the point data format. May be 'LAS',
+     * - __`pointAttributes`__ - Declares the point data format. May be 'LAS',
      *          'LAZ' or in case if the BINARY format an array of attributes
      *          like `['POSITION_CARTESIAN', 'COLOR_PACKED', 'INTENSITY']`
-     * * __ `POSITION_CARTESIAN`__ - 3 x 32bit signed integers for x/y/z
+     * - __ `POSITION_CARTESIAN`__ - 3 x 32bit signed integers for x/y/z
      *          coordinates
-     * * __`COLOR_PACKED`__ - 4 x unsigned byte for r,g,b,a colors.
-     * * __`spacing`__ - The minimum distance between points at root level.
+     * - __`COLOR_PACKED`__ - 4 x unsigned byte for r,g,b,a colors.
+     * - __`spacing`__ - The minimum distance between points at root level.
      * ```
      * {
      *     version: '1.6',
@@ -132,7 +132,7 @@ class PotreeSource extends Source {
         this.whenReady = (
             source.cloud ?
                 Promise.resolve(source.cloud) :
-            Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
+                Fetcher.json(this.url, this.networkOptions) as Promise<PotreeCloud>)
             .then((cloud) => {
                 const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
                 this.bounds = [lx, ly, lz, ux, uy, uz];

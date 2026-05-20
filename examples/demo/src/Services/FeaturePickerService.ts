@@ -25,7 +25,7 @@ export const FeaturePickerService = {
         }
 
         if (!FeaturePickerService.view ||
-        !FeaturePickerService.layers.length || !FeaturePickerService.container) {
+            !FeaturePickerService.layers.length || !FeaturePickerService.container) {
             return;
         }
 
@@ -101,12 +101,12 @@ export const FeaturePickerService = {
             const featureProps = FeaturePickerService.pickingContent[i];
             const propH = document.createElement('h4');
             propH.innerHTML = `--- Feature ${i + 1} ---`;
-            FeaturePickerService.container!.appendChild(propH);
+            FeaturePickerService.container?.appendChild(propH);
 
             for (const [key, value] of Object.entries(featureProps)) {
                 const propP = document.createElement('p');
                 propP.innerHTML = `<strong>${key}:</strong> ${value}`;
-                FeaturePickerService.container!.appendChild(propP);
+                FeaturePickerService.container?.appendChild(propP);
             }
         }
     },

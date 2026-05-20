@@ -23,9 +23,13 @@ const DEFAULT_MAX_TEXTURE_SIZE = 10 * 1024 * 1024;
  * file (original and overviews), ordered by decreasing resolution. As soon as
  * the COG image resolution gets more accurate than the target image resolution,
  * the image from the last iteration is defined as the best match.
+ * @param geotiffNodes
+ * @param worldDimensions
+ * @param rasterDimensions
+ * @returns
  */
 function selectOverview(
-    geotiffNodes: Array<GeotiffNode>,
+    geotiffNodes: GeotiffNode[],
     worldDimensions: Vector2,
     rasterDimensions: Vector2,
 ) {
@@ -110,20 +114,20 @@ async function parse(data: any, options: any) {
             + ' requested extent. You should increase the minimum zoom in the corresponding layer'
             + ` properties to at least ${extent.zoom + 1}.`,
         );
-        texture = <TextureWithExtent> new DataTexture(
+        texture = new DataTexture(
             new Uint8Array(1),
             tileRasterDimensions.x,
             tileRasterDimensions.y,
             RGBAFormat,
-        );
+        ) as TextureWithExtent;
     } else {
-        texture = <TextureWithExtent> await overview.extractTexture({
+        texture = await overview.extractTexture({
             imageWindow,
             textureDimensions: tileRasterDimensions,
             resampleMethod,
             defaultAlpha,
             pool,
-        });
+        }) as TextureWithExtent;
     }
     texture.extent = extent;
 

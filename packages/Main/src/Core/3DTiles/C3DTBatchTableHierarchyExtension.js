@@ -17,7 +17,7 @@
 class C3DTBatchTableHierarchyExtension {
     /**
      * Constructor of the C3DTBatchTableHierarchyExtension class.
-     * @param {Object} json - The parsed json of the batch table part of the 3D
+     * @param {object} json - The parsed json of the batch table part of the 3D
      * Tiles [Batch Table Hierarchy Extension](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions/3DTILES_batch_table_hierarchy)
      */
     constructor(json) {
@@ -67,7 +67,7 @@ class C3DTBatchTableHierarchyExtension {
      * Creates and returns a javascript object holding the displayable
      * information relative to this extension for a given feature.
      * @param {integer} featureId - id of the feature
-     * @returns {Object} - displayable information relative to this
+     * @returns {object} - displayable information relative to this
      * extension, for the feature with id=featureId and for its parents
      */
     getInfoById(featureId) {

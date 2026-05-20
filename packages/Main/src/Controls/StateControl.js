@@ -110,14 +110,14 @@ const viewCoords = new THREE.Vector2();
 
 
 /**
- * @typedef {Object} StateControl~State
+ * @typedef {object} State
  * @property {boolean} enable=true Indicate whether the state is enabled or not.
- * @property {Number} [mouseButton] The mouse button bound to this state.
- * @property {Number} [keyboard] The keyCode of the keyboard input bound to this state.
- * @property {Number} [finger] The number of fingers on the pad bound to this state.
+ * @property {number} [mouseButton] The mouse button bound to this state.
+ * @property {number} [keyboard] The keyCode of the keyboard input bound to this state.
+ * @property {number} [finger] The number of fingers on the pad bound to this state.
  * @property {boolean} [double] True if the mouse button bound to this state must be pressed twice. For
-                                * example, if `double` is set to true with a `mouseButton` set to left click,
-                                * the State will be bound to a double click mouse button.
+ * example, if `double` is set to true with a `mouseButton` set to left click,
+ * the State will be bound to a double click mouse button.
  */
 
 /**
@@ -128,28 +128,28 @@ const viewCoords = new THREE.Vector2();
  *
  * @property {State}    NONE        {@link State} when camera is idle.
  * @property {State}    ORBIT       {@link State} describing camera orbiting movement : the camera moves around its
-                                    * target at a constant distance from it.
+ * target at a constant distance from it.
  * @property {State}    DOLLY       {@link State} describing camera dolly movement : the camera moves forward or
-                                    * backward from its target.
+ * backward from its target.
  * @property {State}    PAN         {@link State} describing camera pan movement : the camera moves parallel to the
-                                    * current view plane.
+ * current view plane.
  * @property {State}    MOVE_GLOBE  {@link State} describing camera drag movement : the camera is moved around the view
-                                    * to give the feeling that the view is dragged under a static camera.
+ * to give the feeling that the view is dragged under a static camera.
  * @property {State}    PANORAMIC   {@link State} describing camera panoramic movement : the camera is rotated around
-                                    * its own position.
+ * its own position.
  * @property {State}    TRAVEL_IN   {@link State} describing camera travel in movement : the camera is zoomed in toward
-                                    * a given position. The target position depends on the key/mouse binding of this
-                                    * state. If bound to a mouse button, the target position is the mouse position.
-                                    * Otherwise, it is the center of the screen.
+ * a given position. The target position depends on the key/mouse binding of this
+ * state. If bound to a mouse button, the target position is the mouse position.
+ * Otherwise, it is the center of the screen.
  * @property {State}    TRAVEL_OUT  {@link State} describing camera travel out movement : the camera is zoomed out from
-                                    * a given position. The target position depends on the key/mouse binding of this
-                                    * state. If bound to a mouse button, the target position is the mouse position.
-                                    * Otherwise, it is the center of the screen. It is disabled by default.
+ * a given position. The target position depends on the key/mouse binding of this
+ * state. If bound to a mouse button, the target position is the mouse position.
+ * Otherwise, it is the center of the screen. It is disabled by default.
  * @property {State}    ZOOM        {@link State} describing camera zoom in and out movement.
  * @property {boolean}  enable      Defines whether all input will be communicated to the associated `Controls` or not.
-                                    * Default is true.
+ * Default is true.
  * @property {boolean}  enableKeys  Defines whether keyboard input will be communicated to the associated `Controls` or
-                                    * not. Default is true.
+ * not. Default is true.
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -229,10 +229,10 @@ class StateControl extends THREE.EventDispatcher {
     /**
      * get the state corresponding to the mouse button and the keyboard key. If the input relates to a trigger - a
      * single event which triggers movement, without the move of the mouse for instance -, dispatch a relevant event.
-     * @param      {Number}  mouseButton  The mouse button
-     * @param      {Number}  keyboard     The keyboard
-     * @param      {Boolean} [double]     Value of the searched state `double` property
-     * @return     {State}  the state corresponding
+     * @param      {number}  mouseButton  The mouse button
+     * @param      {number}  keyboard     The keyboard
+     * @param      {boolean} [double]     Value of the searched state `double` property
+     * @returns     {State}  the state corresponding
      */
     inputToState(mouseButton, keyboard, double = false) {
         for (const key of Object.keys(DEFAULT_STATES)) {
@@ -259,8 +259,8 @@ class StateControl extends THREE.EventDispatcher {
     /**
      * get the state corresponding to the number of finger on the pad
      *
-     * @param      {Number}  finger  The number of finger
-     * @return     {state}  the state corresponding
+     * @param      {number}  finger  The number of finger
+     * @returns     {state}  the state corresponding
      */
     touchToState(finger) {
         for (const key of Object.keys(DEFAULT_STATES)) {
@@ -274,9 +274,9 @@ class StateControl extends THREE.EventDispatcher {
 
     /**
      * Set the current StateControl {@link State} properties to given values.
-     * @param {Object}  options     Object containing the `State` values to set current `StateControl` properties to.
-                                    * The `enable` property do not necessarily need to be specified. In that case, the
-                                    * previous value of this property will be kept for the new {@link State}.
+     * @param {object}  options     Object containing the `State` values to set current `StateControl` properties to.
+     * The `enable` property do not necessarily need to be specified. In that case, the
+     * previous value of this property will be kept for the new {@link State}.
      *
      * @example
      * // Switch bindings for PAN and MOVE_GLOBE actions, and disabling PANORAMIC movement :

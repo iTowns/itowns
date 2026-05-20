@@ -1,6 +1,6 @@
 import assert from 'assert';
 import Potree2Node from 'Core/Potree2Node';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 
 const crs = 'EPSG:4978';

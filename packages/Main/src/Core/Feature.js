@@ -29,7 +29,7 @@ export const FEATURE_TYPES = {
 };
 
 /**
- * @typedef {Object} FeatureBuildingOptions
+ * @typedef {object} FeatureBuildingOptions
  * @property {string} crs - The CRS to convert the input coordinates to.
  * @property {string} [structure='2d'] - data structure type : 2d or 3d.
  * If the structure is 3d, the feature have 3 dimensions by vertices positions and
@@ -41,7 +41,7 @@ export const FEATURE_TYPES = {
  * Default value is false if `structure` parameter is set to '3d', and true otherwise.
  * True if the layer does not inherit from {@link GeometryLayer}.
  * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
- * @property {function} [filter] - Filter function to remove features
+ * @property {Function} [filter] - Filter function to remove features
  * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type.
  * @property {Style} style - The style to inherit when creating
  * style for all new features.
@@ -51,11 +51,11 @@ export const FEATURE_TYPES = {
 /**
  * @property {Extent} extent - The 2D extent containing all the points
  * composing the geometry.
- * @property {Object[]} indices - Contains the indices that define the geometry.
+ * @property {object[]} indices - Contains the indices that define the geometry.
  * Objects stored in this array have two properties, an `offset` and a `count`.
  * The offset is related to the overall number of vertices in the Feature.
  *
- * @property {Object} properties - Properties of the geometry. It can be
+ * @property {object} properties - Properties of the geometry. It can be
  * anything specified in the GeoJSON under the `properties` property.
  */
 export class FeatureGeometry {
@@ -142,13 +142,14 @@ export class FeatureGeometry {
      * No geographical conversion is made or the normal doesn't stored.
      *
      * @param {Feature} feature - the feature containing the geometry
-     * @param {Object} coordIn An object containing the coordinates values to push.
+     * @param {object} coordIn An object containing the coordinates values to push.
      * @param {number} coordIn.x the x coordinate (in a local system).
      * @param {number} coordIn.y the y coordinate (in a local system).
      * @param {THREE.Vector3} [coordIn.normal] the normal on coordinates (only for `EPSG:4978` projection).
      * @param {Coordinates} [coordProj] An optional argument containing the geodesic coordinates in EPSG:4326
      * It allows the user to get access to the feature coordinates to set style.base_altitude.
-    */
+     * @param {...any} args
+     */
     pushCoordinatesValues(feature, coordIn, coordProj, ...args) {
         if (args.length > 0) {
             console.warn('Deprecated: change in arguments, use pushCoordinatesValues(feature, {x: long, y: lat, normal}, coordProj) instead');
@@ -483,7 +484,7 @@ export class FeatureCollection extends THREE.Object3D {
      * It allows to have features with different styles
      * without having to duplicate the geometry.
      * @param      {Feature}   feature  The feature to reference.
-     * @return     {Feature}  The new referenced feature
+     * @returns     {Feature}  The new referenced feature
      */
     newFeatureByReference(feature) {
         const ref = new Feature(feature.type, this);

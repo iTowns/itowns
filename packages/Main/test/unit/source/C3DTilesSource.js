@@ -1,7 +1,7 @@
 import assert from 'assert';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesIonSource from 'Source/C3DTilesIonSource';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 
 const tileset = {};
@@ -22,7 +22,7 @@ describe('C3DTilesSource', function () {
 
     it('should instance C3DTilesSource', function (done) {
         const url3dTileset = 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
-                '3DTiles/lyon_1_4978/tileset.json';
+            '3DTiles/lyon_1_4978/tileset.json';
         const source = new C3DTilesSource({ url: url3dTileset });
         source.whenReady
             .then(() => {

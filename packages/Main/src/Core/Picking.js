@@ -10,7 +10,7 @@ function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
 
     viewCoords = viewCoords || new THREE.Vector2(Math.floor(dim.x / 2), Math.floor(dim.y / 2));
 
-    /** @type THREE.RenderTarget */
+    /** @type {THREE.RenderTarget} */
     const buffer = RenderMode.scope(tileLayer.level0Nodes, RenderMode.MODES.ID, () => view.mainLoop.gfxEngine.renderViewToBuffer(
         { camera: view.camera, scene: tileLayer.object3d },
         {

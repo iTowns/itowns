@@ -12,14 +12,14 @@ let style;
  * using the given style(s). Several styles will re-draws the polygon each one with
  * a different style.
  * @param      {CanvasRenderingContext2D} ctx - canvas' 2D rendering context.
- * @param      {Number[]} vertices - All the vertices of the Feature.
- * @param      {Object[]} indices - Contains the indices that define the geometry.
+ * @param      {number[]} vertices - All the vertices of the Feature.
+ * @param      {object[]} indices - Contains the indices that define the geometry.
  * Objects stored in this array have two properties, an `offset` and a `count`.
-* The offset is related to the overall number of vertices in the Feature.
- * @param      {Number} size - The size of the feature.
- * @param      {Number} extent - The extent.
- * @param      {Number} invCtxScale - The ration to scale line width and radius circle.
- * @param      {Boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON
+ * The offset is related to the overall number of vertices in the Feature.
+ * @param      {number} size - The size of the feature.
+ * @param      {number} extent - The extent.
+ * @param      {number} invCtxScale - The ration to scale line width and radius circle.
+ * @param      {boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON
  */
 function drawPolygon(ctx, vertices, indices = [{ offset: 0, count: 1 }], size, extent, invCtxScale, canBeFilled) {
     if (vertices.length === 0) {

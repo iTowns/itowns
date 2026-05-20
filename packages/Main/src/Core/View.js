@@ -20,8 +20,8 @@ export const VIEW_EVENTS = {
      * expected, ...).
      * If you add new layers, the event will be fired again when all
      * layers are ready.
-     * @event View#layers-initialized
-     * @property type {string} layers-initialized
+     * @event View#"layers-initialized"
+     * @property {string} type layers-initialized
      */
     LAYERS_INITIALIZED: 'layers-initialized',
     LAYER_REMOVED: 'layer-removed',
@@ -35,7 +35,7 @@ export const VIEW_EVENTS = {
 /**
  * Fired on current view's domElement when double right-clicking it. Copies all properties of the second right-click
  * MouseEvent (such as cursor position).
- * @event View#dblclick-right
+ * @event View#"dblclick-right"
  * @property {string} type  dblclick-right
  */
 
@@ -122,7 +122,7 @@ let id = 0;
 /**
  * @property {number} id - The id of the view. It's incremented at each new view instance, starting at 0.
  * @property {HTMLElement} domElement - The domElement holding the canvas where the view is displayed
- * @property {String} referenceCrs - The coordinate reference system of the view
+ * @property {string} referenceCrs - The coordinate reference system of the view
  * @property {MainLoop} mainLoop - itowns mainloop scheduling the operations
  * @property {THREE.Scene} scene - threejs scene of the view
  * @property {Camera} camera - itowns camera (that holds a threejs camera that is directly accessible with View.camera3D)
@@ -150,12 +150,12 @@ class View extends THREE.EventDispatcher {
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
      * var customControls = itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
      *
-     * @param {String} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
+     * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
-     * @param {Object} [options] - Optional properties.
-     * @param {Object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
+     * @param {object} [options] - Optional properties.
+     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
      * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
-     * @param {WebGLRenderer|Object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
+     * @param {WebGLRenderer | object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
@@ -187,7 +187,7 @@ class View extends THREE.EventDispatcher {
         }
 
         this.mainLoop = options.mainLoop || new MainLoop(new Scheduler(), engine);
-        /** @type undefined | function(): void */
+        /** @type {undefined | function(): void} */
         this.render = undefined;
 
         this.scene = options.scene3D || new THREE.Scene();
@@ -350,7 +350,7 @@ class View extends THREE.EventDispatcher {
      *
      * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
      * @param {Layer=} parentLayer it's the layer to which the layer will be attached.
-     * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
+     * @returns {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
      */
     addLayer(layer, parentLayer) {
         if (!layer || !layer.isLayer) {
@@ -405,7 +405,7 @@ class View extends THREE.EventDispatcher {
      * view.removeLayer('layerId');
      * @param {string} layerId The identifier
      * @param {boolean} [clearCache=false] Whether to clear all the layer cache or not
-     * @return {boolean}
+     * @returns {boolean}
      */
     removeLayer(layerId, clearCache) {
         const layer = this.getLayerById(layerId);
@@ -513,8 +513,8 @@ class View extends THREE.EventDispatcher {
     /**
      * Gets the layer by identifier.
      *
-     * @param {String}  layerId  The layer identifier
-     * @return {Layer}  The layer by identifier.
+     * @param {string}  layerId  The layer identifier
+     * @returns {Layer}  The layer by identifier.
      */
 
     getLayerById(layerId) {
@@ -560,7 +560,7 @@ class View extends THREE.EventDispatcher {
      *
      * FrameRequesters can activate the MainLoop update by calling view.notifyChange.
      *
-     * @param {String} when - decide when the frameRequester should be called during
+     * @param {string} when - decide when the frameRequester should be called during
      * the update cycle. Can be any of {@link MAIN_LOOP_EVENTS}.
      * @param {FrameRequester} frameRequester - this function will be called at each
      * MainLoop update with the time delta between last update, or 0 if the MainLoop
@@ -583,7 +583,7 @@ class View extends THREE.EventDispatcher {
      * The effective removal will happen either later; at worst it'll be at
      * the beginning of the next frame.
      *
-     * @param {String} when - attach point of this requester. Can be any of
+     * @param {string} when - attach point of this requester. Can be any of
      * {@link MAIN_LOOP_EVENTS}.
      * @param {FrameRequester} frameRequester
      */
@@ -642,9 +642,9 @@ class View extends THREE.EventDispatcher {
     /**
      * Execute a frameRequester.
      *
-     * @param {String} when - attach point of this (these) requester(s). Can be any
+     * @param {string} when - attach point of this (these) requester(s). Can be any
      * of {@link MAIN_LOOP_EVENTS}.
-     * @param {Number} dt - delta between this update and the previous one
+     * @param {number} dt - delta between this update and the previous one
      * @param {boolean} updateLoopRestarted
      * @param {...*} args - optional arguments
      */
@@ -671,7 +671,7 @@ class View extends THREE.EventDispatcher {
      * @param {event} event - event can be a MouseEvent or a TouchEvent
      * @param {THREE.Vector2} target - the target to set the view coords in
      * @param {number} [touchIdx=0] - finger index when using a TouchEvent
-     * @return {THREE.Vector2|undefined} - view coordinates (in pixels, 0-0 = top-left of the View).
+     * @returns {THREE.Vector2|undefined} - view coordinates (in pixels, 0-0 = top-left of the View).
      * If the event is neither a `MouseEvent` nor a `TouchEvent`, the return is `undefined`.
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
@@ -691,7 +691,7 @@ class View extends THREE.EventDispatcher {
      * Extract normalized coordinates (NDC) from a mouse-event / touch-event
      * @param {event} event - event can be a MouseEvent or a TouchEvent
      * @param {number} touchIdx - finger index when using a TouchEvent (default: 0)
-     * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
+     * @returns {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
      */
     eventToNormalizedCoords(event, touchIdx = 0) {
         return this.viewToNormalizedCoords(this.eventToViewCoords(event, _eventCoords, touchIdx));
@@ -701,7 +701,7 @@ class View extends THREE.EventDispatcher {
      * Convert view coordinates to normalized coordinates (NDC)
      * @param {THREE.Vector2} viewCoords (in pixels, 0-0 = top-left of the View)
      * @param {THREE.Vector2} target
-     * @return {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
+     * @returns {THREE.Vector2} - NDC coordinates (x and y are [-1, 1])
      */
     viewToNormalizedCoords(viewCoords, target = _eventCoords) {
         target.x = 2 * (viewCoords.x / this.camera.width) - 1;
@@ -712,7 +712,7 @@ class View extends THREE.EventDispatcher {
     /**
      * Convert NDC coordinates to view coordinates
      * @param {THREE.Vector2} ndcCoords
-     * @return {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
+     * @returns {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View)
      */
     normalizedToViewCoords(ndcCoords) {
         _eventCoords.x = (ndcCoords.x + 1) * 0.5 * this.camera.width;
@@ -725,7 +725,7 @@ class View extends THREE.EventDispatcher {
      * `THREE.Object3D`, under the mouse or at a specified coordinates, in this
      * view.
      *
-     * @param {Object} mouseOrEvt - Mouse position in window coordinates (from
+     * @param {object} mouseOrEvt - Mouse position in window coordinates (from
      * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
      * @param {number} [radius=0] - The picking will happen in a circle centered
      * on mouseOrEvt. This is the radius of this circle, in pixels.
@@ -733,7 +733,7 @@ class View extends THREE.EventDispatcher {
      * objects. It can be a single {@link GeometryLayer}, `THREE.Object3D`, ID of a layer or an array of one of these or
      * of a mix of these. If no location is specified, it will query on all {@link GeometryLayer} present in this `View`.
      *
-     * @return {Object[]} - An array of objects. Each element contains at least
+     * @returns {object[]} - An array of objects. Each element contains at least
      * an object property which is the `THREE.Object3D` under the cursor. Then
      * depending on the queried layer/source, there may be additionnal
      * properties (coming from `THREE.Raycaster` for instance).
@@ -794,7 +794,7 @@ class View extends THREE.EventDispatcher {
      *
      * @param {number} pitch - Screen pitch, in millimeters ; 0.28 by default
      *
-     * @return {number} The zoom scale.
+     * @returns {number} The zoom scale.
      */
     getScale(pitch = 0.28) {
         if (this.camera3D.isOrthographicCamera) {
@@ -817,7 +817,7 @@ class View extends THREE.EventDispatcher {
      * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
      * distance at. By default this is the middle of the screen.
      *
-     * @return {number} The distance in meters.
+     * @returns {number} The distance in meters.
      */
     getDistanceFromCamera(screenCoord) {
         this.getPickingPositionFromDepth(screenCoord, positionVector);
@@ -832,7 +832,7 @@ class View extends THREE.EventDispatcher {
      * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
      * projected distance at. By default, this is the middle of the screen.
      *
-     * @return {number} The projected distance in meters.
+     * @returns {number} The projected distance in meters.
      */
     getPixelsToMeters(pixels = 1, screenCoord) {
         if (this.camera3D.isOrthographicCamera) {
@@ -854,7 +854,7 @@ class View extends THREE.EventDispatcher {
      * @param {THREE.Vector2} [screenCoord] - The screen coordinate to get the
      * projected distance at. By default, this is the middle of the screen.
      *
-     * @return {number} The projected distance in pixels.
+     * @returns {number} The projected distance in pixels.
      */
     getMetersToPixels(meters = 1, screenCoord) {
         if (this.camera3D.isOrthographicCamera) {
@@ -873,7 +873,7 @@ class View extends THREE.EventDispatcher {
      * the specified coordinates, in this view. Combining them per layer and in a Feature
      * like format.
      *
-     * @param {Object} mouseOrEvt - Mouse position in window coordinates (from
+     * @param {object} mouseOrEvt - Mouse position in window coordinates (from
      * the top left corner of the window) or `MouseEvent` or `TouchEvent`.
      * @param {number} [radius=3] - The picking will happen in a circle centered
      * on mouseOrEvt. This is the radius of this circle, in pixels.
@@ -881,7 +881,7 @@ class View extends THREE.EventDispatcher {
      * into. If not specified, all {@link ColorLayer} and {@link GeometryLayer}
      * layers of this view will be looked in.
      *
-     * @return {Object} - An object, having one property per layer.
+     * @returns {object} - An object, having one property per layer.
      * For example, looking for features on layers `wfsBuilding` and `wfsRoads`
      * will give an object like `{ wfsBuilding: [...], wfsRoads: [] }`.
      * Each property is made of an array, that can be empty or filled with
@@ -1023,12 +1023,11 @@ class View extends THREE.EventDispatcher {
      *
      * @param      {THREE.Vector2 | null}  mouse  position in view coordinates (in pixel), if it's null so it's view's center.
      * @param      {THREE.Vector3}  [target=THREE.Vector3()] target. the result will be copied into this Vector3. If not present a new one will be created.
-     * @return     {THREE.Vector3}  the world position on the terrain in view's crs: referenceCrs.
+     * @returns     {THREE.Vector3}  the world position on the terrain in view's crs: referenceCrs.
      */
 
     getPickingPositionFromDepth(mouse = null, target = new THREE.Vector3()) {
         if (!this.tileLayer || this.tileLayer.level0Nodes.length == 0 || (!this.tileLayer.level0Nodes[0])) {
-            target = undefined;
             return;
         }
         const l = this.mainLoop;
@@ -1125,11 +1124,11 @@ class View extends THREE.EventDispatcher {
      * Returns the world {@link Coordinates} of the terrain at given view coordinates.
      *
      * @param   {THREE.Vector2|event}   [mouse]     The view coordinates at which the world coordinates must be
-                                                    * returned. This parameter can also be set to a mouse event from
-                                                    * which the view coordinates will be deducted. If not specified, it
-                                                    * will be defaulted to the view's center coordinates.
+     * returned. This parameter can also be set to a mouse event from
+     * which the view coordinates will be deducted. If not specified, it
+     * will be defaulted to the view's center coordinates.
      * @param   {Coordinates}           [target]    The result will be copied into this {@link Coordinates}. If not
-                                                    * specified, a new {@link Coordinates} instance will be created.
+     * specified, a new {@link Coordinates} instance will be created.
      *
      * @returns {Coordinates}   The world {@link Coordinates} of the terrain at the given view coordinates.
      *

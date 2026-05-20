@@ -7,12 +7,12 @@ let pkgJson = {};
 try {
     const pkgPath = path.resolve(process.cwd(), 'package.json');
     pkgJson = JSON.parse(await readFile(pkgPath, 'utf-8'));
-} catch (err) {
+} catch {
     console.error('no root package.json found');
 }
 
 const parserOpts = {
-    headerPattern: /^(\w*)(?:\((.*)\))?\: (.*)$/,
+    headerPattern: /^(\w*)(?:\((.*)\))?: (.*)$/,
     headerCorrespondence: [
         'type',
         'scope',

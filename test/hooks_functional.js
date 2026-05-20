@@ -1,6 +1,5 @@
 /* global page, view, initialPosition */
-// eslint-disable-next-line import/no-extraneous-dependencies
-import puppeteer from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 import net from 'net';
 import fs from 'fs';
 import http from 'http';
@@ -155,7 +154,7 @@ const loadExample = async (url, screenshotName) => {
             console.warn('         -> Camera motion had been stopped');
             try {
                 await initializeLayers();
-            } catch (e) {
+            } catch {
                 console.warn('     *** Warning: initializeLayers timed out again ***');
             }
         } else {
@@ -249,7 +248,6 @@ const disableGLForTest = () => {
     browser = browserWithoutGl;
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const mochaHooks = {
     beforeAll: async () => {
         let server;
@@ -324,7 +322,6 @@ export const mochaHooks = {
     afterEach: async () => {
         await page.evaluate((init) => {
             if (view?.isGlobeView && view.controls) {
-                // eslint-disable-next-line no-param-reassign
                 init.coord = new itowns.Coordinates(
                     init.coord.crs,
                     init.coord.x,

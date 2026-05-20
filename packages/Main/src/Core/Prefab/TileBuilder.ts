@@ -7,27 +7,27 @@ import type { Extent } from '@itowns/geographic';
 import { Coordinates } from '@itowns/geographic';
 
 const cacheBuffer = new Map<string, {
-    index: THREE.BufferAttribute,
-    uv: THREE.BufferAttribute,
+    index: THREE.BufferAttribute;
+    uv: THREE.BufferAttribute;
 }>();
 const cacheTile = new LRUCache<string, Promise<TileGeometry>>({ max: 500 });
 
-export type GpuBufferAttributes = {
+export interface GpuBufferAttributes {
     index: THREE.BufferAttribute | null;
     position: THREE.BufferAttribute;
     normal: THREE.BufferAttribute;
     uvs: THREE.BufferAttribute[];
-};
+}
 
 /**
  * Reference to a tile's extent with rigid transformations.
  * Enables reuse of geometry, saving a bit of memory.
  */
-export type ShareableExtent = {
+export interface ShareableExtent {
     shareableExtent: Extent;
     quaternion: THREE.Quaternion;
     position: THREE.Vector3;
-};
+}
 
 export interface TileBuilderPrepareParams {
     /** Whether to build the skirt. */
@@ -74,6 +74,8 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileB
     computeShareableExtent(extent: Extent): ShareableExtent;
 }
 
+type UintArray = Uint8Array | Uint16Array | Uint32Array;
+
 export function newTileGeometry(
     builder: TileBuilder,
     params: TileBuilderPrepareParams,
@@ -91,8 +93,8 @@ export function newTileGeometry(
 
     // build geometry if doesn't exist
     if (!promiseGeometry) {
-        let resolve;
-        promiseGeometry = new Promise((r) => { resolve = r; });
+        let resolve: ((value: TileGeometry) => void) | undefined;
+        promiseGeometry = new Promise<TileGeometry>((r) => { resolve = r; });
         cacheTile.set(key, promiseGeometry);
 
         params.extent = shareableExtent;
@@ -108,8 +110,7 @@ export function newTileGeometry(
                 { ...params, center },
                 cachedBuffers !== undefined
                     ? {
-                        index: cachedBuffers.index.array as
-                            Uint8Array | Uint16Array | Uint32Array,
+                        index: cachedBuffers.index.array as UintArray,
                         uv: cachedBuffers.uv.array as Float32Array,
                     }
                     : undefined,
@@ -124,8 +125,8 @@ export function newTileGeometry(
             // TODO: Make this brain-based check compiler-based.
 
             cachedBuffers = {
-                index: new THREE.BufferAttribute(buffers.index!, 1),
-                uv: new THREE.BufferAttribute(buffers.uvs[0]!, 2),
+                index: new THREE.BufferAttribute(buffers.index as UintArray, 1),
+                uv: new THREE.BufferAttribute(buffers.uvs[0] as Float32Array, 2),
             };
 
             // Update cacheBuffer
@@ -146,10 +147,10 @@ export function newTileGeometry(
         };
 
         const geometry = new TileGeometry(builder, params, gpuBuffers);
-        geometry.OBB =
-            new OBB(geometry.boundingBox!.min, geometry.boundingBox!.max);
+        const bbox = geometry.boundingBox as THREE.Box3;
+        geometry.OBB = new OBB(bbox.min, bbox.max);
         geometry.initRefCount(cacheTile, key);
-        resolve!(geometry);
+        (resolve as (value: TileGeometry) => void)(geometry);
 
         return Promise.resolve({ geometry, quaternion, position });
     }

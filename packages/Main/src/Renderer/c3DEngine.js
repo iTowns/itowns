@@ -77,7 +77,7 @@ class c3DEngine {
         }.bind(this);
 
         /**
-         * @type {function}
+         * @type {Function}
          * @param {number} w
          * @param {number} h
          */
@@ -172,7 +172,7 @@ class c3DEngine {
      * @param {number} zone.y - y (in view coordinate)
      * @param {number} zone.width - width of area to render (in pixels)
      * @param {number} zone.height - height of area to render (in pixels)
-     * @return {THREE.RenderTarget} - Uint8Array, 4 bytes per pixel. The first pixel in
+     * @returns {THREE.RenderTarget} - Uint8Array, 4 bytes per pixel. The first pixel in
      * the array is the bottom-left pixel.
      */
     renderViewToBuffer(view, zone) {
@@ -202,7 +202,7 @@ class c3DEngine {
      * @param {View} view - The view to render
      * @param {THREE.RenderTarget} [target] - destination render target. Default value: full size render target owned by c3DEngine.
      * @param {object} [zone] - partial zone to render (zone x/y uses view coordinates) Note: target must contain complete zone
-     * @return {THREE.RenderTarget} - the destination render target
+     * @returns {THREE.RenderTarget} - the destination render target
      */
     renderViewToRenderTarget(view, target, zone) {
         if (!target) {

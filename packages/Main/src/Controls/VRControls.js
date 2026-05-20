@@ -6,7 +6,7 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 
 /**
  * @property {Array} controllers - WebXR controllers list
- * */
+ */
 class VRControls {
     static MIN_DELTA_ALTITUDE = 1.8;
     static MAX_NUMBER_CONTROLLERS = 2;  // For now, we are fully supporting a maximum of 2 controllers.
@@ -175,10 +175,10 @@ Adding a few internal states for reactivity
     }
 
     /**
-   * Clamp the given translation vector so that the camera remains at or above ground level.
-   * @param {THREE.Vector3} trans - The translation vector.
-   * @returns {THREE.Vector3} The clamped coordinates as a Vector3.
-   */
+     * Clamp the given translation vector so that the camera remains at or above ground level.
+     * @param {THREE.Vector3} trans - The translation vector.
+     * @returns {THREE.Vector3} The clamped coordinates as a Vector3.
+     */
     clampToGround(trans) {
         const transCoordinate = new Coordinates(
             this.view.referenceCrs,

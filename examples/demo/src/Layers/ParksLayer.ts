@@ -32,14 +32,14 @@ export const ParksLayer: LayerPromiseTypeNoParams = {
         const properties = feature as {
             geometry: {
                 properties: {
-                    nom: string,
-                    voie: string,
-                    commune: string,
-                    surf_tot_m2: string,
-                    codepost: string,
-                    code_insee: string,
-                }
-            }
+                    nom: string;
+                    voie: string;
+                    commune: string;
+                    surf_tot_m2: string;
+                    codepost: string;
+                    code_insee: string;
+                };
+            };
         };
 
         return {

@@ -30,41 +30,41 @@ const DEFAULT_OPTIONS = {
 class Minimap extends Widget {
     /**
      * @param   {GlobeView}             view                                    The iTowns view the minimap should be
-                                                                                * linked to. Only {@link GlobeView} is
-                                                                                * supported at the moment.
+     * linked to. Only {@link GlobeView} is
+     * supported at the moment.
      * @param   {ColorLayer}            layer                                   The {@link ColorLayer} that should be
-                                                                                * displayed on the minimap.
-     * @param   {Object}                [options]                               The minimap optional configuration.
+     * displayed on the minimap.
+     * @param   {object}                [options]                               The minimap optional configuration.
      * @param   {HTMLElement}           [options.parentElement=view.domElement] The parent HTML container of the div
-                                                                                * which contains minimap widgets.
+     * which contains minimap widgets.
      * @param   {number}                [options.size]                          The size of the minimap. It is a number
-                                                                                * that describes both width and height
-                                                                                * in pixels of the minimap.
+     * that describes both width and height
+     * in pixels of the minimap.
      * @param   {number}                [options.width=150]                     The width in pixels of the minimap.
      * @param   {number}                [options.height=150]                    The height in pixels of the minimap.
      * @param   {string}                [options.position='bottom-left']        Defines which position within the
-                                                                                * `parentElement` the minimap should be
-                                                                                * displayed to. Possible values are
-                                                                                * `top`, `bottom`, `left`, `right`,
-                                                                                * `top-left`, `top-right`, `bottom-left`
-                                                                                * and `bottom-right`. If the input value
-                                                                                * does not match one of these, it will
-                                                                                * be defaulted to `bottom-left`.
-     * @param   {Object}                [options.translate]                     An optional translation of the minimap.
+     * `parentElement` the minimap should be
+     * displayed to. Possible values are
+     * `top`, `bottom`, `left`, `right`,
+     * `top-left`, `top-right`, `bottom-left`
+     * and `bottom-right`. If the input value
+     * does not match one of these, it will
+     * be defaulted to `bottom-left`.
+     * @param   {object}                [options.translate]                     An optional translation of the minimap.
      * @param   {number}                [options.translate.x=0]                 The minimap translation along the page
-                                                                                * x-axis.
+     * x-axis.
      * @param   {number}                [options.translate.y=0]                 The minimap translation along the page
-                                                                                * y-axis.
+     * y-axis.
      * @param   {HTMLElement|string}    [options.cursor]                        An html element or an HTML string
-                                                                                * describing a cursor showing minimap
-                                                                                * view camera target position at the
-                                                                                * center of the minimap.
+     * describing a cursor showing minimap
+     * view camera target position at the
+     * center of the minimap.
      * @param   {number}                [options.minScale=1/2000]               The minimal scale the minimap can reach.
      * @param   {number}                [options.maxScale=1/1_250_000]          The maximal scale the minimap can reach.
      * @param   {number}                [options.zoomRatio=1/30]                The ratio between minimap camera zoom
-                                                                                * and view camera zoom.
+     * and view camera zoom.
      * @param   {number}                [options.pitch=0.28]                    The screen pixel pitch, used to compute
-                                                                                * view and minimap scale.
+     * view and minimap scale.
      */
     constructor(view, layer, options = {}) {
         // ---------- BUILD PROPERTIES ACCORDING TO DEFAULT OPTIONS AND OPTIONS PASSED IN PARAMETERS : ----------
