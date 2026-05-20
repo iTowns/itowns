@@ -23,7 +23,6 @@ describe('view_25d_map', function _() {
         const displayedTiles = await page.evaluate(() => {
             r = {};
             [...view.tileLayer.info.displayed.tiles]
-            // eslint-disable-next-line
                 .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
             return r;
         });

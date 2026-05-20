@@ -2,7 +2,6 @@ import { MathUtils, Vector3 } from 'three';
 
 import { Coordinates, Extent, CameraUtils } from 'itowns';
 
-// eslint-disable-next-line import/extensions
 import { createHTMLListFromObject } from './GUI/GuiTools.js';
 
 /**

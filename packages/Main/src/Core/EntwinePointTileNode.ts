@@ -28,9 +28,6 @@ class EntwinePointTileNode extends LasNodeBase {
      * @param z - The z coordinate of the node in the tree - see the
      * [Entwine documentation](https://entwine.io/entwine-point-tile.html#ept-data)
      * @param source - Data source (Ept) of the node.
-     * @param numPoints - The number of points in this node. If
-     * `-1`, it means that the octree hierarchy associated to this node needs to
-     * be loaded.
      * @param crs - The crs of the node.
      * @param hierarchy
      */

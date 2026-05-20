@@ -249,7 +249,6 @@ class Layer extends THREE.EventDispatcher {
     }
 
     // Placeholder
-    // eslint-disable-next-line
     convert(data) {
         return data;
     }

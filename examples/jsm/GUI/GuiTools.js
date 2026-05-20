@@ -1,5 +1,5 @@
 import * as itowns from 'itowns';
-// eslint-disable-next-line import/no-unresolved
+// eslint-disable-next-line import-x/no-unresolved
 import dat from 'dat';
 
 /**

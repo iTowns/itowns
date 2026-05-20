@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { Coordinates } from '@itowns/geographic';
 import DEMUtils from 'Utils/DEMUtils';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFactory.js';
 
 /**

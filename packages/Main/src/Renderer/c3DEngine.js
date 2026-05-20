@@ -9,7 +9,6 @@ import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
-// eslint-disable-next-line import/extensions, import/no-unresolved
 import WEBGL from 'three/addons/capabilities/WebGL.js';
 import { EffectComposer } from 'postprocessing';
 

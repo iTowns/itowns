@@ -183,11 +183,9 @@ class GeometryLayer extends Layer {
     }
 
     // Placeholder
-    // eslint-disable-next-line
     postUpdate() { }
 
     // Placeholder
-    // eslint-disable-next-line
     culling() {
         return true;
     }

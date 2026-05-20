@@ -16,8 +16,6 @@ const cNorthEast =  /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0);
 const southWest = /* @__PURE__ */ new Vector3();
 const northEast = /* @__PURE__ */ new Vector3();
 
-let _extent: Extent;
-
 const cardinals = [
     /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
     /* @__PURE__ */ new Coordinates('EPSG:4326', 0, 0, 0),
@@ -646,6 +644,6 @@ class Extent {
     }
 }
 
-_extent = /* @__PURE__ */ new Extent('EPSG:4326');
+const _extent = /* @__PURE__ */ new Extent('EPSG:4326');
 
 export default Extent;

@@ -11,7 +11,6 @@
   "types": "./lib/index.d.ts",
   "scripts": {
     "build": "",
-    "lint": "eslint \"src/**/*.{js,ts,tsx}\" \"test/**/*.js\"",
     "transpile": "tsc && cross-env BABEL_DISABLE_CACHE=1 babel src --out-dir lib --extensions .js,.ts",
     "test-unit": "npm run base-test-unit test/unit",
     "base-test-unit": "cross-env BABEL_DISABLE_CACHE=1 NODE_OPTIONS=--no-experimental-strip-types mocha --import=../../config/babel-register/register.mjs",

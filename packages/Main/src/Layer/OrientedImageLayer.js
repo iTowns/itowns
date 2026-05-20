@@ -178,7 +178,6 @@ class OrientedImageLayer extends GeometryLayer {
         }));
     }
 
-    // eslint-disable-next-line
     update() {
     }
 

@@ -27,7 +27,6 @@ describe('view_3d_map', function _() {
         const displayedTiles = await page.evaluate(() => {
             r = {};
             [...view.tileLayer.info.displayed.tiles]
-            // eslint-disable-next-line
                 .forEach(t => (!r[t.level] ? r[t.level] = 1 : r[t.level]++));
             return r;
         });
@@ -49,7 +48,6 @@ describe('view_3d_map', function _() {
 
         // add layers just below the capacity limit
         const underLimit = await page.evaluate(maxLayersCount => itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then((params) => {
-            // eslint-disable-next-line no-param-reassign
             params.source = new itowns.TMSSource(params.source);
             const promises = [];
             for (let i = 0; i < maxLayersCount; i++) {

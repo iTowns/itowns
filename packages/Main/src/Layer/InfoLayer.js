@@ -4,9 +4,7 @@ export default class InfoLayer {
     constructor(layer) {
         this.layer = layer;
     }
-    // eslint-disable-next-line
     clear() {}
-    // eslint-disable-next-line
     update() {}
 }
 
