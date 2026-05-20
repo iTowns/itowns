@@ -69,7 +69,7 @@ const typeNameAttributeMap = {
 function parseAttributes(jsonAttributes: Potree2Metadata['attributes']): Potree2PointAttributes {
     const attributes = new Potree2PointAttributes();
 
-    const replacements : Record<string, string> = {
+    const replacements: Record<string, string> = {
         rgb: 'rgba',
     };
 
@@ -146,24 +146,24 @@ class Potree2Source extends Source {
      * This `metadata` file stores information about the potree cloud 2.0
      * in JSON format.
      * The structure is :
-     * * __`version`__ - The metadata.json format may change over time.
+     * - __`version`__ - The metadata.json format may change over time.
      * The version number is necessary so that parsers know how to interpret
      * the data.
-     * * __`name`__ - Point cloud name.
-     * * __`description`__ - Point cloud description.
-     * * __`points`__ - Total number of points.
-     * * __`projection`__ - Point cloud geographic projection system.
-     * * __`hierarchy`__ - Information about point cloud hierarchy
+     * - __`name`__ - Point cloud name.
+     * - __`description`__ - Point cloud description.
+     * - __`points`__ - Total number of points.
+     * - __`projection`__ - Point cloud geographic projection system.
+     * - __`hierarchy`__ - Information about point cloud hierarchy
      *          (first chunk size, step size, octree depth).
-     * * __`offset`__ - Position offset used to determine the global
+     * - __`offset`__ - Position offset used to determine the global
      *          point position.
-     * * __`scale`__ - Point cloud scale.
-     * * __`spacing`__ - The minimum distance between points at root level.
-     * * __`boundingBox`__ - Contains the minimum and maximum of the axis
+     * - __`scale`__ - Point cloud scale.
+     * - __`spacing`__ - The minimum distance between points at root level.
+     * - __`boundingBox`__ - Contains the minimum and maximum of the axis
      *          aligned bounding box. This bounding box is cubic and aligned
      *          to fit to the octree root.
-     * * __`encoding`__ - Encoding type: BROTLI or DEFAULT (uncompressed).
-     * * __`attributes`__ - Array of attributes (position,  intensity,
+     * - __`encoding`__ - Encoding type: BROTLI or DEFAULT (uncompressed).
+     * - __`attributes`__ - Array of attributes (position,  intensity,
      *          return number, number of returns, classification,
      *          scan angle rank, user data, point source id, gps-time, rgb).
      * ```

@@ -27,7 +27,7 @@ const noCache = { get: () => {}, set: a => a, clear: () => {} };
 
 /**
  * This interface describes parsing options.
- * @typedef {Object} ParsingOptions
+ * @typedef {object} ParsingOptions
  * @property {Source} in - data informations contained in the file.
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
  */
@@ -50,12 +50,12 @@ let uid = 0;
  * source into Cache.
  * @property {string} url - The url of the resources that are fetched.
  * @property {string} format - The format of the resources that are fetched.
- * @property {function} fetcher - The method used to fetch the resources from
+ * @property {Function} fetcher - The method used to fetch the resources from
  * the source. iTowns provides some methods in {@link Fetcher}, but it can be
  * specified a custom one. This method should return a `Promise` containing the
  * fetched resource. If this property is set, it overrides the chosen fetcher
  * method with `format`.
- * @property {Object} networkOptions - Fetch options (passed directly to
+ * @property {object} networkOptions - Fetch options (passed directly to
  * `fetch()`), see [the syntax for more information](
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
  * By default, set to `{ crossOrigin: 'anonymous' }`.
@@ -63,7 +63,7 @@ let uid = 0;
  * @property {string} attribution - The intellectual property rights for the
  * resources.
  * @property {Extent} extent - The extent of the resources.
- * @property {function} parser - The method used to parse the resources attached
+ * @property {Function} parser - The method used to parse the resources attached
  * to the layer. iTowns provides some parsers, visible in the `Parser/` folder.
  * If the method is custom, it should return a `Promise` containing the parsed
  * resource. If this property is set, it overrides the default selected parser
@@ -80,7 +80,7 @@ let uid = 0;
  */
 class Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
+     * @param {object} source - An object that can contain all properties of a
      * Source. Only the `url` property is mandatory.
      */
     constructor(source) {
@@ -126,8 +126,7 @@ class Source {
      * resources inside the extent.
      *
      * @param {Extent} extent - Extent to convert in url.
-
-     * @return {string} The URL constructed from the extent.
+     * @returns {string} The URL constructed from the extent.
      */
     // eslint-disable-next-line
     urlFromExtent(extent) {
@@ -144,7 +143,7 @@ class Source {
      *
      * @param      {Extent}  extent   extent requested parsed data.
      * @param      {FeatureBuildingOptions|Layer}  out     The feature returned options
-     * @return     {FeatureCollection|Texture}  The parsed data.
+     * @returns     {FeatureCollection|Texture}  The parsed data.
      */
     loadData(extent, out) {
         const cache = this._featuresCaches[out.crs];
@@ -200,7 +199,7 @@ class Source {
      *
      * @param {Extent|Tile} extentOrTile - The extent or tile to test against.
      *
-     * @return {boolean} `true` if the source has data for the
+     * @returns {boolean} `true` if the source has data for the
      * given extent, `false` otherwise.
      */
     hasData(extentOrTile) {

@@ -36,7 +36,7 @@ const white = new THREE.Color(1.0,  1.0,  1.0);
  * top of canopy, and water. The different classes are defined using numeric
  * integer codes in the files.
  *
- * @typedef {Object} Classification
+ * @typedef {object} Classification
  * @property {boolean} visible - category visibility,
  * @property {string} name - category name,
  * @property {THREE.Color} color - category color,
@@ -157,7 +157,6 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {number}  [options.mode=PNTS_MODE.COLOR]  display mode.
      * @param      {number}  [options.shape=PNTS_SHAPE.CIRCLE]  rendered points shape.
      * @param      {THREE.Vector4}  [options.overlayColor=new THREE.Vector4(0, 0, 0, 0)]  overlay color.
-
      * @param      {Scheme}  [options.classificationScheme]  LUT for point classification colorization.
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
@@ -166,6 +165,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {number}  [options.minAttenuatedSize=3]  minimum scale used by 'ATTENUATED' size mode
      * @param      {number}  [options.maxAttenuatedSize=10]  maximum scale used by 'ATTENUATED' size mode
      *
+     * @property {object} options - options for the PointsMaterial.
      * @property {THREE.Vector2}  [options.intensityRange=new THREE.Vector2(1, 65536)]  intensity range (default value will be [1, 65536] if not defined at Layer level).
      * @property {THREE.Vector2}  [options.elevationRange=new THREE.Vector2(0, 1000)]  elevation range (default value will be [0, 1000] if not defined at Layer level).
      * @property {THREE.Vector2}  [options.angleRange=new THREE.Vector2(-90, 90)]  scan angle range (default value will be [-90, 90] if not defined at Layer level).

@@ -10,8 +10,10 @@ import Source from 'Source/Source';
  * 16 bits for later versions (as mandatory by the specification).
  */
 interface EntwinePointTileSourceParameters {
-    /** he URL of the directory containing the whole
-     * Entwine Point Tile structure. */
+    /**
+     * The URL of the directory containing the whole Entwine Point Tile
+     * structure.
+     */
     url: string;
     crs: string;
     colorDepth: number;
@@ -37,9 +39,11 @@ interface EntwinePointTileMetadata {
  * [`ept.json`](https://entwine.io/entwine-point-tile.html#ept-json).
  */
 class EntwinePointTileSource extends Source {
-    /** Used to checkout whether this source is a EntwinePointTileSource.
+    /**
+     * Used to checkout whether this source is a EntwinePointTileSource.
      * Default is true. You should not change this,
-     * as it is used internally for optimisation. */
+     * as it is used internally for optimisation.
+     */
     readonly isEntwinePointTileSource: true;
     colorDepth: number;
 

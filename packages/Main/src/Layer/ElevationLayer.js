@@ -33,13 +33,13 @@ class ElevationLayer extends RasterLayer {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
      * @param {number} [config.noDataValue]   The value coding the noData in the data set
-     * @param {Object} [config.clampValues] - Optional information for clamping
+     * @param {object} [config.clampValues] - Optional information for clamping
      * the elevation between a minimum and a maximum value
      * @param {number} [config.clampValues.min]   The minimum value to clamp the elevation
      * @param {number} [config.clampValues.max]   The maximum value to clamp the elevation
@@ -112,7 +112,7 @@ class ElevationLayer extends RasterLayer {
      * the elevation texture to displace TileMesh vertices.
      *
      * @param      {TileMesh}  node    The node to apply new RasterElevationTile;
-     * @return     {RasterElevationTile}  The raster elevation node added.
+     * @returns     {RasterElevationTile}  The raster elevation node added.
      */
     setupRasterNode(node) {
         const rasterElevationNode = new RasterElevationTile(this);

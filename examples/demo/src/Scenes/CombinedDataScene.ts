@@ -1,5 +1,6 @@
 import * as itowns from 'itowns';
 import * as THREE from 'three';
+
 // eslint-disable-next-line import/no-unresolved
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import * as Layers from '../Layers';
@@ -50,9 +51,10 @@ export const CombinedDataScene: SceneType = {
     getItownsView: () => CombinedDataScene.getView().getItownsView(),
     event: function update(/* dt */) {
         const itownsView = CombinedDataScene.getItownsView();
-        if (CombinedDataScene.meshes!.length) {
-            for (let i = 0; i < CombinedDataScene.meshes!.length; i++) {
-                const mesh = CombinedDataScene.meshes![i];
+        const meshes = CombinedDataScene.meshes ?? [];
+        if (meshes.length) {
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
                 if (mesh && mesh.scale.z < 1) {
                     mesh.scale.z = Math.min(1.0, mesh.scale.z + 0.005);
                     mesh.updateMatrixWorld(true);
@@ -81,7 +83,7 @@ export const CombinedDataScene: SceneType = {
         function scaleZ(mesh: THREE.Mesh) {
             mesh.children.forEach((c) => {
                 c.scale.z = 0.01;
-                CombinedDataScene.meshes!.push(c);
+                CombinedDataScene.meshes?.push(c);
             });
         }
 
@@ -171,7 +173,7 @@ export const CombinedDataScene: SceneType = {
     onEnter: async () => {
         const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'block';
-        itownsView.scene.add(...CombinedDataScene.meshes!);
+        itownsView.scene.add(...(CombinedDataScene.meshes ?? []));
         itownsView.addFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             CombinedDataScene.event,
@@ -179,8 +181,8 @@ export const CombinedDataScene: SceneType = {
 
         const layer = Layers.PointCloudLayer.cachedLayer as itowns.CopcLayer & {
             material: {
-                mode: number,
-            },
+                mode: number;
+            };
         };
 
         if (layer.material.mode === itowns.PNTS_MODE.COLOR) {
@@ -194,7 +196,7 @@ export const CombinedDataScene: SceneType = {
     onExit: async () => {
         const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'none';
-        itownsView.scene.remove(...CombinedDataScene.meshes!);
+        itownsView.scene.remove(...(CombinedDataScene.meshes ?? []));
         itownsView.removeFrameRequester(
             itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
             CombinedDataScene.event,

@@ -140,7 +140,6 @@ module.exports = {
             plugins: [
                 '@stylistic',
                 '@typescript-eslint',
-                'eslint-plugin-tsdoc',
             ],
             extends: [
                 'plugin:@typescript-eslint/eslint-recommended',
@@ -156,7 +155,6 @@ module.exports = {
                 'no-use-before-define': 'off',
                 '@typescript-eslint/no-use-before-define': 'error',
                 'valid-jsdoc': 'off',
-                'tsdoc/syntax': 'warn',
                 'no-useless-constructor': 'off',
             },
         },

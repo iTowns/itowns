@@ -6,16 +6,16 @@ import Style from 'Core/Style';
 
 /**
  * Fires when the visiblity of the layer has changed.
- * @event ColorLayer#visible-property-changed
+ * @event ColorLayer#"visible-property-changed"
  */
 /**
  * Fires when the opacity of the layer has changed.
- * @event ColorLayer#opacity-property-changed
+ * @event ColorLayer#"opacity-property-changed"
  */
 /**
  * Fires when the sequence of the layer has changed, meaning that the order of
  * the layer changed in the view it is attached to.
- * @event ColorLayer#sequence-property-changed
+ * @event ColorLayer#"sequence-property-changed"
  */
 
 /**
@@ -30,21 +30,21 @@ import Style from 'Core/Style';
  * @property {boolean} noTextureParentOutsideLimit - don't parent texture if it's outside limit.
  * @property {number} effect_type - type effect to apply on the raster color.
  * If `effect_type` equals:
- * * `0`: no effect.
- * * `1`: light color to invisible effect: transparency effect is stronger for
+ * - `0`: no effect.
+ * - `1`: light color to invisible effect: transparency effect is stronger for
  *   light colors (whose distance is closer to white). This effect can be
  *   amplified by `effect_parameter`.
- * * `2`: white color to invisible effect: white color is considered as
+ * - `2`: white color to invisible effect: white color is considered as
  *   transparent.
- * * `3`: custom shader effect: set `ShaderChunk.customBodyColorLayer` and
+ * - `3`: custom shader effect: set `ShaderChunk.customBodyColorLayer` and
  *   `ShaderChunk.customHeaderColorLayer` to add your own glsl code in
  *   respectively the color layer function body and at top-level.
  * @property {number} effect_parameter - value used as parameter of certain type
  * of effects. If `effect_type` equals:
- * * `0`: unused.
- * * `1`: used to amplify the transparency effect.
- * * `2`: unused.
- * * `3`: could be used by your own glsl code.
+ * - `0`: unused.
+ * - `1`: used to amplify the transparency effect.
+ * - `2`: unused.
+ * - `3`: could be used by your own glsl code.
  *
  * @extends RasterLayer
  */
@@ -57,7 +57,7 @@ class ColorLayer extends RasterLayer {
      * @param {string} id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a
      * {@link View} that already has a layer going by that id.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
@@ -67,12 +67,12 @@ class ColorLayer extends RasterLayer {
      * @param {number} [config.minFilter] - How the texture is sampled when a texel covers less than one pixel. [see](https://threejs.org/docs/?q=texture#api/en/textures/Texture.minFilter)
      * @param {number} [config.effect_type=0] - type effect to apply on raster color.
      * if `effect_type` equals:
-     * * `0`: no special effect.
-     * * `1`: light color to invisible effect.
-     * * `2`: white color to invisible effect.
-     * * `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
+     * - `0`: no special effect.
+     * - `1`: light color to invisible effect.
+     * - `2`: white color to invisible effect.
+     * - `3`: custom shader effect (defined `ShaderChunk.customBodyColorLayer` and `ShaderChunk.customHeaderColorLayer`).
      * @param {number} [config.effect_parameter=1.0] - amount value used with effect applied on raster color.
-     * @param {(boolean|Object)} [config.addLabelLayer] - Used to indicate
+     * @param {(boolean | object)} [config.addLabelLayer] - Used to indicate
      * whether this layer can display labels from the data. For example, it
      * needs to be set for vector tile layers if you want to display labels.
      * If set, a new `LabelLayer` is added and attached to this layer.
@@ -161,7 +161,7 @@ class ColorLayer extends RasterLayer {
      * the ColorLayer textures mapped on this TileMesh.
      *
      * @param      {TileMesh}  node    The node to apply new RasterColorTile;
-     * @return     {RasterColorTile}  The raster color node added.
+     * @returns     {RasterColorTile}  The raster color node added.
      */
     setupRasterNode(node) {
         const rasterColorTile = new RasterColorTile(this);

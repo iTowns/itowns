@@ -17,7 +17,7 @@ class C3DTilesSource extends Source {
      *
      * @extends Source
      *
-     * @param {Object} source An object that can contain all properties of {@link Source}.
+     * @param {object} source An object that can contain all properties of {@link Source}.
      * Only `url` is mandatory.
      */
     constructor(source) {

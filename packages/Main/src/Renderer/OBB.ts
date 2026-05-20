@@ -20,7 +20,7 @@ let _obb: OBB;
 class OBB extends THREE.Object3D {
     box3D: THREE.Box3;
     natBox: THREE.Box3;
-    z: { min: number, max: number, scale: number, delta: number };
+    z: { min: number; max: number; scale: number; delta: number };
 
     private _center: undefined | THREE.Vector3;
     matrixWorldInverse: THREE.Matrix4;
@@ -64,6 +64,7 @@ class OBB extends THREE.Object3D {
      * Copies the property from cOBB to this OBB.
      *
      * @param cOBB - OBB to copy
+     * @returns
      */
     override copy(cOBB: OBB): this {
         super.copy(cOBB);
@@ -79,8 +80,12 @@ class OBB extends THREE.Object3D {
      * Updates the z min, z max and z scale of oriented bounding box.
      *
      * @param elevation - Elevation parameters
+     * @param elevation.min - The minimum elevation
+     * @param elevation.max - The maximum elevation
+     * @param elevation.scale - The scale of the elevation
+     * @param elevation.geoidHeight - The geoid height
      */
-    updateZ(elevation: { min?: number, max?: number, scale?: number, geoidHeight?: number } = {}) {
+    updateZ(elevation: { min?: number; max?: number; scale?: number; geoidHeight?: number } = {}) {
         this.z.min = elevation.min ?? this.z.min;
         this.z.max = elevation.max ?? this.z.max;
 
@@ -195,7 +200,9 @@ class OBB extends THREE.Object3D {
             try {
                 forward = CRS.transform(crsIn, crsOut).forward;
             } catch (err) {
-                throw new Error(`${err} is not defined in proj4`);
+                throw new Error(`${err} is not defined in proj4`, {
+                    cause: err,
+                });
             }
         }
 

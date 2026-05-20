@@ -4,9 +4,10 @@ import { buildVoxelKey } from 'Core/PointCloudNode';
 import LasNodeBase from 'Core/LasNodeBase';
 
 class CopcNode extends LasNodeBase {
-    /**  Used to checkout whether this
-     * node is a CopcNode. Default is `true`. You should not change
-     * this, as it is used internally for optimisation. */
+    /**
+     * Used to checkout whether this node is a CopcNode. Default is `true`.
+     * You should not change this, as it is used internally for optimisation.
+     */
     readonly isCopcNode: true;
 
     source: CopcSource;
@@ -16,12 +17,15 @@ class CopcNode extends LasNodeBase {
     /** Octree's subtree */
     hierarchy: Hierarchy.Subtree;
 
-    /** The string id of the node, constituted of the four
-    * components: `depth-x-y-z`. */
+    /**
+     * The string id of the node, constituted of the four components:
+     * `depth-x-y-z`.
+     */
     override voxelKey: string;
 
-    /** Offset from the beginning of the file of
-     * the node entry */
+    /**
+     * Offset from the beginning of the file of the node entry
+     */
     private entryOffset: number;
     /** Size of the node entry */
     private entryLength: number;
@@ -36,6 +40,7 @@ class CopcNode extends LasNodeBase {
      * @param source - Data source (COPC) of the node.
      * Set to -1 when we don't have the information yet.
      * @param crs - The crs of the node.
+     * @param hierarchy
      */
     constructor(
         depth: number,

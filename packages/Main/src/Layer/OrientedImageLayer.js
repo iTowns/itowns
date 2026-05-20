@@ -87,9 +87,9 @@ function createBackground(radius) {
 class OrientedImageLayer extends GeometryLayer {
     /**
      * @param { string } id - The id of the layer, a unique name.
-     * @param { Object } config - configuration of the layer
+     * @param {object} config - configuration of the layer
      * @param { number } config.backgroundDistance - Radius in meter of the sphere used as a background
-     * @param { function } config.onPanoChanged - callback fired when current panoramic changes
+     * @param { Function } config.onPanoChanged - callback fired when current panoramic changes
      * @param { string } config.crs - crs projection of the view
      * @param { string } config.orientation - Json object, using GeoJSon format to represent points,
      * it's a set of panoramic position and orientation.
@@ -214,8 +214,8 @@ class OrientedImageLayer extends GeometryLayer {
      * Delete background, but doesn't delete OrientedImageLayer.material. For the moment, this material visibility is set to false.
      * You need to replace OrientedImageLayer.material applied on each object, if you want to continue displaying them.
      * This issue (see #1018 {@link https://github.com/iTowns/itowns/issues/1018}) will be fixed when OrientedImageLayer will be a ColorLayer.
-    * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
-    */
+     * @param {boolean} [clearCache=false] Whether to clear the layer cache or not
+     */
     delete(clearCache) {
         if (this.background) {
             // only delete geometries if it has some

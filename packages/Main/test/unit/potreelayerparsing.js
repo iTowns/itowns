@@ -5,7 +5,7 @@ import PotreeSource from 'Source/PotreeSource';
 import { Coordinates } from '@itowns/geographic';
 import GlobeView from 'Core/Prefab/GlobeView';
 import View from 'Core/View';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 

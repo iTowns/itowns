@@ -6,7 +6,7 @@ import type { SceneType } from '../Types';
 export const ProjectedData2dScene: SceneType = {
     title: 'Bring Your Data to Life',
     description: 'Overlay vector data on your terrain. Display GeoJSON, vector tiles, and more. '
-    + 'Click on features to explore their attributes.',
+        + 'Click on features to explore their attributes.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.828, 45.7254),
         range: 2000,

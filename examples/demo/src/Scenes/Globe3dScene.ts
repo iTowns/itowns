@@ -6,7 +6,7 @@ import type { SceneType } from '../Types';
 export const Globe3dScene: SceneType = {
     title: 'Explore the World in 3D',
     description: 'Visualize the Earth in 3D with high-resolution orthophoto imagery. '
-    + 'Navigate freely around the globe with intuitive controls.',
+        + 'Navigate freely around the globe with intuitive controls.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
         range: 25000000,

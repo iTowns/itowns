@@ -1,19 +1,19 @@
 import type PotreeSource from 'Source/PotreeSource';
 import { buildVoxelKey } from 'Core/PointCloudNode';
-import PotreeNodeBase, { getChildVoxelKey, type NodeKeyInfo } from 'Core/PotreeNodeBase';
+import { PotreeNodeBase, getChildVoxelKey, type NodeKeyInfo } from 'Core/PotreeNodeBase';
 
 const defaultNumPoints = 9999;
-export type PotreeNodeHierarchy = {
-    hierarchyKey: string,
-    numPoints: number, // uint32
+export interface PotreeNodeHierarchy {
+    hierarchyKey: string;
+    numPoints: number; // uint32
 }
 
 type NodeInfo  = NodeKeyInfo  & {
-    hierarchyKey: string,
-}
+    hierarchyKey: string;
+};
 
-function parseHierarchy(view: DataView, nodeInfo: NodeInfo, hierarchyStepSize: number)
-        : Record<string, PotreeNodeHierarchy> {
+function parseHierarchy(view: DataView, nodeInfo: NodeInfo, hierarchyStepSize: number):
+Record<string, PotreeNodeHierarchy> {
     const stack = [];
 
     const hierarchy: Record<string, PotreeNodeHierarchy> = {};
@@ -121,7 +121,7 @@ class PotreeNode extends PotreeNodeBase {
         const fetcher = this.source.fetcher(url, networkOptions);
         // bug v1.7 update of numPoints
         if ((this.numPoints === 0 || this.numPoints === defaultNumPoints)
-                && url.slice(-3) === 'bin') {
+            && url.slice(-3) === 'bin') {
             fetcher
                 .then((res: ArrayBuffer) => {
                     this.numPoints = res.byteLength / 16;

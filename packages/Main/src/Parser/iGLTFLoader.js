@@ -25,7 +25,7 @@ class iGLTFLoader extends THREE.Loader {
     /**
      * Loads a gltf model from url and call the callback function with the parsed response content.
      * Adapted from threejs.
-     * @param {String} url - the path/URL of the .gltf or .glb file.
+     * @param {string} url - the path/URL of the .gltf or .glb file.
      * @param {Function} onLoad - A function to be called after the loading is successfully completed. The function
      * receives the loaded JSON response returned from {@link parse}.
      * @param {Function} onProgress
@@ -112,7 +112,7 @@ class iGLTFLoader extends THREE.Loader {
      * Sets the Mesh Optimizer decoder instance for this gltf parser. Enable loading files with
      * [MeshOptimizer](https://meshoptimizer.org/) geometry extension.
      * Only works for GLTF 2.0 files.
-     * @param {Object} meshoptDecoder - the threejs meshopt decoder instance.
+     * @param {object} meshoptDecoder - the threejs meshopt decoder instance.
      */
     setMeshoptDecoder(meshoptDecoder) {
         this.glTFLoader.setMeshoptDecoder(meshoptDecoder);
@@ -138,11 +138,12 @@ class iGLTFLoader extends THREE.Loader {
         this.glTFLoader.unregister(callback);
     }
 
-    /** Parse a glTF-based ArrayBuffer, JSON string or object and fire onLoad callback when complete.
+    /**
+     * Parse a glTF-based ArrayBuffer, JSON string or object and fire onLoad callback when complete.
      * Calls Threejs [GLTFLoader.parse](https://threejs.org/docs/?q=gltflo#examples/en/loaders/GLTFLoader.parse) for
      * glTF 2.0 files and LegacyGLTFLoader.parse for gtTF 1.0 files.
-     * @param {ArrayBuffer|String|Object} buffer - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
-     * @param {String} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
+     * @param {ArrayBuffer | string | object} buffer - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
+     * @param {string} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
      * @param {Function} onLoad — A function to be called when parse completes. The argument to the onLoad function will
      * be an Object that contains loaded parts: .scene, .scenes, .cameras, .animations, and .asset.
      * @param {Function} [onError] — A function to be called if an error occurs during parsing. The function receives error as an argument.
@@ -165,9 +166,9 @@ class iGLTFLoader extends THREE.Loader {
 
     /**
      * Async promise-based parsing of a glTF-based ArrayBuffer, JSON string or object.
-     * @param {ArrayBuffer|String|Object} data - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
-     * @param {String} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
-     * @returns {Promise<Object>} A promise that resolves an Object that contains loaded parts:
+     * @param {ArrayBuffer | string | object} data - the glTF asset to parse, as an ArrayBuffer, JSON string or object.
+     * @param {string} path - the base path from which to find subsequent glTF resources such as textures and .bin data files.
+     * @returns {Promise<object>} A promise that resolves an Object that contains loaded parts:
      * .scene, .scenes, .cameras, .animations, and .asset, when parsing is done.
      */
     parseAsync(data, path) {

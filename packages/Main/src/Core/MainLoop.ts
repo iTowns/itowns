@@ -31,28 +31,28 @@ export const MAIN_LOOP_EVENTS = {
     UPDATE_END: 'update_end' as const,
 };
 
-type Context = {
-    camera: Camera,
-    engine: c3DEngine,
-    scheduler: Scheduler,
-    view: View,
-};
+interface Context {
+    camera: Camera;
+    engine: c3DEngine;
+    scheduler: Scheduler;
+    view: View;
+}
 
 type UpdatableGeometryLayer<T> = GeometryLayer & {
-    update(context: Context, layer: Layer, node: T, parent?: T): Array<T> | undefined
+    update(context: Context, layer: Layer, node: T, parent?: T): T[] | undefined;
 };
 
 type UpdateSource = Layer | ThreeCamera | { layer: Layer };
 
-type MainLoopEvents = {
+interface MainLoopEvents {
     // An unknown body indicates an empty event
     'command-queue-empty': object;
-};
+}
 
 function updateElements<T extends Object3D>(
     context: Context,
     geometryLayer: UpdatableGeometryLayer<T>,
-    elements?: Array<T>,
+    elements?: T[],
 ) {
     if (!elements) {
         return;
@@ -203,7 +203,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
         // View.notifyChange() can properly change it)
         this._needsRedraw = false;
         this.renderingState = RENDERING_PAUSED;
-        const updateSources: Set<UpdateSource> = new Set(view._changeSources);
+        const updateSources = new Set<UpdateSource>(view._changeSources);
         view._changeSources.clear();
 
         view.execFrameRequesters(MAIN_LOOP_EVENTS.BEFORE_CAMERA_UPDATE,

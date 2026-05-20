@@ -26,7 +26,7 @@ buttonsContainer.appendChild(classificationButton);
 export const PointCloudScene: SceneType = {
     title: 'Handle Billions of Points',
     description: 'Display massive LiDAR datasets with optimized streaming. '
-    + 'Supports EPT, COPC, LAS and 3D Tiles with various rendering styles.',
+        + 'Supports EPT, COPC, LAS and 3D Tiles with various rendering styles.',
     placement: {
         coord: new itowns.Coordinates('EPSG:4326', 4.85160666022384, 45.76111582920194),
         range: 1000,
@@ -62,8 +62,8 @@ export const PointCloudScene: SceneType = {
         const pointCloudLayer = (await Layers.PointCloudLayer.getLayer(itownsView.referenceCrs)) as
             LayerType as itowns.CopcLayer & {
                 material: {
-                    mode: number,
-                },
+                    mode: number;
+                };
             };
         PointCloudScene.layers.push(pointCloudLayer);
         await itowns.View.prototype.addLayer.call(itownsView, pointCloudLayer);
@@ -94,8 +94,8 @@ export const PointCloudScene: SceneType = {
 
         const layer = Layers.PointCloudLayer.cachedLayer as itowns.CopcLayer & {
             material: {
-                mode: number,
-            },
+                mode: number;
+            };
         };
         if (layer.material.mode === itowns.PNTS_MODE.COLOR) {
             classificationButton.classList.remove('active');

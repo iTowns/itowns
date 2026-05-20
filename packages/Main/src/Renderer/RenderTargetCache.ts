@@ -23,7 +23,7 @@ export class RenderTargetCache {
      */
     private _cache: LRUCache<string, THREE.WebGLArrayRenderTarget>;
 
-    constructor(maxCacheSize: number = 200) {
+    constructor(maxCacheSize = 200) {
         this._pendingDisposal = new Map();
         this._usedIds = new Set();
         this._cache = new LRUCache({

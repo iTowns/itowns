@@ -1,8 +1,8 @@
 import PointCloudNode from 'Core/PointCloudNode';
 
-export type NodeKeyInfo = {
-    depth: number,
-    x: number, y: number, z: number,
+export interface NodeKeyInfo {
+    depth: number;
+    x: number; y: number; z: number;
 }
 
 export function getChildVoxelKey(nodeInfo: NodeKeyInfo, childIndex: number) {

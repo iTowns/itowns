@@ -34,8 +34,8 @@ type QuaternionFunction = (coords: Coordinates, target?: Quaternion) => Quaterni
 
 // To unify with Crs.js ProjectionLike type ?
 type ProjectionLike = ProjectionDefinition | string;
-type LCCProjection = { long0: number, lat0: number };
-type TMercProjection = { a: number, b: number, e?: number, long0: number };
+interface LCCProjection { long0: number; lat0: number }
+interface TMercProjection { a: number; b: number; e?: number; long0: number }
 
 /**
  * The transform from the platform frame to the local East, North, Up (ENU)
@@ -367,6 +367,7 @@ export function quaternionUnimplemented(
  * identity (0,0,0,1).
  *
  * @param proj - the unimplemented projection (may be parsed using proj4)
+ * @param proj.projName - the name of the projection
  * @param coordinates - the origin of the local East North Up (ENU) frame
  * @param target - output Quaternion
  * @returns The target quaternion if coordinates is defined, otherwise, a

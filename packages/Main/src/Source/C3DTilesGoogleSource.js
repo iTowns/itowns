@@ -37,8 +37,8 @@ class C3DTilesGoogleSource extends C3DTilesSource {
      *
      * @property {boolean} isC3DTilesGoogleSource - Used to checkout whether this source is a C3DTilesGoogleSource. Default is
      * true. You should not change this, as it is used internally for optimisation.
-     * @param {Object} source An object that can contain all properties of a C3DTilesGoogleSource and {@link Source}.
-     * @param {String} source.key Your google tiles map API access key
+     * @param {object} source An object that can contain all properties of a C3DTilesGoogleSource and {@link Source}.
+     * @param {string} source.key Your google tiles map API access key
      */
     constructor(source) {
         if (!source.key) {
@@ -64,8 +64,8 @@ class C3DTilesGoogleSource extends C3DTilesSource {
     /**
      * Adds the key and session to the tile url (non-standard behaviour, that is specific to Google 3D tiles),
      * see https://github.com/CesiumGS/3d-tiles/issues/746
-     * @param {String} url the tile url
-     * @returns {String} the tile url with Google map tiles api key and session parameters added at the end of the url
+     * @param {string} url the tile url
+     * @returns {string} the tile url with Google map tiles api key and session parameters added at the end of the url
      */
     getTileUrl(url) {
         const extraParameters = `key=${this.key}&session=${this.sessionId}`;

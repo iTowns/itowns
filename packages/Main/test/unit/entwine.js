@@ -5,7 +5,7 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates } from '@itowns/geographic';
 import EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import EntwinePointTileLayer from 'Layer/EntwinePointTileLayer';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import LASParser from 'Parser/LASParser';
 import Renderer from './bootstrap';

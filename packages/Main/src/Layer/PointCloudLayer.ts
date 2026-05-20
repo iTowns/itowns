@@ -16,7 +16,10 @@ export interface PointCloudSource {
 }
 
 export interface PointCloudLayerParameters {
-    /** Description and options of the source. @see {@link Layer}. */
+    /**
+     * Description and options of the source.
+     * @see {@link Layer}.
+     */
     source: PointCloudSource;
     object3d?: THREE.Group;
     group?: THREE.Group;
@@ -24,25 +27,35 @@ export interface PointCloudLayerParameters {
     pointBudget?: number;
     pointSize?: number;
     sseThreshold?: number;
-    /** The minimal intensity of the
-     * layer. Changing this value will affect the material, if it has the
-     * corresponding uniform. The value is normalized between 0 and 1. */
+    /**
+     * The minimal intensity of the layer. Changing this value will affect the
+     * material, if it has the corresponding uniform. The value is normalized
+     * between 0 and 1.
+     */
     minIntensityRange?: number;
-    /** The maximal intensity of the
-     * layer. Changing this value will affect the material, if it has the
-     * corresponding uniform. The value is normalized between 0 and 1. */
+    /**
+     * The maximal intensity of the layer. Changing this value will affect the
+     * material, if it has the corresponding uniform. The value is normalized
+     * between 0 and 1.
+     */
     maxIntensityRange?: number;
-    /** Min value for the elevation range
-     * (default value taken from the source.metadata). */
+    /**
+     * Min value for the elevation range (default value taken from the
+     * source.metadata).
+     */
     minElevationRange?: number;
-    /** Max value for the elevation range
-     * (default value taken from the source.metadata). */
+    /**
+     * Max value for the elevation range (default value taken from the
+     * source.metadata).
+     */
     maxElevationRange?: number;
     minAngleRange?: number;
     maxAngleRange?: number;
     material?: THREE.Material;
-    /** The displaying mode of the points.
-    * Values are specified in `PointsMaterial`. */
+    /**
+     * The displaying mode of the points. Values are specified in
+     * `PointsMaterial`.
+     */
     mode?: number;
 }
 
@@ -207,12 +220,14 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     /** Root node of the point cloud tree. */
     root: PointCloudNode | undefined;
 
-    /** The material to use to display the points of the cloud.
-     * Be default it is a new `PointsMaterial`. */
+    /**
+     * The material to use to display the points of the cloud.
+     * Be default it is a new `PointsMaterial`.
+     */
     material: THREE.PointsMaterial;
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
-    private _visibleNodes: Set<PointCloudNode> = new Set();
+    private _visibleNodes = new Set<PointCloudNode>();
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -414,7 +429,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      *
      * @param context - The context.
      * @param layer - The layer on wich the node is attach.
-     * @param elt - The element (node) to render.
+     * @param root - The element (node) to render.
      *
      * @returns The child nodes to update or [] if there is none.
      */

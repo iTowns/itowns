@@ -98,13 +98,14 @@ for (const potreeName of Object.keys(POINT_ATTRIBUTES)) {
 
 export default {
     /** @module PotreeBinParser */
-    /** Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
+    /**
+     * Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the bin buffer.
-     * @param {Object} options
+     * @param {object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in cloud.js
      * @param {THREE.Vector3} options.out.origin - the origin position of the data
-     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *
      */
     parse: function parse(buffer, options) {
@@ -151,8 +152,8 @@ export default {
                 for (let elemIdx = 0; elemIdx < attr.numElements; elemIdx++) {
                     if (attr.attributeName === 'position') {
                         position.push(attr.getValue(view, attrOffset + elemIdx * attr.numByte)
-                        * scale
-                        + offset[elemIdx]);
+                            * scale
+                            + offset[elemIdx]);
                     } else {
                         array[arrayOffset + elemIdx] = attr.getValue(view, attrOffset + elemIdx * attr.numByte);
                     }

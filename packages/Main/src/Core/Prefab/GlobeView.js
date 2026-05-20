@@ -12,47 +12,41 @@ import SunLightLayer from 'Layer/SunLightLayer';
 /**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
  * @event GlobeView#initialized
- * @property target {view} dispatched on view
- * @property type {string} initialized
+ * @property {View} target - the view that dispatched the event
+ * @property {string} type - initialized
  */
 /**
  * Fires when a layer is added
- * @event GlobeView#layer-added
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
+ * @event GlobeView#"layer-added"
+ * @property {string} layerId - the id of the layer that was added
+ * @property {View} target - the view that dispatched the event
+ * @property {string} type - layers-added
  */
 /**
  * Fires when a layer is removed
- * @event GlobeView#layer-removed
- * @property layerId {string} the id of the layer
- * @property target {view} dispatched on view
- * @property type {string} layers-added
+ * @event GlobeView#"layer-removed"
+ * @property {string} layerId - the id of the layer that was removed
+ * @property {View} target - the view that dispatched the event
+ * @property {string} type - layers-added
  */
 /**
  * Fires when the layers oder has changed
- * @event GlobeView#layers-order-changed
- * @property new {object}
- * @property new.sequence {array}
- * @property new.sequence.0 {number} the new layer at position 0
- * @property new.sequence.1 {number} the new layer at position 1
- * @property new.sequence.2 {number} the new layer at position 2
- * @property previous {object}
- * @property previous.sequence {array}
- * @property previous.sequence.0 {number} the previous layer at position 0
- * @property previous.sequence.1 {number} the previous layer at position 1
- * @property previous.sequence.2 {number} the previous layer at position 2
- * @property target {view} dispatched on view
- * @property type {string} layers-order-changed
+ * @event GlobeView#"layers-order-changed"
+ * @property {object} new - the new layers order
+ * @property {number[]} new.sequence - the new layers order
+ * @property {object} previous - the previous layers order
+ * @property {number[]} previous.sequence - the previous layers order
+ * @property {View} target - the view that dispatched the event
+ * @property {string} type - layers-order-changed
  */
 
 
 /**
  * Globe's EVENT
- * @property GLOBE_INITIALIZED {string} Deprecated: emit one time when globe is initialized (use VIEW_EVENTS.INITIALIZED instead).
- * @property LAYER_ADDED {string} Deprecated: emit when layer id added in viewer (use VIEW_EVENTS.LAYER_ADDED instead).
- * @property LAYER_REMOVED {string} Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
- * @property COLOR_LAYERS_ORDER_CHANGED {string} Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
+ * @property {string} GLOBE_INITIALIZED - Deprecated: emit one time when globe is initialized (use VIEW_EVENTS.INITIALIZED instead).
+ * @property {string} LAYER_ADDED - Deprecated: emit when layer id added in viewer (use VIEW_EVENTS.LAYER_ADDED instead).
+ * @property {string} LAYER_REMOVED - Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
+ * @property {string} COLOR_LAYERS_ORDER_CHANGED - Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
  */
 
 export const GLOBE_VIEW_EVENTS = {
@@ -80,10 +74,10 @@ class GlobeView extends View {
      * in the DOM.
      * @param {CameraTransformOptions|Extent} placement - An object to place view
      * @param {object} [options] - See options of {@link View}.
-     * @param {Object} [options.controls] - See options of {@link GlobeControls}
-     * @param {Object} [options.webXR] - WebXR configuration - its presence alone
+     * @param {object} [options.controls] - See options of {@link GlobeControls}
+     * @param {object} [options.webXR] - WebXR configuration - its presence alone
      * enable WebXR to switch on VR visualization.
-     * @param {function} [options.webXR.callback] - WebXR rendering callback.
+     * @param {Function} [options.webXR.callback] - WebXR rendering callback.
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
@@ -198,7 +192,7 @@ class GlobeView extends View {
      * If you want add a unattached layer use `View#addLayer` parent method.
      *
      * @param {LayerOptions|Layer|GeometryLayer} layer The layer to add in view.
-     * @return {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
+     * @returns {Promise} a promise resolved with the new layer object when it is fully initialized or rejected if any error occurred.
      */
     addLayer(layer) {
         if (!layer || !layer.isLayer) {

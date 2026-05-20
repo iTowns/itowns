@@ -70,10 +70,10 @@ describe('Fetcher', function () {
     describe('texture', function () {
         // Fetcher.texture always send a texture even with a false url...
         const url = 'https://data.geopf.fr/wmts?' +
-        'LAYER=ORTHOIMAGERY.ORTHOPHOTOS&FORMAT=image/jpeg' +
-        '&SERVICE=WMTS&VERSION=1.0.0&' +
-        'REQUEST=GetTile&STYLE=normal&' +
-        'TILEMATRIXSET=PM&TILEMATRIX=2&TILEROW=1&TILECOL=1';
+            'LAYER=ORTHOIMAGERY.ORTHOPHOTOS&FORMAT=image/jpeg' +
+            '&SERVICE=WMTS&VERSION=1.0.0&' +
+            'REQUEST=GetTile&STYLE=normal&' +
+            'TILEMATRIXSET=PM&TILEMATRIX=2&TILEROW=1&TILECOL=1';
         it('should load a texture', (done) => {
             Fetcher.texture(url, networkOptions)
                 .then((texture) => {
@@ -99,9 +99,9 @@ describe('Fetcher', function () {
 
     describe('textureFloat', function () {
         const url = 'https://data.geopf.fr/wmts?' +
-        'LAYER=ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3&FORMAT=image/x-bil;bits=32' +
-        '&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&' +
-        'TILEMATRIXSET=WGS84G&TILEMATRIX=3&TILEROW=2&TILECOL=8';
+            'LAYER=ELEVATION.ELEVATIONGRIDCOVERAGE.SRTM3&FORMAT=image/x-bil;bits=32' +
+            '&SERVICE=WMTS&VERSION=1.0.0&REQUEST=GetTile&STYLE=normal&' +
+            'TILEMATRIXSET=WGS84G&TILEMATRIX=3&TILEROW=2&TILECOL=8';
         xit('should get a WebGl2 texture float', (done) => {
             Fetcher.textureFloat(url, networkOptions)
                 .then((texture) => {

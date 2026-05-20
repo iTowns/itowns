@@ -18,11 +18,11 @@ class PlanarView extends View {
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
      * @param {Extent} extent - The ground extent.
-     * @param {Object} [options] - See options of {@link View}.
+     * @param {object} [options] - See options of {@link View}.
      * @param {boolean} [options.noControls=false] - If true, no controls are associated to the view.
-     * @param {Object} [options.controls] - options for the {@link PlanarControls} associated to the view, if
+     * @param {object} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
-     * @param {CameraUtils~CameraTransformOptions|Extent} [options.placement] - The
+     * @param {CameraTransformOptions|Extent} [options.placement] - The
      * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at
      * initialization. By default, camera will display the view's extent (given in `extent` parameter).
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.

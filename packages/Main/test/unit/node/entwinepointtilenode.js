@@ -1,6 +1,6 @@
 import assert from 'assert';
 import EntwinePointTileNode from 'Core/EntwinePointTileNode';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 

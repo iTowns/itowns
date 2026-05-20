@@ -31,7 +31,7 @@ function biLinearInterpolation(indexes, getData) {
  * `y` value stands for the distance along the South-North direction.
  * @property    {THREE.Vector2} dimensions  The planar dimensions of the geoid height grid data extent.
  * @property    {THREE.Vector2} dataSize    The number of values in the gridded data along the West-East direction (`x`
-                                            * axis) and the South-North direction (`y` axis).
+ * axis) and the South-North direction (`y` axis).
  *
  * @example
  * // Create a set of gridded data.
@@ -72,7 +72,7 @@ class GeoidGrid {
      * @param   {THREE.Vector2} step        The distance between two consecutive points of the geoid height grid. The
      * `x` value stands for the distance along the West-East direction, and the
      * `y` value stands for the distance along the South-North direction.
-     * @param   {function}      getData     A method that allows reading a value in the geoid height grid from its
+     * @param   {Function}      getData     A method that allows reading a value in the geoid height grid from its
      * vertical and horizontal indexes. The lower an index, the lower the
      * coordinate on the corresponding axis - 0 being the index of the minimal
      * coordinate of the gridded data on a given axis. In other words :
@@ -109,7 +109,7 @@ class GeoidGrid {
      * @param   {Coordinates}   coordinates     Geographic coordinates to get the geoid height value at.
      *
      * @returns {number}    The geoid height value at the given {@link Coordinates}, bi-interpolated from the gridded
-                            * data accessed by the `GeoidGrid` instance.
+     * data accessed by the `GeoidGrid` instance.
      */
     getHeightAtCoordinates(coordinates) {
         coordinates.as(this.extent.crs, coord);

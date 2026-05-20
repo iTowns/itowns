@@ -65,7 +65,7 @@ function buildBufferGeometry(attributeBuffers) {
 
 export default {
     /**
-     * @return {Promise<void>}
+     * @returns {Promise<void>}
      */
     terminate() {
         const currentThread = _thread;
@@ -74,15 +74,16 @@ export default {
     },
 
     /** @module Potree2BinParser */
-    /** Parse .bin PotreeConverter 2.0 format and convert to a THREE.BufferGeometry
+    /**
+     * Parse .bin PotreeConverter 2.0 format and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the bin buffer.
-     * @param {Object} options
+     * @param {object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in metadata.js
      * @param {THREE.Box3} options.in.bbox - the bbox of the node
      * @param {THREE.Vector3} options.out.origin - the origin position of the data
      *
-     * @return {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
     parse: async function parse(buffer, options) {
         const potreeLoader = await loader();

@@ -22,7 +22,7 @@ class PlanarLayer extends TiledGeometryLayer {
      * @param {THREE.Object3d} [object3d=THREE.Group] - The object3d used to
      * contain the geometry of the TiledGeometryLayer. It is usually a
      * `THREE.Group`, but it can be anything inheriting from a `THREE.Object3d`.
-     * @param {Object} [config] - Optional configuration, all elements in it
+     * @param {object} [config] - Optional configuration, all elements in it
      * will be merged as is in the layer. For example, if the configuration
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property

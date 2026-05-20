@@ -38,7 +38,7 @@ function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}
  * @param {string} crs - The CRS used by the object coordinates. You
  * probably want to use `view.referenceCRS` here.
  * @param {Object3D} obj - the object we want to modify.
- * @param {Object} options
+ * @param {object} options
  * @param {number} [options.method=FAST_READ_Z] - There are two available methods:
  * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
  * while the second one is slower but gives better precision.
@@ -49,7 +49,7 @@ function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}
  * process. You can give candidates tiles likely to contain `coord`.
  * Otherwise the lookup process starts from the root of `layer`.
  *
- * @return {boolean} true if successful, false if we couldn't lookup the elevation at the given coords
+ * @returns {boolean} true if successful, false if we couldn't lookup the elevation at the given coords
  */
 function placeObjectOnGround(layer, crs, obj, options = {}, tileHint) {
     console.warn('placeObjectOnGround has been deprecated because it needs review and test');

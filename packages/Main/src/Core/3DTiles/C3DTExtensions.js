@@ -36,7 +36,7 @@ class C3DTExtensions {
      * batch table or bounding volume).
      * @param {string} extensionName - Name of the extension
      * @param {object} extensionManagers - An object mapping 3D Tiles
-     * classes names (see @link{C3DTilesTypes} to the extension managers
+     * classes names (see {@link C3DTilesTypes}) to the extension managers
      * corresponding to this class. These extension managers should be able
      * to parse the extension fragment (done in the constructor) and should
      * have a getInfoById method if they are related to the batch table class.

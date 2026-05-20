@@ -19,15 +19,15 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  * or other system. See [this link](
  * https://alastaira.wordpress.com/2011/07/06/converting-tms-tile-coordinates-to-googlebingosm-tile-coordinates/)
  * for more information.
- * @property {Object} tileMatrixSetLimits - it describes the available tile for this layer
- * @property {Object} extentSetlimits - these are the extents of the set of identical zoom tiles.
- * @property {Object} zoom - Object containing the minimum and maximum values of
+ * @property {object} tileMatrixSetLimits - it describes the available tile for this layer
+ * @property {object} extentSetlimits - these are the extents of the set of identical zoom tiles.
+ * @property {object} zoom - Object containing the minimum and maximum values of
  * the level, to zoom in the source.
  * @property {number} zoom.min - The minimum level of the source. Default value
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 20.
- * @property {function} tileMatrixCallback - a method that create a TileMatrix
+ * @property {Function} tileMatrixCallback - a method that create a TileMatrix
  * identifier from the zoom level. For example, if set to `(zoomLevel) => 'EPSG:4326:' + zoomLevel`,
  * the TileMatrix that will be fetched at zoom level 5 will be the one with identifier `EPSG:4326:5`.
  * By default, the method returns the input zoom level.
@@ -69,7 +69,7 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  */
 class TMSSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
+     * @param {object} source - An object that can contain all properties of a
      * TMSSource and {@link Source}. Only `url` is mandatory.
      */
     constructor(source) {
@@ -103,10 +103,8 @@ class TMSSource extends Source {
 
     hasData(tile) {
         return  tile.zoom >= this.zoom.min &&
-
-                tile.zoom <= this.zoom.max &&
-
-                this.tileMatrixSetLimits.isInside(tile);
+            tile.zoom <= this.zoom.max &&
+            this.tileMatrixSetLimits.isInside(tile);
     }
 }
 

@@ -18,14 +18,14 @@ const _extent = new Extent('EPSG:4326');
  * generation of the url.
  * @property {string} version - The version of the WFS server to request on.
  * Default value is '2.0.2'.
- * @property {Object} zoom - Object containing the minimum and maximum values of
+ * @property {object} zoom - Object containing the minimum and maximum values of
  * the level, to zoom in the source.
  * @property {number} zoom.min - The minimum level of the source. Default value
  * is 0.
  * @property {number} zoom.max - The maximum level of the source. Default value
  * is 21.
  * @property {string} bboxDigits - The bbox digits precision used in URL
- * @property {Object} vendorSpecific - An object containing vendor specific
+ * @property {object} vendorSpecific - An object containing vendor specific
  * parameters. See for example a [list of these parameters for GeoServer]{@link
  * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html}. This
  * object is read simply with the `key` being the name of the parameter and
@@ -99,7 +99,7 @@ const _extent = new Extent('EPSG:4326');
  */
 class WFSSource extends Source {
     /**
-     * @param {Object} source - An object that can contain all properties of a
+     * @param {object} source - An object that can contain all properties of a
      * WFSSource and {@link Source}. `url`, `typeName` and `crs` are
      * mandatory.
      */

@@ -8,10 +8,10 @@ export const OrientedImageLayer: LayerPromiseTypeCRSPanoChangeCallback = {
     layerPromise: undefined,
     cachedLayer: undefined,
     getLayer: (crs: string, onPanoChanged: (e: {
-                    previousPanoPosition: THREE.Vector3,
-                    currentPanoPosition: THREE.Vector3,
-                    nextPanoPosition: THREE.Vector3,
-                }) => void) => {
+        previousPanoPosition: THREE.Vector3;
+        currentPanoPosition: THREE.Vector3;
+        nextPanoPosition: THREE.Vector3;
+    }) => void) => {
         if (OrientedImageLayer.cachedLayer) {
             return Promise.resolve(OrientedImageLayer.cachedLayer);
         }

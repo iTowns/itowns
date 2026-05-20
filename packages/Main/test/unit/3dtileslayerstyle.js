@@ -5,7 +5,7 @@ import PlanarView from 'Core/Prefab/PlanarView';
 import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 import C3DTilesSource from 'Source/C3DTilesSource';
 import C3DTilesLayer from 'Layer/C3DTilesLayer';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import Fetcher from 'Provider/Fetcher';
 import Renderer from './bootstrap';
 
@@ -66,7 +66,7 @@ describe('3DTilesLayer Style', () => {
     it('should instance C3DTilesLayer', function (done) {
         source = new C3DTilesSource({
             url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/' +
-                    '3DTiles/lyon1_with_surface_type_2018/tileset.json',
+                '3DTiles/lyon1_with_surface_type_2018/tileset.json',
         });
 
         $3dTilesLayer = new C3DTilesLayer('id_layer',

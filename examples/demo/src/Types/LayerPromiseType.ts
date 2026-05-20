@@ -3,12 +3,12 @@ import * as THREE from 'three';
 import type LayerType from './LayerType';
 
 // Base properties shared by all layer promise types
-type LayerPromiseTypeBase = {
+interface LayerPromiseTypeBase {
     id: string;
     layerPromise: Promise<LayerType> | undefined;
     cachedLayer: LayerType | undefined;
     getPickingInfo?: (feature: unknown) => Record<string, string> | null;
-};
+}
 
 // Layer that doesn't require any parameters
 export type LayerPromiseTypeNoParams = LayerPromiseTypeBase & {
@@ -33,10 +33,10 @@ export type LayerPromiseTypeMeshCallback = LayerPromiseTypeBase & {
 // Layer that requires panoChangeCallback parameter
 export type LayerPromiseTypeCRSPanoChangeCallback = LayerPromiseTypeBase & {
     getLayer: (crs: string, onPanoChanged: (e: {
-                    previousPanoPosition: THREE.Vector3,
-                    currentPanoPosition: THREE.Vector3,
-                    nextPanoPosition: THREE.Vector3,
-                }) => void) => Promise<LayerType>;
+        previousPanoPosition: THREE.Vector3;
+        currentPanoPosition: THREE.Vector3;
+        nextPanoPosition: THREE.Vector3;
+    }) => void) => Promise<LayerType>;
 };
 
 export type LayerPromiseType =

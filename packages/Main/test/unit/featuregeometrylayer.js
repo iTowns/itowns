@@ -7,7 +7,7 @@ import Fetcher from 'Provider/Fetcher';
 import { Coordinates, Extent } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import TileMesh from 'Core/TileMesh';
-import sinon from 'sinon';
+import * as sinon from 'sinon';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import Renderer from './bootstrap';
 

@@ -44,6 +44,7 @@ class LayerUpdateState {
 
     /**
      * Checks if the update has finished successfully.
+     * @returns
      */
     hasFinished() {
         return UPDATE_STATE.FINISHED == this.state;
@@ -54,6 +55,7 @@ class LayerUpdateState {
      *
      * @param timestamp - Current timestamp in milliseconds (defaults to
      * Date.now()).
+     * @returns
      */
     canTryUpdate(timestamp = Date.now()) {
         switch (this.state) {
@@ -75,6 +77,7 @@ class LayerUpdateState {
 
     /**
      * Gives the number of seconds to wait before the next retry attempt.
+     * @returns
      */
     secondsUntilNextTry() {
         if (this.state !== UPDATE_STATE.ERROR) {
@@ -115,6 +118,7 @@ class LayerUpdateState {
      *
      * @param failureParams - The current context of the failure (this includes
      * the current updated level).
+     * @param failureParams.targetLevel - The level where no data was available
      */
     noData(failureParams: { targetLevel: number }) {
         this.state = UPDATE_STATE.IDLE;
@@ -132,6 +136,7 @@ class LayerUpdateState {
      * @param definitive - Whether this error stops the update process.
      * @param failureParams - The current context of the failure (this includes
      * the current updated level).
+     * @param failureParams.targetLevel - The level where the error occurred
      */
     failure(timestamp: number, definitive: boolean, failureParams: { targetLevel: number }) {
         if (failureParams && failureParams.targetLevel != undefined) {
@@ -147,6 +152,7 @@ class LayerUpdateState {
 
     /**
      * Checks if the layer is currently in an error state.
+     * @returns
      */
     inError() {
         return this.state == UPDATE_STATE.DEFINITIVE_ERROR || this.state == UPDATE_STATE.ERROR;
