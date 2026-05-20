@@ -4,6 +4,8 @@ import { Extent } from '@itowns/geographic';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 // eslint-disable-next-line import/extensions
 import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass.js';
 import { RasterTile } from './RasterTile';
 import {
     materialUnit,
@@ -44,6 +46,7 @@ class GeographicProjectionPass extends Pass {
         this.tiles = [];
         this.extent = null;
         this.clear = true;
+        this.needsSwap = true;
     }
 
     render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget) {
@@ -85,6 +88,10 @@ class GeographicProjectionPass extends Pass {
 const geographicProjectionPass = new GeographicProjectionPass();
 let composer : null | EffectComposer = null;
 
+const dotPass = new DotScreenPass(new THREE.Vector2(0, 0), 0.5, 0.8);
+// console.log('dotPass', dotPass);
+dotPass.needsSwap = false;
+
 export function drawMap(
     renderTarget: THREE.WebGLRenderTarget,
     tiles: RasterTile[],
@@ -93,6 +100,7 @@ export function drawMap(
     if (!composer) {
         composer = new EffectComposer(renderer, renderTarget);
         composer.addPass(geographicProjectionPass);
+        composer.addPass(dotPass);
     } else {
         composer.renderer = renderer;
         composer.renderTarget1 = renderTarget;
