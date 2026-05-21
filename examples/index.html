@@ -276,7 +276,6 @@
         }
 
 
-
         /*
          * Runs the current example's code and displays the result in the iframe.
          */
@@ -366,7 +365,6 @@
         }
 
 
-
         /**
          * Removes spaces and converts the given string to lowercase.
          * @param {string} str - The string to clean
@@ -420,17 +418,15 @@
         }
 
 
-
-
-        // TODO : JSDOC
+        /**
+         * Decides whether to load an example or the demo based on the hash in the URL, and which panel to open.
+         */
         function handleRouting() {
-            console.log("handRouting called");
             const isInitialRoot = !window.location.hash;
             let hash = window.location.hash.replace("#", "");
 
             // if URL has no hash, load default example
             if (isInitialRoot) {
-                console.log("handleRouting isInitialRoot");
                 hash = defaultExample;
                 // update URL without trigerring a 'hashchange' (would cause an infinite loop)
                 history.replaceState(null, null, `#${defaultExample}`);
@@ -439,20 +435,16 @@
             // demo mode
             if (hash === "demo") {
                 body.classList.add("demo-mode");
-                console.log("hash === demo");
-
                 // if user was viewing an example, remove the iframe's 'srcdoc' attribute so it doesn't prevail 
                 // on the 'src' attribute needed for the demo (demo is not a dynamic iframe)
                 if (iframe.hasAttribute("srcdoc")) {
                     iframe.removeAttribute("srcdoc");
                     iframe.src = "demo/index.html"; 
-                    console.log("iframe had srcdoc, now removed and replaced by src");
                 } 
 
                 // set up the iframe's source only if user was not already in demo, prevents unwanted reloading
                 else if (!iframe.src.includes("demo/index.html")) {
                     iframe.src = "demo/index.html";
-                    console.log("user was NOT in demo, adding src attribute");
                 }
 
                 sidebarButtons.forEach(b => b.classList.remove("active"));
@@ -468,7 +460,6 @@
             
             // open gallery panel by default, if no hash or no stored panel or exiting demo
             if (!savedPanelId || savedPanelId === "demo-panel" || isInitialRoot) {
-                console.log("!savedPanelId || savedPanelId === 'demo-panel' || isInitialRoot");
                 savedPanelId = "gallery-panel";
             }
 
@@ -489,10 +480,8 @@
             const localExampleSlug = sessionStorage.getItem("exampleSlug");
 
             if (localCode && hash === localExampleSlug) {
-                console.log("loading local example");
                 loadExample(hash, fromBase64(localCode));
             } else {
-                console.log("loading example");
                 loadExample(hash);
             }
         }
@@ -505,24 +494,19 @@
         // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
-                console.log("sidebar was clicked");
                 const panelId = button.dataset.panel;
                 
                 if (button.id === "demo-btn") {
                     window.location.hash = "demo";
-                    console.log("demo btn was clicked");
                 } else {
                     sessionStorage.setItem("activePanelId", panelId);
                     
                     // if user exits the demo, go to last viewed example or the default
                     if (window.location.hash === "#demo" || window.location.hash === "demo") {
-                        console.log("was in demo, gallery or code was clicked");
                         const lastExampleSlug = sessionStorage.getItem("exampleSlug") || defaultExample;
-                        console.log("last example slug : " + lastExampleSlug);
                         window.location.hash = lastExampleSlug;
                     } else {
                         // otherwise, open desired panel
-                        console.log("was NOT in demo, gallery or code was clicked");
                         panels.forEach(panel => panel.classList.remove("active"));
                         document.getElementById(panelId).classList.add("active");
                         sidebarButtons.forEach(b => b.classList.remove("active"));
@@ -536,7 +520,6 @@
                 }
             });
         });
-
 
 
         // editor collapsing
@@ -603,7 +586,6 @@
         });
 
 
-
         themeInput.addEventListener("change", toggleTheme);
 
 
@@ -620,7 +602,6 @@
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
             setTheme(event.matches ? 'dark': 'light');
         });
-
 
 
         /**
@@ -694,7 +675,6 @@
             );
 
         }
-
 
 
         /**

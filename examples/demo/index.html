@@ -237,19 +237,14 @@
             }
 
 
-            // when panning the map, dot labels don't appear and text can't be selected 
+            // when panning the map, make sure dot labels don't appear and text can't be selected 
             window.addEventListener('mousedown', (event) => {
-                const path = event.composedPath();
-                // check if the user actually clicked on the map and not on other demo UI elements
-
-                // used this method instead of directly adding the listener to the viewerDiv element 
-                // because this doesn't work for scenes 10 & 11 (the click is not caught)
-                const wasMapClicked = path.some(element => element.id === "viewerDiv");
-
-                if (wasMapClicked){
+                // check if the target or any parent element is the viewerDiv
+                const viewerDiv = document.getElementById('viewerDiv');
+                if (viewerDiv && viewerDiv.contains(event.target)) {
                     document.body.classList.add('is-panning');
                 }
-            }, true); 
+            }, true);
 
 
             window.addEventListener('mouseup', () => {
