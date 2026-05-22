@@ -39,33 +39,21 @@ body.is-panning {
 }
 
 
-#prev-next-container {
-    position: fixed;
-    left: 45%;
-    transform: translateX(-50%);
-    bottom: 3vh;
-    height: 3rem;
-    width: fit-content;
-    max-width: 90vw;
-
+#nav-container {
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    
+    width: fit-content;
     gap: 2rem;
-    padding: 1em 1em;
-
-    z-index: 101;
-
-    background-color: light-dark(white, #0F1419);
-    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
-    border-radius: 3rem;
 }
 
 
-#prev-next-container .scene-number-info {
-    font-size: 1.15rem;
+#nav-container .scene-number-info {
+    font-size: 1.2rem;
 }
-
 
 
 .prev-next-btn {
@@ -90,11 +78,9 @@ body.is-panning {
 }
 
 
-#prev-next-container img {
+#nav-container img {
     height: 1.7rem;
 }
-
-
 
 #scene-info {
     position: fixed;
@@ -140,12 +126,12 @@ body.is-panning {
 }
 
 
-
-#textContainer {
+#text-container {
     position: static;
-
     display: flex;
     flex-direction: column;
+    padding: 0 0.5rem;
+    font-size: 100%;
 }
 
 #info-bottom-container .scene-number-info {
@@ -155,8 +141,6 @@ body.is-panning {
     padding: 0.2em 0.4em;
     width:fit-content;
     margin: 0;
-    margin-top: 1em;
-
 }
 
 
@@ -166,23 +150,26 @@ body.is-panning {
     color: light-dark(#1565c1, #8fb9f3);
     text-transform: uppercase;
     font-weight: 600;
-    font-size: 1.5rem;
+    font-size: 1.5em;
     word-break: break-word;
     overflow-wrap: break-word;
-
+    margin-top: 0.5em;
 }
 
 
 #sceneDescription {
+    font-size: 1.2em;
     line-height: 1.3em;
     word-break: break-word;
     overflow-wrap: break-word;
     text-overflow: ellipsis;
+    margin-top: 0.4em;
+    margin-bottom: 1.2em;
 }
 
 
 /*** Navigation Menu ***/
-#navigation-container {
+#scene-mgmt-container {
     position: static;
 
     display: flex;
@@ -195,7 +182,7 @@ body.is-panning {
     margin-top: 0.8rem;
 }
 
-#navigation-container button {
+#scene-mgmt-container button {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -215,7 +202,7 @@ body.is-panning {
     cursor: pointer;
 }
 
-#navigation-container button:hover {
+#scene-mgmt-container button:hover {
     background-color: light-dark(#CEE5FB, #09184B);
 }
 
@@ -438,7 +425,7 @@ body:has(.dot-wrapper:hover) .scene-dot.active {
 body.is-panning #sceneDots,
 body.is-panning #scene-dot,
 body.is-panning #feature-picking-info,
-body.is-panning #prev-next-container,
+body.is-panning #nav-container,
 body.is-panning #scene-info {
     pointer-events: none;
 }
@@ -447,38 +434,24 @@ body.is-panning #scene-info {
 /* RESPONSIVE */
 
 @media (max-width: 1024px) {
-
-
      #scene-info {
         width: 300px;
      }
 
-    #navigation-container button {
+    #scene-mgmt-container button {
         font-size: 0.8em;
     }
 
-    #prev-next-container {
-        gap: 1rem;
-        padding: 0.8em 0.8em;
+    #sceneTitle {
+        font-size: 1.1rem;
+    }
+
+    #sceneDescription {
+        font-size: 0.8rem;
     }
 }
 
 @media (max-width: 768px) {
-    #prev-next-container {
-        bottom: auto;
-        top: 1vh;
-        left: 50%;
-        transform: translateX(-50%);
-        gap: 1rem;
-        height: auto;
-        padding: 0.7em 0.7em;
-        z-index: 101;
-    }
-
-    #prev-next-container .scene-number-info {
-        font-size: 0.9rem;
-    }
-
     #point-cloud-config {
         max-width: 25vw;
     }
@@ -488,30 +461,22 @@ body.is-panning #scene-info {
         height: 2.5em;
     }
 
-    #prev-next-container img {
+    #nav-container img {
         height: 1.3rem;
     }
 
     #sceneDots {
         display: none;
     }
-
 }
 
 @media (max-width: 480px) {
-    #prev-next-container {
-        gap: 0.8rem;
-        padding: 0.6em 0.6em;
-        font-size: 0.8rem;
-    }
-
     .prev-next-btn {
         width: 2.2em;
         height: 2.2em;
     }
 
-    #prev-next-container img {
+    #nav-container img {
         height: 1.1rem;
     }
-
 }
