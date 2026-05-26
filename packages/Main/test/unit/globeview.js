@@ -17,6 +17,7 @@ describe('GlobeView', function () {
     const viewer = new GlobeView(renderer.domElement, placement, {
         renderer,
         realisticLighting: true,
+        withSunLightLayer: true,
     });
     const pickedPosition = new THREE.Vector3();
     pickedPosition.copy(viewer.camera.position());

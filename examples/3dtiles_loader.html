@@ -81,7 +81,7 @@
             const isEmbedded = window.self !== window.top;
 
             window.gui = new dat.GUI();
-            
+
 
             // ---- Create a GlobeView ----
 
@@ -97,6 +97,7 @@
             // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
                 realisticLighting: true,
+                withSunLightLayer: true,
                 shadows: true,
                 controls: {
                     minDistance: 100,

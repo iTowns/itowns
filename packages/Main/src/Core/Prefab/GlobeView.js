@@ -84,9 +84,13 @@ class GlobeView extends View {
      * The maximum view distance is this factor times the camera's altitude (above sea level).
      * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
      * Between 0 and 1.
+     * @param {boolean} [options.withSunLightLayer=false] - Create and add a SunLightLayer.
+     * If true, it can later be switched by setting this.sunLightLayer.visible to true/false.
+     * If false, it will be impossible to enable it later on.
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
+     * Can only be enabled if withSunLightLayer was also enabled.
      * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
      * later via `this.shadows`.
      */
@@ -164,13 +168,20 @@ class GlobeView extends View {
         }
 
         this.date = new Date(); // now
+        const withSunLightLayer = options.withSunLightLayer === true;
 
         // Sunlight and shadow layer
-        this.sunLightLayer = new SunLightLayer(this);
-        this.addLayer(this.sunLightLayer);
+        if (withSunLightLayer) {
+            this.sunLightLayer = new SunLightLayer(this);
+            this.addLayer(this.sunLightLayer);
+        }
 
         if (options.realisticLighting === true) {
-            this.skyManager = new SkyManager(this);
+            if (withSunLightLayer) {
+                this.skyManager = new SkyManager(this);
+            } else {
+                console.error('Realistic lighting cannot be enabled without sunlight layer option');
+            }
         }
 
         this.renderer.shadowMap.enabled = true;
@@ -229,10 +240,11 @@ class GlobeView extends View {
      * @type {boolean}
      */
     get shadows() {
-        return this.sunLightLayer.castShadow;
+        return this.sunLightLayer?.castShadow ?? false;
     }
 
     set shadows(value) {
+        if (!this.sunLightLayer) { return; }
         if (this.sunLightLayer.castShadow == value) { return; }
         this.sunLightLayer.castShadow = value;
         this.notifyChange(this.camera3D);
