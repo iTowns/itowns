@@ -192,7 +192,6 @@
         const panels = document.querySelectorAll(".panel");
         const versionSwitch = document.querySelector(".version-input");
         const exampleList = document.getElementById("example-list");
-        const codeBtn = document.getElementById("code-btn");
         const demoBtn = document.getElementById("demo-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
         const codePanelDesc = document.querySelector("#code-panel-desc");
@@ -261,12 +260,7 @@
             html.classList.add(theme);
 
             localStorage.setItem('theme-preference', theme);
-            if (theme === 'dark'){
-                themeInput.checked = true;
-            }
-            else {
-                themeInput.checked = false;
-            }
+            themeInput.checked = theme === 'dark';
 
             if (iframe && iframe.contentDocument) {
                 const iframeHtml = iframe.contentDocument.documentElement;
@@ -509,8 +503,7 @@
                     
                     // if user exits the demo, go to last viewed example or the default
                     if (window.location.hash === "#demo" || window.location.hash === "demo") {
-                        const lastExampleSlug = sessionStorage.getItem("exampleSlug") || defaultExample;
-                        window.location.hash = lastExampleSlug;
+                        window.location.hash = sessionStorage.getItem("exampleSlug") || defaultExample;
                     } else {
                         // otherwise, open desired panel
                         panels.forEach(panel => panel.classList.remove("active"));
@@ -557,7 +550,6 @@
             if (header) {
                 const parent = header.closest('.category');
                 parent.classList.toggle('collapsed');
-                return;
             }
         });
 
@@ -619,9 +611,7 @@
          * @param {Record<string, ExampleCategory>} list - A collection of categories.
          */
         function initNavigation(list) {
-
-            const isDev = baseURI.includes("/itowns/dev/");
-            versionSwitch.checked = isDev;
+            versionSwitch.checked = baseURI.includes("/itowns/dev/");
 
             // dynamic example generation
             // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
