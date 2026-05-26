@@ -303,10 +303,16 @@
                 ? new URL(slug + ".html", baseURI).href
                 : `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
             return fetch(src)
-                .then((response) => response.text())
+                .then((response) => {
+                    if (!response.ok) throw new Error("Error: cannot load example");
+                    return response.text();
+                })
                 .then((text) => {
                     exampleCache[slug] = text;
                     return text;
+                })
+                .catch(err => {
+                    codeEditor.setValue("// Error: cannot load example");
                 });
         }
 
@@ -570,19 +576,11 @@
         });
 
 
-        // set iframe theme and reload if opening demo
+        // set iframe theme
         iframe.addEventListener('load', () => {
             const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
             const iframeHtml = iframe.contentDocument.documentElement;
             iframeHtml.classList.add(currentTheme);
-
-            // when opening the demo, THREE sometimes tries to render elements before the iframe finished resizing,
-            // causing an error (screen goes black until resizing the window). here we send a resize event after 80ms to avoid this
-            if (iframe.contentWindow && body.classList.contains("demo-mode")) {
-                setTimeout(() => {
-                    iframe.contentWindow.dispatchEvent(new Event('resize'));
-                }, 80); 
-            }
         });
 
 
