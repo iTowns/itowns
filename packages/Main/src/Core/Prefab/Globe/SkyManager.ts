@@ -94,7 +94,8 @@ class SkyManager {
         if (!this.enabled) { return; }
 
         // sunLightLayer necessarily exists if SkyManager was created.
-        const sunDirection = this.view.sunLightLayer!.sunDirection;
+        if (!this.view.sunLightLayer) { return; }
+        const sunDirection = this.view.sunLightLayer.sunDirection;
         const moonDirection = new THREE.Vector3();
         getMoonDirectionECEF(this.view.date, moonDirection);
 
@@ -140,7 +141,8 @@ class SkyManager {
     private _setState(on: boolean) {
         // Realistic rendering requires a dimmer sunlight.
         // sunLightLayer necessarily exists if SkyManager was created.
-        this.view.sunLightLayer!.sunLight.intensity *= on ? 0.1 : 10;
+        if (!this.view.sunLightLayer) { return; }
+        this.view.sunLightLayer.sunLight.intensity *= on ? 0.1 : 10;
         this.sky.visible = on;
         this.skyLight.visible = on;
         this.effectPass.enabled = on;
