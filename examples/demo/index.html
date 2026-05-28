@@ -6,27 +6,11 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-        <script>
-            (function () {
-                // escape iframe to retrieve the correct URL
-                const here = (window.location.href.indexOf("about:srcdoc") === 0)
-                    ? window.parent.location.href
-                    : window.location.href;
-                const idx = here.lastIndexOf("/examples/");
-                const rootURL = idx >= 0
-                    ? here.slice(0, idx + 1)
-                    : new URL("./", here).href;
-
-                document.write('<base href="' + rootURL + '">');
-                window.__itownsRoot = rootURL;
-            })();
-        </script>
-
         <script type="importmap">
         {
             "imports": {
-                "itowns": "./dist/itowns.js",
-                "demo": "./dist/demo.js",
+                "itowns": "../../dist/itowns.js",
+                "demo": "../../dist/demo.js",
                 "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
                 "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/",
                 "OrbitControls": "https://unpkg.com/three@0.182.0/examples/jsm/controls/OrbitControls.js"
@@ -34,21 +18,42 @@
         }
         </script>
 
-        <link rel="stylesheet" href="examples/css/example.css">
-        <link rel="stylesheet" href="examples/css/widgets.css">
-        <link rel="stylesheet" href="examples/demo/css/demo.css">
-        <link rel="stylesheet" href="examples/css/LoadingScreen.css">
+        <link rel="stylesheet" href="../css/example.css">
+        <link rel="stylesheet" href="../css/widgets.css">
+        <link rel="stylesheet" href="css/demo.css">
+        <link rel="stylesheet" href="../css/LoadingScreen.css">
     </head>
     <body>
-        <div id="demoUI">
-            <div id="textContainer">
-                <h1 id="sceneTitle"></h1>
-                <p id="sceneDescription"></p>
+        <div id="sceneDots"></div>
+        </div>
+        <div id="scene-info">
+            <div id="logo-container">
+                <img src="../images/itowns_logo.svg" id="itowns-logo" alt="iTowns logo">
             </div>
-            <div id="navigationContainer">
-                <div id="sceneDots"></div>
-                <button id="resetScene">reset camera</button>
-                <button id="hardResetScene">reset scene</button>
+            <div id="info-bottom-container">
+                <div id="text-container">
+                    <h1 id="sceneTitle"></h1>
+                    <p id="sceneDescription"></p>
+                </div>
+                <div id="nav-container">
+                        <button class="prev-next-btn nav-btn" id="prev-scene-btn">
+                            <img src="assets/images/prev.svg" alt="Previous scene">
+                        </button>
+                        <p class="scene-number-info"></p>
+                        <button class="prev-next-btn nav-btn" id="next-scene-btn">
+                            <img src="assets/images/next.svg" alt="Next scene">
+                        </button>
+                    </div>
+                <div id="scene-mgmt-container">
+                    <button class="nav-btn" id="resetScene">
+                         <img src="assets/images/reset.svg" class="nav-logo" id="reset-logo" alt="Reset camera">
+                        Reset camera
+                    </button>
+                    <button class="nav-btn" id="hardResetScene">
+                         <img src="assets/images/restart.svg" class="nav-logo" id="restart-logo" alt="Restart scene">
+                        Restart scene
+                    </button>
+                </div>
             </div>
         </div>
         <script type="module">
@@ -56,17 +61,25 @@
             import * as itowns from "itowns";
             import { SceneTransitionUtils, SceneRepository, Config } from "demo";
 
-            Config.basePath = window.__itownsRoot + "examples";
+            // get parent URL
+            const absoluteUrl = new URL("..", window.location.href).href;
+            // remove potential end slash
+            Config.basePath = absoluteUrl.endsWith('/') ? absoluteUrl.slice(0, -1) : absoluteUrl;
 
             const resetSceneButton = document.getElementById("resetScene");
             const hardResetSceneButton =
                 document.getElementById("hardResetScene");
+            const sceneNumberInfo = document.querySelectorAll(".scene-number-info");
+            const prevSceneBtn = document.getElementById("prev-scene-btn");
+            const nextSceneBtn = document.getElementById("next-scene-btn");
+            const navBtns = document.querySelectorAll(".nav-btn");
 
             SceneTransitionUtils.updateUIForScene(SceneRepository[0]);
             await SceneRepository[0].onCreate();
             await SceneRepository[0].onEnter?.();
             SceneRepository[0].getView().setVisible(true);
             const iTownsView = SceneRepository[0].getItownsView();
+
             await SceneTransitionUtils.moveCameraTo(
                 iTownsView,
                 SceneRepository[0].placement,
@@ -74,6 +87,7 @@
             );
 
             let currentIndex = 0;
+
 
             const SceneManager = {
                 async goTo(index) {
@@ -87,15 +101,18 @@
                     const from = SceneRepository[currentIndex];
                     const to = SceneRepository[index];
                     currentIndex = index;
-                    updateActiveDot();
 
+                    updateUI();
                     toggleEnableButtons(false);
                     toggleEnableDots(false);
+
                     try {
                         await SceneTransitionUtils.transitionToScene(from, to);
                     } finally {
                         toggleEnableButtons(true);
                         toggleEnableDots(true);
+                        // update UI again to disable previous/next buttons if on first or last scene, respectively
+                        updateUI();
                     }
                 },
                 async softReset() {
@@ -128,25 +145,66 @@
             const dotsContainer = document.getElementById("sceneDots");
 
             const dots = SceneRepository.map((scene, index) => {
+                /* structure :
+                <dotsContainer>
+                    <dotWrapper>
+                        <dot/>
+                        <dotLabel>
+                            <dotNumber/>
+                            <dotDesc/>
+                        <dotLabel/>
+                    <dotWrapper/>
+
+                    <dotWrapper .../>
+                <dotsContainer/>
+                */
+
+                const dotWrapper = document.createElement("div");
+                dotWrapper.classList.add("dot-wrapper");
+                dotsContainer.appendChild(dotWrapper);
+
                 const dot = document.createElement("div");
                 dot.classList.add("scene-dot");
                 dot.title = scene.title ?? `Scene ${index + 1}`;
                 dot.addEventListener("click", () => {
                     SceneManager.goTo(index);
                 });
-                dotsContainer.appendChild(dot);
+
+                const dotLabel = document.createElement("div");
+                dotLabel.classList.add("dot-label");
+                dotWrapper.appendChild(dot);
+                dotWrapper.appendChild(dotLabel);
+
+                const dotNumber = document.createElement("span");
+                dotNumber.classList.add("dot-number");
+                dotNumber.textContent = index + 1;
+                dotLabel.appendChild(dotNumber);
+
+                const dotTitle = document.createElement("span");
+                dotTitle.classList.add("dot-title");
+                dotTitle.textContent = scene.title;
+                dotLabel.appendChild(dotTitle);
+
                 return dot;
             });
 
+
+            /**
+             * Toggles the interactivity and state of the scene control buttons.
+             * @param {boolean} enable - Whether to enable or disable the buttons.
+             */
             function toggleEnableButtons(enable) {
-                resetSceneButton.style.pointerEvents = enable ? "auto" : "none";
-                hardResetSceneButton.style.pointerEvents = enable
-                    ? "auto"
-                    : "none";
-                resetSceneButton.disabled = !enable;
-                hardResetSceneButton.disabled = !enable;
+                navBtns.forEach((btn) => {
+                    btn.style.pointerEvents = enable ? "auto" : "none";
+                    btn.disabled = !enable;
+                })
             }
 
+
+            /**
+             * Toggles the interactivity and opacity of the navigation dots.
+             * @param {boolean} enable - Whether to enable or disable the dots.
+             */
             function toggleEnableDots(enable) {
                 dots.forEach((dot) => {
                     dot.style.pointerEvents = enable ? "auto" : "none";
@@ -154,7 +212,12 @@
                 });
             }
 
-            function updateActiveDot() {
+
+
+            /**
+             * Updates the UI according to the current scene.
+             */
+            function updateUI() {
                 dots.forEach((dot, i) => {
                     if (i === currentIndex) {
                         dot.classList.add("active");
@@ -162,15 +225,51 @@
                         dot.classList.remove("active");
                     }
                 });
+
+                sceneNumberInfo.forEach((element) => {
+                    element.textContent = "Scene " + (currentIndex + 1) + "/" +  SceneRepository.length
+                })
+
+                // disable buttons on first and last scene
+                prevSceneBtn.disabled = (currentIndex === 0);
+                nextSceneBtn.disabled = (currentIndex === SceneRepository.length - 1);
             }
 
-            updateActiveDot();
+
+            // when panning the map, make sure dot labels don't appear and text can't be selected 
+            window.addEventListener('mousedown', (event) => {
+                // check if the target or any parent element is the viewerDiv
+                const viewerDiv = document.getElementById('viewerDiv');
+                if (viewerDiv && viewerDiv.contains(event.target)) {
+                    document.body.classList.add('is-panning');
+                }
+            }, true);
+
+
+            window.addEventListener('mouseup', () => {
+                document.body.classList.remove('is-panning');
+            });
+
+
+            updateUI();
+
             resetSceneButton.onclick = async () => {
                 await SceneManager.softReset();
             };
             hardResetSceneButton.onclick = async () => {
                 await SceneManager.hardReset();
             };
+
+            nextSceneBtn.addEventListener("click", () => {
+                SceneManager.goTo(currentIndex+1);
+            });
+
+            prevSceneBtn.addEventListener("click", () => {
+                SceneManager.goTo(currentIndex-1);
+            });
+
+
+
         </script>
     </body>
 </html>

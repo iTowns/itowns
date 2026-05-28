@@ -27,6 +27,14 @@
 </head>
 
 <body data-spy="scroll" data-target="nav">
+
+    <!-- prevent seeing the gallery panel retract when going directly to the demo -->
+    <script>
+        if (window.location.hash === "#demo") {
+            document.body.classList.add("demo-mode");
+        }
+    </script>
+
     <!-- Code Mirror Main -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.19/codemirror.min.js"
         integrity="sha512-tXHFLFVaasTvIEFYN8K6UlGvb6Sh1ealAA8YxjpezWMio6u0vU9KfGFzKVth49xh2affuBfmLGY8t2G5pZH+zg=="
@@ -87,27 +95,29 @@
         </label>
 
         <div id="sidebar">
-            <a id="itowns-icon" href="https://www.itowns-project.org/" title="iTowns home page" target="_blank" rel="noopener noreferrer">
+            <a id="itowns-icon" href="https://www.itowns-project.org/" title="Homepage" target="_blank" rel="noopener noreferrer">
                 <img src="images/itowns_icon.svg" alt="iTowns icon">
             </a>
             <nav id="sidebar-tabs">
-                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Example gallery" aria-label="Open example gallery">
-                     <img src="images/dashboard.svg" alt="Example gallery" />
+                <button id="gallery-btn" class="sidebar-btn active notalink" data-panel="gallery-panel" title="Examples gallery" aria-label="Open example gallery">
+                     <img src="images/dashboard.svg" alt="Examples gallery" />
                 </button>
-                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Open code editor">
+                <button id="code-btn" class="sidebar-btn notalink" data-panel="code-panel" title="Code editor" aria-label="Code editor">
                      <img src="images/code.svg" alt="Code editor" />
                 </button>
+                <button id="demo-btn" class="sidebar-btn notalink" data-panel="demo-panel" title="iTowns demo" aria-label="Demo">
+                     <img src="images/demo.svg" alt="iTowns demo" />
+                </button>
                 <a href="https://www.itowns-project.org/itowns/docs/#tutorials/Fundamentals" target="_blank" rel="noopener noreferrer">
-                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="iTowns documentation">
+                    <button id="doc-btn" class="sidebar-btn" title="iTowns documentation" type="button" aria-label="Documentation">
                             <img src="images/book.svg" alt="Book icon "/>
                     </button>
                 </a>
                 <a href="https://github.com/iTowns/itowns" target="_blank" rel="noopener noreferrer">
-                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="iTowns GitHub repository">
+                    <button id="github-btn" class="sidebar-btn" title="iTowns GitHub repository" type="button" aria-label="GitHub repository">
                             <img src="images/github.svg" alt="GitHub logo" />
                     </button>
                 </a>
-
             </nav>
         </div>
 
@@ -175,13 +185,14 @@
 
     <script type="text/javascript">
         const body = document.body;
+
         const iframe = document.getElementById("content");
         const codeEditorTextArea = document.getElementById("code-editor");
         const sidebarButtons = document.querySelectorAll(".sidebar-btn.notalink");  /* does not include external link buttons */
         const panels = document.querySelectorAll(".panel");
         const versionSwitch = document.querySelector(".version-input");
         const exampleList = document.getElementById("example-list");
-        const codeBtn = document.getElementById("code-btn");
+        const demoBtn = document.getElementById("demo-btn");
         const codePanelTitle = document.querySelector("#code-panel-title");
         const codePanelDesc = document.querySelector("#code-panel-desc");
         const searchInput = document.getElementById("search-input");
@@ -191,6 +202,7 @@
         const themeToggle = document.getElementById("global-theme-toggle");
         const themeInput = themeToggle.querySelector("input");
 
+        let defaultExample = "";
         let examplesConfig = null;
         let editorHidden = false;
 
@@ -248,14 +260,14 @@
             html.classList.add(theme);
 
             localStorage.setItem('theme-preference', theme);
-            if (theme === 'dark'){
-                themeInput.checked = true;
-            }
-            else {
-                themeInput.checked = false;
+            themeInput.checked = theme === 'dark';
+
+            if (iframe && iframe.contentDocument) {
+                const iframeHtml = iframe.contentDocument.documentElement;
+                iframeHtml.classList.remove('light', 'dark');
+                iframeHtml.classList.add(theme);
             }
         }
-
 
 
         /*
@@ -285,10 +297,16 @@
                 ? new URL(slug + ".html", baseURI).href
                 : `https://raw.githubusercontent.com/itowns/itowns/refs/heads/master/examples/${slug}.html`;
             return fetch(src)
-                .then((response) => response.text())
+                .then((response) => {
+                    if (!response.ok) throw new Error("Error: cannot load example");
+                    return response.text();
+                })
                 .then((text) => {
                     exampleCache[slug] = text;
                     return text;
+                })
+                .catch(err => {
+                    codeEditor.setValue("// Error: cannot load example");
                 });
         }
 
@@ -333,9 +351,9 @@
         function updateCodePanelHeader(slug) {
             if (!examplesConfig) return;
 
-            for (const category of Object.values(examplesConfig)) {
-                if (category.items && category.items[slug]) {
-                    const info = category.items[slug];
+            for (const category of examplesConfig) {
+                const info = category.items.find(item => item.id === slug);
+                if (info) {
                     codePanelTitle.textContent = info.label;
                     codePanelDesc.textContent = info.description;
                     return;
@@ -345,7 +363,6 @@
             codePanelTitle.textContent = "Custom Example";
             codePanelDesc.textContent = "Editing local code.";
         }
-
 
 
         /**
@@ -401,27 +418,107 @@
         }
 
 
+        /**
+         * Decides whether to load an example or the demo based on the hash in the URL, and which panel to open.
+         */
+        function handleRouting() {
+            const isInitialRoot = !window.location.hash;
+            let hash = window.location.hash.replace("#", "");
+
+            // if URL has no hash, load default example
+            if (isInitialRoot) {
+                hash = defaultExample;
+                // update URL without trigerring a 'hashchange' (would cause an infinite loop)
+                history.replaceState(null, null, `#${defaultExample}`);
+            }
+
+            // demo mode
+            if (hash === "demo") {
+                body.classList.add("demo-mode");
+                // if user was viewing an example, remove the iframe's 'srcdoc' attribute so it doesn't prevail 
+                // on the 'src' attribute needed for the demo (demo is not a dynamic iframe)
+                if (iframe.hasAttribute("srcdoc")) {
+                    iframe.removeAttribute("srcdoc");
+                    iframe.src = "demo/index.html"; 
+                } 
+
+                // set up the iframe's source only if user was not already in demo, prevents unwanted reloading
+                else if (!iframe.src.includes("demo/index.html")) {
+                    iframe.src = "demo/index.html";
+                }
+
+                sidebarButtons.forEach(b => b.classList.remove("active"));
+                demoBtn.classList.add("active");
+                sessionStorage.setItem("activePanelId", "demo-panel");
+                return;
+            }
+
+            // gallery or code editor mode
+            body.classList.remove("demo-mode");
+            
+            let savedPanelId = sessionStorage.getItem("activePanelId");
+            
+            // open gallery panel by default, if no hash or no stored panel or exiting demo
+            if (!savedPanelId || savedPanelId === "demo-panel" || isInitialRoot) {
+                savedPanelId = "gallery-panel";
+            }
+
+            panels.forEach(panel => panel.classList.remove("active"));
+            const activePanel = document.getElementById(savedPanelId);
+            if (activePanel) activePanel.classList.add("active");
+
+            // sync sidebar buttons
+            sidebarButtons.forEach(b => {
+                b.classList.toggle("active", b.dataset.panel === savedPanelId);
+            });
+
+            // save current active panel
+            sessionStorage.setItem("activePanelId", savedPanelId);
+
+            // load example
+            const localCode = sessionStorage.getItem("code");
+            const localExampleSlug = sessionStorage.getItem("exampleSlug");
+
+            if (localCode && hash === localExampleSlug) {
+                loadExample(hash, fromBase64(localCode));
+            } else {
+                loadExample(hash);
+            }
+        }
+
+
+        // react to hash changes
+        window.addEventListener('hashchange', handleRouting);
+
 
         // sidebar button management
         sidebarButtons.forEach(button => {
             button.addEventListener("click", () => {
-                sidebarButtons.forEach(b => b.classList.remove("active"));
-                button.classList.add("active");
-
-                panels.forEach(panel => panel.classList.remove("active"));
                 const panelId = button.dataset.panel;
-                sessionStorage.setItem("activePanelId", panelId);
-                document.getElementById(panelId).classList.add("active");
+                
+                if (button.id === "demo-btn") {
+                    window.location.hash = "demo";
+                } else {
+                    sessionStorage.setItem("activePanelId", panelId);
+                    
+                    // if user exits the demo, go to last viewed example or the default
+                    if (window.location.hash === "#demo" || window.location.hash === "demo") {
+                        window.location.hash = sessionStorage.getItem("exampleSlug") || defaultExample;
+                    } else {
+                        // otherwise, open desired panel
+                        panels.forEach(panel => panel.classList.remove("active"));
+                        document.getElementById(panelId).classList.add("active");
+                        sidebarButtons.forEach(b => b.classList.remove("active"));
+                        button.classList.add("active");
 
-                // refresh editor when opening it, so it displays properly
-                if (panelId === "code-panel") {
-                    setTimeout(() => {
-                        codeEditor.refresh();
-                    }, 0);
+                        // refresh editor when opening it, so it displays properly
+                        if (panelId === "code-panel") {
+                            setTimeout(() => codeEditor.refresh(), 0);
+                        }
+                    }
                 }
             });
         });
-
 
 
         // editor collapsing
@@ -444,8 +541,8 @@
             const item = event.target.closest('.example-item');
             if (item) {
                 const slug = item.dataset.slug;
-                loadExample(slug);
-                codeBtn.click();
+                sessionStorage.setItem("activePanelId", "code-panel"); 
+                window.location.hash = slug; 
                 return;
             }
             // category collapsing
@@ -453,7 +550,6 @@
             if (header) {
                 const parent = header.closest('.category');
                 parent.classList.toggle('collapsed');
-                return;
             }
         });
 
@@ -469,6 +565,14 @@
 
                 window.location.href = document.location.href.replace(current, target).replace("?","");
             }
+        });
+
+
+        // set iframe theme
+        iframe.addEventListener('load', () => {
+            const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+            const iframeHtml = iframe.contentDocument.documentElement;
+            iframeHtml.classList.add(currentTheme);
         });
 
 
@@ -490,7 +594,6 @@
         });
 
 
-
         /**
          * @typedef {Object} ExampleItem
          * @property {string} label - The display name of the example.
@@ -508,56 +611,45 @@
          * @param {Record<string, ExampleCategory>} list - A collection of categories.
          */
         function initNavigation(list) {
-
-            const isDev = baseURI.includes("/itowns/dev/");
-            versionSwitch.checked = isDev;
+            versionSwitch.checked = baseURI.includes("/itowns/dev/");
 
             // dynamic example generation
             // thumbnail aspect ratio should be approximately 1.296 or 162/125 to look consistent
             const examples = [
-                ...Object.entries(list).flatMap(
-                    ([categorySlug, category]) => {
-                        return [
-                            `<div class="category" data-slug='${categorySlug}'>`,
-                                `<button type='button' class="category-header">
+                list.map(category =>
+                            `<div class="category" data-slug='${category.id}'>
+                                <button type='button' class="category-header">
                                     <img src="images/down_arrow.svg" class="category-arrow" alt="Collapse/expand category"/>
-                                    <h3 class='category-title'> ${category.label} </h3>
-                                </button>`,
-                                `<div class="category-grid-wrapper">`,
-                                    `<div class="category-content">`,
-                                        `<ul>`,
-                                        ...Object.entries(category.items).map(
-                                            ([slug, info]) =>
-                                                `<li class="example-item" data-slug='${slug}' id="${slug}">
-                                                    <div class="example-img-container">
-                                                        <img src="images/thumbnails/${slug}.webp" alt="${info.label}"/>
-                                                    </div>
-                                                    <div class="example-info">
-                                                        <h3 class="example-title">${info.label}</h3>
-                                                        <p class="example-desc">${info.description}</p>
-                                                    </div>
-                                                </li>`,
-                                        ),
-                                        `</ul>`,
-                                    `</div>`,
-                                `</div>`,
-                                '<hr/>',
-                            `</div>`,
-                        ];
-                    },
-                ),
+                                    <h3 class='category-title'>${category.label}</h3>
+                                </button>
+                                <div class="category-grid-wrapper">
+                                    <div class="category-content">
+                                        <ul>
+                                        ${category.items.map(item =>
+                                            `<li class="example-item" data-slug='${item.id}' id="${item.id}">
+                                                <div class="example-img-container">
+                                                    <img src="images/thumbnails/${item.id}.webp" alt="${item.label}"/>
+                                                </div>
+                                                <div class="example-info">
+                                                    <h3 class="example-title">${item.label}</h3>
+                                                    <p class="example-desc">${item.description}</p>
+                                                </div>
+                                            </li>`
+                                        ).join('')}
+                                        </ul>
+                                    </div>
+                                </div>
+                                <hr/>
+                            </div>`
+                ).join('')
             ];
 
             // filling the category selector
             const categories = [
-                `<option value="all">All categories</option>`,
-                ...Object.entries(list).flatMap(
-                    ([categorySlug, category]) => {
-                        return [
-                            `<option value="${categorySlug}">${category.label}</option>`
-                        ];
-                    },
-                ),
+                `<option value="all">All categories</option>
+                ${list.map(category =>
+                        `<option value="${category.id}">${category.label}</option>`
+                ).join('')}`
             ];
 
             exampleList.insertAdjacentHTML(
@@ -573,10 +665,8 @@
         }
 
 
-
         /**
-         * Initializes the application theme, fetches configuration,
-         * and restores the saved session state and content.
+         * Initializes the application theme and loads the configuration.
          */
         function onLoad() {
 
@@ -584,49 +674,26 @@
             const savedTheme = localStorage.getItem('theme-preference');
             if (savedTheme) {
                 setTheme(savedTheme);
-            }
-            else {
+            } else {
                 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 setTheme(isDarkMode ? 'dark' : 'light');
             }
 
-            // get the configuration
+            // get the configuration (list of examples)
             fetch("./config.json")
-                .then(function _(response) {
-                    return response.json();
-                })
-                .then(function _(config) {
+                .then(res => res.json())
+                .then(config => {
+                    defaultExample = config[0].items[0].id;
                     examplesConfig = config;
                     initNavigation(config);
 
-                    const hash = window.location.hash.replace("#", "");
-                    const localCode = sessionStorage.getItem("code");
-                    const localExampleSlug = sessionStorage.getItem("exampleSlug");
-                    const targetSlug = hash || "view_3d_map";
-
-                    // if target slug corresponds to the saved example, load it
-                    if (localCode && targetSlug === localExampleSlug) {
-                        loadExample(targetSlug, fromBase64(localCode));
-                    }
-                    // else, load the default example (current hash or fallback)
-                    else {
-                        loadExample(targetSlug);
-                    }
-
-                    // staying on the same panel even when hard refreshing
-                    const savedPanelId = sessionStorage.getItem("activePanelId");
-                    if (savedPanelId) {
-                        const targetBtn = document.querySelector(`.sidebar-btn[data-panel="${savedPanelId}"]`);
-                        if (targetBtn) {
-                            targetBtn.click();
-                        }
-                    }
-
+                    // handle routing based on current hash
+                    handleRouting();
                 });
         }
 
 
-        // waiting for DOM content to be loaded to start generating examples
+        // wait for DOM content to be loaded to start generating examples
         document.addEventListener('DOMContentLoaded', () => {
             onLoad();
         });
