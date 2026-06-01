@@ -53,7 +53,7 @@ var orthoSource = new itowns.TMSSource({
     crs: "EPSG:3857",
     isInverted: true,
     format: "image/png",
-    url: "https://maps.pole-emploi.fr/styles/klokantech-basic/${z}/${x}/${y}.png",
+    url: "https://maps.pole-emploi.fr/styles/klokantech-basic/{z}/{x}/{y}.png",
     attribution: {
         name:"OpenStreetMap",
         url: "http://www.openstreetmap.org/"
@@ -210,7 +210,7 @@ The full code to achieve this result is:
                 crs: "EPSG:3857",
                 isInverted: true,
                 format: "image/png",
-                url: "https://maps.pole-emploi.fr/styles/klokantech-basic/${z}/${x}/${y}.png",
+                url: "https://maps.pole-emploi.fr/styles/klokantech-basic/{z}/{x}/{y}.png",
                 attribution: {
                     name:"OpenStreetMap",
                     url: "http://www.openstreetmap.org/"

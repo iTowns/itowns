@@ -118,8 +118,7 @@ describe('VectorTilesSource', function () {
         });
         source.whenReady.then(() => {
             assert.equal(source.urls.length, 1);
-            // eslint-disable-next-line no-template-curly-in-string
-            assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
+            assert.ok(source.urls.includes('http://server.geo/{z}/{x}/{y}.pbf'));
             done();
         })
             .catch(done);
@@ -345,10 +344,8 @@ describe('VectorTilesSource', function () {
             source.whenReady
                 .then(() => {
                     assert.equal(source.urls.length, 2);
-                    // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
-                    // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.urls.includes('http://server2.geo/${z}/${x}/${y}.pbf'));
+                    assert.ok(source.urls.includes('http://server.geo/{z}/{x}/{y}.pbf'));
+                    assert.ok(source.urls.includes('http://server2.geo/{z}/{x}/{y}.pbf'));
                     done();
                 })
                 .catch(done);
@@ -372,8 +369,7 @@ describe('VectorTilesSource', function () {
             source.whenReady
                 .then(() => {
                     assert.equal(source.urls.length, 1);
-                    // eslint-disable-next-line no-template-curly-in-string
-                    assert.ok(source.urls.includes('http://server.geo/${z}/${x}/${y}.pbf'));
+                    assert.ok(source.urls.includes('http://server.geo/{z}/{x}/{y}.pbf'));
                     done();
                 })
                 .catch(done);
