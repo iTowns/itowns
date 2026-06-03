@@ -1,7 +1,7 @@
 {
   "private": true,
   "name": "@itowns/debug",
-  "version": "2.46.1-next.57",
+  "version": "2.46.1-next.58",
   "type": "module",
   "main": "lib/Main.js",
   "exports": {
@@ -27,11 +27,11 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
-    "@itowns/geographic": "^2.46.1-next.57",
+    "@itowns/geographic": "^2.46.1-next.58",
     "@tweenjs/tween.js": "^25.0.0",
     "3d-tiles-renderer": "^0.4.20",
     "chart.js": "^4.5.1",
     "dat.gui": "^0.7.9",
-    "itowns": "^2.46.1-next.57"
+    "itowns": "^2.46.1-next.58"
   }
 }
