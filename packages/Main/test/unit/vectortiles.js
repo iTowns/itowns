@@ -139,7 +139,7 @@ describe('VectorTilesSource', function () {
                     },
                 }],
             },
-            accessToken: 'pk.eyJ1IjoiZnRvcm9tYW5vZmYiLCJhIjoiY2xramhzM2xrMDVibjNpcGNvdGRlZWQ5YyJ9.NibhjJNVTxArsNSH4v_kIA',
+            accessToken: 'privateKey',
         });
         source.whenReady
             .then(() => {
