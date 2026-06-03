@@ -197,6 +197,10 @@ p, h1, h2, h3, h4 {
 }
 
 
+#itowns-icon {
+    user-select: none;
+}
+
 /* THEME TOGGLING */
 
 .theme-toggle {
@@ -260,6 +264,7 @@ p, h1, h2, h3, h4 {
     border: none;
     background-color: transparent;
     cursor: pointer;
+    user-select: none;
 }
 
 .sidebar-btn:hover {
@@ -781,6 +786,25 @@ input:checked + .version-slider:before {
 }
 
 
+/* DEMO */
+
+body.demo-mode #panel-content,
+body.demo-mode #editor-collapse,
+body.demo-mode #global-theme-toggle {
+    display: none !important;
+}
+
+body.demo-mode #editor-panel {
+    width: 4.5em;
+}
+
+body.demo-mode #main,
+body.demo-mode #content {
+    width: calc(100% - 4.5em);
+}
+
+
+
 @media (width > 1700px) {
 
     .CodeMirror {
@@ -799,16 +823,16 @@ input:checked + .version-slider:before {
 }
 
 @media (width < 1170px) {
-    #editor-panel {
+    body:not(.demo-mode) #editor-panel {
         display: none !important;
     }
 
-    #content {
+    body:not(.demo-mode) #content {
         left: 0 !important;
         width: 100% !important;
     }
 
-    #editor-collapse {
+    body:not(.demo-mode) #editor-collapse {
         display: none;
     }
 }

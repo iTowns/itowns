@@ -328,7 +328,7 @@ export default {
 
         const debugBoxes = new PointCloudDebug();
         debugBoxes.init(layer);
-        view.scene.add(debugBoxes.group);
+        layer.object3d.add(debugBoxes.group);
 
         debugUI.add(debugBoxes, 'displayVoxelBounds').name('Node OBB (voxel)').onChange(() => {
             view.notifyChange(layer, true);

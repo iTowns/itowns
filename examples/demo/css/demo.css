@@ -1,63 +1,216 @@
-#demoUI {
+:root {
+    color-scheme: light dark;
+
+    --icon-filter: none;
+    --arrow-filter: none;
+    --itowns-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    --dot-speed: 0.10s;
+}
+
+
+html.light {
+    color-scheme: light;
+}
+
+html.dark{
+    color-scheme: dark;
+    --icon-filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
+    --arrow-filter: brightness(0) saturate(100%) invert(33%) sepia(55%) saturate(230%) hue-rotate(168deg) brightness(92%) contrast(89%);
+}
+
+/* necessary for standalone contexts, where there is no theme toggle */
+@media (prefers-color-scheme: dark){
+    :root {
+        color-scheme: dark;
+        --icon-filter: brightness(0) saturate(100%) invert(68%) sepia(87%) saturate(467%) hue-rotate(180deg) brightness(104%) contrast(87%);
+        --arrow-filter: brightness(0) saturate(100%) invert(33%) sepia(55%) saturate(230%) hue-rotate(168deg) brightness(92%) contrast(89%);
+    }
+}
+
+
+html, body {
+    font-family: var(--itowns-font);
+    color: light-dark(#202020, #F0F0F0);
+}
+
+
+body.is-panning {
+    user-select: none;
+}
+
+
+#nav-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    
+    width: fit-content;
+    gap: 2rem;
+}
+
+
+#nav-container .scene-number-info {
+    font-size: 1.2rem;
+}
+
+
+.prev-next-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 3em;
+    height: 3em;
+    border-radius: 3rem;
+    border: none;
+    background-color: #1565c1;
+    cursor: pointer;
+}
+
+.prev-next-btn:not(:disabled):hover {
+    background-color: #1052AD;
+}
+
+
+.prev-next-btn:disabled img {
+    filter: var(--arrow-filter);
+}
+
+
+#nav-container img {
+    height: 1.7rem;
+}
+
+#scene-info {
     position: fixed;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 1vh;
+    right: 1.5vh;
+    bottom: 3vh;
 
     display: flex;
     flex-direction: column;
     align-items: center;
 
-    width: min(80vw, 70vh); 
-    max-height: 40vh;
-    padding: 2vh 3vh;
-    border-radius: 3rem;
-    background-color: rgba(255, 255, 255, 0.75);
+    width: 370px;
+    max-height: 450px;
+    border-radius: 1rem;
+    background-color: light-dark(white, #0F1419);
     backdrop-filter: blur(0.5vh);
     z-index: 100;
-}
-
-#textContainer {
-    position: static;
-
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
+    overflow: hidden;
     display: flex;
     flex-direction: column;
-
-    color: black;
-    text-align: center;
-    font-family:'Courier New', Courier, monospace;
 }
 
+
+
+#logo-container {
+    width: 100%;
+    box-sizing: border-box;
+    border-bottom: #E1EBF5 solid 1px;
+    padding: 0.8rem 50%;
+
+    display: flex;
+    justify-content: center;
+}
+
+#itowns-logo {
+    height: 2.3rem;
+}
+
+#info-bottom-container {
+    padding: 0.8rem 1.2rem 1.2rem 1.2rem;
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+
+#text-container {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.5rem;
+    font-size: 100%;
+}
+
+#info-bottom-container .scene-number-info {
+    background-color: light-dark(#F0F6FF, #061f42);
+    border-radius: 0.5em;
+    color: light-dark(#1565c1, #8CC1EE);
+    padding: 0.2em 0.4em;
+    width:fit-content;
+    margin: 0;
+}
+
+
+
+
+#sceneTitle {
+    color: light-dark(#1565c1, #8fb9f3);
+    text-transform: uppercase;
+    font-weight: 600;
+    font-size: 1.5em;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    margin-top: 0.5em;
+}
+
+
+#sceneDescription {
+    font-size: 1.2em;
+    line-height: 1.3em;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    margin-top: 0.4em;
+    margin-bottom: 1.2em;
+}
+
+
 /*** Navigation Menu ***/
-#navigationContainer {
+#scene-mgmt-container {
     position: static;
 
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    
+
     width: 100%;
-    gap: 2vh;
-    margin-top: 2vh;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
 }
 
-button {
-    display: inline-block;
+#scene-mgmt-container button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.8em;
 
-    border: 1px solid black;
-    border-radius: 0.5rem;
-    padding: 0.5vh 2vh;
-    
-    color: black;
-    background-color: #ffffff;
+    padding: 0.4rem 0.6rem;
+    border-style: none;
     text-align: center;
-    text-decoration: none;
-    font-size: min(1vh, 1.5vw);
-    font-family:'Courier New', Courier, monospace;
+    font-weight: bold;
+    background-color: light-dark(white, #0F1419);
+    color: light-dark(#1565c1, #8CC1EE);
+    text-transform: uppercase;
+    border-radius: 15px;
 
+    white-space: nowrap;
+    flex-shrink: 0;
     cursor: pointer;
 }
+
+#scene-mgmt-container button:hover {
+    background-color: light-dark(#CEE5FB, #09184B);
+}
+
+.nav-logo  {
+    height: 1.5rem;
+    filter: var(--icon-filter);
+}
+
 
 button:hover {
     background-color: #E5E5E5;
@@ -65,68 +218,152 @@ button:hover {
 }
 
 button:disabled {
-    background-color: #E5E5E5;
+    background-color: light-dark(#E5E5E5, #13202c);
     color: #A0A0A0;
     cursor: not-allowed;
 }
 
-button:active {
-    background-color: #7EA8C5;
-    color: white;
-}
-
-button.active {
-    background-color: #7EA8C5;
-    color: white;
-}
 
 #sceneDots {
     display: flex;
-    flex-direction: row;
-    gap: min(1vh, 1.5vw);
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    position: fixed;
+    left: 1rem;
+    top: 28%;
+    z-index: 100;
+    overflow: visible;
+    width: min(5vh, 5vw);
+    background-color:  rgba(255, 255, 255, 0.20);
+    border-radius: 100px;
+    padding-top: min(1vh, 1vw);
+    padding-bottom: min(1vh, 1vw);
 }
 
 .scene-dot {
-    width: min(1.5vh, 2vw);
-    height: min(1.5vh, 2vw);
-    border-radius: 50%;
-    border: 1px solid #000;
-    background-color: #ffffff;
+    width: min(2vh, 2vw);
+    height: min(2vh, 2vw);
+    border-radius: 100px;
+    background-color: light-dark(#ffffff, #0F1419);
     cursor: pointer;
-    transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
 .scene-dot.active {
-    background-color: #7EA8C5;
-    transform: scale(1.4);
+    background-color: #1565c1;
+    height: min(5vh, 7vw);
+    transform: scale(1);
 }
 
 .scene-dot:hover {
-    background-color: #E5E5E5;
+    background-color: light-dark(#E5E5E5, #09184B);
 }
+
+
+
+.dot-wrapper {
+    width: 15vw;
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    z-index: 110;
+    padding-top: calc(0.6* min(1.5vh, 1.5vw));
+    padding-bottom: calc(0.6* min(1.5vh, 1.5vw));
+    padding-left: min(1.5vh, 1.5vw);
+}
+
+
+
+.dot-label {
+    position: absolute;
+    left: 5rem;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    height: auto;
+    visibility: hidden;
+    width: 15vw;
+    pointer-events: none;
+
+}
+
+.dot-number {
+    color: white;
+    opacity: 50%;
+    font-size: 13rem;
+    font-weight: 600;
+
+    position: absolute;
+    z-index: 50;
+    justify-self: left;
+}
+
+.dot-title {
+    color: white;
+    font-size: 2.3rem;
+    font-weight: 500;
+
+    text-transform: uppercase;
+    position: relative;
+    z-index: 60;
+}
+
+
+body:not(.is-panning) .dot-wrapper:hover .dot-label {
+    visibility: visible;
+}
+
+.dot-wrapper:hover .scene-dot{
+    height: min(5vh, 7vw);
+    transform: scale(1);
+    }
+
+
+
+body:has(.dot-wrapper:hover) .scene-dot.active {
+    height: min(2vh, 2vw);
+    transform: scale(1);
+
+}
+
+.dot-wrapper:hover:has(.scene-dot.active) .scene-dot {
+    height: min(5vh, 7vw);
+    transform: scale(1);
+}
+
+
+
 
 /*** Feature Picking Info ***/
 #feature-picking-info {
     position: fixed;
     top: 1vh;
-    right: 1vh;
-    padding: 1vh 1.5vh;
-    border-radius: 1vh;
+    right: 1.5vh;
+    padding: 0.2vh 2vh 1vh 2vh;
+    border-radius: 1rem;
     overflow-y: auto;
 
-    font-family:'Courier New', Courier, monospace;
     font-size: min(1.5vh, 2vw);
-    color: black;
 
-    width: 25vw;
+    max-width: 25vw;
     max-height: 45vh;
-    background-color: rgba(255, 255, 255, 0.75);
-    backdrop-filter: blur(0.5vh);
+    background-color: light-dark(white, #0F1419);
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
 
     z-index: 100;
 
     pointer-events: auto;
+}
+
+#feature-picking-info.no-feature-selected {
+    padding: 1vh 1vh;
+}
+
+
+.feature-name {
+    text-transform: uppercase;
+    color: light-dark(#1565c1, #8CC1EE);
+    font-size: 1.1rem;
 }
 
 /*** Point Cloud Config ***/
@@ -141,34 +378,105 @@ button.active {
     flex-direction: column;
     justify-content: center;
 
-    font-family:'Courier New', Courier, monospace;
-    font-size: min(1.5vh, 2vw);
-    color: black;
+    font-size: min(1.6vh, 2vw);
 
-    width: 25vw;
+    width: fit-content;
     max-height: 45vh;
-    background-color: rgba(255, 255, 255, 0.75);
+    background-color: light-dark(white, #0F1419);
     backdrop-filter: blur(0.5vh);
+    box-shadow:  0 4px 8px 0 rgba(0, 0, 0, 0.3);
 
     z-index: 100;
 }
 
 #point-cloud-buttons {
     width: 100%;
+    height: 2em;
     display: flex;
     justify-self: center;
 }
 
 #point-cloud-config button {
     width: 50%;
+    cursor: pointer;
+    background-color: light-dark(rgb(235, 235, 235), #202931);
+    font-size: min(1.5vh, 2vw);
+}
+
+#point-cloud-config button.active {
+    background-color: light-dark(#cee5fb, #2E3944);
+    color: light-dark(#1565c1, #8CC1EE);
 }
 
 #point-cloud-config button:first-child {
     border-right: none;
     border-radius: 0.5rem 0 0 0.5rem;
+    border-style: none;
 }
 
 #point-cloud-config button:last-child {
     border-left: none;
     border-radius: 0 0.5rem 0.5rem 0;
+    border-style: none;
+}
+
+
+/* allow to go over UI elements when panning the map */
+body.is-panning #sceneDots,
+body.is-panning #scene-dot,
+body.is-panning #feature-picking-info,
+body.is-panning #nav-container,
+body.is-panning #scene-info {
+    pointer-events: none;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width: 1024px) {
+     #scene-info {
+        width: 300px;
+     }
+
+    #scene-mgmt-container button {
+        font-size: 0.8em;
+    }
+
+    #sceneTitle {
+        font-size: 1.1rem;
+    }
+
+    #sceneDescription {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 768px) {
+    #point-cloud-config {
+        max-width: 25vw;
+    }
+
+    .prev-next-btn {
+        width: 2.5em;
+        height: 2.5em;
+    }
+
+    #nav-container img {
+        height: 1.3rem;
+    }
+
+    #sceneDots {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .prev-next-btn {
+        width: 2.2em;
+        height: 2.2em;
+    }
+
+    #nav-container img {
+        height: 1.1rem;
+    }
 }
