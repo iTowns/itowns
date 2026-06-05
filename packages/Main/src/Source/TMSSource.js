@@ -36,7 +36,7 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  * // Create the source
  * const tmsSource = new itowns.TMSSource({
  *     format: 'image/png',
- *     url: 'http://osm.io/styles/${z}/${x}/${y}.png',
+ *     url: 'http://osm.io/styles/{z}/{x}/{y}.png',
  *     attribution: {
  *         name: 'OpenStreetMap',
  *         url: 'http://www.openstreetmap.org/',
@@ -55,7 +55,7 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  * @example <caption><b>Source from Mapbox server :</b></caption>
  * // Create the source
  * const orthoSource = new itowns.TMSSource({
- *     url: 'https://api.mapbox.com/v4/mapbox.satellite/${z}/${x}/${y}.jpg?access_token=' + accessToken,
+ *     url: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=' + accessToken,
  *     crs: 'EPSG:3857',
  * };
  *
@@ -74,6 +74,12 @@ class TMSSource extends Source {
      */
     constructor(source) {
         source.format = source.format || 'image/png';
+
+        if (source.url && source.url.search(/(\$\{x\}|\$\{y\}|\$\{z\})/) >= 0) {
+            console.warn("Deprecated usage of '$' before {x}, {y} and {z} in url.");
+            source.url = source.url
+                .replace(/(\$\{x\})|(\$\{y\})|(\$\{z\})/g, corr => corr.substring(1));
+        }
 
         super(source);
 

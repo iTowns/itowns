@@ -5,7 +5,7 @@ let subDomainsCount = 0;
  * @returns {string}
  */
 function subDomains(url) {
-    const subDomainsPtrn = /\$\{u:([\w-_.|]+)\}/.exec(url);
+    const subDomainsPtrn = /\$\{u:([\w\-.|]+)\}/.exec(url);
 
     if (!subDomainsPtrn) {
         return url;
@@ -23,7 +23,7 @@ function subDomains(url) {
  * In an url, it is also possible to specify subdomains alternatives using the
  * `${u:a|b|c}` pattern, by separating differents options using `|`. It will go
  * through the following alternative each time (no random). For example
- * `https://${u:xyz.org|yzx.org|zxy.org}/${z}/${x}/${y}.png`
+ * `https://${u:xyz.org|yzx.org|zxy.org}/{z}/{x}/{y}.png`
  *
  * @module URLBuilder
  */
@@ -36,9 +36,9 @@ export default {
      * The source object needs to have an url property, which should have some
      * specific strings that will be replaced by coordinates.
      * <ul>
-     * <li>`${x}` or `%COL` will be replaced by `coords.col`</li>
-     * <li>`${y}` or `%ROW` will be replaced by `coords.row`</li>
-     * <li>`${z}` or `%TILEMATRIX` will be replaced by `coords.zoom`</li>
+     * <li>`{x}` or `%COL` will be replaced by `coords.col`</li>
+     * <li>`{y}` or `%ROW` will be replaced by `coords.row`</li>
+     * <li>`{z}` or `%TILEMATRIX` will be replaced by `coords.zoom`</li>
      * </ul>
      *
      * @example
@@ -51,7 +51,7 @@ export default {
      *
      * @example
      * coords = new Extent('TMS', 15, 2142, 3412);
-     * source.url = 'http://server.geo/tms/${z}/${y}/${x}.jpg';
+     * source.url = 'http://server.geo/tms/{z}/{y}/{x}.jpg';
      * url = URLBuilder.xyz(coords, source);
      *
      * // The resulting url is:
@@ -68,9 +68,10 @@ export default {
      * @returns {string} the formed url
      */
     xyz: function xyz(coords, source) {
-        return subDomains(source.url.replace(/(\$\{z\}|%TILEMATRIX)/, source.tileMatrixCallback(coords.zoom))
-            .replace(/(\$\{y\}|%ROW)/, coords.row)
-            .replace(/(\$\{x\}|%COL)/, coords.col));
+        return subDomains(source.url)
+            .replace(/(\{z\}|%TILEMATRIX)/, source.tileMatrixCallback(coords.zoom))
+            .replace(/(\{y\}|%ROW)/, coords.row)
+            .replace(/(\{x\}|%COL)/, coords.col);
     },
 
     /**
@@ -117,7 +118,8 @@ export default {
         const n = bbox.north.toFixed(precision);
 
         let bboxInUnit = source.axisOrder || 'wsen';
-        bboxInUnit = bboxInUnit.replace('w', `${w},`)
+        bboxInUnit = bboxInUnit
+            .replace('w', `${w},`)
             .replace('s', `${s},`)
             .replace('e', `${e},`)
             .replace('n', `${n},`)

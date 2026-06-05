@@ -53,7 +53,7 @@
 
             // Add one imagery layer to the scene, read from TIFFs.
             var tiffSource = new itowns.TMSSource({
-                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/localcolors/tiff/${z}/localcolors_${x}_${y}.tif',
+                url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/geoid/localcolors/tiff/{z}/localcolors_{x}_{y}.tif',
                 tileMatrixSet: 'WGS84G',
                 crs: 'EPSG:4326',
                 parser: TIFFParser.parse,
