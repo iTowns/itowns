@@ -1,6 +1,6 @@
 {
   "name": "@itowns/demo",
-  "version": "2.46.1-next.58",
+  "version": "2.46.1-next.59",
   "description": "Itowns Demo",
   "type": "module",
   "scripts": {
@@ -23,6 +23,6 @@
   },
   "homepage": "https://itowns.github.io/",
   "dependencies": {
-    "itowns": "^2.46.1-next.58"
+    "itowns": "^2.46.1-next.59"
   }
 }
