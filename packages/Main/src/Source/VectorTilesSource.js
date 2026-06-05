@@ -5,10 +5,6 @@ import URLBuilder from 'Provider/URLBuilder';
 import Fetcher from 'Provider/Fetcher';
 import urlParser from 'Parser/MapBoxUrlParser';
 
-function toTMSUrl(url) {
-    return url.replace(/\{/g, '${');
-}
-
 function mergeCollections(collections) {
     const collection = collections[0];
     collections.forEach((col, index) => {
@@ -139,17 +135,17 @@ class VectorTilesSource extends TMSSource {
                         return Fetcher.json(urlSource, this.networkOptions).then((tileJSON) => {
                             if (tileJSON.tiles[0]) {
                                 tileJSON.tiles[0] = decodeURIComponent(new URL(tileJSON.tiles[0], urlSource).toString());
-                                return toTMSUrl(tileJSON.tiles[0]);
+                                return tileJSON.tiles[0];
                             }
                         });
                     } else if (sourceVT.tiles) {
-                        return Promise.resolve(toTMSUrl(sourceVT.tiles[0]));
+                        return Promise.resolve(sourceVT.tiles[0]);
                     }
                     return Promise.reject();
                 });
                 return Promise.all(TMSUrlList);
             }
-            return (Promise.resolve([toTMSUrl(this.url)]));
+            return (Promise.resolve([this.url]));
         }).then((TMSUrlList) => {
             this.urls = Array.from(new Set(TMSUrlList));
         });

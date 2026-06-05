@@ -71,7 +71,7 @@
             // -> TMS imagery source
             var opensmSource = new itowns.TMSSource({
                 isInverted: true,
-                url: 'https://tile.openstreetmap.org/${z}/${x}/${y}.png',
+                url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                 networkOptions: { crossOrigin: 'anonymous' },
                 extent,
                 crs: 'EPSG:3857',
