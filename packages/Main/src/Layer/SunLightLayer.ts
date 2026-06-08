@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import {
     getSunDirectionECEF,
 } from '@takram/three-atmosphere';
-import SkyManager from 'Core/Prefab/Globe/SkyManager';
 import GeometryLayer from './GeometryLayer';
 import { getRig } from '../Utils/CameraUtils';
 
@@ -69,9 +68,6 @@ class SunLightLayer extends GeometryLayer {
         const { view } = context;
 
         getSunDirectionECEF(view.date, this.sunDirection);
-
-        // actually only useful if Sun or Moon direction has changed
-        if (view.skyManager) { view.skyManager.update(); }
 
         // Center the shadow around the camera's target position
         const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;

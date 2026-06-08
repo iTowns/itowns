@@ -5,7 +5,9 @@ import {
     SkyMaterial,
     getMoonDirectionECEF,
     PrecomputedTexturesGenerator,
+    AtmosphereParameters,
 } from '@takram/three-atmosphere';
+
 import {
     EffectPass,
     RenderPass,
@@ -16,84 +18,96 @@ import {
     EffectComposer,
 } from 'postprocessing';
 import GlobeView from 'Core/Prefab/GlobeView';
+import SunLightLayer from 'Layer/SunLightLayer';
+import ISkyStrategy from './ISkyStrategy';
 
-class SkyManager {
+export interface RealisticSkyParameters {
+    rayleighScattering: THREE.Vector3;
+    mieScattering: THREE.Vector3;
+    mieExtinction: THREE.Vector3;
+    miePhaseFunctionG: number;
+}
+
+class RealisticSky implements ISkyStrategy {
     sky: THREE.Mesh;
     skyLight: SkyLightProbe;
     aerialPerspective: AerialPerspectiveEffect;
+    renderPass: RenderPass;
     effectPass: EffectPass;
+    FXAAPass: EffectPass;
     scene: THREE.Scene;
     composer: EffectComposer;
-    fog: THREE.Fog;
     view: GlobeView;
+    sunLightLayer: SunLightLayer;
+    ready: boolean;
+    private _originalIntensity: number;
 
-    constructor(view: GlobeView) {
+    constructor(view: GlobeView, sunLightLayer: SunLightLayer, params?: RealisticSkyParameters) {
         this.view = view;
         const scene = view.scene;
         this.scene = scene;
         const camera = view.camera3D;
         const composer = view.mainLoop.gfxEngine.composer;
         this.composer = composer;
+        this.sunLightLayer = sunLightLayer;
+        this.ready = false;
+        this._originalIntensity = sunLightLayer.sunLight.intensity;
 
         // SkyMaterial disables projection.
         // Provide a plane that covers clip space.
         const skyMaterial = new SkyMaterial();
         this.sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), skyMaterial);
         this.sky.frustumCulled = false;
+        this.sky.visible = false;
         scene.add(this.sky);
 
-        // SkyLightProbe computes sky irradiance of its position.
+        // SkyLightProbe computes skyController irradiance of its position.
         this.skyLight = new SkyLightProbe();
         this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
+        this.skyLight.visible = false;
         scene.add(this.skyLight);
 
         this.aerialPerspective = new AerialPerspectiveEffect(camera);
-        this.aerialPerspective.setSize(window.innerWidth, window.innerHeight);
 
-        const renderer = view.renderer;
-        renderer.toneMappingExposure = 10;
+        const rendererSize = new THREE.Vector2();
+        view.mainLoop.gfxEngine.renderer.getSize(rendererSize);
+        this.aerialPerspective.setSize(rendererSize.x, rendererSize.y);
 
-        composer.addPass(new RenderPass(scene, camera));
+        this.renderPass = new RenderPass(scene, camera);
         this.effectPass = new EffectPass(
             camera,
             this.aerialPerspective,
             new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
-        this.effectPass.enabled = false;
-        composer.addPass(this.effectPass);
-        composer.addPass(new EffectPass(camera, new FXAAEffect())); // anti-aliasing
+        this.FXAAPass = new EffectPass(camera, new FXAAEffect());
 
         // Generate precomputed textures.
+        const renderer = view.renderer;
         const generator = new PrecomputedTexturesGenerator(renderer);
-        generator.update().catch((error) => { console.error(error); });
 
-        const textures = generator.textures;
-        Object.assign(skyMaterial, textures);
-        this.skyLight.irradianceTexture = textures.irradianceTexture;
-        Object.assign(this.aerialPerspective, textures);
+        const atmosphereParams = params ? new AtmosphereParameters(params) : AtmosphereParameters.DEFAULT;
+        generator.update(atmosphereParams).then(() => {
+            const textures = generator.textures;
+            Object.assign(skyMaterial, textures);
+            this.skyLight.irradianceTexture = textures.irradianceTexture;
+            Object.assign(this.aerialPerspective, textures);
+            this.ready = true;
 
-        this.fog = scene.fog;
-
-        this._setState(true);
-
-        scene.onBeforeRender = () => {
-            // disable fog only during render
-            // to let its parameters be modified elsewhere
-            if (this.enabled) { this.scene.fog = null; }
-        };
-        scene.onAfterRender = () => {
-            if (this.enabled) { this.scene.fog = this.fog; }
-        };
-
-        this.composer.render();
+            // If already enabled, trigger an update now that textures are ready
+            if (this.enabled) {
+                this.update();
+                this.view.notifyChange(this.view.camera3D);
+                this.composer.render();
+            }
+        }).catch((error) => { console.error(error); });
     }
 
     update() {
         const camera = this.view.camera3D as THREE.PerspectiveCamera | THREE.OrthographicCamera;
-        if (!this.enabled) { return; }
+        if (!this.enabled || !this.ready) { return; }
 
-        const sunDirection = this.view.sunLightLayer.sunDirection;
+        const sunDirection = this.sunLightLayer.sunDirection;
         const moonDirection = new THREE.Vector3();
         getMoonDirectionECEF(this.view.date, moonDirection);
 
@@ -107,7 +121,7 @@ class SkyManager {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-7 * camera.near, 0);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(0.1 - 2e-8 * camera.near, 0.05);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
@@ -125,7 +139,7 @@ class SkyManager {
     }
 
     set enabled(on: boolean) {
-        if (this.enabled == on) { return; }
+        if (this.enabled === on) { return; }
         this._setState(on);
 
         // force internally calling state.buffers.color.setClear
@@ -133,16 +147,43 @@ class SkyManager {
         this.view.renderer.setClearAlpha(this.view.renderer.getClearAlpha());
 
         if (on) { this.update(); }
-        this.composer.render();
+    }
+
+    dispose() {
+        this._setState(false);
+
+        this.scene.remove(this.sky);
+        this.sky.geometry.dispose();
+        (this.sky.material as THREE.Material).dispose();
+
+        this.scene.remove(this.skyLight);
+
+        this.aerialPerspective.dispose();
+        this.renderPass.dispose();
+        this.effectPass.dispose();
+        this.FXAAPass.dispose();
     }
 
     private _setState(on: boolean) {
         // Realistic rendering requires a dimmer sunlight
-        this.view.sunLightLayer.sunLight.intensity *= on ? 0.1 : 10;
+        this.sunLightLayer.sunLight.intensity = on
+            ? this._originalIntensity * 0.1
+            : this._originalIntensity;
         this.sky.visible = on;
         this.skyLight.visible = on;
-        this.effectPass.enabled = on;
+
+        this.view.renderer.toneMappingExposure = on ? 10 : 1;
+
+        if (on) {
+            this.composer.addPass(this.renderPass);
+            this.composer.addPass(this.effectPass);
+            this.composer.addPass(this.FXAAPass);
+        } else {
+            this.composer.removePass(this.renderPass);
+            this.composer.removePass(this.effectPass);
+            this.composer.removePass(this.FXAAPass);
+        }
     }
 }
 
-export default SkyManager;
+export default RealisticSky;
