@@ -79,13 +79,11 @@ class GlobeView extends View {
      * enable WebXR to switch on VR visualization.
      * @param {Function} [options.webXR.callback] - WebXR rendering callback.
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
-     * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=0.3] - Controls the far plane distance at low altitudes.
      * Value between 0 and 1. Lower values reduce far distance near the ground. At higher altitudes,
      * far distance transitions to full horizon distance.
-     * @param {number} [options.maxFarAltitude=50000] - the altitude at which the horizon is fully visible (meters).
-     * @param {number} [options.minFarDistance=5000] - the minimum horizon distance (meters).
-     * @param {number} [options.fogSpread=0.5] - Proportion of the visible depth range that contains fog.
+     * @param {number} [options.maxFarAltitude=80000] - the altitude at which the horizon is fully visible (meters).
+     * @param {number} [options.minFarDistance=10000] - the minimum horizon distance (meters).
      * Between 0 and 1.
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
