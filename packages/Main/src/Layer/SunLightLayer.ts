@@ -13,7 +13,7 @@ interface UpdateContext {
         renderer: THREE.WebGLRenderer;
         scene: THREE.Scene;
         date: Date;
-        skyManager: SkyManager;
+        altitude: number;
     };
 }
 
@@ -26,10 +26,23 @@ class SunLightLayer extends GeometryLayer {
     sunLight: THREE.DirectionalLight;
     sunDirection: THREE.Vector3;
     isSunLightLayer: boolean;
+    forceDaytime: boolean;
+    shadowsMaxAltitude: number;
+    sunTiltAltitude: number;
 
     private _prevSunIntensity = 0;
+    private readonly _up = new THREE.Vector3();
+    private readonly _worldRef = new THREE.Vector3(0, 0, 1);
+    private readonly _tangent = new THREE.Vector3();
+    private readonly _newSunDirection = new THREE.Vector3();
 
-    constructor() {
+    /**
+     * @param [forceDaytime=false] - Indicates whether to force daytime lighting regardless of the scene's time.
+     * @param [shadowsMaxAltitude=30000] - Specifies the maximum altitude at which shadows are cast.
+     * @param [sunTiltAltitude=30000] - Specifies the maximum altitude at which the sun tilts when forceDaytime is true
+     * @returns
+     */
+    constructor(forceDaytime = false, shadowsMaxAltitude = 30000, sunTiltAltitude = 30000) {
         const object3d = new THREE.Group();
         const id = 'sunlight';
         object3d.name = id;
@@ -46,6 +59,14 @@ class SunLightLayer extends GeometryLayer {
         this.defineLayerProperty('castShadow', this.castShadow, () => {
             this.sunLight.castShadow = this.castShadow;
         });
+
+        this.forceDaytime = forceDaytime;
+        this.defineLayerProperty('forceDaytime', forceDaytime);
+
+        this.sunTiltAltitude = sunTiltAltitude;
+        this.defineLayerProperty('sunTiltAltitude', this.sunTiltAltitude);
+
+        this.shadowsMaxAltitude = shadowsMaxAltitude;
 
         this.object3d.add(
             this.sunLight,
@@ -67,19 +88,33 @@ class SunLightLayer extends GeometryLayer {
 
         const { view } = context;
 
-        getSunDirectionECEF(view.date, this.sunDirection);
+        if (this.forceDaytime) {
+            this._dayTimeSunDirection(
+                context.camera.camera3D.position,
+                context.view.altitude,
+                this.sunDirection,
+            );
+        } else {
+            getSunDirectionECEF(context.view.date, this.sunDirection);
+        }
 
         // Center the shadow around the camera's target position
         const sunTargetPos = getRig(camera).targetWorldPosition || camera.position;
 
-        // Turn sunlight on/off based on sun elevation above/below local horizon
+        // Turn sunlight on/off based on sun elevation above/below local horizon when close enough to ground
         const sunElevation = this.sunDirection.dot(sunTargetPos);
-        if (sunElevation < 0 && this.sunLight.intensity) {
+        const sunDisabled = sunElevation < 0 && view.altitude < this.shadowsMaxAltitude;
+
+        if (sunDisabled && this.sunLight.intensity) {
             this._prevSunIntensity = this.sunLight.intensity;
             this.sunLight.intensity = 0;
-        } else if (sunElevation >= 0 && !this.sunLight.intensity) {
+        } else if (!sunDisabled && !this.sunLight.intensity) {
             this.sunLight.intensity = this._prevSunIntensity;
         }
+
+        // Disable shadow casting above an altitude threshold
+        const aboveMaxAltitude = view.altitude > this.shadowsMaxAltitude;
+        this.sunLight.castShadow = aboveMaxAltitude ? false : this.castShadow;
 
         // Only update if the position has changed enough,
         // to avoid flickering effect
@@ -105,6 +140,44 @@ class SunLightLayer extends GeometryLayer {
             shadowCam.top = shadowHalfSide;
             shadowCam.bottom = -shadowHalfSide;
             shadowCam.updateProjectionMatrix();
+        }
+    }
+
+    /*
+     * Calculates the direction of the sun to ensure a sunny sky.
+     * Updates the provided sunDirection vector with a new calculated direction.
+     * The sun is aligned with the camera far away from the globe to show the whole planet.
+     * It tilts progressively below this.sunTiltAltitude to cast good-looking shadows.
+     */
+    _dayTimeSunDirection(cameraPosition: THREE.Vector3, altitude: number, sunDirection: THREE.Vector3) {
+        const up = this._up.copy(cameraPosition).normalize();
+
+        // Stable reference axis
+        const worldRef = this._worldRef.set(0, 0, 1);
+        if (Math.abs(up.dot(worldRef)) > 0.99) {
+            worldRef.set(1, 0, 0);
+        }
+
+        // tangent = worldRef projected on plane orthogonal to up
+        const tangent = this._tangent.copy(worldRef).projectOnPlane(up).normalize();
+
+        const groundTilt = 0.6;
+        const fadeStart = this.sunTiltAltitude / 2;
+        const fadeEnd = this.sunTiltAltitude;
+
+        // Apply a smoothstep to interpolate between groundTilt and 1.0 (aligned with camera)
+        const t = THREE.MathUtils.clamp((altitude - fadeStart) / (fadeEnd - fadeStart), 0, 1);
+        const k = t * t * (3 - 2 * t);
+        const effectiveTilt = THREE.MathUtils.lerp(groundTilt, 1.0, k);
+
+        const newSunDirection = this._newSunDirection
+            .copy(up).multiplyScalar(effectiveTilt)
+            .addScaledVector(tangent, 1 - effectiveTilt)
+            .normalize();
+
+        // Only change sunDirection if the new direction is significantly different
+        if (sunDirection.dot(newSunDirection) < 0.99995) {
+            sunDirection.copy(newSunDirection);
         }
     }
 }
