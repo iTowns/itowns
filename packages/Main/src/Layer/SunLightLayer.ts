@@ -99,11 +99,9 @@ class SunLightLayer extends GeometryLayer {
             .add(prevSunTargetPos);
         this.sunLight.updateMatrixWorld();
 
-        // Calculate shadow box half-side to render shadows on all screen
-        // in most cases. These values were determined empirically.
-        // Only update if the value has changed enough,
-        // to avoid flickering effect
-        const shadowHalfSide = 0.017 * camera.far + 200;
+        // Calculate an appropriate shadow box half-side by using camera distance to target
+        // Only update if the value has changed enough, to avoid flickering effect
+        const shadowHalfSide = camera.position.distanceTo(sunTargetPos);
         if (Math.abs(shadowHalfSide - prevShadowHalfSide) > prevShadowHalfSide * 0.1) {
             shadowCam.far = 2 * shadowHalfSide;
             shadowCam.left = -shadowHalfSide;
