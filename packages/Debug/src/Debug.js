@@ -195,6 +195,10 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             helper.update();
 
+            const distToTarget = debugCamera.position.distanceTo(lookAtCameraDebug);
+            debugCamera.near = distToTarget * 0.01;
+            debugCamera.far = distToTarget * 100;
+
             debugCamera.updateProjectionMatrix();
 
             const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
@@ -206,7 +210,17 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.setScissorTest(true);
             r.setClearColor(backgroundChartDiv);
             r.clear();
+
+            if (view.skyController) {
+                view.skyController.enabled = false;
+            }
+
             r.render(view.scene, debugCamera);
+
+            if (view.skyController) {
+                view.skyController.enabled = true;
+            }
+
             r.setScissorTest(false);
             r.setClearColor(clearColor);
             r.setViewport(0, 0, g.width, g.height);
