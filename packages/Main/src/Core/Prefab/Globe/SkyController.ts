@@ -1,5 +1,5 @@
 import SunLightLayer from 'Layer/SunLightLayer';
-import RealisticSky from 'Core/Prefab/Globe/RealisticSky';
+import RealisticSky, {RealisticSkyParameters} from 'Core/Prefab/Globe/RealisticSky';
 import SimpleSky, { SimpleSkyParameters } from 'Core/Prefab/Globe/SimpleSky';
 import ISkyStrategy from 'Core/Prefab/Globe/ISkyStrategy';
 import GlobeView from 'Core/Prefab/GlobeView';
@@ -12,8 +12,8 @@ class SkyController {
     private _simpleSky: SimpleSky | undefined;
     private _sunLightLayer: SunLightLayer | undefined;
     private _realisticLighting = false;
-    private _realisticParams?: AtmosphereParameters;
-    private _simpleParams?: SimpleSkyParameters;
+    private _realisticParams?: RealisticSkyParameters | undefined;
+    private _simpleParams?: SimpleSkyParameters | undefined;
 
     constructor(view: GlobeView,
         options: {
