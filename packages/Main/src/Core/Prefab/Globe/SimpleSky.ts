@@ -38,7 +38,7 @@ class SimpleSky implements ISkyStrategy {
     readonly ready: boolean = true;
     private _enabled: boolean;
 
-    constructor(view: GlobeView, options : SimpleSkyParameters) {
+    constructor(view: GlobeView, options: SimpleSkyParameters) {
         const {
             fogSpread,
             skyAltitude,

@@ -1,5 +1,5 @@
 import SunLightLayer from 'Layer/SunLightLayer';
-import RealisticSky, {RealisticSkyParameters} from 'Core/Prefab/Globe/RealisticSky';
+import RealisticSky, { RealisticSkyParameters } from 'Core/Prefab/Globe/RealisticSky';
 import SimpleSky, { SimpleSkyParameters } from 'Core/Prefab/Globe/SimpleSky';
 import ISkyStrategy from 'Core/Prefab/Globe/ISkyStrategy';
 import GlobeView from 'Core/Prefab/GlobeView';
