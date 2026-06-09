@@ -61,7 +61,7 @@ class RealisticSky implements ISkyStrategy {
         this.sky.visible = false;
         scene.add(this.sky);
 
-        // SkyLightProbe computes skyController irradiance of its position.
+        // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
         this.skyLight.intensity = 0.5;
         this.skyLight.position.copy(camera.position);
