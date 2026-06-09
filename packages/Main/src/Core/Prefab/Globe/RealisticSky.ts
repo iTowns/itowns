@@ -121,7 +121,7 @@ class RealisticSky implements ISkyStrategy {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        this.aerialPerspective.blendMode.opacity.value = Math.max(0.1 - 2e-8 * camera.near, 0.05);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(0.3 - 2e-7 * camera.near, 0.05);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
