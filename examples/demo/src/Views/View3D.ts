@@ -29,6 +29,7 @@ class View3D extends View {
             placement,
             {
                 realisticLighting: true,
+                withSunLightLayer: true,
             },
         );
 
