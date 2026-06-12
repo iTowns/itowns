@@ -17,6 +17,7 @@ function ReferLayerProperties(material, layer) {
                 get: () => getOpacity(opacity),
             });
         } else if (material.opacity != undefined) {
+            opacity = material.opacity;
             Object.defineProperty(material, 'opacity', {
                 get: () => getOpacity(opacity),
             });
