@@ -132,7 +132,7 @@ class GlobeView extends View {
             this.controls = new GlobeControls(this, placement, options.controls);
             this.controls.handleCollision = typeof (options.handleCollision) !== 'undefined' ? options.handleCollision : true;
 
-            if (options.dynamicCameraNearFar || options.dynamicCameraNearFar === undefined) {
+            if (options.dynamicCameraNearFar !== false) {
                 this.addEventListener(VIEW_EVENTS.INITIALIZED, () => this.updateDynamicNearFar());
                 this.addEventListener(VIEW_EVENTS.CAMERA_MOVED, () => this.updateDynamicNearFar());
             }
