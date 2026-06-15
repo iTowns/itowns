@@ -160,8 +160,14 @@ class GlobeLayer extends TiledGeometryLayer {
         this._cameraToPoint.subVectors(this._cullingPoint, camera.camera3D.position);
         const projectedDistance = this._cameraToPoint.dot(this._cameraForward);
 
+        // Convert the node bounding sphere radius from local space to world space.
+        // We use the largest world scale axis to stay conservative with non-uniform scaling
+        // and avoid over-culling.
+        const maxWorldScale = node.matrixWorld.getMaxScaleOnAxis();
+        const worldSpaceSphereRadius = node.boundingSphere.radius * maxWorldScale;
+
         // Cull only if the whole bounding sphere is beyond the far plane.
-        return projectedDistance - node.boundingSphere.radius > this._horizonDistance;
+        return projectedDistance - worldSpaceSphereRadius > this._horizonDistance;
     }
 
     computeTileZoomFromDistanceCamera(distance, camera) {
