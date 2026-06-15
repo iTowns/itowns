@@ -189,11 +189,12 @@ class GlobeView extends View {
         if (this.farFactor === 1 || altitude >= this.maxFarAltitude) {
             return 1;
         }
+        // Keep farFactor constant under the sea level
         if (altitude < 0) {
             return this.farFactor;
         }
 
-        // Normalize altitude, 0 at maxFarAltitude, 1 at sea level
+        // Normalize altitude, 1 at maxFarAltitude, 0 at sea level
         const t = altitude / this.maxFarAltitude;
         // Linear interpolation between farFactor and 1
         return this.farFactor + t * (1 - this.farFactor);
