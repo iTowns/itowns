@@ -86,7 +86,6 @@ class GlobeView extends View {
      * far distance transitions to full horizon distance.
      * @param {number} [options.maxFarAltitude=80000] - the altitude at which the horizon is fully visible (meters).
      * @param {number} [options.minFarDistance=10000] - the minimum horizon distance (meters).
-     * Between 0 and 1.
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * If true, it can later be switched by setting this.skyManager.enabled to true/false.
      * If false, it will be impossible to enable it later on.
