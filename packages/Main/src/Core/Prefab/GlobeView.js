@@ -81,6 +81,7 @@ class GlobeView extends View {
      * enable WebXR to switch on VR visualization.
      * @param {Function} [options.webXR.callback] - WebXR rendering callback.
      * @param {boolean} [options.webXR.controllers] - Enable the webXR controllers handling.
+     * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=0.3] - Controls the far plane distance at low altitudes.
      * Value between 0 and 1. Lower values reduce far distance near the ground. At higher altitudes,
      * far distance transitions to full horizon distance.
