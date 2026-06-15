@@ -98,7 +98,7 @@ class GlobeLayer extends TiledGeometryLayer {
     }
 
     preUpdate(context, changeSources) {
-        this._useFarCulling = context.view.horizonScaleFactor < 1;
+        this._useFarCulling = context.view.dynamicCameraNearFar && context.view.horizonScaleFactor < 1;
         if (!this._useFarCulling) {
             // pre-horizon culling
             this._cameraPosition.copy(context.camera.camera3D.position).applyMatrix4(this._worldToScaledEllipsoid);
