@@ -106,6 +106,8 @@ class GlobeLayer extends TiledGeometryLayer {
         } else {
             // pre-far culling
             this._horizonDistance = context.view.horizonDistance;
+            // Store camera forward direction in world space.
+            context.camera.camera3D.getWorldDirection(this._cameraForward);
         }
         return super.preUpdate(context, changeSources);
     }
@@ -153,9 +155,6 @@ class GlobeLayer extends TiledGeometryLayer {
     farCulling(node, camera) {
         // Transform bounding sphere center from local to world space.
         this._cullingPoint.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
-
-        // Camera forward direction in world space.
-        camera.camera3D.getWorldDirection(this._cameraForward);
 
         // Project the vector camera -> sphere center onto the camera axis.
         this._cameraToPoint.subVectors(this._cullingPoint, camera.camera3D.position);
