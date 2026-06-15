@@ -56,6 +56,8 @@ export const GLOBE_VIEW_EVENTS = {
     COLOR_LAYERS_ORDER_CHANGED: VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED,
 };
 
+const camToSeaLevel = new Coordinates('EPSG:4978');
+
 class GlobeView extends View {
     /**
      * Creates a view of a globe.
@@ -163,16 +165,16 @@ class GlobeView extends View {
 
     updateDynamicNearFar() {
         // maximum possible distance from ground to camera
-        const camToSeaLevel = new Coordinates(this.referenceCrs)
+        const camToSeaLevelDist = camToSeaLevel
             .setFromVector3(this.camera3D.position)
             .as(this.tileLayer.extent.crs)
             .z;
 
-        this.horizonScaleFactor = this.computeHorizonScaleFactor(camToSeaLevel);
-        this.horizonDistance = this.computeHorizonDistance(camToSeaLevel);
+        this.horizonScaleFactor = this.computeHorizonScaleFactor(camToSeaLevelDist);
+        this.horizonDistance = this.computeHorizonDistance(camToSeaLevelDist);
 
-        this.camera3D.near = this.computeCameraNear(camToSeaLevel);
-        this.camera3D.far = this.computeCameraFar(camToSeaLevel);
+        this.camera3D.near = this.computeCameraNear(camToSeaLevelDist);
+        this.camera3D.far = this.computeCameraFar(camToSeaLevelDist);
 
         this.camera3D.updateProjectionMatrix();
     }
