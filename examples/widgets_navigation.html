@@ -67,12 +67,11 @@
 
             // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
             // defined as a plain js object. See `Layer` documentation for more info.
-            itowns.Fetcher.json('layers/JSONLayers/Ortho.json').then((config) => {
-                config.source = new itowns.WMTSSource(config.source);
-                view.addLayer(
-                    new itowns.ColorLayer(config.id, config),
-                ).then(debugMenu.addLayerGUI.bind(debugMenu));
-            });
+            const orthoConfig = await itowns.Fetcher.json('layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            view.addLayer(
+                new itowns.ColorLayer(orthoConfig.id, orthoConfig),
+            ).then(debugMenu.addLayerGUI.bind(debugMenu));
 
             // Add two elevation layers, each with a different level of detail. Here again, each layer's properties are
             // defined in a json file.
@@ -82,8 +81,10 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
 
 
