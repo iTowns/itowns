@@ -129,7 +129,7 @@ function updateLayersUniformsForType<Type extends 'c' | 'e'>(
             if (!texture.isTexture) { continue; }
 
             textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
+            uOffsetScales[count] = tile.offsetScales[i] || uOffsetScales[count];
             uLayers[count] = tile;
 
             const img = texture.image;
@@ -500,35 +500,39 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
      * @param renderer - The renderer used to render textures into arrays.
      */
     public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
-        const colorlayers = this.colorTiles
-            .filter(rt => rt.visible && rt.opacity > 0);
-        colorlayers.sort((a, b) =>
-            this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
-        );
+        if (!this.layersNeedUpdate) {
+            return;
+        } else {
+            const colorlayers = this.colorTiles
+                .filter(rt => rt.visible && rt.opacity > 0);
+            colorlayers.sort((a, b) =>
+                this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
+            );
 
-        updateLayersUniformsForType(
-            this.getLayerUniforms('color'),
-            colorlayers,
-            this.defines.NUM_FS_TEXTURES,
-            'c',
-            renderer,
-            this.renderTargetCache,
-        );
+            updateLayersUniformsForType(
+                this.getLayerUniforms('color'),
+                colorlayers,
+                this.defines.NUM_FS_TEXTURES,
+                'c',
+                renderer,
+                this.renderTargetCache,
+            );
 
-        if (this.elevationTileId !== undefined && this.getElevationTile()) {
-            if (this.elevationTile !== undefined) {
-                updateLayersUniformsForType(
-                    this.getLayerUniforms('elevation'),
-                    [this.elevationTile],
-                    this.defines.NUM_VS_TEXTURES,
-                    'e',
-                    renderer,
-                    this.renderTargetCache,
-                );
+            if (this.elevationTileId !== undefined && this.getElevationTile()) {
+                if (this.elevationTile !== undefined) {
+                    updateLayersUniformsForType(
+                        this.getLayerUniforms('elevation'),
+                        [this.elevationTile],
+                        this.defines.NUM_VS_TEXTURES,
+                        'e',
+                        renderer,
+                        this.renderTargetCache,
+                    );
+                }
             }
-        }
 
-        this.layersNeedUpdate = false;
+            this.layersNeedUpdate = false;
+        }
     }
 
     /**
