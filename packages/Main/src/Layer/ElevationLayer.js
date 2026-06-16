@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
@@ -115,7 +114,9 @@ class ElevationLayer extends RasterLayer {
      * @returns     {RasterElevationTile}  The raster elevation node added.
      */
     setupRasterNode(node) {
-        const rasterElevationNode = new RasterElevationTile(this);
+        const tiles = node.getExtentsByProjection(this.crs);
+
+        const rasterElevationNode = new RasterElevationTile(this, tiles);
 
         node.material.setElevationTile(rasterElevationNode);
         node.material.setElevationTileId(this.id);
@@ -123,7 +124,6 @@ class ElevationLayer extends RasterLayer {
         const updateBBox = () => node.setBBoxZ({
             min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
         });
-        updateBBox();
 
         // listen elevation updating
         rasterElevationNode.addEventListener('rasterElevationLevelChanged', updateBBox);
@@ -135,11 +135,26 @@ class ElevationLayer extends RasterLayer {
             this.removeEventListener('scale-property-changed', updateBBox);
         });
 
+        // Init the node by parent
+        rasterElevationNode.initFromParent(node.parent.material?.getElevationTile());
+
         return rasterElevationNode;
     }
 
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeElevation(context, this, node, parent);
+    getRasterTile(node) {
+        return node.material.getElevationTile();
+    }
+
+    /**
+     * Compares source zoom ranges to detect whether the new source can provide
+     * more precise data than the source currently attached to this tile.
+     * If so, the raster tile is recreated to reload elevation with finer detail.
+     *
+     * @param {RasterElevationTile} rasterTile - Existing elevation raster tile on the node.
+     * @returns {boolean} `true` when the new source is more precise and tile reload is required.
+     */
+    overloadRasterTile(rasterTile) {
+        return this.source.zoom.min > rasterTile.layer.source.zoom.max;
     }
 }
 
