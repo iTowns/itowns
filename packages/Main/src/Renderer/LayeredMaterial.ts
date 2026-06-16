@@ -626,6 +626,18 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             ? this.elevationTile : this.colorTiles.find(l => l.id === id);
     }
 
+    public colorDataHasLoaded() {
+        return this.colorTiles.length == 0 || !this.colorTiles.some(colorTile => !colorTile.hasData());
+    }
+
+    public elevationDataHasLoaded() {
+        return !this.elevationTile || this.elevationTile.hasData();
+    }
+
+    public dataHasLoaded() {
+        return this.colorDataHasLoaded() && this.elevationDataHasLoaded();
+    }
+
     public getTiles(ids: string[]): RasterTile[] {
         // NOTE: this could instead be a mapping with an undefined in place of
         // unfound IDs. Need to identify a use case for it though as it would

@@ -400,6 +400,11 @@ class TiledGeometryLayer extends GeometryLayer {
         if (this.maxSubdivisionLevel <= node.level) {
             return false;
         }
+
+        if (!node.material.dataHasLoaded()) {
+            return false;
+        }
+
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
         const distance = Math.max(
