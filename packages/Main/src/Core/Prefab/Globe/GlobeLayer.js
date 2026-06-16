@@ -170,6 +170,23 @@ class GlobeLayer extends TiledGeometryLayer {
         return projectedDistance - worldSpaceSphereRadius > this._horizonDistance;
     }
 
+    pointCulling(point, camera) {
+        if (!point) {
+            return false;
+        }
+
+        if (this._useFarCulling) {
+            // Project the vector camera -> sphere center onto the camera axis.
+            this._cameraToPoint.subVectors(point, camera.camera3D.position);
+            const projectedDistance = this._cameraToPoint.dot(this._cameraForward);
+
+            // Cull if distance to point is larger than the horizon distance.
+            return projectedDistance > this._horizonDistance;
+        }
+
+        return this.horizonCulling(point);
+    }
+
     computeTileZoomFromDistanceCamera(distance, camera) {
         const preSinus =
             this.sizeDiagonalTexture * (this.sseSubdivisionThreshold * 0.5) / camera._preSSE / ellipsoidSizes.x;
