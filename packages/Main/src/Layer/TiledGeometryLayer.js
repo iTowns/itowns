@@ -405,15 +405,20 @@ class TiledGeometryLayer extends GeometryLayer {
         if (this.maxSubdivisionLevel <= node.level) {
             return false;
         }
+
+        if (!node.material.dataHasLoaded()) {
+            return false;
+        }
+
+        const camera3D = context.camera.camera3D;
+
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
         const distance = Math.max(
-            0.0,
-            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
+            0.0, camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
         // Size projection on pixel of bounding
-        if (context.camera.camera3D.isOrthographicCamera) {
-            const camera3D = context.camera.camera3D;
+        if (camera3D.isOrthographicCamera) {
             const preSSE = context.camera._preSSE * 2 * camera3D.zoom / (camera3D.top - camera3D.bottom);
             node.screenSize = preSSE * node.boundingSphere.radius * subdivisionVector.x;
         } else {
