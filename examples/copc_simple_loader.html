@@ -53,6 +53,9 @@
             import { zoomToLayer } from './jsm/PointCloudHelper.js';
             import {getShareableURL} from './jsm/ExampleUtils.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             let layer; // COPCLayer
 
             const viewerDiv = document.getElementById('viewerDiv');
@@ -135,8 +138,6 @@
             loadMillsiteBtn.addEventListener('click', loadMillsite);
 
             // window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
             function load() {
                 const url = document.getElementById('loadUrl').value;
