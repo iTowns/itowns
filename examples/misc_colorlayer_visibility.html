@@ -57,10 +57,14 @@
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
 
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/Cada.json').then(addColorLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            addColorLayerFromConfig(orthoConfig);
+            const cadaConfig = await itowns.Fetcher.json('./layers/JSONLayers/Cada.json');
+            addColorLayerFromConfig(cadaConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function _() {
                 // eslint-disable-next-line no-console
