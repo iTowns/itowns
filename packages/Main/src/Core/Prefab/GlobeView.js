@@ -295,6 +295,7 @@ class GlobeView extends View {
 
     set realisticLighting(value) {
         this.skyController.realisticLighting = value;
+        this.updateAltitudeAndClipping();
     }
 }
 

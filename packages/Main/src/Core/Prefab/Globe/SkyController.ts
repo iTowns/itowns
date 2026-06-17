@@ -49,7 +49,6 @@ class SkyController {
         this._activeSky = value ? this.realisticSky : this.simpleSky;
         this._activeSky.enabled = true;
 
-        this._view.updateAltitudeAndClipping();
         this._view.notifyChange(this._view.camera3D);
     }
 
