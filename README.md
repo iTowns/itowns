@@ -1,47 +1,26 @@
-![iTowns](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itowns_logo_300x134.png)
-# iTowns
-
+# iTowns 
 [![Coverage Status](https://coveralls.io/repos/github/iTowns/itowns/badge.svg?branch=master)](https://coveralls.io/github/iTowns/itowns?branch=master)
 [![example branch parameter](https://github.com/iTowns/itowns/actions/workflows/integration.yml/badge.svg?query=branch%3Amaster)](https://github.com/iTowns/itowns/actions/workflows/integration.yml?query=branch%3Amaster)
 [![DeepScan grade](https://deepscan.io/api/teams/2856/projects/10991/branches/159107/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=2856&pid=10991&bid=159107)
 [![Discord](https://img.shields.io/discord/1024249405634781244)](https://discord.gg/YueemZcEvw)
 
-## What is it?
+[![iTowns examples](./img/examples-mosaic.png)](http://www.itowns-project.org/itowns/examples/)
 
 iTowns is a [Three.js](https://threejs.org/)-based framework written in
-Javascript/WebGL for visualizing 3D geospatial data.
+Javascript/WebGL for visualizing 2D and 3D geospatial data.
 
-It can connect to WMS/WMTS/TMS servers including elevation data and load many
-different data formats (3dTiles, GeoJSON, Vector Tiles, GPX and much more). A
-complete list of features and supported data formats is [available on the
-wiki](https://github.com/iTowns/itowns/wiki/Supported-Features).
+It supports various protocols and formats such as WMS, WMTS, TMS, MVT, 3D Tiles, GEOJSON, GPX, etc. that can be
+displayed as base maps, terrain elevation, vector features and 3D models and stylized with a dedicated API.
+Take a look at the [documentation](https://www.itowns-project.org/itowns/docs/#home), the 
+[interactive demo](https://www.itowns-project.org/itowns/examples/#demo) and the list of
+[examples](https://www.itowns-project.org/itowns/examples/) to see what you can do with iTowns.
 
-It officially targets the last two major versions of both Firefox, Safari and
-Chromium-based browsers (Chrome, Edge, ...) at the date of each release. Older
-browsers supporting WebGL 2.0 may work but we do not offer support.
+It officially targets the last two major versions of Firefox,  Chromium-based browsers (Chrome, Edge, ...) and Safari
+at the date of each release. Older browsers supporting WebGL 2.0 may work, but we do not offer support.
 
-![iTowns screenshot](https://raw.githubusercontent.com/iTowns/itowns.github.io/master/images/itownsReleaseXS.jpg)
+## Running it locally
 
-## Documentation and examples
-
-The official documentation is [available
-here](http://www.itowns-project.org/itowns/docs/). It contains tutorials to help
-you start using iTowns, and an API reference. You can find more informations on
-its contribution [here](docs/README.md).
-
-Official examples can be [viewed
-here](http://www.itowns-project.org/itowns/examples/). Some examples available:
-
-* [Globe with WFS data](http://www.itowns-project.org/itowns/examples/#source_stream_wfs_3d)
-* [Plane mode with Vector Tiles](http://www.itowns-project.org/itowns/examples/#vector_tile_raster_2d)
-* [3D effect using scene postprocessing](http://www.itowns-project.org/itowns/examples/#effects_stereo)
-* [Globe with split rendering](http://www.itowns-project.org/itowns/examples/#effects_split)
-
-[![iTowns examples](http://www.itowns-project.org/images/montage.jpg)](http://www.itowns-project.org/itowns/examples/)
-
-## Running locally
-
-Examples can be run locally using either npm or Docker. Both methods serve them on port `8080`.
+iTowns can be run locally using either npm or Docker. Both methods serve them on port `8080`.
 
 ### Using npm
 
@@ -50,7 +29,7 @@ Requires [Node.js](https://nodejs.org/) (LTS version recommended).
 ```bash
 git clone https://github.com/itowns/itowns.git
 cd itowns
-npm install
+npm ci
 npm start
 ```
 
@@ -73,14 +52,9 @@ docker run -p 8080:8080 $(docker build -q https://github.com/itowns/itowns.git#<
 
 > Replace `<branch>` with the desired branch name (e.g. `master`, `dev`).
 
-### Accessing the examples
+## Using it in your project
 
-Once the server is running, the examples are available at http://localhost:8080/
-
-## How to use it in your project?
-
-You can use it through npm (the preferred way) or download a bundle from our
-github release page.
+You can use it with npm (the preferred way) or download a bundle from our github release page.
 
 ### With npm
 
@@ -118,7 +92,8 @@ const navigation = new Navigation(view, {
 });
 ```
 
-iTowns is currently moving to a monorepo organization and to a segmentation in sub-modules, allowing to import only some of itowns functionalities. Current itowns sub-modules are:
+iTowns is currently moving to a monorepo organization and to a segmentation in sub-modules, allowing to import only some
+of itowns functionalities. Current itowns sub-modules are:
 - [@itowns/geographic](packages/Geographic/README.md): `npm install --save @itowns/geographic`
 
 This package contains the ES5-compatible sources of iTowns, up to date with the latest release.
@@ -126,13 +101,13 @@ This package contains the ES5-compatible sources of iTowns, up to date with the 
 If you're using a module bundler (like wepback), you can directly write
 `require('itowns')` in your code.
 
-#### Bundles iTowns
+#### With a bundle
 
 Alternatively, we provide 2 bundles (ESM and UMD) you can directly include in your html files
 
-##### UMD packaging 
+##### UMD 
 
-UMD exposes `itowns` in `window`:
+The UMD bundle exposes `itowns` in `window`:
 
 ```html
 <script src="node_modules/itowns/dist/itowns.umd.js"></script>
@@ -141,11 +116,12 @@ UMD exposes `itowns` in `window`:
 </script>
 ```
 
-**/!\ Please note that this UMD bundle also contains the peer dependencies**.
+*/!\ Please note that this UMD bundle also packages the peer dependencies, including threejs and proj4, see the `pacjages.json`
+files for a full list*.
 
-##### EMS packaging 
+##### ESM 
 
-iTowns EMS bundle must import in `importmap`  and use in `module` script.
+iTowns ESM bundle can be imported with `importmap` and used in a `module` script.
 
 ```html
 <script type="importmap">
@@ -163,22 +139,16 @@ iTowns EMS bundle must import in `importmap`  and use in `module` script.
 </script>
 ```
 
-### From a release bundle
-
-See our [release page](https://github.com/iTowns/itowns/releases). Note that
-there isn't a lot of support for older version of iTowns, we highly recommend to
-use the last release everytime.
-
 ### Try modifications before they are released
 
 If you want to try some features or bug fixes that are planned for the next release, we provide
-a @next version of itowns. You can install it as such :
+a version after each PR is merged:
 
 ```bash
 npm install --save itowns@next
 ```
 
-To switch back to the version to date with the latest release, you need to run :
+To switch back to the latest stable release:
 
 ```bash
 npm install --save itowns@latest
@@ -189,8 +159,6 @@ npm install --save itowns@latest
 If you are interested in contributing to iTowns, please read the [CONTRIBUTING
 guide](CONTRIBUTING.md) and the [CODING guide](CODING.md).
 
-iTowns has been redesigned from this [early version](https://github.com/iTowns/itowns-legacy).
-
 ## Licence
 
 iTowns is dual-licenced under Cecill-B V1.0 and MIT.
@@ -198,7 +166,7 @@ Incorporated libraries are published under their original licences.
 
 See [LICENSE.md](LICENSE.md) for more information.
 
-## Maintainers
+## Maintainers and governance
 
 iTowns is an original work from French IGN, [MATIS research
 laboratory](http://recherche.ign.fr/labos/matis/). It has been funded through

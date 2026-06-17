@@ -1,12 +1,12 @@
 # Development guide
 
-iTowns needs `nodejs` (10+) and `npm` (at least 6.x) installed on the system.
+You only need `nodejs` and `npm` to install and develop on iTowns.
 See the [node website](https://nodejs.org) to install node and npm.
 
 ## Coding rules
 
 * Search and use existing methods to avoid duplicate code
-* Avoid instance `class/object` in method (optimization with the garbage collector)
+* Avoid instanciation `class/object` in method (optimization with the garbage collector)
 * Give explicite name to constants
 * Avoid duplicate code and encapsulate to simplify
 * For performance reasons, update objects only when needed
