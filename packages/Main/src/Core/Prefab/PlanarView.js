@@ -80,7 +80,7 @@ class PlanarView extends View {
                 }
                 const maxDist = Math.sqrt(maxDistSq);
 
-                const camToGroundDistMin = this.camera3D.position.z - View.ALTITUDE_MAX;
+                const camToGroundDistMin = this.camera3D.position.z - View.ALTITUDE_MAX * this.getMaxElevationScale();
                 this.camera3D.near = Math.max(1, camToGroundDistMin * this.fovDepthFactor);
 
                 const boxBottomToCam = camPos.z - box.min.z;
