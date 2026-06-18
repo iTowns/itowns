@@ -83,7 +83,7 @@ float getLOD() {
         index3d = floor(index3d + 0.5);
         int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
 
-        vec4 value = texture2D(visibleNodes, vec2(float(iOffset) / 2048.0, 0.0));
+        vec4 value = texture2D(visibleNodes, vec2((float(iOffset) + 0.5) / 2048.0, 0.0));
         int mask = int(round(value.r * 255.0));
         bool childNodeExist = bool(((mask >> index) & 1) != 0);
 
