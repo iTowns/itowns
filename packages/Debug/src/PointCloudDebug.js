@@ -40,7 +40,7 @@ function setupControllerVisibily(gui, displayMode, sizeMode) {
     }
 
     sizeMode =  parseInt(sizeMode, 10);
-    if (sizeMode === PNTS_SIZE_MODE.VALUE) {
+    if (sizeMode === PNTS_SIZE_MODE.VALUE || sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
         getController(gui, 'minAttenuatedSize').hide();
         getController(gui, 'maxAttenuatedSize').hide();
     } else {
