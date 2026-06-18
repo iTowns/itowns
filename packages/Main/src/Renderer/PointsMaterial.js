@@ -162,7 +162,9 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
      *                          (Default value will be the 'SPECTRAL' gradient from Utils/Gradients)
-     * @param      {number}  [options.sizeMode=PNTS_SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
+     * @param      {number}  [options.sizeMode=PNTS_SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ATTENUATED' or 'ADAPTIVE' are possible.
+     * VALUE use constant size, ATTENUATED compute size depending on distance from point to camera and ADAPTIVE computes the point size on a per-point basis rather than on a per-node basis.
+     * **Warning:** ADAPTIVE work only if point cloud is an octree
      * @param      {number}  [options.minAttenuatedSize=3]  minimum scale used by 'ATTENUATED' size mode
      * @param      {number}  [options.maxAttenuatedSize=10]  maximum scale used by 'ATTENUATED' size mode
      *
