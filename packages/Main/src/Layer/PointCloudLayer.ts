@@ -566,7 +566,6 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             // (e.g. Lambert93 metres vs. ECEF metres) and produce wrong LODs
             // for point clouds whose source CRS differs from the scene CRS.
             const rootSize = this.root!.voxelOBB.box3D.getSize(new THREE.Vector3());
-            const octreeSize = Math.max(rootSize.x, rootSize.y, rootSize.z);
 
             for (const pts of this.group.children) {
                 const node = pts.userData.node;
@@ -589,7 +588,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                     // @ts-expect-error Material is not typed yet
                     material.uniforms.nodeStartOffset.value = nodeStartOffset;
                     // @ts-expect-error Material is not typed yet
-                    material.uniforms.octreeSize.value = octreeSize;
+                    material.uniforms.octreeSize.value.copy(rootSize);
                     // @ts-expect-error Material is not typed yet
                     material.uniforms.octreeSpacing.value = octreeSpacing;
                     // @ts-expect-error Material is not typed yet

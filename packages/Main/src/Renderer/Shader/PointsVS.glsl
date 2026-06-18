@@ -34,7 +34,7 @@ uniform float maxAttenuatedSize;
 // Adaptive point size uniforms
 uniform sampler2D visibleNodes;
 uniform float octreeSpacing;
-uniform float octreeSize;
+uniform vec3 octreeSize;
 uniform float nodeDepth;
 uniform float nodeStartOffset;
 uniform vec3 nodeBBoxMin;
@@ -77,7 +77,7 @@ float getLOD() {
     int iOffset = int(nodeStartOffset);
     float depth = nodeDepth;
     for (float i = 0.0; i <= 30.0; i++) {
-        float nodeSizeAtLevel = octreeSize / pow(2.0, i + nodeDepth);
+        vec3 nodeSizeAtLevel = octreeSize / pow(2.0, i + nodeDepth);
 
         vec3 index3d = (pos - offset) / nodeSizeAtLevel;
         index3d = clamp(floor(index3d + 0.5), 0.0, 1.0);
