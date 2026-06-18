@@ -339,6 +339,8 @@ function _addIcon(icon, domElement, opt) {
  * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
+ * @property {Number|Function} [stroke.extrusion_radius] - Only for {@link GeometryLayer} and if user sets it.
+ * If defined, lines will be extruded as cylinders with the specified amount as a radius.
  *
  * @property {object} point - Point style.
  * @property {string|Function} point.color - The color of the point. Can be any [valid
@@ -590,6 +592,33 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'stroke', 'width', params.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.base_altitude, baseAltitudeDefault);
+
+        // define a special case for extrusion_radius
+        // to be able to know if user set it or not without calling the getter
+        this._extrusionRadius = params.extrusion_radius;
+        Object.defineProperty(
+            this.stroke,
+            'extrusion_radius',
+            {
+                enumerable: true,
+                get: () => {
+                    if (this._extrusionRadius != undefined) {
+                        return readExpression(this._extrusionRadius, this.context);
+                    }
+                    const dataValue = this.context.featureStyle?.stroke?.extrusion_radius;
+                    if (dataValue != undefined) { return readExpression(dataValue, this.context); }
+                    return undefined;
+                },
+                set: (v) => {
+                    this._extrusionRadius = v;
+                    this.dispatchEvent({
+                        type: 'style-property-changed',
+                        style: this,
+                        parameter: 'extrusion_radius',
+                    });
+                },
+            },
+        );
     }
 
     /**
@@ -815,7 +844,7 @@ class Style extends EventDispatcher {
      * @returns {boolean} True if extrusion is enabled, false otherwise.
      */
     isExtruded() {
-        return this._extrusionHeight != undefined;
+        return this._extrusionHeight != undefined || this._extrusionRadius != undefined;
     }
 }
 
