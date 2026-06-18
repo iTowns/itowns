@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 
 function isIntersectedOrOverlaped(a, b) {
     return !(a.left > b.right || a.right < b.left
@@ -132,7 +131,8 @@ class Label2DRenderer {
     }
 
     render(scene, camera) {
-        const labelLayers = this.infoTileLayer && this.infoTileLayer.layer.attachedLayers.filter(l => l.isLabelLayer && l.visible);
+        const tileLayer = this.infoTileLayer?.layer;
+        const labelLayers = tileLayer?.attachedLayers.filter(l => l.isLabelLayer && l.visible) || [];
         if (labelLayers.length == 0) { return; }
         this.grid.reset();
 
@@ -146,7 +146,7 @@ class Label2DRenderer {
                         (label) => {
                             labelsNode.updatePosition(label);
 
-                            this.culling(label, camera);
+                            this.culling(label, camera, tileLayer);
                         });
                     labelsNode.domElements.labels.show();
                     labelsNode.needsUpdate = false;
@@ -180,13 +180,13 @@ class Label2DRenderer {
         });
     }
 
-    culling(label, camera) {
+    culling(label, camera, tileLayer) {
         label.getWorldPosition(worldPosition);
         // Check if the frustum contains tle label
         if (!frustum.containsPoint(worldPosition.applyMatrix4(camera.matrixWorldInverse)) ||
         // Check if globe horizon culls the label
         // Do some horizon culling (if possible) if the tiles level is small enough.
-            (label.horizonCullingPoint && GlobeLayer.horizonCulling(label.horizonCullingPoint))
+            (label.horizonCullingPoint && tileLayer.pointCulling(label.horizonCullingPoint, camera))
             // Why do we might need this part ?
             // || // Check if content isn't present in visible labels
             // this.grid.visible.some((l) => {
