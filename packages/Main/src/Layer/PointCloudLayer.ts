@@ -229,7 +229,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
     private _visibleNodes = new Set<PointCloudNode>();
-    private _visibilityTextureNeedsUpdate: boolean = true;
+    private _visibilityTextureNeedsUpdate = true;
     private _visibilityTextureData: { data: Uint8Array; nodeToIndex: Map<PointCloudNode, number> } | undefined;
 
     /**
@@ -540,10 +540,10 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         }
 
         // @ts-expect-error PointsMaterial is not typed yet
-        if (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE) {
+        if (this.root && (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE)) {
             if (this._visibilityTextureNeedsUpdate) {
                 this._visibilityTextureData =
-                    computeVisibilityTextureData(this.root!, Array.from(this._visibleNodes));
+                    computeVisibilityTextureData(this.root, Array.from(this._visibleNodes));
                 this._visibilityTextureNeedsUpdate = false;
             }
 
@@ -565,13 +565,17 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             // Using natBox (native source CRS) would mix coordinate systems
             // (e.g. Lambert93 metres vs. ECEF metres) and produce wrong LODs
             // for point clouds whose source CRS differs from the scene CRS.
-            const rootSize = this.root!.voxelOBB.box3D.getSize(new THREE.Vector3());
+            const rootSize = this.root.voxelOBB.box3D.getSize(new THREE.Vector3());
 
             for (const pts of this.group.children) {
                 const node = pts.userData.node;
                 const depth = node.depth;
                 const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
                 const octreeSpacing = node.source.spacing;
+
+                if (nodeStartOffset === undefined) {
+                    continue;
+                }
 
                 // Compute the bounding box min of the node's octree cell in
                 // the local coordinate frame used by the THREE.Points geometry.
