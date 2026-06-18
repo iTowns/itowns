@@ -248,7 +248,7 @@ class PointsMaterial extends THREE.ShaderMaterial {
 
         // Adaptive point size uniforms
         CommonMaterial.setUniformProperty(this, 'octreeSpacing', 1.0);
-        CommonMaterial.setUniformProperty(this, 'octreeSize', 1.0);
+        CommonMaterial.setUniformProperty(this, 'octreeSize', new THREE.Vector3());
         CommonMaterial.setUniformProperty(this, 'nodeDepth', 0.0);
         CommonMaterial.setUniformProperty(this, 'nodeStartOffset', 0.0);
         CommonMaterial.setUniformProperty(this, 'nodeBBoxMin', new THREE.Vector3());
