@@ -370,8 +370,9 @@ class OGC3DTilesLayer extends GeometryLayer {
      * @param {string} [config.pntsShape = PNTS_SHAPE.CIRCLE] Point cloud point shape. Only 'CIRCLE' or 'SQUARE' are possible.
      * (passed to {@link PointsMaterial}).
      * @param {string} [config.pntsSizeMode = PNTS_SIZE_MODE.VALUE] {@link PointsMaterial} Point cloud size mode (passed to {@link PointsMaterial}).
-     * Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance
-     * from point to camera.
+     * Only 'VALUE' or 'ATTENUATED' or 'ADAPTIVE' are possible. VALUE use constant size, ATTENUATED compute size depending on distance
+     * from point to camera and ADAPTIVE computes the point size on a per-point basis rather than on a per-node basis.
+     * **Warning:** ADAPTIVE work only if point cloud is an octree
      * @param {number} [config.pntsMinAttenuatedSize = 3] Minimum scale used by 'ATTENUATED' size mode.
      * @param {number} [config.pntsMaxAttenuatedSize = 10] Maximum scale used by 'ATTENUATED' size mode.
      */
