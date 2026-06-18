@@ -80,7 +80,7 @@ float getLOD() {
         float nodeSizeAtLevel = octreeSize / pow(2.0, i + nodeDepth);
 
         vec3 index3d = (pos - offset) / nodeSizeAtLevel;
-        index3d = floor(index3d + 0.5);
+        index3d = clamp(floor(index3d + 0.5), 0.0, 1.0);
         int index = int(round(4.0 * index3d.x + 2.0 * index3d.y + index3d.z));
 
         vec4 value = texture2D(visibleNodes, vec2((float(iOffset) + 0.5) / 2048.0, 0.0));
