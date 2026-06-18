@@ -2,16 +2,15 @@ import type PointCloudNode from '../Core/PointCloudNode';
 
 // Returns the Potree child index (0-7) of a node relative to its parent
 // based on coordinates (convention: 4*dx + 2*dy + dz)
-function getPotreeChildIndex(node: PointCloudNode): number {
-    const parent = node.parent!;
-    const dx = node.x - parent.x * 2;
-    const dy = node.y - parent.y * 2;
-    const dz = node.z - parent.z * 2;
+function getPotreeChildIndex(parent: PointCloudNode, child: PointCloudNode): number {
+    const dx = child.x - parent.x * 2;
+    const dy = child.y - parent.y * 2;
+    const dz = child.z - parent.z * 2;
     return 4 * dx + 2 * dy + dz;
 }
 
 function encodeChildrenVisibility(node: PointCloudNode, nodeIndex: number,
-    nodeToIndex: Map<PointCloudNode, number>): { minOffset: number, childVisibilityMask: number } {
+    nodeToIndex: Map<PointCloudNode, number>): { minOffset: number; childVisibilityMask: number } {
     let minOffset = Infinity;
     let childVisibilityMask = 0;
 
@@ -21,7 +20,7 @@ function encodeChildrenVisibility(node: PointCloudNode, nodeIndex: number,
             continue;
         }
 
-        childVisibilityMask |= (1 << getPotreeChildIndex(child));
+        childVisibilityMask |= (1 << getPotreeChildIndex(node, child));
 
         const offset = childIndex - nodeIndex;
         if (offset < minOffset) {
