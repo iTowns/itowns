@@ -554,6 +554,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             // @ts-expect-error PointsMaterial is not typed yet
             const vnt = this.material.visibleNodes;
             const data = vnt.image.data;
+            data.fill(0);
             data.set(this._visibilityTextureData.data);
             vnt.needsUpdate = true;
 
