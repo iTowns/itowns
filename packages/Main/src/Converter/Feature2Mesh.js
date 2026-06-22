@@ -1058,6 +1058,25 @@ function featureToMesh(feature, options) {
 }
 
 /**
+ * Rebuild the geometry of each child mesh in a {@link FeatureMesh} using the
+ * current layer style. Disposes the old geometry before replacing the mesh.
+ * @param {FeatureMesh} featureMesh - the feature mesh whose children to rebuild
+ * @param {Style} layerStyle - the layer style to use for the rebuild
+ */
+export function rebuildMeshTopology(featureMesh, layerStyle) {
+    style = layerStyle;
+    context.setCollection(featureMesh.collection);
+    for (const oldMesh of [...featureMesh.meshes.children]) {
+        const newMesh = featureToMesh(oldMesh.feature, featureMesh.options);
+        if (newMesh) {
+            oldMesh.geometry.dispose();
+            featureMesh.meshes.remove(oldMesh);
+            featureMesh.meshes.add(newMesh);
+        }
+    }
+}
+
+/**
  * @module Feature2Mesh
  */
 export default {
@@ -1127,6 +1146,8 @@ export default {
                 return mesh;
             });
             const featureNode = new FeatureMesh(meshes, collection);
+            featureNode.options = options;
+            featureNode.styleTopologyVersion = this?._styleTopologyVersion ?? 0;
             featureNode.styleColorVersion = this?._styleColorVersion ?? 0;
             featureNode.stylePositionVersion = this?._stylePositionVersion ?? 0;
             if (this && style !== defaultStyle) {
@@ -1135,10 +1156,13 @@ export default {
                 // MVT feature meshes follow terrain tile subdivision. Track style
                 // changes at layer level so current tiles can be restyled safely
                 // from FeatureProcessing revisits.
-                this._styleColorVersion = this._styleColorVersion ?? 0;
-                this._stylePositionVersion = this._stylePositionVersion ?? 0;
+                this._styleTopologyVersion ??= 0;
+                this._styleColorVersion ??= 0;
+                this._stylePositionVersion ??= 0;
                 style.addEventListener('style-property-changed', (event) => {
-                    if (event.parameter === 'color') {
+                    if (event.parameter === 'topology') {
+                        this._styleTopologyVersion++;
+                    } else if (event.parameter === 'color') {
                         this._styleColorVersion++;
                     } else if (
                         event.parameter === 'extrusion_height' ||

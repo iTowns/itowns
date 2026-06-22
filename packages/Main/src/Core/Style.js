@@ -551,11 +551,13 @@ class Style extends EventDispatcher {
                     return undefined;
                 },
                 set: (v) => {
+                    if (this._extrusionHeight === undefined && v === undefined) { return; }
+                    let extrudedStateChanged = this._extrusionHeight === undefined || v === undefined;
                     this._extrusionHeight = v;
                     this.dispatchEvent({
                         type: 'style-property-changed',
                         style: this,
-                        parameter: 'extrusion_height',
+                        parameter: extrudedStateChanged ? 'topology' : 'extrusion_height',
                     });
                 },
             },
@@ -590,11 +592,13 @@ class Style extends EventDispatcher {
                     return undefined;
                 },
                 set: (v) => {
+                    if (this._extrusionRadius === undefined && v === undefined) { return; }
+                    let extrudedStateChanged = this._extrusionRadius === undefined || v === undefined;
                     this._extrusionRadius = v;
                     this.dispatchEvent({
                         type: 'style-property-changed',
                         style: this,
-                        parameter: 'extrusion_radius',
+                        parameter: extrudedStateChanged ? 'topology' : 'extrusion_radius',
                     });
                 },
             },
