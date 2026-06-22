@@ -3,7 +3,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import handlingError from 'Process/handlerNodeError';
 import { Coordinates } from '@itowns/geographic';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
-import { applyStyle } from 'Converter/Feature2Mesh';
+import { applyStyle, rebuildMeshTopology } from 'Converter/Feature2Mesh';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
@@ -26,6 +26,12 @@ export default {
                 f.layer.object3d.add(f);
                 f.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
                 f.meshes.updateMatrixWorld();
+                const updateTopology = f.styleTopologyVersion !== (layer._styleTopologyVersion ?? 0);
+                if (updateTopology) {
+                    rebuildMeshTopology(f, layer.style);
+                    f.styleTopologyVersion = layer._styleTopologyVersion ?? 0;
+                    return;
+                }
                 const updateColor = f.styleColorVersion !== (layer._styleColorVersion ?? 0);
                 const updatePosition = f.stylePositionVersion !== (layer._stylePositionVersion ?? 0);
                 if (updateColor || updatePosition) {
