@@ -49,6 +49,8 @@ const NODE_TYPE = {
     PROXY: 2,
 } as const;
 
+const BYTES_PER_NODE = 22 as const;
+
 type NodeType = typeof NODE_TYPE[keyof typeof NODE_TYPE];
 
 function parseHierarchy(view: DataView, nodeInfo: NodeKeyInfo):
@@ -59,14 +61,13 @@ Record<string, Potree2NodeHierarchy> {
     const hierarchy: Record<string, Potree2NodeHierarchy> = {
     };
 
-    const bytesPerNode = 22;
-    const numNodes = view.byteLength / bytesPerNode;
+    const numNodes = view.byteLength / BYTES_PER_NODE;
 
     stack.push(nodeInfo);
 
     for (let indexNode = 0; indexNode < numNodes; indexNode++) {
         const cNodeInfo = stack.shift() as NodeKeyInfo;
-        const offset = indexNode * bytesPerNode;
+        const offset = indexNode * BYTES_PER_NODE;
 
         const type = view.getUint8(offset + 0) as NodeType;
         const childrenBitField = view.getUint8(offset + 1);
@@ -105,7 +106,7 @@ Record<string, Potree2NodeHierarchy> {
                 continue;
             }
 
-            const { depth, x, y, z } = getChildVoxelKey(nodeInfo, childIndex);
+            const { depth, x, y, z } = getChildVoxelKey(cNodeInfo, childIndex);
             stack.push({
                 depth,
                 x,
