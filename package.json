@@ -108,7 +108,7 @@
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.2",
-    "undici": "^7.22.0",
+    "undici": "^7.28.0",
     "webgl-mock": "^0.1.7",
     "webpack": "^5.105.2",
     "webpack-cli": "^6.0.1",
