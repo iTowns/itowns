@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import TinyQueue from 'tinyqueue';
 import GeometryLayer from 'Layer/GeometryLayer';
-import PointsMaterial, { PNTS_MODE } from 'Renderer/PointsMaterial';
+import PointsMaterial, { PNTS_MODE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
+import { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 
 import type PointCloudNode from 'Core/PointCloudNode';
 
@@ -228,6 +229,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
 
     private _candidateNodes: TinyQueue<PointCloudNode>;
     private _visibleNodes = new Set<PointCloudNode>();
+    private _visibilityTextureNeedsUpdate = true;
+    private _visibilityTextureData: { data: Uint8Array; nodeToIndex: Map<PointCloudNode, number> } | undefined;
 
     /**
      * Constructs a new instance of point cloud layer.
@@ -333,6 +336,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             node.notVisibleSince = Date.now();
             node.sse = -1;
         }
+        this._visibilityTextureNeedsUpdate = true;
     }
 
     preUpdate(context: Context) {
@@ -535,6 +539,71 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             }
         }
 
+        // @ts-expect-error PointsMaterial is not typed yet
+        if (this.root && (this.material.sizeMode === PNTS_SIZE_MODE.ADAPTIVE)) {
+            if (this._visibilityTextureNeedsUpdate) {
+                this._visibilityTextureData =
+                    computeVisibilityTextureData(this.root, Array.from(this._visibleNodes));
+                this._visibilityTextureNeedsUpdate = false;
+            }
+
+            if (this._visibilityTextureData === undefined) {
+                return;
+            }
+
+            // @ts-expect-error PointsMaterial is not typed yet
+            const vnt = this.material.visibleNodes;
+            const data = vnt.image.data;
+            data.fill(0);
+            data.set(this._visibilityTextureData.data);
+            vnt.needsUpdate = true;
+
+            // Use box3D (projected in the local geometry coordinate frame) for
+            // octreeSize and bboxMin, because the vertex shader positions are
+            // expressed in that same local frame after CRS reprojection and
+            // quaternion rotation applied by the parsers.
+            // Using natBox (native source CRS) would mix coordinate systems
+            // (e.g. Lambert93 metres vs. ECEF metres) and produce wrong LODs
+            // for point clouds whose source CRS differs from the scene CRS.
+            const rootSize = this.root.voxelOBB.box3D.getSize(new THREE.Vector3());
+
+            for (const pts of this.group.children) {
+                const node = pts.userData.node;
+                const depth = node.depth;
+                const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
+                const octreeSpacing = node.source.spacing;
+
+                if (nodeStartOffset === undefined) {
+                    continue;
+                }
+
+                // Compute the bounding box min of the node's octree cell in
+                // the local coordinate frame used by the THREE.Points geometry.
+                // The parsers store each point as:
+                //   quat * (forward(nativePos) - centerZ0)
+                // where centerZ0 = voxelOBB.position and quat is computed at
+                // that same position.  projOBB() builds box3D with the exact
+                // same origin and the same quaternion, so box3D.min is already
+                // expressed in the geometry's local frame — no further
+                // transformation is needed.
+                const bboxMin = node.voxelOBB.box3D.min.clone();
+
+                pts.onBeforeRender = (_renderer, _scene, _camera, _geometry, material) => {
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeStartOffset.value = nodeStartOffset;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSize.value.copy(rootSize);
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.octreeSpacing.value = octreeSpacing;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeDepth.value = depth;
+                    // @ts-expect-error Material is not typed yet
+                    material.uniforms.nodeBBoxMin.value.copy(bboxMin);
+                    // @ts-expect-error Material is not typed yet
+                    material.uniformsNeedUpdate = true;
+                };
+            }
+        }
         this.dispatchEvent({ type: 'post-update' });
     }
 

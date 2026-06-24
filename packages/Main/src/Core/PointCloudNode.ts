@@ -123,14 +123,18 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         const y = this.y * 2;
         const z = this.z * 2;
 
-        this.findAndCreateChild(depth, x,     y,     z);
-        this.findAndCreateChild(depth, x + 1, y,     z);
-        this.findAndCreateChild(depth, x,     y + 1, z);
-        this.findAndCreateChild(depth, x + 1, y + 1, z);
-        this.findAndCreateChild(depth, x,     y,     z + 1);
-        this.findAndCreateChild(depth, x + 1, y,     z + 1);
-        this.findAndCreateChild(depth, x,     y + 1, z + 1);
-        this.findAndCreateChild(depth, x + 1, y + 1, z + 1);
+        // Order follows ascending Potree child index (4*dx + 2*dy + dz),
+        // i.e. 0→7, so that node.children is always in Potree index order.
+        // This is required by the visibility texture encoding used for
+        // adaptive point-size rendering in the shader.
+        this.findAndCreateChild(depth, x,     y,     z);      // 0
+        this.findAndCreateChild(depth, x,     y,     z + 1);  // 1
+        this.findAndCreateChild(depth, x,     y + 1, z);      // 2
+        this.findAndCreateChild(depth, x,     y + 1, z + 1);  // 3
+        this.findAndCreateChild(depth, x + 1, y,     z);      // 4
+        this.findAndCreateChild(depth, x + 1, y,     z + 1);  // 5
+        this.findAndCreateChild(depth, x + 1, y + 1, z);      // 6
+        this.findAndCreateChild(depth, x + 1, y + 1, z + 1);  // 7
         this._childrenCreated = true;
     }
 
