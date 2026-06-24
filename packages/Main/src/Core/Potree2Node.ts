@@ -105,7 +105,7 @@ Record<string, Potree2NodeHierarchy> {
                 continue;
             }
 
-            const { depth, x, y, z } = getChildVoxelKey(nodeInfo, childIndex);
+            const { depth, x, y, z } = getChildVoxelKey(cNodeInfo, childIndex);
             stack.push({
                 depth,
                 x,
