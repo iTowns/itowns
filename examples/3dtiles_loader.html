@@ -217,7 +217,7 @@
                 const hours = Math.floor(v);
                 const minutes = (v - hours) * 60;
                 date.setHours(hours, minutes);
-                view.notifyChange(view.sunLightLayer);
+                view.notifyChange(view.camera3D);
             }).name('hour (24h)');
 
             function loadLyon() {

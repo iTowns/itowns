@@ -150,7 +150,7 @@
 
             // ---------- DISPLAY ATMOSPHERIC LIGHTING : ----------
 
-            view.skyManager.enabled = !view.isDebugMode;
+            view.realisticLighting = !view.isDebugMode;
 
 
 
@@ -158,7 +158,7 @@
 
             // Toggle atmospheric lighting on/off.
             const cRL = debugMenu.addGUI('RealisticLighting', !view.isDebugMode, function (v) {
-                view.skyManager.enabled = v;
+                view.realisticLighting = v;
             });
 
             debug.createTileDebugUI(debugMenu.gui, view);

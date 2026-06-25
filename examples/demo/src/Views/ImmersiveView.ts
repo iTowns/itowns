@@ -50,10 +50,8 @@ class ImmersiveView extends View {
         // @ts-expect-error camera3D updateProjectionMatrix method undefined
         this.view.camera3D.updateProjectionMatrix();
 
-        const view = this.view as itowns.GlobeView & { skyManager: { enabled: boolean } };
-        if (view.skyManager && view.skyManager.enabled) {
-            view.skyManager.enabled = false;
-        }
+        const view = this.view as itowns.GlobeView & { realisticLighting: boolean };
+        view.realisticLighting = false;
 
         setupLoadingScreen(this.viewerDiv, view);
 

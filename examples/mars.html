@@ -33,6 +33,20 @@
             import * as THREE from 'three';
             import * as itowns from 'itowns';
             import * as debug from 'debug';
+
+            const marsRealisticParams = {
+                rayleighScattering: new THREE.Vector3(0.00199, 0.00092, 0.00045),
+                mieScattering: new THREE.Vector3(0.003, 0.002, 0.0015),
+                mieExtinction: new THREE.Vector3(0.0033, 0.0022, 0.00165),
+                miePhaseFunctionG: 0.7,
+            };
+
+            const marsSimpleParams = {
+                skyAltitude: 100000, // Closer to ground
+                skyColor: 0xd99b75, // Orange sky
+                fogColor: 0xd6ad9a, // Beige fog
+            }
+
             import * as itowns_widgets from 'itowns_widgets';
             // # Simple Globe viewer
             // Define initial camera position
@@ -51,18 +65,13 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement, {
-                atmosphere: {
-                    Kr: 0.0025,
-                    Km: 0.0015,
-                    ESun: 15.0,
-                    g: -0.950,
-                    innerRadius: 6400000,
-                    outerRadius: 6600000,
-                    wavelength: [0.350, 0.470, 0.575],
-                    scaleDepth: 0.38,
-                },
+                realisticSky: marsRealisticParams,
+                simpleSky: marsSimpleParams,
                 realisticLighting: true,
+                farFactor: 0.6, // Less aggressive horizon scaling for this ellipsoid-based demo
             });
+
+            view.skyController.realisticSky.sky.material.moon = false;
             setupLoadingScreen(viewerDiv, view);
 
             // Add a tms imagery source
@@ -98,7 +107,7 @@
             var menuGlobe = new GuiTools('menuDiv', view);
 
             const cRL = menuGlobe.addGUI('RealisticLighting', true, function (v) {
-                view.skyManager.enabled = v;
+                view.realisticLighting = v;
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);
