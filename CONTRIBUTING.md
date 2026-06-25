@@ -5,19 +5,10 @@ Thanks for taking interest in iTowns !
 In addition to contributing to the iTowns code, we appreciate many types of
 contributions as well:
 
-* Being active on the iTowns mailing lists (see above) by answering questions
-  and providing input on iTowns' direction.
-* Showcasing your application built with iTowns : submit an issue with a link to
-  your demo on the [iTowns website
-  repository](https://github.com/iTowns/itowns.github.io/issues). Tag it with
-  the `demo` label.
+* Showcasing your application built with iTowns : in an issue or on discord.
 * Writing tutorials, creating examples, and improving the reference
-  documentation. See the issues labeled
-  [doc](https://github.com/iTowns/itowns/labels/doc).
+  documentation.
 * Submitting issues as [described below](#submitting-an-issue).
-* Triaging issues. Browse the [issues](https://github.com/iTowns/itowns/issues)
-  and comment on issues that are no longer reproducible or on issues for which
-  you have additional information.
 
 If you don't know what to do but still want to contribute, check:
 
@@ -27,57 +18,13 @@ If you don't know what to do but still want to contribute, check:
 
 ## Submitting an Issue
 
-If you think you've found a bug in iTowns, first search the [iTowns
-issues](https://github.com/iTowns/itowns/issues). If an issue already exists,
-you can add a comment with any additional information. Use reactions (not
-comments) to express your interest. This helps prioritize issues.
+If you think you've found a bug in iTowns or if you have an improvement proposal,
+first search the [iTowns issues](https://github.com/iTowns/itowns/issues). 
 
-If a related issue does not exist, submit a new one. Please include as much of
-the following information as is relevant:
-* Sample data to reproduce the issue.
-* Screenshot, video or animated .gif if appropriate (try
-  [LICEcap](http://www.cockos.com/licecap/)). Screenshots are particularly
-  useful for exceptions and rendering artifacts. If it is a rendering artifact,
-  also include the output of [webglreport.com](http://webglreport.com/) for the
-  computer you have the problem on.
-* Link to the thread if this was discussed on the iTowns mailing list or
-  elsewhere.
-* Your operating system and version, browser and version, and video card. Are
-  they all up-to-date? Is the issue specific to one of them ?
-* The exact version of iTowns. Did this work in a previous version ?
-* Ideas for how to fix or workaround the issue. Also mention if you are willing
-  to help fix it. If so, the iTowns team can often provide guidance and the
-  issue may get fixed more quickly with your help.
+If an issue already exists, you can add a comment with any additional information.
+Use reactions to express your interest. This helps prioritize issues.
 
-
-## Ask a question, suggest an improvement
-
-If you have a question or a suggestion not related to a bug iTowns, you can search the
-[iTowns discussions](https://github.com/iTowns/itowns/discussions). If a discussion about
-your question or suggestion already exists, you can add a comment or upvote the original
-comment in the discussion. Otherwise, you can create a new discussion, detailing your
-question or suggestion.
-
-We recommend the use of [iTowns discussions](https://github.com/iTowns/itowns/discussions)
-for suggestions and questions.
-However, there is another way of suggesting improvements or asking questions, which is
-through iTowns mailing lists. There is a user mailing list and a developer mailing list.
-
-You can subscribe to the mailing lists here:
-
-* Developer: https://lists.osgeo.org/mailman/listinfo/itowns-dev
-* User: https://lists.osgeo.org/mailman/listinfo/itowns-user
-
-The mailing list archives are here:
-
-* Developer: https://lists.osgeo.org/pipermail/itowns-dev/
-* User: https://lists.osgeo.org/pipermail/itowns-user/
-
-If you cannot find any information on your problem in the archive, you can start
-a new thread by sending an email to the list, and someone will probably answer
-with a solution.
-
-
+If a related issue does not exist, submit a new one following the issue template (bug report or proposal request).
 
 ## Fixing a bug, developing a feature or coding something
 
@@ -91,9 +38,8 @@ We welcome pull requests with great interest. We try to promptly review them,
 provide feedback, and merge. Following the tips in this guide will help your
 pull request be merged quickly.
 
-If you plan to make a major change, please open an issue first. Pull requests
-for small features and bug fixes can generally just be opened without much
-discussion.
+If you plan to make a major change, please open an `proposal request` issue first. 
+Pull requests for small features and bug fixes can generally just be opened directly.
 
 ### Pull Request Guidelines
 
@@ -116,23 +62,51 @@ Request.
         dependency updates, some file renaming or some changes on workflow files ;
     * `example` or `examples` for changes on examples or addition of a new one.
 * Keep the git history clean, rebase your work on the `master` branch of this
-  repository.
+  repository. The version changelog is generated from the commit messages,
+  so please do squash commits with the same scope.
 * If this is your first contribution to iTowns, add your name to
   [CONTRIBUTORS.md](https://github.com/iTowns/itowns/blob/master/CONTRIBUTORS.md).
-* If your pull request fixes an existing issue, include a link to the issue in
-  the description. Likewise, if your pull request fixes an issue reported on the
-  iTowns mailing list, include a link to the thread in the list archive.
-* If your pull request needs additional work, add the `in progress` label,
-  include a [task list](https://github.com/blog/1375%0A-task-lists-in-gfm-issues-pulls-comments),
-  or better, split it in several PR.
 * If you added new identifiers to the iTowns API:
    * Include reference documentation with code examples.
-   * If your change adds significant features, provide a demo.
+   * If your change adds significant features, provide a new example.
 * If you added third-party libraries, including new version of existing
-  libraries, update [LICENSE.md](LICENSE.md). If you plan to add a third-party
-  library, start a new issue first.
+  libraries, update [LICENSE.md](LICENSE.md).
 * Split the PR if it contains features from different scopes
-* Squash all commits having the same scope
+
+### Pull request reviews
+
+iTowns has been split in several technical areas.  
+Each part of the codebase has several maintainers to ensure issues and pull requests 
+are handled quickly and continuously.
+
+Maintainers are responsible for:
+- guiding technical discussions;
+- ensuring regular reviews and reasonable turnaround times;
+- keeping code and architectural decisions consistent within their scope.
+
+If you are unsure who to ask for a review, please mention @Desplandis or @jailln,
+and they will direct your request to the right people.
+
+The following list shows the maintainers for each area of the codebase:
+
+* Point Cloud: @ftoromanoff, @Desplandis, @ketourneau
+* 3D tiles: @AnthonyGlt, @jailln
+* Oriented Images: @Desplandis, @AnthonyGlt
+* Vector and stylization: @Neptilo, @ftoromanoff, @Nynjin
+* Raster: @Neptilo,  @Desplandis
+* Subdivision, data querying and culling: @airnez, @Neptilo
+* Geographic module: @airnez, @ftoromanoff
+* Camera, controls: @AnthonyGlt, @HoloTheDrunk
+* Planar View: @ketourneau, @ftoromanoff, @airnez
+* Picking: @Neptilo,  @HoloTheDrunk
+* Labels: @HoloTheDrunk, @Nynjin, @jailln
+* VR: @Neptilo, @AnthonyGlt
+* Rendering specific: @Neptilo, @HoloTheDrunk, @Desplandis
+* Architecture: @Desplandis, @jailln
+* Tooling:
+  * Code quality (typescript, transpiling, linting) : @Neptilo, @Desplandis
+  * Tests, CI : @airnez, @ftoromanoff
+  * Scripting : @Desplandis, @jailln
 
 ## IP
 
