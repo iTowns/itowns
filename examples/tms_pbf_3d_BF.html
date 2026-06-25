@@ -1,6 +1,9 @@
 <html>
     <head>
-        <title>Itowns - Globe digital surface model</title>
+        <title>Itowns - Globe</title>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
         <script type="importmap">
         {
@@ -17,9 +20,6 @@
         }
         </script>
 
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
         <link rel="stylesheet" type="text/css" href="css/widgets.css">
@@ -27,9 +27,6 @@
     </head>
     <body>
         <div id="viewerDiv"></div>
-
-
-
         <script type="module">
 
             import GuiTools from 'GuiTools';
@@ -39,23 +36,28 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
 
-
-
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
             // Define camera initial position
             const placement = {
-                coord: new itowns.Coordinates('EPSG:4326', 6.3486, 45.39023),
-                range: 1500,
-                tilt: 14,
-                heading: 25
+                coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 25000000,
             }
+
+            const poc4326 = new itowns.Extent(
+                'EPSG:4326',
+                6.6245319397143874,
+                7.7314055602856131,
+                43.46785224971439,
+                44.362460250285608,
+            );
+            const placement3857 = poc4326.as('EPSG:3857');
 
             // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
             const viewerDiv = document.getElementById('viewerDiv');
 
             // Create a GlobeView
-            const view = new itowns.GlobeView(viewerDiv, placement, {
+            const view = new itowns.GlobeView(viewerDiv, placement3857, {
                 realisticLighting: true,
             });
 
@@ -69,11 +71,31 @@
 
             // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
             // defined as a plain js object. See `Layer` documentation for more info.
-            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
-            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
-            view.addLayer(
-                new itowns.ColorLayer('Ortho', orthoConfig),
-            ).then(debugMenu.addLayerGUI.bind(debugMenu));
+            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new itowns.WMTSSource(config.source);
+                view.addLayer(
+                    new itowns.ColorLayer('Ortho', config),
+                ).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+            });
+
+            const vtSource = new itowns.TMSSource({
+                format: 'application/x-protobuf;type=mapbox-vector',
+                crs: 'EPSG:3857',
+                isInverted: true,
+                // eslint-disable-next-line no-template-curly-in-string
+                url: 'https://data.geopf.fr/private/tms/1.0.0/poc_mnca_indices_communes_gpkg_30-03-2026_tms/${z}/${x}/${y}.pbf',
+                networkOptions: {
+                    crossOrigin: 'anonymous',
+                    headers: { Authorization: 'Basic aW52aXRlOnBvY21uY2E=' },
+                 },
+                 zoom: { min: 10, max: 18 },
+            });
+            const vtLayer = new itowns.ColorLayer('VT', {
+                source: vtSource,
+            });
+            view.addLayer(vtLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
 
 
             // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
@@ -86,8 +108,9 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            const ignMnsHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json');
-            addElevationLayerFromConfig(ignMnsHighResConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+
 
             // ---------- ADD SOME WIDGETS : ----------
 
@@ -95,19 +118,19 @@
             const scale = new itowns_widgets.Scale(view, { position: 'bottom-right', translate: { x: -80 } });
 
             // ADD A MINIMAP :
-            const minimap = new itowns_widgets.Minimap(
-                view,
-                new itowns.ColorLayer('minimap', {
-                    source: new itowns.VectorTilesSource({
-                        style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
-                        // We don't display mountains and plot related data to ease visualisation
-                        filter: (layer) => !layer['source-layer'].includes('oro_')
-                            && !layer['source-layer'].includes('parcellaire'),
-                    }),
-                    addLabelLayer: { performance: true },
-                }),
-                { cursor: '+' },
-            );
+            // const minimap = new itowns_widgets.Minimap(
+            //     view,
+            //     new itowns.ColorLayer('minimap', {
+            //         source: new itowns.VectorTilesSource({
+            //             style: "https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json",
+            //             // We don't display mountains and plot related data to ease visualisation
+            //             filter: (layer) => !layer['source-layer'].includes('oro_')
+            //                 && !layer['source-layer'].includes('parcellaire'),
+            //         }),
+            //         addLabelLayer: { performance: true },
+            //     }),
+            //     { cursor: '+' },
+            // );
 
             // ADD NAVIGATION TOOLS :
             const navigation = new itowns_widgets.Navigation(view, {
@@ -163,10 +186,21 @@
 
             debug.createTileDebugUI(debugMenu.gui, view);
 
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+                itowns.ColorLayersOrdering.moveLayerToIndex(view, 'VT', 2);
+                // itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+            });
+
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
+            window.debugMenu = debugMenu;
+            window.cRL = cRL;
+            // window.minimap = minimap;
 
+            window.navigation = navigation;
+            window.searchbar = searchbar;
+            window.scale = scale;
         </script>
     </body>
 </html>

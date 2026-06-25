@@ -15,10 +15,8 @@ export interface Buffers {
     index: IndexArray;
     position: Float32Array;
     normal: Float32Array;
-    uvs: [Option<Float32Array>, Option<Float32Array>];
-}
-
-type UintArray = Uint8Array | Uint16Array | Uint32Array;
+    uv: Float32Array;
+};
 
 type BuffersAndSkirt = Buffers & {
     skirt: IndexArray;
@@ -98,28 +96,7 @@ function allocateBuffers(
         skirt,
         position: new Float32Array(nVertex * 3),
         normal: new Float32Array(nVertex * 3),
-        // 2 UV set per tile: wgs84 (uv[0]) and pseudo-mercator (pm, uv[1])
-        //    - wgs84: 1 texture per tile because tiles are using wgs84
-        //          projection
-        //    - pm: use multiple textures per tile.
-        //      +-------------------------+
-        //      |                         |
-        //      |     Texture 0           |
-        //      +-------------------------+
-        //      |                         |
-        //      |     Texture 1           |
-        //      +-------------------------+
-        //      |                         |
-        //      |     Texture 2           |
-        //      +-------------------------+
-        //        * u = wgs84.u
-        //        * v = textureid + v in builder texture
-        uvs: [
-            cache?.uv ?? new Float32Array(nVertex * 2),
-            builder.computeExtraOffset !== undefined
-                ? new Float32Array(nVertex)
-                : undefined,
-        ],
+        uv: cache?.uv ?? new Float32Array(nVertex * 2),
     };
 }
 
@@ -128,12 +105,7 @@ function computeUv0(uv: Float32Array, id: number, u: number, v: number): void {
     uv[id * 2 + 1] = v;
 }
 
-function initComputeUv1(value: number): (uv: Float32Array, id: number) => void {
-    return (uv: Float32Array, id: number): void => { uv[id] = value; };
-}
-
-type ComputeUvs =
-    [typeof computeUv0 | (() => void), ReturnType<typeof initComputeUv1>?];
+type ComputeUvs = typeof computeUv0;
 
 interface ComputeBuffersParams extends TileBuilderPrepareParams {
     center: THREE.Vector3;
@@ -180,8 +152,7 @@ export function computeBuffers(
         cache,
     );
 
-    const computeUvs: ComputeUvs =
-        [cache === undefined ? computeUv0 : () => { }];
+    const computeUv: ComputeUvs = cache === undefined ? computeUv0 : () => { };
 
     const preparedParams = builder.prepare(params);
 
@@ -189,12 +160,6 @@ export function computeBuffers(
         const v = y / nSeg;
 
         preparedParams.coordinates.y = builder.vProject(v, params.extent);
-
-        if (builder.computeExtraOffset !== undefined) {
-            computeUvs[1] = initComputeUv1(
-                builder.computeExtraOffset(preparedParams) as number,
-            );
-        }
 
         for (let x = 0; x <= nSeg; x++) {
             const u = x / nSeg;
@@ -219,12 +184,7 @@ export function computeBuffers(
 
             vertex.toArray(outBuffers.position, id_m3);
             normal.toArray(outBuffers.normal, id_m3);
-
-            for (const [index, computeUv] of computeUvs.entries()) {
-                if (computeUv !== undefined) {
-                    computeUv(outBuffers.uvs[index] as Float32Array, y * nVertex + x, u, v);
-                }
-            }
+            computeUv(outBuffers.uv, y * nVertex + x, u, v);
         }
     }
 
@@ -342,11 +302,7 @@ export function computeBuffers(
             outBuffers.normal[id_m3 + 1] = outBuffers.normal[id2_m3 + 1];
             outBuffers.normal[id_m3 + 2] = outBuffers.normal[id2_m3 + 2];
 
-            buildSkirt.uv(outBuffers.uvs[0], start + i, id);
-
-            if (outBuffers.uvs[1] !== undefined) {
-                outBuffers.uvs[1][start + i] = outBuffers.uvs[1][id];
-            }
+            buildSkirt.uv(outBuffers.uv, start + i, id);
 
             const idf = (i + 1) % skirt.length;
 
@@ -363,7 +319,7 @@ export function computeBuffers(
     return {
         index: outBuffers.index,
         position: outBuffers.position,
-        uvs: outBuffers.uvs,
+        uv: outBuffers.uv,
         normal: outBuffers.normal,
     };
 }

@@ -1,4 +1,6 @@
-#if NUM_VS_TEXTURES > 0
+#if USE_DISPLACEMENTMAP
+    #include <displacementmap_pars_vertex>
+
     struct Layer {
         float scale;
         float bias;
@@ -7,10 +9,7 @@
         float zmax;
     };
 
-    uniform Layer       elevationLayers[NUM_VS_TEXTURES];
-    uniform sampler2DArray   elevationTextures;
-    uniform vec4        elevationOffsetScales[NUM_VS_TEXTURES];
-    uniform int         elevationTextureCount;
+    uniform Layer       elevationLayer;
     uniform float       geoidHeight;
 
     highp float decode32(highp vec4 rgba) {
@@ -21,19 +20,19 @@
         return Result;
     }
 
-    float getElevationMode(vec2 uv, sampler2DArray tex, int mode) {
+    float getElevationMode(vec2 uv, sampler2D tex, int mode) {
         if (mode == ELEVATION_RGBA)
-            return decode32(texture(tex, vec3(uv, 0.0)).abgr * 255.0);
+            return decode32(texture(tex, uv).abgr * 255.0);
         if (mode == ELEVATION_DATA || mode == ELEVATION_COLOR)
-            return texture(tex, vec3(uv, 0.0)).r;
+            return texture(tex, uv).r;
         return 0.;
     }
 
-    float getElevation(vec2 uv, sampler2DArray tex, vec4 offsetScale, Layer layer) {
-        // Elevation textures are inverted along the y-axis
-        uv = vec2(uv.x, 1.0 - uv.y);
-        uv = uv * offsetScale.zw + offsetScale.xy;
-        float d = clamp(getElevationMode(uv, tex, layer.mode), layer.zmin, layer.zmax);
+    float getElevation(Layer layer) {
+        vec2 uv = vDisplacementMapUv;
+        // Elevation textures are stored top-to-bottom (v=0 at north), flip after offset
+        uv.y = 1.0 - uv.y;
+        float d = clamp(getElevationMode(uv, displacementMap, layer.mode), layer.zmin, layer.zmax);
         return d * layer.scale + layer.bias;
     }
 #endif

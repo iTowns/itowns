@@ -1,6 +1,8 @@
 #include <itowns/precision_qualifier>
 #include <logdepthbuf_pars_fragment>
-#include <itowns/pitUV>
+#include <uv_pars_fragment>
+#include <map_pars_fragment>
+
 #include <itowns/color_layers_pars_fragment>
 #if MODE == MODE_FINAL
 #include <fog_pars_fragment>
@@ -16,7 +18,7 @@
 
 uniform vec3        diffuse;
 uniform float       opacity;
-varying vec3        vUv; // uv.x/uv_1.x, uv.y, uv_1.y
+varying vec3        vUv;
 varying vec2        vHighPrecisionZW;
 
 void main() {
@@ -32,30 +34,17 @@ void main() {
 
 #else
 
-    gl_FragColor = vec4(diffuse, opacity);
+  gl_FragColor = vec4(diffuse, opacity);
 
-    uvs[0] = vec3(vUv.xy, 0.);
-
-#if NUM_CRS > 1
-    uvs[1] = vec3(vUv.x, fract(vUv.z), floor(vUv.z));
-#endif
-
-    vec4 color;
-    #pragma unroll_loop
-    for ( int i = 0; i < NUM_FS_TEXTURES; i ++ ) {
-        color = getLayerColor( i , colorTextures, colorOffsetScales[ i ], colorLayers[ i ]);
-        gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
-    }
+  vec4 color = texture(map, vMapUv);
+  gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
 
   #if DEBUG == 1
     if (showOutline) {
-        #pragma unroll_loop
-        for ( int i = 0; i < NUM_CRS; i ++) {
-            color = getOutlineColor( outlineColors[ i ], uvs[ i ].xy);
-            gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
-        }
+        color = getOutlineColor( outlineColors, vUv.xy);
+        gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
     }
-  #endif
+    #endif
 
     // if no lights are defined, keep flat shading
     #if NUM_DIR_LIGHTS + NUM_SPOT_LIGHTS + NUM_POINT_LIGHTS + NUM_HEMI_LIGHTS > 0

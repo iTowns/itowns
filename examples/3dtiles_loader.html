@@ -119,13 +119,12 @@
             // Add one imagery layer to the scene. This layer's properties are
             // defined in a json file, but it cou   ld be defined as a plain js
             // object. See `Layer` documentation for more info.
-            Fetcher.json('./layers/JSONLayers/OPENSM.json').then((config) => {
-                const colorLayer = new ColorLayer('Ortho', {
-                    ...config,
-                    source: new TMSSource(config.source),
-                });
-                view.addLayer(colorLayer);
+            const openSmConfig = await Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            const colorLayer = new ColorLayer('Ortho', {
+                ...openSmConfig,
+                source: new TMSSource(openSmConfig.source),
             });
+            view.addLayer(colorLayer);
 
             // ---- Add 3D terrain ----
 
@@ -136,8 +135,10 @@
                 var elevationLayer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(elevationLayer);
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             // ---------- 3D Tiles loading
 

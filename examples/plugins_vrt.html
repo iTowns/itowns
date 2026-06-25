@@ -58,11 +58,10 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
-                config.source = new itowns.TMSSource(config.source);
-                var layer = new itowns.ColorLayer('OPENSM', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const openSmConfig = await itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            openSmConfig.source = new itowns.TMSSource(openSmConfig.source);
+            var openSmLayer = new itowns.ColorLayer('OPENSM', openSmConfig);
+            view.addLayer(openSmLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
             // In this case, a VRT is associated to a CSV
             itowns.Fetcher.multiple('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/vrt/velib-disponibilite-en-temps-reel', {
