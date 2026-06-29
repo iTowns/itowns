@@ -25,6 +25,8 @@ const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
 const crsWGS84 = 'EPSG:4326';
 const SEGMENTS = 8; // radial segments in a circle - used to model cylinders and spheres
+// Scratch vectors used while building spherical wedges for extruded lines.
+let wedgeScratch;
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -537,6 +539,16 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     const firstCoord = new THREE.Vector3();
     const lastCoord = new THREE.Vector3();
     const lastZAxis = new THREE.Vector3();
+    wedgeScratch = {
+        xAxis: new THREE.Vector3(),
+        tempAxis: new THREE.Vector3(),
+        normal: new THREE.Vector3(),
+        normalXComp: new THREE.Vector3(),
+        vertex: new THREE.Vector3(),
+        interpolatedYAxis: new THREE.Vector3(),
+        yAxisBase: new THREE.Vector3(),
+        yAxisTop: new THREE.Vector3(),
+    };
     let hasSegment = false;
 
     // For each consecutive pair of points, make a cylinder centered on the segment
@@ -550,13 +562,13 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
             up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
         }
 
-        const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn).clone();
+        const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn);
         coord.copy(p0Local).applyMatrix4(context.collection.matrix);
         if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
         altitude = style.stroke.base_altitude;
         baseCoord.copy(up).multiplyScalar(altitude - coord.z).add(p0Local);
 
-        const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3).clone();
+        const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3);
         coord.copy(p1Local).applyMatrix4(context.collection.matrix);
         if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
         altitude = style.stroke.base_altitude;
@@ -638,30 +650,35 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     if (Number.isNaN(prevZAxis.x)) { return; } // prevZAxis hasn't been set yet
 
     const { vertices, colors, batchIds, indices } = buffers;
+    const {
+        xAxis,
+        tempAxis,
+        normal,
+        normalXComp,
+        vertex,
+        interpolatedYAxis,
+        yAxisBase,
+        yAxisTop,
+    } = wedgeScratch;
 
     // Create orthonormal basis for the plane containing both normals
-    const xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis);
+    xAxis.crossVectors(prevZAxis, zAxis);
     if (xAxis.lengthSq() < 0.001) {
-        const tempAxis = Math.abs(prevZAxis.x) < 0.9 ?
-            new THREE.Vector3(1, 0, 0) :
-            new THREE.Vector3(0, 1, 0);
+        const isIsNearX = Math.abs(prevZAxis.x) > 0.9;
+        tempAxis.set(isIsNearX ? 0 : 1, isIsNearX ? 1 : 0, 0);
         xAxis.crossVectors(tempAxis, prevZAxis).normalize();
     } else {
         xAxis.normalize();
     }
 
     const meshColor = toColor(style.stroke.color).multiplyScalar(255);
-    const normal = new THREE.Vector3();
-    const normalXComp = new THREE.Vector3();
-    const vertex = new THREE.Vector3();
-    const yAxisInterpolated = new THREE.Vector3();
 
     // Calculate number of intermediate steps based on angle between axes
     const angle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
     const numSteps = Math.max(1, Math.round(angle * SEGMENTS / (2 * Math.PI)));
 
-    const yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
-    const yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
+    yAxisBase.crossVectors(prevZAxis, xAxis);
+    yAxisTop.crossVectors(zAxis, xAxis);
 
     // let theta be the angle between the y axes
     const cosTheta = Math.max(-1, Math.min(1, yAxisBase.dot(yAxisTop)));
@@ -676,7 +693,7 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
         for (let step = 0; step <= numSteps; step++) {
             const t = step / numSteps;
 
-            yAxisInterpolated.copy(yAxisBase).applyAxisAngle(xAxis, t * theta);
+            interpolatedYAxis.copy(yAxisBase).applyAxisAngle(xAxis, t * theta);
 
             const ringStart = buffers.vertPtr;
             ringVertices.push(ringStart);
@@ -687,7 +704,7 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
                 if (vertices) {
                     const angle = (k / SEGMENTS) * Math.PI * 2;
                     normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
-                    normal.copy(normalXComp).addScaledVector(yAxisInterpolated, Math.sin(angle));
+                    normal.copy(normalXComp).addScaledVector(interpolatedYAxis, Math.sin(angle));
                     vertex.copy(origin).addScaledVector(normal, radius).toArray(vertices, 3 * v);
                 }
                 if (batchIds) {
