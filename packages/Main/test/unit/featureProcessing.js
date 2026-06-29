@@ -35,11 +35,8 @@ describe('FeatureProcessing', function () {
             };
             node.layerUpdateState[layer.id] = new LayerUpdateState();
             node.layerUpdateState[layer.id].canTryUpdate = () => false;
-            node.link[layer.id] = [{
-                collection: featureNode.collection,
-                meshes: featureNode.meshes,
-                layer: { object3d: { add: () => {} } },
-            }];
+            featureNode.layer = layer;
+            node.link[layer.id] = [featureNode];
 
             const context = { view: {} };
 
