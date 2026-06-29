@@ -22,6 +22,7 @@ export default {
             node.layerUpdateState[layer.id] = new LayerUpdateState();
         } else if (!node.layerUpdateState[layer.id].canTryUpdate()) {
             // toggle visibility features
+            let topologyUpdated = false;
             node.link[layer.id]?.forEach((f) => {
                 f.layer.object3d.add(f);
                 f.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
@@ -30,6 +31,7 @@ export default {
                 if (updateTopology) {
                     rebuildMeshTopology(f, layer.style);
                     f.styleTopologyVersion = layer._styleTopologyVersion ?? 0;
+                    topologyUpdated = true;
                     return;
                 }
                 const updateColor = f.styleColorVersion !== (layer._styleColorVersion ?? 0);
@@ -50,6 +52,9 @@ export default {
                     f.stylePositionVersion = layer._stylePositionVersion ?? 0;
                 }
             });
+            if (topologyUpdated) {
+                context.view.notifyChange(layer, true);
+            }
             return;
         }
 
