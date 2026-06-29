@@ -330,6 +330,8 @@ function _addIcon(icon, domElement, opt) {
  * @property {number|Function} stroke.opacity - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {string|Function} [stroke.lineCap] - The shape used at the ends of lines.
+ * For extruded `GeometryLayer` lines, setting it to `round` adds half-sphere caps.
  * @property {number|Function} stroke.width - The width of the line. Default is `1.0`.
  * @property {number|Function} stroke.base_altitude - Only for {@link GeometryLayer}, defines altitude
  * for each coordinate.
@@ -571,6 +573,7 @@ class Style extends EventDispatcher {
         this._defineCategoryProperty('stroke');
         defineStyleProperty(this, 'stroke', 'color', params.color);
         defineStyleProperty(this, 'stroke', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'stroke', 'lineCap', params.lineCap, 'butt');
         defineStyleProperty(this, 'stroke', 'width', params.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.base_altitude, baseAltitudeDefault);

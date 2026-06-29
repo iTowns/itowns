@@ -421,27 +421,37 @@ function updateLineBuffers(featureMesh, buffers, id) {
 }
 
 function featureToExtrudedLine(feature, options) {
-    const maxVertsPerJoint = (SEGMENTS / 2 + 1) * SEGMENTS / 2;
-    const vertSize = (feature.vertices.length - 3 * feature.geometries.length) * 2 * SEGMENTS + // cylinders
-        (feature.vertices.length - 6 * feature.geometries.length) * maxVertsPerJoint; // joints
+    const maxVertsPerWedge = (SEGMENTS / 2 + 1) * (SEGMENTS / 2 + 1);
+    const maxQuadsPerWedge = SEGMENTS / 2 * SEGMENTS / 2;
+    let totalSegments = 0;
+    let totalJoints = 0;
+    let totalCaps = 0;
+
+    context.setFeature(feature);
+    style.setContext(context);
+    for (const geometry of feature.geometries) {
+        context.setGeometry(geometry);
+        const pointCount = geometry.indices[0].count;
+        totalSegments += Math.max(0, pointCount - 1);
+        totalJoints += Math.max(0, pointCount - 2);
+        if (style.stroke.lineCap === 'round' && pointCount > 1) {
+            totalCaps += 2;
+        }
+    }
+
+    const vertSize = (totalSegments * 2 * SEGMENTS + // cylinders
+        (totalJoints + totalCaps) * maxVertsPerWedge) * 3;
     const vertices = new Float32Array(vertSize);
     const colors = new Uint8Array(vertSize);
     const batchIdFn = options.batchId || ((p, id) => id);
     const batchIds = new Uint32Array(vertices.length / 3);
 
-    context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
 
-    let totalSegments = 0;
-    let totalJoints = 0;
-    for (const g of feature.geometries) {
-        totalSegments += Math.max(0, g.indices[0].count - 1);
-        totalJoints += Math.max(0, g.indices[0].count - 2);
-    }
-    const maxQuadsPerJoint = SEGMENTS / 2 * (SEGMENTS / 2 - 1);
-    const totalQuads = totalSegments * SEGMENTS + totalJoints * maxQuadsPerJoint;
+    const totalQuads = totalSegments * SEGMENTS +
+        (totalJoints + totalCaps) * maxQuadsPerWedge;
     const indices = getIntArrayFromSize(6 * totalQuads, vertices.length / 3);
     const buffers = {
         vertices,
@@ -472,7 +482,8 @@ function featureToExtrudedLine(feature, options) {
 
 /**
  * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
- * Creates cylindrical geometry around line segments with spherical wedges at joints.
+ * Creates cylindrical geometry around line segments with spherical wedges at joints and,
+ * when `stroke.lineCap === 'round'`, half-sphere caps at line endpoints.
  *
  * @param {object} featureMesh - Object carrying the feature (expects { feature }).
  * @param {object} buffers - Buffer management object.
@@ -513,14 +524,20 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     }
 
     const radius = style.stroke.extrusion_radius;
+    const useRoundCaps = style.stroke.lineCap === 'round';
 
     // pre-allocated vectors
     const xAxis = new THREE.Vector3();
     const yAxis = new THREE.Vector3();
     const zAxis = new THREE.Vector3();
     const prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
+    const capAxis = new THREE.Vector3();
     const normal = new THREE.Vector3();
     const vertex = new THREE.Vector3();
+    const firstCoord = new THREE.Vector3();
+    const lastCoord = new THREE.Vector3();
+    const lastZAxis = new THREE.Vector3();
+    let hasSegment = false;
 
     // For each consecutive pair of points, make a cylinder centered on the segment
     for (let i = start; i < end - 1; i++) {
@@ -550,6 +567,15 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
         const axisLen = zAxis.length();
         if (axisLen === 0) { continue; } // start and end are the same
         zAxis.divideScalar(axisLen);
+
+        if (!hasSegment) {
+            hasSegment = true;
+            firstCoord.copy(baseCoord);
+            if (useRoundCaps) {
+                capAxis.copy(zAxis).negate();
+                makeSphericalWedgeVertices(firstCoord, radius, capAxis, zAxis, buffers, id);
+            }
+        }
 
         // Build a local frame: choose an arbitrary vector not parallel to Z axis
         if (Math.abs(zAxis.z) > 0.9) { xAxis.set(1, 0, 0); } else { xAxis.set(0, 0, 1); }
@@ -589,6 +615,13 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
         }
 
         prevZAxis.copy(zAxis);
+        lastCoord.copy(topCoord);
+        lastZAxis.copy(zAxis);
+    }
+
+    if (useRoundCaps && hasSegment) {
+        capAxis.copy(lastZAxis).negate();
+        makeSphericalWedgeVertices(lastCoord, radius, lastZAxis, capAxis, buffers, id);
     }
 }
 
@@ -607,9 +640,15 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     const { vertices, colors, batchIds, indices } = buffers;
 
     // Create orthonormal basis for the plane containing both normals
-    const xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis).normalize();
-    const yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
-    const yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
+    const xAxis = new THREE.Vector3().crossVectors(prevZAxis, zAxis);
+    if (xAxis.lengthSq() < 0.001) {
+        const tempAxis = Math.abs(prevZAxis.x) < 0.9 ?
+            new THREE.Vector3(1, 0, 0) :
+            new THREE.Vector3(0, 1, 0);
+        xAxis.crossVectors(tempAxis, prevZAxis).normalize();
+    } else {
+        xAxis.normalize();
+    }
 
     const meshColor = toColor(style.stroke.color).multiplyScalar(255);
     const normal = new THREE.Vector3();
@@ -621,26 +660,23 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     const angle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
     const numSteps = Math.max(1, Math.round(angle * SEGMENTS / (2 * Math.PI)));
 
+    const yAxisBase = new THREE.Vector3().crossVectors(prevZAxis, xAxis);
+    const yAxisTop = new THREE.Vector3().crossVectors(zAxis, xAxis);
+
     // let theta be the angle between the y axes
     const cosTheta = Math.max(-1, Math.min(1, yAxisBase.dot(yAxisTop)));
 
-    // don't generate anything if axes are nearly aligned
-    if (Math.abs(cosTheta) >= 0.9995) { return; }
+    // don't generate anything if both half-circles are already aligned
+    if (cosTheta >= 0.9995) { return; }
 
     // Generate vertices for all intermediate rings
     const ringVertices = [];
     if (vertices || batchIds || colors) {
         const theta = Math.acos(cosTheta);
-        const sinTheta = Math.sin(theta);
         for (let step = 0; step <= numSteps; step++) {
             const t = step / numSteps;
 
-            // Interpolate between yAxisBase and yAxisTop using slerp
-            const weight1 = Math.sin((1 - t) * theta) / sinTheta;
-            const weight2 = Math.sin(t * theta) / sinTheta;
-
-            yAxisInterpolated.copy(yAxisBase).multiplyScalar(weight1)
-                .addScaledVector(yAxisTop, weight2);
+            yAxisInterpolated.copy(yAxisBase).applyAxisAngle(xAxis, t * theta);
 
             const ringStart = buffers.vertPtr;
             ringVertices.push(ringStart);
@@ -652,7 +688,7 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
                     const angle = (k / SEGMENTS) * Math.PI * 2;
                     normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
                     normal.copy(normalXComp).addScaledVector(yAxisInterpolated, Math.sin(angle));
-                    vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
+                    vertex.copy(origin).addScaledVector(normal, radius).toArray(vertices, 3 * v);
                 }
                 if (batchIds) {
                     batchIds[v] = id;
@@ -1160,7 +1196,8 @@ export default {
                 this._styleColorVersion ??= 0;
                 this._stylePositionVersion ??= 0;
                 style.addEventListener('style-property-changed', (event) => {
-                    if (event.parameter === 'topology') {
+                    if (event.parameter === 'topology' ||
+                        event.parameter === 'lineCap') {
                         this._styleTopologyVersion++;
                     } else if (event.parameter === 'color') {
                         this._styleColorVersion++;
