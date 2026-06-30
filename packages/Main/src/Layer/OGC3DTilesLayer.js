@@ -584,7 +584,9 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         // Setup classification bufferAttribute
         if (model.isPoints) {
-            const classificationData = batchTable?.getPropertyArray('Classification');
+            const classificationData = batchTable?.getPropertyArray('Classification') 
+                || batchTable?.getPropertyArray('classification');
+                
             if (classificationData) {
                 geometry.setAttribute('classification',
                     new THREE.BufferAttribute(classificationData, 1),
