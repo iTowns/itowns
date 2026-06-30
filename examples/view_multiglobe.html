@@ -113,6 +113,10 @@
                 object3ds[0].updateMatrixWorld(true);
                 object3ds[1].updateMatrixWorld(true);
 
+                view.dispatchEvent({
+                    type: itowns.VIEW_EVENTS.CAMERA_MOVED,
+                });
+
                 if (t < 1) {
                     // animation is not finished, schedule a new view update
                     view.notifyChange(cameraThree);
@@ -153,6 +157,9 @@
                     geo.altitude *= 1.1;
                 }
                 cameraThree.position.copy(geo.as('EPSG:4978'));
+                view.dispatchEvent({
+                    type: itowns.VIEW_EVENTS.CAMERA_MOVED,
+                });
                 view.notifyChange(cameraThree);
             };
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);

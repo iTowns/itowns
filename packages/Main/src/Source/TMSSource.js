@@ -107,10 +107,10 @@ class TMSSource extends Source {
         return URLBuilder.xyz(tile, this);
     }
 
-    hasData(tile) {
-        return  tile.zoom >= this.zoom.min &&
-            tile.zoom <= this.zoom.max &&
-            this.tileMatrixSetLimits.isInside(tile);
+    hasData(extentOrTile) {
+        const inZoomRange = extentOrTile.isExtent ||
+            (extentOrTile.zoom >= this.zoom.min && extentOrTile.zoom <= this.zoom.max);
+        return inZoomRange && this.tileMatrixSetLimits.isInside(extentOrTile);
     }
 }
 

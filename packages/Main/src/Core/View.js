@@ -135,7 +135,7 @@ class View extends THREE.EventDispatcher {
     #pixelDepthBuffer = new Uint8Array(4);
     #fullSizeDepthBuffer;
 
-    static ALTITUDE_MAX = 100000; // more than 10 times altitude of Mount Everest
+    static ALTITUDE_MAX = 10000; // more than Mount Everest
 
     /**
      * Constructs an Itowns View instance
@@ -519,6 +519,11 @@ class View extends THREE.EventDispatcher {
 
     getLayerById(layerId) {
         return this.getLayers(l => l.id === layerId)[0];
+    }
+
+    getMaxElevationScale() {
+        return this.getLayers(layer => layer.isElevationLayer)
+            .reduce((max, layer) => Math.max(max, layer.scale), 1.0);
     }
 
     /**
