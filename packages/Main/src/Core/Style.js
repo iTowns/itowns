@@ -322,6 +322,10 @@ function _addIcon(icon, domElement, opt) {
  * then the altitude value is set to 0.
  * @property {number | Function} [fill.extrusion_height] - Only for {@link GeometryLayer} and if user sets it.
  * If defined, polygons will be extruded by the specified amount.
+ * @property {boolean} [fill.levelled_roofs=false] - Only for {@link GeometryLayer} with extrusion.
+ * When true, all roof vertices are placed at a uniform height equal to the polygon's minimum
+ * base altitude plus the extrusion height, producing flat-topped extrusions even over uneven
+ * terrain. Cannot be set to a function.
  * @property {object} stroke - Lines and polygons edges.
  * @property {string | Function | THREE.Color} stroke.color The color of the line. Can be any [valid
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
@@ -533,6 +537,21 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'fill', 'opacity', params.opacity, 1.0);
         defineStyleProperty(this, 'fill', 'pattern', params.pattern);
         defineStyleProperty(this, 'fill', 'base_altitude', params.base_altitude, baseAltitudeDefault);
+
+        // levelled_roofs is a raw boolean. No function evaluation or data-source fallback
+        this._levelledRoofs = params.levelled_roofs ?? false;
+        Object.defineProperty(this.fill, 'levelled_roofs', {
+            enumerable: true,
+            get: () => this._levelledRoofs,
+            set: (v) => {
+                this._levelledRoofs = Boolean(v);
+                this.dispatchEvent({
+                    type: 'style-property-changed',
+                    style: this,
+                    parameter: 'levelled_roofs',
+                });
+            },
+        });
 
         // define a special case for extrusion_height
         // to be able to know if user set it or not without calling the getter
