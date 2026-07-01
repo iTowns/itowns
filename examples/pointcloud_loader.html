@@ -60,12 +60,11 @@
         <div id="viewerDiv"></div>
 
         <script type="module">
-            import { Vector3 } from 'three';
             import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
             import Stats from 'stats-gl';
             import { getFormat, getPointCloudClass, getDefaultAttribute, zoomToLayer } from './jsm/PointCloudHelper.js';
 
-            import { CRS, MAIN_LOOP_EVENTS, PNTS_MODE, PlanarControls, View } from 'itowns';
+            import { CRS, MAIN_LOOP_EVENTS, PlanarControls, View } from 'itowns';
             import { PointCloudDebug } from 'debug';
 
             const viewerDiv = document.getElementById('viewerDiv');
@@ -87,6 +86,7 @@
             window.updateUrlParams = updateUrlParams;
 
             let currentView = null;
+            let gui = null;
 
             window.load = async function load(url, options = {}) {
                 // Cleanup previous view
@@ -94,6 +94,10 @@
                     currentView.dispose();
                     currentView = null;
                     viewerDiv.innerHTML = '';
+                }
+
+                if (gui) {
+                    gui.destroy();
                 }
 
                 const { format = 'auto', crs } = options;
@@ -131,7 +135,7 @@
                 const controls = new PlanarControls(view);
                 controls.groundLevel = layer.minElevationRange;
 
-                const gui = new GUI();
+                gui = new GUI();
                 PointCloudDebug.initTools(view, layer, gui);
             }
 
