@@ -359,7 +359,13 @@ function _addIcon(icon, domElement, opt) {
  * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
- * @property {object} point.model - 3D model to instantiate at each point position
+ *
+ * @property {object} model - To instanciate a unique 3D model at different point positions
+ * @property {THREE.Object3D} model.object - The 3D model object to instantiate at each position
+ * @property {object|Function} model.size - The wanted size of the instanced model in local dimension.
+ * Should be (or returning) an object containing 3 properties: x, y and z.
+ * @property {object|Function} model.heading - The heading (or azimuth) to orient the model in degree.
+ * @property {object|Function} model.scale - The value to scale the model. (default value is 1)
  *
  * @property {object} text - All things {@link Label} related.
  * @property {string|Function} text.field - A string representing a property key of
@@ -478,6 +484,7 @@ class Style extends EventDispatcher {
         params.fill = params.fill || {};
         params.stroke = params.stroke || {};
         params.point = params.point || {};
+        params.model = params.model || {};
         params.text = params.text || {};
         params.icon = params.icon || {};
 
@@ -485,6 +492,7 @@ class Style extends EventDispatcher {
         this._initFill(params.fill);
         this._initStroke(params.stroke);
         this._initPoint(params.point);
+        this._initModel(params.model);
         this._initText(params.text);
         this._initIcon(params.icon);
     }
@@ -603,9 +611,17 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'point', 'radius', params.radius, 2.0);
         defineStyleProperty(this, 'point', 'width', params.width, 0.0);
         defineStyleProperty(this, 'point', 'base_altitude', params.base_altitude, baseAltitudeDefault);
-        if (params.model) {
-            defineStyleProperty(this, 'point', 'model', params.model);
-        }
+    }
+
+    /**
+     * @param {object} params - 3D model style parameters.
+       @private */
+    _initModel(params) {
+        this._defineCategoryProperty('model');
+        defineStyleProperty(this, 'model', 'object', params.object);
+        defineStyleProperty(this, 'model', 'size', params.size);
+        defineStyleProperty(this, 'model', 'heading', params.heading);
+        defineStyleProperty(this, 'model', 'scale', params.scale, 1.0);
     }
 
     /**
