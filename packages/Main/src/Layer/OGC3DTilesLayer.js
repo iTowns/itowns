@@ -569,6 +569,11 @@ class OGC3DTilesLayer extends GeometryLayer {
             referPointsMaterialProperties(material, this);
         } else {
             referMaterialProperties(material, this);
+            // Force matte appearance for 3D tiles meshes
+            if (material.isMeshStandardMaterial) {
+                material.roughness = 1.0;
+                material.metalness = 0.0;
+            }
         }
 
         model.material = material;
