@@ -176,6 +176,7 @@
 
             var useFixedHeight = true;
             var useFixedColor = true;
+            var extrudeLines = false;
 
             function acceptFeature(properties) {
                 return !!properties.hauteur;
@@ -243,7 +244,12 @@
                     useFixedColor = !useFixedColor;
                     wfsBuildingLayer.style.fill.color = useFixedColor ? '#00cc00' : colorBuildings;
                     view.notifyChange(wfsBuildingLayer);
-                }
+                },
+                toggleLineExtrusion: function () {
+                    extrudeLines = !extrudeLines;
+                    lyonTclBusLayer.style.stroke.extrusion_radius = extrudeLines ? 3 : undefined;
+                    view.notifyChange(lyonTclBusLayer);
+                },
             };
 
             // Listen for globe full initialisation event
@@ -287,6 +293,11 @@
                     layer.whenReady.then( function _(layer) {
                         var gui = debug.GeometryDebug.createGeometryDebugUI(debugGui, view, layer);
                         debug.GeometryDebug.addMaterialLineWidth(gui, view, layer, 1, 10);
+
+                        // Button to demonstrate line extrusion
+                        gui.add(extrusionToggle, 'toggleLineExtrusion').name('Toggle Extrusion');
+                        extrusionToggle.toggleLineExtrusion();
+
                         gui.close();
                     });
                 }

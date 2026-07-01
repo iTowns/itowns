@@ -45,6 +45,8 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * @property {number|Function} [stroke.opacity] - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {string|Function} [stroke.lineCap] - The shape used at the ends of lines.
+ * For extruded `GeometryLayer` lines, setting it to `round` adds half-sphere caps.
  * @property {number|Function} [stroke.width] - The width of the line. Default is `1.0`.
  * @property {number|Function} [stroke.base_altitude] - `GeometryLayer` style option, defines altitude
  * for each coordinate.
