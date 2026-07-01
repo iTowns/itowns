@@ -3,7 +3,28 @@ import Potree2Node from 'Core/Potree2Node';
 import * as sinon from 'sinon';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 
+const BYTES_PER_NODE = 22;
+const NODE_TYPE_NORMAL = 0;
+const NODE_TYPE_LEAF   = 1;
+const NODE_TYPE_PROXY  = 2;
+
 const crs = 'EPSG:4978';
+
+function writeNode(view, index, { type, childrenBitField, numPoints, byteOffset, byteSize }) {
+    const off = index * BYTES_PER_NODE;
+    view.setUint8(off, type);
+    view.setUint8(off + 1, childrenBitField);
+    view.setUint32(off + 2, numPoints, true);
+    view.setBigInt64(off + 6, BigInt(byteOffset), true);
+    view.setBigInt64(off + 14, BigInt(byteSize), true);
+}
+
+function createHierarchyBuffer(nodes) {
+    const buf = new ArrayBuffer(nodes.length * BYTES_PER_NODE);
+    const view = new DataView(buf);
+    nodes.forEach((n, i) => writeNode(view, i, n));
+    return buf;
+}
 
 function nodeVoxelKey(depth, key) {
     return buildVoxelKey(depth, ...Object.values(key));
@@ -77,6 +98,8 @@ describe('Potree2 Node', function () {
     });
 
     describe('methods', () => {
+        const sandbox = sinon.createSandbox();
+
         let node;
         const depth = 2;
         const key = { x: 5, y: 12, z: 2 };
@@ -88,8 +111,6 @@ describe('Potree2 Node', function () {
 
         let hierarchy;
 
-        const spy = {};
-        const stub = {};
         before('instanciate nodes', function () {
             const voxelKey = [nodeVoxelKey(depth, key)];
             hierarchy = {
@@ -109,20 +130,12 @@ describe('Potree2 Node', function () {
             };
         });
 
-        afterEach('restore spies', function () {
-            Object.keys(spy).forEach((s) => {
-                spy[s].restore();
-                delete spy[s];
-            });
-
-            Object.keys(stub).forEach((s) => {
-                stub[s].restore();
-                delete stub[s];
-            });
+        afterEach(function () {
+            sandbox.restore();
         });
 
         it('fetcher()', () => {
-            const mockSource = sinon.mock(source);
+            const mockSource = sandbox.mock(source);
             mockSource.expects('fetcher').once().withArgs('url', 'networkOptions');
 
             node.fetcher('url', 'networkOptions');
@@ -130,27 +143,18 @@ describe('Potree2 Node', function () {
         });
 
         describe('loadHierarchy()', () => {
+            let fetcherStub;
+
             beforeEach(function () {
                 const hierarchyUrl = `${node.source.baseurl}/hierarchy.bin`;
-                stub.fetcherNode = sinon.stub(node, 'fetcher')
+                const hierarchyBuf = createHierarchyBuffer([
+                    { type: NODE_TYPE_LEAF, childrenBitField: 1, numPoints, byteOffset: dataOffset, byteSize: dataSize },
+                    { type: NODE_TYPE_LEAF, childrenBitField: 0, numPoints: childNumPoints, byteOffset: dataOffset + dataSize, byteSize: dataSize },
+                ]);
+                fetcherStub = sandbox.stub(node, 'fetcher')
                     .callsFake((url) => {
                         if (url === hierarchyUrl) {
-                            const bytesPerNode = 22;
-                            const arrayBuf = new ArrayBuffer(2 * bytesPerNode);
-                            const view = new DataView(arrayBuf);
-                            // root
-                            view.setUint8(0, 1);// type
-                            view.setUint8(1, 1);// childrenBitField
-                            view.setUint32(2, numPoints, true);// numPoints
-                            view.setBigInt64(6, dataOffset, true);// byteOffset
-                            view.setBigInt64(14, dataSize, true);// byteSize
-                            // child
-                            view.setUint8(bytesPerNode + 0, 1);// type
-                            view.setUint8(bytesPerNode + 1, 0);// childrenBitField
-                            view.setUint32(bytesPerNode + 2, childNumPoints, true);// numPoints
-                            view.setBigInt64(bytesPerNode + 6, dataOffset + dataSize, true);// byteOffset
-                            view.setBigInt64(bytesPerNode + 14, dataSize, true);// byteSize
-                            return Promise.resolve(arrayBuf);
+                            return Promise.resolve(hierarchyBuf);
                         }
                         return Promise.reject('url not valid');
                     });
@@ -169,34 +173,130 @@ describe('Potree2 Node', function () {
             it('hierarchy already loaded', async () => {
                 assert.ok(node.hierarchyIsLoaded);
 
-                const callCountBefore = stub.fetcherNode.callCount;
+                const callCountBefore = fetcherStub.callCount;
                 await node.loadHierarchy();
-                const callCountAfter = stub.fetcherNode.callCount;
+                const callCountAfter = fetcherStub.callCount;
 
                 assert.equal(callCountAfter - callCountBefore, 0, 'fetching called!');
                 assert.deepStrictEqual(node.hierarchy, hierarchy);
+            });
+
+            it('assigns correct voxel keys in hierarchy', async () => {
+                // Hierarchy:
+                // - depth 0: node (0-0-0-0)
+                //   + child at index 0 (1-0-0-0)
+                // - depth 1: node (1-0-0-0)
+                //   + child at index 4 (2-1-0-0)
+                // - depth 2: leaf (2-1-0-0)
+                const hierarchy = [
+                    { type: NODE_TYPE_NORMAL, childrenBitField: 0b00000001, numPoints: 100, byteOffset: 0,    byteSize: 1000 },
+                    { type: NODE_TYPE_NORMAL, childrenBitField: 0b00010000, numPoints: 50,  byteOffset: 1000, byteSize: 500 },
+                    { type: NODE_TYPE_LEAF,   childrenBitField: 0,          numPoints: 25,  byteOffset: 1500, byteSize: 250 },
+                ];
+                const hierarchyBuf = createHierarchyBuffer(hierarchy);
+
+                const initHierarchy = {
+                    '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(3 * BYTES_PER_NODE) },
+                };
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
+
+                await rootNode.loadHierarchy();
+
+                const root = rootNode.hierarchy['0-0-0-0'];
+                assert.ok(root, 'Expected hierarchy root to exist');
+                assert.equal(root.numPoints, hierarchy[0].numPoints, 'Expected hierarchy root to have correct numPoints');
+
+                const child = rootNode.hierarchy['1-0-0-0'];
+                assert.ok(child, 'Expected depth-1 node to exist');
+                assert.equal(child.numPoints, hierarchy[1].numPoints, 'Expected depth-1 node to have correct numPoints');
+
+                const grandchild = rootNode.hierarchy['2-1-0-0'];
+                assert.ok(grandchild, 'Expected depth-2 node to exist');
+                assert.equal(grandchild.numPoints, hierarchy[2].numPoints, 'Expected depth-2 node to have correct numPoints');
+            });
+
+            it('handles proxy nodes in the hierarchy', async () => {
+                // Hierarchy:
+                // - depth 0: root (0-0-0-0)
+                //   + child at index 2 (1-0-1-0)
+                // - depth 1: proxy (1-0-1-0)
+                const hierarchy = [
+                    { type: NODE_TYPE_NORMAL, childrenBitField: 0b00000100, numPoints: 200, byteOffset: 0,    byteSize: 2000 },
+                    { type: NODE_TYPE_PROXY,  childrenBitField: 0b00000011, numPoints: 999, byteOffset: 5000, byteSize: 888 },
+                ];
+                const hierarchyBuf = createHierarchyBuffer(hierarchy);
+
+                const initHierarchy = {
+                    '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(2 * BYTES_PER_NODE) },
+                };
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
+
+                await rootNode.loadHierarchy();
+
+                assert.ok(rootNode.hierarchy['0-0-0-0']);
+
+                const child = rootNode.hierarchy['1-0-1-0'];
+                assert.ok(child, 'Expected proxy child to exist');
+                assert.equal(child.numPoints, -1, 'Expected proxy node to have numPoints = -1');
+                assert.equal(child.byteOffset, hierarchy[1].byteOffset);
+                assert.equal(child.byteSize, hierarchy[1].byteSize);
+            });
+
+            it('produces distinct keys for siblings', async () => {
+                // Hierarchy:
+                // - depth 0: root (0-0-0-0)
+                //   + child at index 5 (1-1-0-1)
+                // - depth 1: node (1-1-0-1)
+                //   + child at index 0 (2-2-0-2)
+                //   + child at index 7 (2-3-1-3)
+                // - depth 2: two leaves (2-2-0-2) and (2-3-1-3)
+                const hierarchy = [
+                    { type: NODE_TYPE_NORMAL, childrenBitField: 0b00100000, numPoints: 100, byteOffset: 0,   byteSize: 100 },
+                    { type: NODE_TYPE_NORMAL, childrenBitField: 0b10000001, numPoints: 80,  byteOffset: 100, byteSize: 80 },
+                    { type: NODE_TYPE_LEAF,   childrenBitField: 0,          numPoints: 40,  byteOffset: 180, byteSize: 40 },
+                    { type: NODE_TYPE_LEAF,   childrenBitField: 0,          numPoints: 30,  byteOffset: 220, byteSize: 30 },
+                ];
+                const hierarchyBuf = createHierarchyBuffer(hierarchy);
+
+                const initHierarchy = {
+                    '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(4 * BYTES_PER_NODE) },
+                };
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
+
+                await rootNode.loadHierarchy();
+
+                assert.ok(rootNode.hierarchy['1-1-0-1']);
+
+                assert.ok(rootNode.hierarchy['2-2-0-2']);
+                assert.equal(rootNode.hierarchy['2-2-0-2'].numPoints, hierarchy[2].numPoints);
+
+                assert.ok(rootNode.hierarchy['2-3-1-3']);
+                assert.equal(rootNode.hierarchy['2-3-1-3'].numPoints, hierarchy[3].numPoints);
             });
         });
 
         describe('findAndCreateChild()', () => {
             it('child not in hierarchy', () => {
-                spy.add = sinon.spy(node, 'add');
+                const addSpy = sandbox.spy(node, 'add');
                 assert.equal(node.children.length, 0);
 
                 node.findAndCreateChild(node.depth + 1, 99, 99, 99);
 
                 assert.equal(node.children.length, 0);
-                assert.ok(spy.add.notCalled);
+                assert.ok(addSpy.notCalled);
             });
 
             it('child in hierarchy', () => {
-                spy.add = sinon.spy(node, 'add');
+                const addSpy = sandbox.spy(node, 'add');
                 assert.equal(node.children.length, 0);
 
                 node.findAndCreateChild(node.depth + 1, ...Object.values(childKey));
 
                 assert.equal(node.children.length, 1, 'child not added');
-                assert.ok(spy.add.calledOnce, 'add() has not been called');
+                assert.ok(addSpy.calledOnce, 'add() has not been called');
             });
         });
     });
