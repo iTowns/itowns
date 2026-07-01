@@ -476,6 +476,7 @@ class Style extends EventDispatcher {
         params.point = params.point || {};
         params.text = params.text || {};
         params.icon = params.icon || {};
+        params.model = params.model || {};
 
         this._initZoom(params.zoom);
         this._initFill(params.fill);
@@ -483,6 +484,7 @@ class Style extends EventDispatcher {
         this._initPoint(params.point);
         this._initText(params.text);
         this._initIcon(params.icon);
+        this._initModel(params.model);
     }
 
     /**
@@ -584,9 +586,6 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'point', 'radius', params.radius, 2.0);
         defineStyleProperty(this, 'point', 'width', params.width, 0.0);
         defineStyleProperty(this, 'point', 'base_altitude', params.base_altitude, baseAltitudeDefault);
-        if (params.model) {
-            defineStyleProperty(this, 'point', 'model', params.model);
-        }
     }
 
     /**
@@ -630,6 +629,17 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'icon', 'size', params.size, 1);
         defineStyleProperty(this, 'icon', 'color', params.color);
         defineStyleProperty(this, 'icon', 'opacity', params.opacity, 1.0);
+    }
+
+    /**
+     * @param {object} params - 3D model style parameters.
+       @private */
+    _initModel(params) {
+        this._defineCategoryProperty('model');
+        defineStyleProperty(this, 'model', 'object', params.object);
+        defineStyleProperty(this, 'model', 'size', params.size);
+        defineStyleProperty(this, 'model', 'heading', params.heading);
+        defineStyleProperty(this, 'model', 'scale', params.scale, 1.0);
     }
 
     setContext(ctx) {

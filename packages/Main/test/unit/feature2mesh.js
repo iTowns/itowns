@@ -99,9 +99,7 @@ describe('Feature2Mesh', function () {
 
     it('convert to instanced meshes', function (done) {
         const styleModel3D = {
-            point: {
-                model: { object: makeTree() },
-            },
+            model: { object: makeTree() },
         };
         parsed3
             .then((collection) => {
