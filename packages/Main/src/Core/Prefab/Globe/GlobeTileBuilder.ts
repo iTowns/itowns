@@ -6,26 +6,13 @@ import {
     TileBuilderParams,
 } from '../TileBuilder';
 
-const PI_OV_FOUR = Math.PI / 4;
-const INV_TWO_PI = 1.0 / (Math.PI * 2);
 const axisZ = new THREE.Vector3(0, 0, 1);
 const axisY = new THREE.Vector3(0, 1, 0);
 const quatToAlignLongitude = new THREE.Quaternion();
 const quatToAlignLatitude = new THREE.Quaternion();
 const quatNormalToZ = new THREE.Quaternion();
 
-/**
- * Transforms a WGS84 latitude into a usable texture offset.
- * @param latitude
- * @returns
- */
-function WGS84ToOneSubY(latitude: number): number {
-    return 1.0 - (0.5 - Math.log(Math.tan(
-        PI_OV_FOUR + THREE.MathUtils.degToRad(latitude) * 0.5,
-    )) * INV_TWO_PI);
-}
-
-interface Transform {
+type Transform = {
     /** Buffers for 2-part coordinate mapping operations. */
     coords: [Coordinates, Coordinates];
     position: THREE.Vector3;
@@ -36,8 +23,6 @@ interface Transform {
 export interface GlobeTileBuilderParams extends TileBuilderParams {
     /** Number of rows of tiles, essentially the resolution of the globe. */
     nbRow: number;
-    /** Offset of the second texture set. */
-    deltaUV1: number;
     /** Transformation to align a tile's normal to the Z axis. */
     quatNormalToZ: THREE.Quaternion;
 }
@@ -48,11 +33,7 @@ export interface GlobeTileBuilderParams extends TileBuilderParams {
  */
 export class GlobeTileBuilder
 implements TileBuilder<GlobeTileBuilderParams> {
-    private static _crs = 'EPSG:4978';
-    private static _computeExtraOffset(params: GlobeTileBuilderParams): number {
-        const t = WGS84ToOneSubY(params.coordinates.latitude) * params.nbRow;
-        return (!isFinite(t) ? 0 : t) - params.deltaUV1;
-    }
+    private static _crs: string = 'EPSG:4978';
 
     /**
      * Buffer holding information about the tile/vertex currently being
@@ -60,16 +41,11 @@ implements TileBuilder<GlobeTileBuilderParams> {
      */
     private _transform: Transform;
 
-    public computeExtraOffset?: (params: GlobeTileBuilderParams) => number;
-
     public get crs(): string {
         return GlobeTileBuilder._crs;
     }
 
-    public constructor(options: {
-        /** Number of unaligned texture sets. */
-        uvCount: number;
-    }) {
+    public constructor() {
         this._transform = {
             coords: [
                 new Coordinates('EPSG:4326', 0, 0),
@@ -78,29 +54,13 @@ implements TileBuilder<GlobeTileBuilderParams> {
             position: new THREE.Vector3(),
             dimension: new THREE.Vector2(),
         };
-
-        // UV: Normalized coordinates (from degree) on the entire tile
-        // EPSG:4326
-        // Offset: Float row coordinate from Pseudo mercator coordinates
-        // EPSG:3857
-        if (options.uvCount > 1) {
-            this.computeExtraOffset = GlobeTileBuilder._computeExtraOffset;
-        }
     }
 
     public prepare(params: TileBuilderParams): GlobeTileBuilderParams {
         const nbRow = 2 ** (params.level + 1.0);
-        let st1 = WGS84ToOneSubY(params.extent.south);
-
-        if (!isFinite(st1)) { st1 = 0; }
-
-        const sizeTexture = 1.0 / nbRow;
-
-        const start = (st1 % (sizeTexture));
 
         const newParams = {
             nbRow,
-            deltaUV1: (st1 - start) * nbRow,
             // transformation to align tile's normal to z axis
             quatNormalToZ: quatNormalToZ.setFromAxisAngle(
                 axisY,

@@ -1,121 +1,119 @@
 import * as THREE from 'three';
+import { Extent } from '@itowns/geographic';
+// eslint-disable-next-line import/extensions
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+// eslint-disable-next-line import/extensions
+import { Pass, FullScreenQuad } from 'three/examples/jsm/postprocessing/Pass.js';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { DotScreenPass } from 'three/examples/jsm/postprocessing/DotScreenPass.js';
 import { RasterTile } from './RasterTile';
+import {
+    materialUnit,
+    materialMercatorToWGS84,
+    materialMercatorToWGS84Optimized } from './GeographicTransformMaterials';
 
-// shader for copying a 2D texture to a framebuffer
-const copyTextureShader = {
-    vertexShader: `
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+declare module 'three' {
+  interface Texture {
+    extent: Extent | null | undefined,
+  }
+}
+
+const getGeographicTransformMaterial =
+    (input : string, outputExtent : Extent | null | undefined) => {
+        if (!outputExtent || input == outputExtent.crs) {
+            return materialUnit;
         }
-    `,
-    fragmentShader: `
-        precision highp float;
-        uniform sampler2D sourceTexture;
-        varying vec2 vUv;
-        void main() {
-            gl_FragColor = texture2D(sourceTexture, vUv);
+        if (input == 'EPSG:3857' && outputExtent.crs == 'EPSG:4326') {
+            // todo could computed with the size texture
+            if (outputExtent.planarDimensions().x < 0.01) {
+                return materialMercatorToWGS84Optimized;
+            } else {
+                return materialMercatorToWGS84;
+            }
         }
-    `,
-};
 
-let material: THREE.ShaderMaterial | null = null;
-let quad: THREE.Mesh | null = null;
-const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-/**
- * Initializes a THREE.WebGLArrayRenderTarget with immutable storage
- * and populates its layers.
- * Returns the populated render target so callers can own/dispose it.
- *
- * @param width - The width of each layer in the DataArrayTexture.
- * @param height - The height of each layer in the DataArrayTexture.
- * @param count - The total number of layers the DataArrayTexture should have.
- * @param tiles - An array of RasterTile objects, each containing textures.
- * @param max - The maximum allowed number of layers for the DataArrayTexture.
- * @param renderer - The renderer used to render the texture.
- * @returns The constructed render target, or null
- */
-export function makeDataArrayRenderTarget(
-    width: number,
-    height: number,
-    count: number,
-    tiles: RasterTile[],
-    max: number,
-    renderer: THREE.WebGLRenderer,
-): THREE.WebGLArrayRenderTarget | null {
-    if (count === 0) { return null; }
+        console.log('No Geographic Transform Material');
+    };
 
-    // The render target's internal framebuffer will be used to attach layers.
-    const renderTarget = new THREE.WebGLArrayRenderTarget(width, height, count, {
-        depthBuffer: false, // No depth buffer needed for simple 2D texture copy
-    });
-    const arrayTexture = renderTarget.texture;
-
-    // Set up the quad for rendering
-    if (!quad) {
-        const geometry = new THREE.PlaneGeometry(2, 2);
-        material = new THREE.ShaderMaterial({
-            uniforms: {
-                // This uniform will be updated with each source 2D texture
-                sourceTexture: { value: null },
-            },
-            vertexShader: copyTextureShader.vertexShader,
-            fragmentShader: copyTextureShader.fragmentShader,
-        });
-        quad = new THREE.Mesh(geometry, material);
+class GeographicProjectionPass extends Pass {
+    tiles: RasterTile[];
+    extent: Extent | null;
+    _fsQuad: FullScreenQuad;
+    clear: boolean;
+    constructor() {
+        super();
+        this._fsQuad = new FullScreenQuad();
+        this.tiles = [];
+        this.extent = null;
+        this.clear = true;
+        this.needsSwap = true;
     }
 
-    // Store renderer state and temporarily disable VR
-    const previousRenderTarget = renderer.getRenderTarget();
-    const gl = renderer.getContext();
-    const glViewport = gl.getParameter(gl.VIEWPORT);
+    render(renderer: THREE.WebGLRenderer, writeBuffer: THREE.WebGLRenderTarget) {
+        renderer.setRenderTarget(writeBuffer);
+
+        const inputCrs = this.tiles[0].layer.crs;
+
+        const outputExtent = writeBuffer.texture.extent;
+
+        const geographicTransformMaterial = getGeographicTransformMaterial(inputCrs, outputExtent);
+
+        if (geographicTransformMaterial) {
+            geographicTransformMaterial.setOutputExtent(outputExtent);
+
+            this._fsQuad.material = geographicTransformMaterial;
+
+            if (this.clear) { renderer.clear(); }
+
+            this.tiles.forEach((tile) => {
+                if (tile.visible) {
+                    geographicTransformMaterial.setOpacity(tile.opacity);
+
+                    tile.textures.forEach((texture) => {
+                        if (texture) {
+                            geographicTransformMaterial.setTexture(texture);
+                            this._fsQuad.render(renderer);
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    dispose() {
+        this._fsQuad.dispose();
+    }
+}
+
+const geographicProjectionPass = new GeographicProjectionPass();
+let composer : null | EffectComposer = null;
+
+const dotPass = new DotScreenPass(new THREE.Vector2(0, 0), 0.5, 0.8);
+// console.log('dotPass', dotPass);
+dotPass.needsSwap = false;
+
+export function drawMap(
+    renderTarget: THREE.WebGLRenderTarget,
+    tiles: RasterTile[],
+    renderer: THREE.WebGLRenderer,
+): undefined {
+    if (!composer) {
+        composer = new EffectComposer(renderer, renderTarget);
+        composer.addPass(geographicProjectionPass);
+        composer.addPass(dotPass);
+    } else {
+        composer.renderer = renderer;
+        composer.renderTarget1 = renderTarget;
+        composer.writeBuffer = renderTarget;
+    }
+
+    geographicProjectionPass.tiles = tiles;
+
     const wasVREnabled = renderer.xr.enabled;
     if (wasVREnabled) { renderer.xr.enabled = false; }
 
-    // loop through each tile and its textures
-    // to render them into DataArrayTexture layers
-    let currentLayerIndex = 0;
+    // todo verify if renderer size isn't overkill
+    composer.render();
 
-    let setTexture = false;
-
-    for (const tile of tiles) {
-        for (
-            let i = 0;
-            i < tile.textures.length && currentLayerIndex < max;
-            ++i, ++currentLayerIndex
-        ) {
-            const texture = tile.textures[i];
-            if (!texture.isTexture) { continue; }
-
-            // Set the current source 2D texture on the quad's material
-            (material as THREE.ShaderMaterial).uniforms.sourceTexture.value = texture;
-
-            if (!setTexture) {
-                // Set parameters from the first valid texture
-                arrayTexture.magFilter = texture.magFilter;
-                arrayTexture.minFilter = texture.minFilter;
-                arrayTexture.wrapS = texture.wrapS;
-                arrayTexture.wrapT = texture.wrapT;
-                arrayTexture.format = texture.format;
-                arrayTexture.type = texture.type;
-                arrayTexture.internalFormat = texture.internalFormat;
-                arrayTexture.anisotropy = texture.anisotropy;
-                arrayTexture.premultiplyAlpha = texture.premultiplyAlpha;
-                setTexture = true;
-            }
-
-            // render this source texture into the current layer
-            renderer.setRenderTarget(renderTarget, currentLayerIndex);
-            renderer.render(quad, quadCam);
-        }
-    }
-
-    // Restore renderer state
-    renderer.setRenderTarget(previousRenderTarget);
-    // renderer.setViewport is not enough to update internal GL state
-    gl.viewport(glViewport[0], glViewport[1], glViewport[2], glViewport[3]);
     if (wasVREnabled) { renderer.xr.enabled = true; }
-
-    return renderTarget;
 }

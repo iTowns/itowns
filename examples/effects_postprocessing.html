@@ -118,16 +118,14 @@
                 r.render(postprocessScene, cam);
             };
 
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
+            const ignMntConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT.json');
+            ignMntConfig.source = new itowns.WMTSSource(ignMntConfig.source);
+            var elevationLayer = new itowns.ElevationLayer(ignMntConfig.id, ignMntConfig);
+            view.addLayer(elevationLayer);
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;

@@ -80,7 +80,8 @@
                     menuGlobe.elevationGui.__folders.GEOIDMNT.open();
                 });
             }
-            itowns.Fetcher.json('./layers/JSONLayers/GeoidMNT.json').then(addElevationLayerFromConfig);
+            const geoidMntConfig = await itowns.Fetcher.json('./layers/JSONLayers/GeoidMNT.json');
+            addElevationLayerFromConfig(geoidMntConfig);
 
             const d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
