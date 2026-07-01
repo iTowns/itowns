@@ -699,18 +699,44 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
  * Created Instanced object from mesh
  *
  * @param {THREE.MESH} mesh Model 3D to instanciate
- * @param {*} count number of instances to create (int)
  * @param {*} ptsIn positions of instanced (array double)
+ * @param {*} geometries geometries to use for the instanced meshes
+ * @param {*} geometries.length number of instances to create (int)
+ * @param {*} modelSize size of the object model
+ *
  * @returns {THREE.InstancedMesh} Instanced mesh
  */
-function createInstancedMesh(mesh, count, ptsIn) {
+function createInstancedMesh(mesh, ptsIn, geometries, modelSize) {
+    const styleModel = style.model;
+    const count = geometries.length;
     const instancedMesh = new THREE.InstancedMesh(mesh.geometry, mesh.material, count);
-    let index = 0;
-    for (let i = 0; i < count * 3; i += 3) {
+
+    const degToRad = Math.PI / 180;
+
+    for (let j = 0; j < count; j += 1) {
+        const properties = geometries[j].properties;
+        context.setGeometry(geometries[j]);
+
+        let scale = new THREE.Vector3(1, 1, 1);
+        if (styleModel.size) {
+            const length = styleModel.size.y(properties);
+            const width = styleModel.size.x(properties);
+            const height = styleModel.size.z(properties);
+            scale = new THREE.Vector3(
+                length / modelSize.y,
+                width / modelSize.x,
+                height / modelSize.z,
+            );
+        }
+
         const mat = new THREE.Matrix4();
-        mat.setPosition(ptsIn[i], ptsIn[i + 1], ptsIn[i + 2]);
-        instancedMesh.setMatrixAt(index, mat);
-        index++;
+        if (styleModel.heading) {
+            const headingRad = styleModel.heading * degToRad;
+            mat.makeRotationAxis({ x: 0, y: 0, z: 1 }, 2 * Math.PI - headingRad);
+        }
+        mat.setPosition(ptsIn[j * 3], ptsIn[j * 3 + 1], ptsIn[j * 3 + 2]);
+        mat.scale(scale.multiplyScalar(styleModel.scale));
+        instancedMesh.setMatrixAt(j, mat);
     }
 
     instancedMesh.instanceMatrix.needsUpdate = true;
@@ -725,17 +751,24 @@ function createInstancedMesh(mesh, count, ptsIn) {
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function pointsToInstancedMeshes(feature) {
+    context.setFeature(feature);
+    style.setContext(context);
+
     const ptsIn = feature.vertices;
-    const count = feature.geometries.length;
-    const modelObject = style.point.model.object;
+    const geometries = feature.geometries;
+    const modelObject = style.model.object;
+    let bbox = new THREE.Box3().setFromObject(modelObject);
+    let modelSize = bbox.getSize(new THREE.Vector3());
 
     if (modelObject instanceof THREE.Mesh) {
-        return createInstancedMesh(modelObject, count, ptsIn);
+        return createInstancedMesh(modelObject, ptsIn, geometries,  modelSize);
     } else if (modelObject instanceof THREE.Object3D) {
         const group = new THREE.Group();
         // Get independent meshes from more complexe object
         const meshes = separateMeshes(modelObject);
-        meshes.forEach(mesh => group.add(createInstancedMesh(mesh, count, ptsIn)));
+        meshes.forEach((mesh) => {
+            group.add(createInstancedMesh(mesh, ptsIn, geometries, modelSize));
+        });
         return group;
     } else {
         throw new Error('The format of the model object provided in the style (layer.style.point.model.object) is not supported. Only THREE.Mesh or THREE.Object3D are supported.');
@@ -757,7 +790,7 @@ function featureToMesh(feature, options) {
     let mesh;
     switch (feature.type) {
         case FEATURE_TYPES.POINT:
-            if (style.point?.model?.object) {
+            if (style.model?.object) {
                 try {
                     mesh = pointsToInstancedMeshes(feature);
                     mesh.isInstancedMesh = true;
@@ -926,8 +959,7 @@ export function applyStyle(featureMesh, collection, styleIn, buffersToUpdate = [
         context.setGeometry(geometry);
         switch (feature.type) {
             case FEATURE_TYPES.POINT: {
-                const pointStyle = style.point;
-                if (pointStyle?.model?.object) { break; } // instanced mesh
+                if (style.model?.object) { break; } // instanced mesh
                 updatePointBuffers(featureMesh, buffers);
                 break;
             }
