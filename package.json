@@ -86,7 +86,7 @@
     "babel-plugin-module-extension-resolver": "^1.0.0",
     "babel-plugin-module-resolver": "^5.0.2",
     "c8": "^11.0.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "conventional-changelog-cli": "^5.0.0",
     "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
