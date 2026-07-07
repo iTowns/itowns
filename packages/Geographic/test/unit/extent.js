@@ -288,4 +288,11 @@ describe('Extent', function () {
     it('should throw error when instance with geocentric projection', () => {
         assert.throws(() => new Extent('EPSG:4978'));
     });
+
+    it('should use target CRS by default when converting with as()', function () {
+        const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+        const converted = extent.as('EPSG:3857');
+        assert.strictEqual(converted.crs, 'EPSG:3857');
+    });
 });
+
