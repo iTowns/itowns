@@ -81,7 +81,7 @@
             const isEmbedded = window.self !== window.top;
 
             window.gui = new dat.GUI();
-            
+
 
             // ---- Create a GlobeView ----
 
@@ -96,7 +96,6 @@
 
             // Create a GlobeView
             const view = new GlobeView(viewerDiv, placement, {
-                realisticLighting: true,
                 shadows: true,
                 controls: {
                     minDistance: 100,
@@ -179,6 +178,7 @@
                 window.layer = new OGC3DTilesLayer('3DTiles', {
                     source,
                     pntsSizeMode: PNTS_SIZE_MODE.ATTENUATED,
+                    sseThreshold: 2,
                 });
 
                 // Add an event for picking the 3D Tiles layer and displaying
@@ -200,25 +200,8 @@
                     .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
             }
 
-            // ---------- DATE/TIME CONTROLS ----------
-
-            // Add date/time controls to adjust sun position
-            const dateFolder = gui.addFolder('Date/Time');
-            const date = view.date;
-            dateFolder.add(
-                { month: 1 + date.getMonth() }, 'month', 1, 12, 1
-            ).onChange((v) => {
-                date.setMonth(v - 1);
-                view.notifyChange(view.sunLightLayer);
-            }).name('month (1-12)');
-            dateFolder.add(
-                { hour: date.getHours() }, 'hour', 0, 24, 0.1
-            ).onChange((v) => {
-                const hours = Math.floor(v);
-                const minutes = (v - hours) * 60;
-                date.setHours(hours, minutes);
-                view.notifyChange(view.sunLightLayer);
-            }).name('hour (24h)');
+            // ---------- Realistic lighting & DATE/TIME CONTROLS ----------
+            debug.createRealisticLightingDebugUI(gui,view);
 
             function loadLyon() {
                 setUrl("https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/refs/heads/master/3DTiles/lyon1-4978/tileset.json");
@@ -231,9 +214,6 @@
             function loadLille() {
                 setUrl("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
             }
-
-
-
 
             const readUrlButton = document.getElementById('readURLButton');
 

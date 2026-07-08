@@ -569,6 +569,11 @@ class OGC3DTilesLayer extends GeometryLayer {
             referPointsMaterialProperties(material, this);
         } else {
             referMaterialProperties(material, this);
+            // Force matte appearance for 3D tiles meshes
+            if (material.isMeshStandardMaterial) {
+                material.roughness = 1.0;
+                material.metalness = 0.0;
+            }
         }
 
         model.material = material;
@@ -584,7 +589,8 @@ class OGC3DTilesLayer extends GeometryLayer {
 
         // Setup classification bufferAttribute
         if (model.isPoints) {
-            const classificationData = batchTable?.getPropertyArray('Classification');
+            const classificationData = batchTable?.getPropertyArray('Classification')
+                || batchTable?.getPropertyArray('classification');
             if (classificationData) {
                 geometry.setAttribute('classification',
                     new THREE.BufferAttribute(classificationData, 1),

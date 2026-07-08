@@ -166,6 +166,10 @@ Incorporated libraries are published under their original licences.
 
 See [LICENSE.md](LICENSE.md) for more information.
 
+## RoadMap
+
+You will find the project Road map on the [RoadMap wiki](https://github.com/iTowns/itowns/wiki/Roadmap)
+
 ## Maintainers and governance
 
 iTowns is an original work from French IGN, [MATIS research

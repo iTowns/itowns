@@ -147,11 +147,6 @@ function Debug(view, datDebugTool, chartDivContainer) {
     debugCamera.updateProjectionMatrix();
     const g = view.mainLoop.gfxEngine;
     const r = g.renderer;
-    let fogDistance = 10e10;
-    const layerAtmosphere = view.getLayerById('atmosphere');
-    if (layerAtmosphere) {
-        fogDistance = layerAtmosphere.fog.distance;
-    }
     helper.visible = false;
     view.scene.add(helper);
 
@@ -161,12 +156,6 @@ function Debug(view, datDebugTool, chartDivContainer) {
     displayedTilesObbHelper.visible = false;
     view.scene.add(displayedTilesObb);
     view.scene.add(displayedTilesObbHelper);
-
-    function updateFogDistance(obj) {
-        if (obj.material && fogDistance) {
-            obj.material.setUniform('fogDistance', fogDistance);
-        }
-    }
 
     const clearColor = new Color();
     const lookAtCameraDebug = new Vector3();
@@ -206,14 +195,11 @@ function Debug(view, datDebugTool, chartDivContainer) {
 
             helper.update();
 
+            const distToTarget = debugCamera.position.distanceTo(lookAtCameraDebug);
+            debugCamera.near = distToTarget * 0.01;
+            debugCamera.far = distToTarget * 100;
+
             debugCamera.updateProjectionMatrix();
-            if (layerAtmosphere) {
-                layerAtmosphere.object3d.visible = false;
-                fogDistance = 10e10;
-                for (const obj of tileLayer.level0Nodes) {
-                    obj.traverseVisible(updateFogDistance);
-                }
-            }
 
             const deltaY = state.displayCharts ? Math.round(parseFloat(chartDivContainer.style.height.replace('%', '')) * g.height / 100) + 3 : 0;
             helper.visible = true;
@@ -224,22 +210,24 @@ function Debug(view, datDebugTool, chartDivContainer) {
             r.setScissorTest(true);
             r.setClearColor(backgroundChartDiv);
             r.clear();
+
+            const skyEnabled = view.skyController && view.skyController.enabled;
+            if (skyEnabled) {
+                view.skyController.enabled = false;
+            }
+
             r.render(view.scene, debugCamera);
+
+            if (skyEnabled) {
+                view.skyController.enabled = true;
+            }
+
             r.setScissorTest(false);
             r.setClearColor(clearColor);
             r.setViewport(0, 0, g.width, g.height);
 
             helper.visible = false;
             displayedTilesObbHelper.visible = false;
-            if (layerAtmosphere) {
-                layerAtmosphere.object3d.visible = true;
-            }
-            if (layerAtmosphere) {
-                fogDistance = layerAtmosphere.fog.distance;
-                for (const obj of tileLayer.level0Nodes) {
-                    obj.traverseVisible(updateFogDistance);
-                }
-            }
         }
     }
 }

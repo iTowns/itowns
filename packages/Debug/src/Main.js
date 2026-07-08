@@ -3,5 +3,6 @@ export { default as PointCloudDebug } from 'PointCloudDebug';
 export { default as createTileDebugUI } from 'TileDebug';
 export { default as create3dTilesDebugUI } from '3dTilesDebug';
 export { default as createOGC3DTilesDebugUI } from 'OGC3DTilesDebug';
+export { createRealisticLightingDebugUI, createDateTimeUI } from 'RealisticLightingDebug';
 export { default as GeometryDebug } from 'GeometryDebug';
 export { default as GuiTools } from 'GuiTools';
