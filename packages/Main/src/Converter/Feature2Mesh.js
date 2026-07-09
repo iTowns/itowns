@@ -1228,9 +1228,12 @@ export default {
                 this._styleTopologyVersion ??= 0;
                 this._styleColorVersion ??= 0;
                 this._stylePositionVersion ??= 0;
+                const hasLineFeature = features.some(f => f.type === FEATURE_TYPES.LINE);
                 style.addEventListener('style-property-changed', (event) => {
                     if (event.parameter === 'topology' ||
-                        event.parameter === 'lineCap') {
+                        event.parameter === 'line_cap' ||
+                        // changing the altitude may change line topologies
+                        (event.parameter === 'base_altitude' && hasLineFeature)) {
                         this._styleTopologyVersion++;
                     } else if (event.parameter === 'color') {
                         this._styleColorVersion++;
