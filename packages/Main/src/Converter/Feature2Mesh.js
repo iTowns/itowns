@@ -436,7 +436,7 @@ function featureToExtrudedLine(feature, options) {
         const pointCount = geometry.indices[0].count;
         totalSegments += Math.max(0, pointCount - 1);
         totalJoints += Math.max(0, pointCount - 2);
-        if (style.stroke.lineCap === 'round' && pointCount > 1) {
+        if (style.stroke.line_cap === 'round' && pointCount > 1) {
             totalCaps += 2;
         }
     }
@@ -485,7 +485,7 @@ function featureToExtrudedLine(feature, options) {
 /**
  * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
  * Creates cylindrical geometry around line segments with spherical wedges at joints and,
- * when `stroke.lineCap === 'round'`, half-sphere caps at line endpoints.
+ * when `stroke.line_cap === 'round'`, half-sphere caps at line endpoints.
  *
  * @param {object} featureMesh - Object carrying the feature (expects { feature }).
  * @param {object} buffers - Buffer management object.
@@ -526,7 +526,7 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     }
 
     const radius = style.stroke.extrusion_radius;
-    const useRoundCaps = style.stroke.lineCap === 'round';
+    const useRoundCaps = style.stroke.line_cap === 'round';
 
     // pre-allocated vectors
     const xAxis = new THREE.Vector3();

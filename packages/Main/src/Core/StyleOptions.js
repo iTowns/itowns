@@ -45,7 +45,7 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * @property {number|Function} [stroke.opacity] - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
- * @property {String|Function} [stroke.lineCap] - The shape used at the ends of lines.
+ * @property {string|Function} [stroke.line_cap] - The shape used at the ends of lines.
  * For extruded `GeometryLayer` lines, setting it to `round` adds half-sphere caps.
  * @property {number|Function} [stroke.width] - The width of the line. Default is `1.0`.
  * @property {number|Function} [stroke.base_altitude] - `GeometryLayer` style option, defines altitude
@@ -289,7 +289,7 @@ function setFromVectorTileLayer(layer, sprites, symbolToCircle = false) {
         const { color, opacity } = rgba2rgb(prepare);
         style.stroke.dasharray = readVectorProperty(layer.paint['line-dasharray']);
         style.stroke.color = color;
-        style.stroke.lineCap = layer.layout['line-cap'];
+        style.stroke.line_cap = layer.layout['line-cap'];
         style.stroke.width = readVectorProperty(layer.paint['line-width']);
         style.stroke.opacity = readVectorProperty(layer.paint['line-opacity']) || opacity;
     } else if (layer.type === 'circle' || symbolToCircle) {

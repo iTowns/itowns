@@ -103,7 +103,7 @@ describe('Style', function () {
                 style._applyStrokeToPolygon(txtrCtx, invCtxScale);
                 assert.equal(txtrCtx.strokeStyle, style.stroke.color);
                 assert.equal(txtrCtx.lineWidth, style.stroke.width * invCtxScale);
-                assert.equal(txtrCtx.lineCap, style.stroke.lineCap);
+                assert.equal(txtrCtx.lineCap, style.stroke.line_cap);
                 assert.equal(txtrCtx.globalAlpha, style.stroke.opacity);
             });
         });
