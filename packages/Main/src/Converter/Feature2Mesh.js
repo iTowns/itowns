@@ -46,6 +46,7 @@ class FeatureMesh extends THREE.Group {
         this.#collection.matrixWorldInverse = collection.matrixWorldInverse.clone();
 
         this.#collection.crs = collection.crs;
+        this.#collection.extent = collection.extent;
 
         this.#originalCrs = collection.crs;
         this.#currentCrs = this.#originalCrs;
@@ -511,6 +512,23 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     up.set(0, 0, 1).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
+
+    // Compute reprojection inverse scale (same logic as FeatureMesh.as())
+    dim_ref.set(1, 1);
+    dim.set(1, 1);
+    const collExtent = context.collection.extent;
+    if (collExtent) {
+        const crs = context.collection.crs;
+        if (collExtent.isExtent) {
+            extent.copy(collExtent).applyMatrix4(context.collection.matrix);
+            extent.as(crs, extent);
+        } else {
+            collExtent.toExtent(crs, extent);
+        }
+        extent.spatialEuclideanDimensions(dim_ref);
+        extent.planarDimensions(dim);
+    }
+
     const { vertices, colors, batchIds, indices } = buffers;
 
     // geometry range
@@ -602,6 +620,12 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
                 const theta = (k / SEGMENTS) * Math.PI * 2;
                 normal.copy(xAxis).multiplyScalar(Math.cos(theta))
                     .addScaledVector(yAxis, Math.sin(theta));
+                normal.multiply(inverseScale);
+                if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
+                    normal.x *= dim.x / dim_ref.x;
+                    normal.y *= dim.y / dim_ref.y;
+                }
+
                 vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
                 vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
             }
@@ -705,6 +729,11 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
                     const angle = (k / SEGMENTS) * Math.PI * 2;
                     normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
                     normal.copy(normalXComp).addScaledVector(interpolatedYAxis, Math.sin(angle));
+                    normal.multiply(inverseScale);
+                    if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
+                        normal.x *= dim.x / dim_ref.x;
+                        normal.y *= dim.y / dim_ref.y;
+                    }
                     vertex.copy(origin).addScaledVector(normal, radius).toArray(vertices, 3 * v);
                 }
                 if (batchIds) {
