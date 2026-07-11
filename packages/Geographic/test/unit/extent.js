@@ -294,5 +294,10 @@ describe('Extent', function () {
         const converted = extent.as('EPSG:3857');
         assert.strictEqual(converted.crs, 'EPSG:3857');
     });
+
+    it('should throw an error when converting to a geocentric projection with as()', function () {
+        const extent = new Extent('EPSG:4326', 0, 10, 0, 10);
+        assert.throws(() => extent.as('EPSG:4978'));
+    });
 });
 
