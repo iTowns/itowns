@@ -327,6 +327,7 @@ class TiledGeometryLayer extends GeometryLayer {
 
         // RasterTile.needsUpdate has been removed
         // TODO: optimize uniforms update
+        // add event to refresh
         node.material.layersNeedUpdate = node.material.visible;
 
         this.info.update(node);
@@ -398,6 +399,12 @@ class TiledGeometryLayer extends GeometryLayer {
      * @returns {boolean} - True if the node is subdivisable, otherwise false.
      */
     subdivision(context, node) {
+        // avoid subdision if tile
+        // TO DO extent global visible is bugged with altitude not refresh
+        if (!node.material.dataHasLoaded()) {
+            // console.log('false', false);
+            return false;
+        }
         if (node.level < this.minSubdivisionLevel) {
             return true;
         }
@@ -405,15 +412,16 @@ class TiledGeometryLayer extends GeometryLayer {
         if (this.maxSubdivisionLevel <= node.level) {
             return false;
         }
+
+        const camera3D = context.camera.camera3D;
+
         subdivisionVector.setFromMatrixScale(node.matrixWorld);
         boundingSphereCenter.copy(node.boundingSphere.center).applyMatrix4(node.matrixWorld);
         const distance = Math.max(
-            0.0,
-            context.camera.camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
+            0.0, camera3D.position.distanceTo(boundingSphereCenter) - node.boundingSphere.radius * subdivisionVector.x);
 
         // Size projection on pixel of bounding
-        if (context.camera.camera3D.isOrthographicCamera) {
-            const camera3D = context.camera.camera3D;
+        if (camera3D.isOrthographicCamera) {
             const preSSE = context.camera._preSSE * 2 * camera3D.zoom / (camera3D.top - camera3D.bottom);
             node.screenSize = preSSE * node.boundingSphere.radius * subdivisionVector.x;
         } else {
