@@ -328,7 +328,7 @@ class TiledGeometryLayer extends GeometryLayer {
         // RasterTile.needsUpdate has been removed
         // TODO: optimize uniforms update
         // add event to refresh
-        node.material.layersNeedUpdate = node.material.visible;
+        // node.material.layersNeedUpdate = node.material.visible;
 
         this.info.update(node);
         return ObjectRemovalHelper.removeChildren(this, node);

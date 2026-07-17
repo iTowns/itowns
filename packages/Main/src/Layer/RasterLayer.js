@@ -112,7 +112,7 @@ class RasterLayer extends Layer {
             }
 
             if (rasterTile && (!rasterTile.hasData() || (node.visible && node.material.visible))) {
-                return rasterTile.load(node, context.view);
+                return rasterTile.load(node, context.view).then(() => (node.material.layersNeedUpdate = true));
             }
         }
     }

@@ -115,6 +115,8 @@ export class RasterTile extends THREE.EventDispatcher {
             }, () => this.state.success())
                 .catch(err => handlingError(err, requester, this.layer, nextLevel, view));
         }
+
+        return Promise.resolve();
     }
 
     hasData() {
