@@ -341,7 +341,7 @@ function _addIcon(icon, domElement, opt) {
  * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
- * @property {Number|Function} [stroke.extrusion_radius] - Only for {@link GeometryLayer} and if user sets it.
+ * @property {number|Function} [stroke.extrusion_radius] - Only for {@link GeometryLayer} and if user sets it.
  * If defined, lines will be extruded as cylinders with the specified amount as a radius.
  *
  * @property {object} point - Point style.

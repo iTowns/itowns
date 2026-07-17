@@ -28,6 +28,26 @@ const SEGMENTS = 8; // radial segments in a circle - used to model cylinders and
 // Scratch vectors used while building spherical wedges for extruded lines.
 let wedgeScratch;
 
+// Populate the module-level dim_ref and dim vectors from a source extent.
+function computeExtentDimensions(sourceExtent, matrix, crs) {
+    if (sourceExtent.isExtent) {
+        extent.copy(sourceExtent).applyMatrix4(matrix);
+        extent.as(crs, extent);
+    } else {
+        sourceExtent.toExtent(crs, extent);
+    }
+    extent.spatialEuclideanDimensions(dim_ref);
+    extent.planarDimensions(dim);
+}
+
+function refreshCollectionContext(feature) {
+    context.setFeature(feature);
+    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
+    up.set(0, 0, 1).multiply(inverseScale);
+    coord.setCrs(context.collection.crs);
+    style.setContext(context);
+}
+
 class FeatureMesh extends THREE.Group {
     #currentCrs;
     #originalCrs;
@@ -76,14 +96,7 @@ class FeatureMesh extends THREE.Group {
                 // TODO: An extent here could be either a geographic extent (for
                 // features from WFS) or a tiled extent (for features from MVT).
                 // Unify both behavior.
-                if (this.extent.isExtent) {
-                    extent.copy(this.extent).applyMatrix4(this.#collection.matrix);
-                    extent.as(coord.crs, extent);
-                } else {
-                    this.extent.toExtent(coord.crs, extent);
-                }
-                extent.spatialEuclideanDimensions(dim_ref);
-                extent.planarDimensions(dim);
+                computeExtentDimensions(this.extent, this.#collection.matrix, coord.crs);
                 if (dim.x && dim.y) {
                     this.scale.copy(dim_ref).divide(dim).setZ(1);
                 }
@@ -251,11 +264,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
     }
 
     // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+    refreshCollectionContext(feature);
 
     const { vertices, colors, batchIds } = buffers;
 
@@ -372,11 +381,7 @@ function updateLineBuffers(featureMesh, buffers, id) {
     }
 
     // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+    refreshCollectionContext(feature);
 
     const { vertices, colors, batchIds, indices } = buffers;
 
@@ -430,8 +435,6 @@ function featureToExtrudedLine(feature, options) {
     let totalJoints = 0;
     let totalCaps = 0;
 
-    context.setFeature(feature);
-    style.setContext(context);
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
         const pointCount = geometry.indices[0].count;
@@ -449,9 +452,6 @@ function featureToExtrudedLine(feature, options) {
     const batchIdFn = options.batchId || ((p, id) => id);
     const batchIds = new Uint32Array(vertices.length / 3);
 
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
 
     const totalQuads = totalSegments * SEGMENTS +
         (totalJoints + totalCaps) * maxQuadsPerWedge;
@@ -475,10 +475,10 @@ function featureToExtrudedLine(feature, options) {
     }
 
     const geom = new THREE.BufferGeometry();
-    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-    geom.setAttribute('color', new THREE.Uint8BufferAttribute(colors, 3, true));
-    geom.setAttribute('batchId', new THREE.Uint32BufferAttribute(batchIds, 1));
-    geom.setIndex(new THREE.BufferAttribute(indices, 1));
+    geom.setAttribute('position', new THREE.Float32BufferAttribute(vertices.subarray(0, buffers.vertPtr * 3), 3));
+    geom.setAttribute('color', new THREE.Uint8BufferAttribute(colors.subarray(0, buffers.vertPtr * 3), 3, true));
+    geom.setAttribute('batchId', new THREE.Uint32BufferAttribute(batchIds.subarray(0, buffers.vertPtr), 1));
+    geom.setIndex(new THREE.BufferAttribute(indices.subarray(0, buffers.indexPtr), 1));
 
     return new THREE.Mesh(geom, options.polygonMaterial);
 }
@@ -507,11 +507,7 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     }
 
     // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+    refreshCollectionContext(feature);
 
     // Compute reprojection inverse scale (same logic as FeatureMesh.as())
     dim_ref.set(1, 1);
@@ -519,14 +515,7 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     const collExtent = context.collection.extent;
     if (collExtent) {
         const crs = context.collection.crs;
-        if (collExtent.isExtent) {
-            extent.copy(collExtent).applyMatrix4(context.collection.matrix);
-            extent.as(crs, extent);
-        } else {
-            collExtent.toExtent(crs, extent);
-        }
-        extent.spatialEuclideanDimensions(dim_ref);
-        extent.planarDimensions(dim);
+        computeExtentDimensions(collExtent, context.collection.matrix, crs);
     }
 
     const { vertices, colors, batchIds, indices } = buffers;
@@ -688,8 +677,8 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     // Create orthonormal basis for the plane containing both normals
     xAxis.crossVectors(prevZAxis, zAxis);
     if (xAxis.lengthSq() < 0.001) {
-        const isIsNearX = Math.abs(prevZAxis.x) > 0.9;
-        tempAxis.set(isIsNearX ? 0 : 1, isIsNearX ? 1 : 0, 0);
+        const isNearX = Math.abs(prevZAxis.x) > 0.9;
+        tempAxis.set(isNearX ? 0 : 1, isNearX ? 1 : 0, 0);
         xAxis.crossVectors(tempAxis, prevZAxis).normalize();
     } else {
         xAxis.normalize();
@@ -698,8 +687,8 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     const meshColor = toColor(style.stroke.color).multiplyScalar(255);
 
     // Calculate number of intermediate steps based on angle between axes
-    const angle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
-    const numSteps = Math.max(1, Math.round(angle * SEGMENTS / (2 * Math.PI)));
+    const zPrevZAngle = Math.acos(Math.max(-1, Math.min(1, prevZAxis.dot(zAxis))));
+    const numSteps = Math.max(1, Math.round(zPrevZAngle * SEGMENTS / (2 * Math.PI)));
 
     yAxisBase.crossVectors(prevZAxis, xAxis);
     yAxisTop.crossVectors(zAxis, xAxis);
@@ -819,11 +808,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
     }
 
     // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+    refreshCollectionContext(feature);
 
     const { vertices, colors, batchIds, indices } = buffers;
 
@@ -901,10 +886,6 @@ function featureToExtrudedPolygon(feature, options) {
 
     let featureId = 0;
 
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
 
@@ -943,11 +924,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     }
 
     // context setup
-    context.setFeature(feature);
-    inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
-    coord.setCrs(context.collection.crs);
-    style.setContext(context);
+    refreshCollectionContext(feature);
 
     const { vertices, colors, batchIds, indices } = buffers;
     const { levelled_roofs } = style.fill;
@@ -1166,9 +1143,9 @@ export function rebuildMeshTopology(featureMesh, layerStyle) {
     context.setCollection(featureMesh.collection);
     for (const oldMesh of [...featureMesh.meshes.children]) {
         const newMesh = featureToMesh(oldMesh.feature, featureMesh.options);
+        oldMesh.geometry.dispose();
+        featureMesh.meshes.remove(oldMesh);
         if (newMesh) {
-            oldMesh.geometry.dispose();
-            featureMesh.meshes.remove(oldMesh);
             featureMesh.meshes.add(newMesh);
         }
     }
