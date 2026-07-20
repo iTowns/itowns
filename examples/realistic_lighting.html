@@ -1,0 +1,121 @@
+<html>
+    <head>
+        <title>Itowns - 3D Tiles loader (Realistic Lighting)</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js"
+            }
+        }
+        </script>
+
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+
+
+        <script type="module">
+            import * as THREE from 'three';
+            import dat from 'dat';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+
+            import { zoomToLayer } from './jsm/OGC3DTilesHelper.js';
+
+            const {
+                WMTSSource, OGC3DTilesSource,
+                ColorLayer, ElevationLayer, OGC3DTilesLayer,
+                GlobeView, Coordinates, Fetcher,
+            } = itowns;
+
+            window.gui = new dat.GUI();
+
+
+            // ---- Create a GlobeView ----
+
+            // Define camera initial position
+            const placement = {
+                coord: new Coordinates('EPSG:4326', 2.351323, 48.856712),
+                range: 12500000,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Create a GlobeView
+            const view = new GlobeView(viewerDiv, placement, {
+                shadows: true,
+                controls: {
+                    minDistance: 100,
+                },
+                realisticLighting: true,
+            });
+
+            // Setup loading screen
+            setupLoadingScreen(viewerDiv, view);
+
+            // ---- Add a basemap ----
+
+            Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
+                config.source = new WMTSSource(config.source);
+                view.addLayer(new ColorLayer('Ortho', config));
+            });
+
+            // ---- Add 3D terrain ----
+
+            // Add two elevation layers: world terrain and a more precise terrain for france
+            // These will deform iTowns globe geometry to represent terrain elevation.
+            function addElevationLayerFromConfig(config) {
+                config.source = new WMTSSource(config.source);
+                const elevationLayer = new ElevationLayer(config.id, config);
+                view.addLayer(elevationLayer);
+            }
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
+            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+
+            // ---------- 3D Tiles loading
+
+            function load(url) {
+                const source = new OGC3DTilesSource({ url });
+
+                window.layer = new OGC3DTilesLayer('3DTiles', {
+                    source,
+                    sseThreshold: 2,
+                });
+
+                // Add the layer to our view
+                view.addLayer(window.layer).then((layer) => {
+                    zoomToLayer(view, layer);
+                });
+
+                window.layer.whenReady
+                    .then(() => debug.createOGC3DTilesDebugUI(gui, view, window.layer));
+            }
+
+            // ---------- Realistic lighting & DATE/TIME CONTROLS ----------
+            debug.createRealisticLightingDebugUI(gui, view);
+
+            window.layer = null; // 3D Tiles layer
+
+            // ---------- Load Lille dataset ----------
+            load("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
+
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
+        </script>
+    </body>
+</html>
