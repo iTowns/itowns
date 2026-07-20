@@ -13,3 +13,4 @@ potree
 .nyc_output/
 buildDocs/
 tsconfig.tsbuildinfo
+.github/
