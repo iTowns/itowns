@@ -9,7 +9,7 @@ import {
     SkyMaterialParameters,
 } from '@takram/three-atmosphere';
 
-import {EffectComposer, EffectMaterial, EffectPass, FXAAEffect, RenderPass,} from 'postprocessing';
+import { EffectComposer, EffectMaterial, EffectPass, FXAAEffect, RenderPass } from 'postprocessing';
 import GlobeView from 'Core/Prefab/GlobeView';
 import SunLightLayer from 'Layer/SunLightLayer';
 import ISkyStrategy from './ISkyStrategy';
