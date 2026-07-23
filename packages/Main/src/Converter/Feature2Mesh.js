@@ -19,6 +19,17 @@ const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
 const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 
+// Scratch vectors for extruded-line geometry building
+let xAxis;
+let yAxis;
+let zAxis;
+let prevZAxis;
+let capAxis;
+let normal;
+let vertex;
+let lastCoord;
+let lastZAxis;
+
 const _color = new THREE.Color();
 const maxValueUint8 = 2 ** 8 - 1;
 const maxValueUint16 = 2 ** 16 - 1;
@@ -484,6 +495,86 @@ function featureToExtrudedLine(feature, options) {
 }
 
 /**
+ * Compute base/top endpoint positions and the local orientation frame for a line segment.
+ * Sets baseCoord, topCoord, zAxis, xAxis, yAxis.
+ *
+ * @param {Feature} feature
+ * @param {Float32Array} ptsIn - Flat vertex position array
+ * @param {number} iVertIn - Flat index into ptsIn for the first endpoint
+ * @returns {boolean} false if the segment is degenerate (zero length)
+ */
+function computeSegmentFrame(feature, ptsIn, iVertIn) {
+    if (feature.normals) {
+        up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
+    }
+
+    const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn);
+    coord.copy(p0Local).applyMatrix4(context.collection.matrix);
+    if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
+    baseCoord.copy(up).multiplyScalar(style.stroke.base_altitude - coord.z).add(p0Local);
+
+    const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3);
+    coord.copy(p1Local).applyMatrix4(context.collection.matrix);
+    if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
+    topCoord.copy(up).multiplyScalar(style.stroke.base_altitude - coord.z).add(p1Local);
+
+    // cylinder axis
+    zAxis.subVectors(topCoord, baseCoord);
+    const axisLen = zAxis.length();
+    if (axisLen === 0) { return false; }
+    zAxis.divideScalar(axisLen);
+
+    // Build a local frame: choose an arbitrary vector not parallel to Z axis
+    if (Math.abs(zAxis.z) > 0.9) { xAxis.set(1, 0, 0); } else { xAxis.set(0, 0, 1); }
+    yAxis.crossVectors(zAxis, xAxis).normalize();
+    xAxis.crossVectors(yAxis, zAxis);
+
+    return true;
+}
+
+/**
+ * Append one ring of SEGMENTS cylinder vertex pairs to the buffers.
+ *
+ * @param {object} buffers - Buffer management object with vertPtr / indexPtr write cursors.
+ * @param {number} id - Batch ID value to assign to written vertices when batchIds is provided.
+ */
+function buildCylinderRing(buffers, id) {
+    const { vertices, colors, batchIds, indices } = buffers;
+    const meshColor = toColor(style.stroke.color).multiplyScalar(255);
+    const radius = style.stroke.extrusion_radius;
+    for (let k = 0; k < SEGMENTS; k++) {
+        const v = buffers.vertPtr;
+        if (vertices) {
+            const theta = (k / SEGMENTS) * Math.PI * 2;
+            normal.copy(xAxis).multiplyScalar(Math.cos(theta))
+                .addScaledVector(yAxis, Math.sin(theta));
+            normal.multiply(inverseScale);
+            if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
+                normal.x *= dim.x / dim_ref.x;
+                normal.y *= dim.y / dim_ref.y;
+            }
+            vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
+            vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
+        }
+        if (batchIds) {
+            batchIds[v] = id;
+            batchIds[v + 1] = id;
+        }
+        if (colors) {
+            meshColor.toArray(colors, 3 * v);
+            meshColor.toArray(colors, 3 * (v + 1));
+        }
+        if (indices) {
+            const v0 = v;
+            const v1 = v + ((k + 1) % SEGMENTS - k) * 2;
+            indices.set([v0, v1, v0 + 1, v0 + 1, v1, v1 + 1], buffers.indexPtr);
+            buffers.indexPtr += 6;
+        }
+        buffers.vertPtr += 2;
+    }
+}
+
+/**
  * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
  * Creates cylindrical geometry around line segments with spherical wedges at joints and,
  * when `stroke.line_cap === 'round'`, half-sphere caps at line endpoints.
@@ -518,8 +609,6 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
         computeExtentDimensions(collExtent, context.collection.matrix, crs);
     }
 
-    const { vertices, colors, batchIds, indices } = buffers;
-
     // geometry range
     const geometry = context.geometry;
     const start = geometry.indices[0].offset;
@@ -536,16 +625,15 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     const useRoundCaps = style.stroke.line_cap === 'round';
 
     // pre-allocated vectors
-    const xAxis = new THREE.Vector3();
-    const yAxis = new THREE.Vector3();
-    const zAxis = new THREE.Vector3();
-    const prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
-    const capAxis = new THREE.Vector3();
-    const normal = new THREE.Vector3();
-    const vertex = new THREE.Vector3();
-    const firstCoord = new THREE.Vector3();
-    const lastCoord = new THREE.Vector3();
-    const lastZAxis = new THREE.Vector3();
+    xAxis = new THREE.Vector3();
+    yAxis = new THREE.Vector3();
+    zAxis = new THREE.Vector3();
+    prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
+    capAxis = new THREE.Vector3();
+    normal = new THREE.Vector3();
+    vertex = new THREE.Vector3();
+    lastCoord = new THREE.Vector3();
+    lastZAxis = new THREE.Vector3();
     wedgeScratch = {
         xAxis: new THREE.Vector3(),
         tempAxis: new THREE.Vector3(),
@@ -556,84 +644,24 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
         yAxisBase: new THREE.Vector3(),
         yAxisTop: new THREE.Vector3(),
     };
+
+    // whether the line sequence is not degenerate, i.e. has at least 2 points
     let hasSegment = false;
 
     // For each consecutive pair of points, make a cylinder centered on the segment
     for (let i = start; i < end - 1; i++) {
-        const iVertIn = i * 3;
-
-        let altitude;
-
-        // Base and top points in layer-local space with altitude shift
-        if (feature.normals) {
-            up.fromArray(feature.normals, iVertIn).multiply(inverseScale);
-        }
-
-        const p0Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn);
-        coord.copy(p0Local).applyMatrix4(context.collection.matrix);
-        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
-        altitude = style.stroke.base_altitude;
-        baseCoord.copy(up).multiplyScalar(altitude - coord.z).add(p0Local);
-
-        const p1Local = context.setLocalCoordinatesFromArray(ptsIn, iVertIn + 3);
-        coord.copy(p1Local).applyMatrix4(context.collection.matrix);
-        if (coord.crs === 'EPSG:4978') { coord.as('EPSG:4326', coord); }
-        altitude = style.stroke.base_altitude;
-        topCoord.copy(up).multiplyScalar(altitude - coord.z).add(p1Local);
-
-        // Axis vector
-        zAxis.subVectors(topCoord, baseCoord);
-        const axisLen = zAxis.length();
-        if (axisLen === 0) { continue; } // start and end are the same
-        zAxis.divideScalar(axisLen);
+        if (!computeSegmentFrame(feature, ptsIn, i * 3)) { continue; }
 
         if (!hasSegment) {
             hasSegment = true;
-            firstCoord.copy(baseCoord);
             if (useRoundCaps) {
                 capAxis.copy(zAxis).negate();
-                makeSphericalWedgeVertices(firstCoord, radius, capAxis, zAxis, buffers, id);
+                // baseCoord here is the first vertex of the input segment
+                makeSphericalWedgeVertices(baseCoord, radius, capAxis, zAxis, buffers, id);
             }
         }
 
-        // Build a local frame: choose an arbitrary vector not parallel to Z axis
-        if (Math.abs(zAxis.z) > 0.9) { xAxis.set(1, 0, 0); } else { xAxis.set(0, 0, 1); }
-        yAxis.crossVectors(zAxis, xAxis).normalize();
-        xAxis.crossVectors(yAxis, zAxis);
-
-        // Create ring vertices around both ends
-        const meshColor = toColor(style.stroke.color).multiplyScalar(255);
-        for (let k = 0; k < SEGMENTS; k++) {
-            const v = buffers.vertPtr;
-            if (vertices) {
-                const theta = (k / SEGMENTS) * Math.PI * 2;
-                normal.copy(xAxis).multiplyScalar(Math.cos(theta))
-                    .addScaledVector(yAxis, Math.sin(theta));
-                normal.multiply(inverseScale);
-                if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
-                    normal.x *= dim.x / dim_ref.x;
-                    normal.y *= dim.y / dim_ref.y;
-                }
-
-                vertex.copy(baseCoord).addScaledVector(normal, radius).toArray(vertices, 3 * v);
-                vertex.copy(topCoord).addScaledVector(normal, radius).toArray(vertices, 3 * (v + 1));
-            }
-            if (batchIds) {
-                batchIds[v] = id;
-                batchIds[v + 1] = id;
-            }
-            if (colors) {
-                meshColor.toArray(colors, 3 * v);
-                meshColor.toArray(colors, 3 * (v + 1));
-            }
-            if (indices) {
-                const v0 = v;
-                const v1 = v + ((k + 1) % SEGMENTS - k) * 2;
-                indices.set([v0, v1, v0 + 1, v0 + 1, v1, v1 + 1], buffers.indexPtr);
-                buffers.indexPtr += 6;
-            }
-            buffers.vertPtr += 2;
-        }
+        buildCylinderRing(buffers, id);
 
         if (i !== start) {
             makeSphericalWedgeVertices(baseCoord, radius, prevZAxis, zAxis, buffers, id);
@@ -699,40 +727,42 @@ function makeSphericalWedgeVertices(origin, radius, prevZAxis, zAxis, buffers, i
     // don't generate anything if both half-circles are already aligned
     if (cosTheta >= 0.9995) { return; }
 
+    // early return because in practice, if we don't rebuild vertices,
+    // we never need to rebuild indices either
+    if (!vertices && !batchIds && !colors) { return; }
+
     // Generate vertices for all intermediate rings
     const ringVertices = [];
-    if (vertices || batchIds || colors) {
-        const theta = Math.acos(cosTheta);
-        for (let step = 0; step <= numSteps; step++) {
-            const t = step / numSteps;
+    const theta = Math.acos(cosTheta);
+    for (let step = 0; step <= numSteps; step++) {
+        const t = step / numSteps;
 
-            interpolatedYAxis.copy(yAxisBase).applyAxisAngle(xAxis, t * theta);
+        interpolatedYAxis.copy(yAxisBase).applyAxisAngle(xAxis, t * theta);
 
-            const ringStart = buffers.vertPtr;
-            ringVertices.push(ringStart);
+        const ringStart = buffers.vertPtr;
+        ringVertices.push(ringStart);
 
-            // Create vertices for this ring
-            for (let k = 0; k <= SEGMENTS / 2; k++) {
-                const v = buffers.vertPtr;
-                if (vertices) {
-                    const angle = (k / SEGMENTS) * Math.PI * 2;
-                    normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
-                    normal.copy(normalXComp).addScaledVector(interpolatedYAxis, Math.sin(angle));
-                    normal.multiply(inverseScale);
-                    if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
-                        normal.x *= dim.x / dim_ref.x;
-                        normal.y *= dim.y / dim_ref.y;
-                    }
-                    vertex.copy(origin).addScaledVector(normal, radius).toArray(vertices, 3 * v);
+        // Create vertices for this ring
+        for (let k = 0; k <= SEGMENTS / 2; k++) {
+            const v = buffers.vertPtr;
+            if (vertices) {
+                const angle = (k / SEGMENTS) * Math.PI * 2;
+                normalXComp.copy(xAxis).multiplyScalar(Math.cos(angle));
+                normal.copy(normalXComp).addScaledVector(interpolatedYAxis, Math.sin(angle));
+                normal.multiply(inverseScale);
+                if (dim.x && dim.y && dim_ref.x && dim_ref.y) {
+                    normal.x *= dim.x / dim_ref.x;
+                    normal.y *= dim.y / dim_ref.y;
                 }
-                if (batchIds) {
-                    batchIds[v] = id;
-                }
-                if (colors) {
-                    meshColor.toArray(colors, 3 * v);
-                }
-                buffers.vertPtr++;
+                vertex.copy(origin).addScaledVector(normal, radius).toArray(vertices, 3 * v);
             }
+            if (batchIds) {
+                batchIds[v] = id;
+            }
+            if (colors) {
+                meshColor.toArray(colors, 3 * v);
+            }
+            buffers.vertPtr++;
         }
     }
 
