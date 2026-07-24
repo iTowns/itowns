@@ -14,24 +14,31 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import SunLightLayer from 'Layer/SunLightLayer';
 import ISkyStrategy from './ISkyStrategy';
 
+// Without a tone-mapping post-processing effect the default sky is very dim.
+// SKY_INTENSITY_BOOST brightens both the sky color and the aerial-perspective
+// inscatter so that they remain visually consistent with each other.
+const SKY_INTENSITY_BOOST = 6;
+
+// Boosts inscatter intensity to match the sky color boost applied in CustomSkyMaterial.
 class CustomAerialPerspectiveEffect extends AerialPerspectiveEffect {
     constructor(camera: THREE.Camera) {
         super(camera);
         this.setFragmentShader(
             this.getFragmentShader().replace(
                 'radiance = radiance + inscatter',
-                'radiance = radiance + 6.0 * inscatter',
+                `radiance = radiance + ${SKY_INTENSITY_BOOST.toFixed(1)} * inscatter`,
             ),
         );
     }
 }
 
+// Boosts sky color intensity to compensate for the absence of a tone-mapping effect.
 class CustomSkyMaterial extends SkyMaterial {
     constructor(parameters?: SkyMaterialParameters) {
         super(parameters);
         this.fragmentShader = this.fragmentShader.replace(
             'outputColor.a = 1.0;',
-            'outputColor.rgb *= 6.0;\noutputColor.a = 1.0;',
+            `outputColor.rgb *= ${SKY_INTENSITY_BOOST.toFixed(1)};\noutputColor.a = 1.0;`,
         );
     }
 }
