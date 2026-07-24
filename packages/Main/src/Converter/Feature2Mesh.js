@@ -29,6 +29,7 @@ let normal;
 let vertex;
 let lastCoord;
 let lastZAxis;
+let wedgeScratch; // collection of vectors used while building spherical wedges
 
 const _color = new THREE.Color();
 const maxValueUint8 = 2 ** 8 - 1;
@@ -36,8 +37,6 @@ const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
 const crsWGS84 = 'EPSG:4326';
 const SEGMENTS = 8; // radial segments in a circle - used to model cylinders and spheres
-// Scratch vectors used while building spherical wedges for extruded lines.
-let wedgeScratch;
 
 // Populate the module-level dim_ref and dim vectors from a source extent.
 function computeExtentDimensions(sourceExtent, matrix, crs) {
@@ -574,6 +573,29 @@ function buildCylinderRing(buffers, id) {
     }
 }
 
+function initExtrudedLineVectors() {
+    if (xAxis) { return; } // already initialized
+    xAxis = new THREE.Vector3();
+    yAxis = new THREE.Vector3();
+    zAxis = new THREE.Vector3();
+    prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
+    capAxis = new THREE.Vector3();
+    normal = new THREE.Vector3();
+    vertex = new THREE.Vector3();
+    lastCoord = new THREE.Vector3();
+    lastZAxis = new THREE.Vector3();
+    wedgeScratch = {
+        xAxis: new THREE.Vector3(),
+        tempAxis: new THREE.Vector3(),
+        normal: new THREE.Vector3(),
+        normalXComp: new THREE.Vector3(),
+        vertex: new THREE.Vector3(),
+        interpolatedYAxis: new THREE.Vector3(),
+        yAxisBase: new THREE.Vector3(),
+        yAxisTop: new THREE.Vector3(),
+    };
+}
+
 /**
  * Update vertex data for extruded LINE features (cylindrical tubes with spherical joints).
  * Creates cylindrical geometry around line segments with spherical wedges at joints and,
@@ -624,26 +646,7 @@ function updateExtrudedLineBuffers(featureMesh, buffers, id) {
     const radius = style.stroke.extrusion_radius;
     const useRoundCaps = style.stroke.line_cap === 'round';
 
-    // pre-allocated vectors
-    xAxis = new THREE.Vector3();
-    yAxis = new THREE.Vector3();
-    zAxis = new THREE.Vector3();
-    prevZAxis = new THREE.Vector3(NaN, NaN, NaN);
-    capAxis = new THREE.Vector3();
-    normal = new THREE.Vector3();
-    vertex = new THREE.Vector3();
-    lastCoord = new THREE.Vector3();
-    lastZAxis = new THREE.Vector3();
-    wedgeScratch = {
-        xAxis: new THREE.Vector3(),
-        tempAxis: new THREE.Vector3(),
-        normal: new THREE.Vector3(),
-        normalXComp: new THREE.Vector3(),
-        vertex: new THREE.Vector3(),
-        interpolatedYAxis: new THREE.Vector3(),
-        yAxisBase: new THREE.Vector3(),
-        yAxisTop: new THREE.Vector3(),
-    };
+    initExtrudedLineVectors(); // initialize pre-allocated vectors
 
     // whether the line sequence is not degenerate, i.e. has at least 2 points
     let hasSegment = false;
