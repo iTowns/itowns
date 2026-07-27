@@ -52,7 +52,7 @@ class SunLightLayer extends GeometryLayer {
         this.isSunLightLayer = true;
         this.sunDirection = new THREE.Vector3();
 
-        this.sunLight = new THREE.DirectionalLight(0xffffff, 2);
+        this.sunLight = new THREE.DirectionalLight(0xffffff, 4);
         this.sunLight.shadow.mapSize.set(4096, 4096);
 
         this.sunLight.castShadow = this.castShadow;

@@ -1,25 +1,47 @@
 import * as THREE from 'three';
 import {
     AerialPerspectiveEffect,
-    SkyLightProbe,
-    SkyMaterial,
+    AtmosphereParameters,
     getMoonDirectionECEF,
     PrecomputedTexturesGenerator,
-    AtmosphereParameters,
+    SkyLightProbe,
+    SkyMaterial,
+    SkyMaterialParameters,
 } from '@takram/three-atmosphere';
 
-import {
-    EffectPass,
-    RenderPass,
-    ToneMappingEffect,
-    FXAAEffect,
-    ToneMappingMode,
-    EffectMaterial,
-    EffectComposer,
-} from 'postprocessing';
+import { EffectComposer, EffectMaterial, EffectPass, FXAAEffect, RenderPass } from 'postprocessing';
 import GlobeView from 'Core/Prefab/GlobeView';
 import SunLightLayer from 'Layer/SunLightLayer';
 import ISkyStrategy from './ISkyStrategy';
+
+// Without a tone-mapping post-processing effect the default sky is very dim.
+// SKY_INTENSITY_BOOST brightens both the sky color and the aerial-perspective
+// inscatter so that they remain visually consistent with each other.
+const SKY_INTENSITY_BOOST = 6;
+
+// Boosts inscatter intensity to match the sky color boost applied in CustomSkyMaterial.
+class CustomAerialPerspectiveEffect extends AerialPerspectiveEffect {
+    constructor(camera: THREE.Camera) {
+        super(camera);
+        this.setFragmentShader(
+            this.getFragmentShader().replace(
+                'radiance = radiance + inscatter',
+                `radiance = radiance + ${SKY_INTENSITY_BOOST.toFixed(1)} * inscatter`,
+            ),
+        );
+    }
+}
+
+// Boosts sky color intensity to compensate for the absence of a tone-mapping effect.
+class CustomSkyMaterial extends SkyMaterial {
+    constructor(parameters?: SkyMaterialParameters) {
+        super(parameters);
+        this.fragmentShader = this.fragmentShader.replace(
+            'outputColor.a = 1.0;',
+            `outputColor.rgb *= ${SKY_INTENSITY_BOOST.toFixed(1)};\noutputColor.a = 1.0;`,
+        );
+    }
+}
 
 export interface RealisticSkyParameters {
     rayleighScattering: THREE.Vector3;
@@ -40,22 +62,19 @@ class RealisticSky implements ISkyStrategy {
     view: GlobeView;
     sunLightLayer: SunLightLayer;
     ready: boolean;
-    private _originalIntensity: number;
 
-    constructor(view: GlobeView, sunLightLayer: SunLightLayer, params?: RealisticSkyParameters) {
+    constructor(view: GlobeView, sunLightLayer: SunLightLayer, params?: RealisticSkyParameters, skyLightIntensity?: number) {
         this.view = view;
         const scene = view.scene;
         this.scene = scene;
         const camera = view.camera3D;
-        const composer = view.mainLoop.gfxEngine.composer;
-        this.composer = composer;
+        this.composer = view.mainLoop.gfxEngine.composer;
         this.sunLightLayer = sunLightLayer;
         this.ready = false;
-        this._originalIntensity = sunLightLayer.sunLight.intensity;
 
         // SkyMaterial disables projection.
         // Provide a plane that covers clip space.
-        const skyMaterial = new SkyMaterial();
+        const skyMaterial = new CustomSkyMaterial();
         this.sky = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), skyMaterial);
         this.sky.frustumCulled = false;
         this.sky.visible = false;
@@ -63,12 +82,12 @@ class RealisticSky implements ISkyStrategy {
 
         // SkyLightProbe computes sky irradiance of its position.
         this.skyLight = new SkyLightProbe();
-        this.skyLight.intensity = 0.5;
+        this.skyLight.intensity = skyLightIntensity ?? 2;
         this.skyLight.position.copy(camera.position);
         this.skyLight.visible = false;
         scene.add(this.skyLight);
 
-        this.aerialPerspective = new AerialPerspectiveEffect(camera);
+        this.aerialPerspective = new CustomAerialPerspectiveEffect(camera);
 
         const rendererSize = new THREE.Vector2();
         view.mainLoop.gfxEngine.renderer.getSize(rendererSize);
@@ -78,7 +97,6 @@ class RealisticSky implements ISkyStrategy {
         this.effectPass = new EffectPass(
             camera,
             this.aerialPerspective,
-            new ToneMappingEffect({ mode: ToneMappingMode.AGX }),
         );
         this.FXAAPass = new EffectPass(camera, new FXAAEffect());
 
@@ -121,7 +139,7 @@ class RealisticSky implements ISkyStrategy {
 
         // attenuate aerial perspective when far away.
         // value determined experimentally
-        this.aerialPerspective.blendMode.opacity.value = Math.max(0.3 - 2e-7 * camera.near, 0.05);
+        this.aerialPerspective.blendMode.opacity.value = Math.max(1 - 2e-5 * camera.near, 0.3);
 
         // The changes to the camera's near/far must be manually updated
         // to the uniforms used in post-processing effects
@@ -166,13 +184,8 @@ class RealisticSky implements ISkyStrategy {
 
     private _setState(on: boolean) {
         // Realistic rendering requires a dimmer sunlight
-        this.sunLightLayer.sunLight.intensity = on
-            ? this._originalIntensity * 0.1
-            : this._originalIntensity;
         this.sky.visible = on;
         this.skyLight.visible = on;
-
-        this.view.renderer.toneMappingExposure = on ? 10 : 1;
 
         if (on) {
             this.composer.addPass(this.renderPass);

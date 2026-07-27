@@ -64,6 +64,11 @@
         "id": "3dtiles_loader",
         "label": "3D Tiles loader",
         "description": "Native support for the OGC 3D Tiles standard for massive 3D dataset streaming."
+      },
+      {
+        "id": "realistic_lighting",
+        "label": "Realistic lighting",
+        "description": "Physically-based sun lighting and shadows on a 3D Tiles mesh dataset."
       }
     ]
   },
