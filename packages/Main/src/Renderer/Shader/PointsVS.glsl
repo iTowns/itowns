@@ -103,6 +103,11 @@ void main() {
             vec2 uv = vec2(i, (1. - i));
             vColor = texture2D(gradientTexture, uv);
         }
+        // Linearize sRGB colors for proper linear workflow.
+        // All color sources (vertex colors, classification/gradient textures)
+        // are authored in sRGB space and must be converted to linear for
+        // correct blending and output encoding.
+        vColor.rgb = pow(vColor.rgb, vec3(2.2));
     }
 
     if (texture2D(visibilityTexture, uv).r == 0.) {

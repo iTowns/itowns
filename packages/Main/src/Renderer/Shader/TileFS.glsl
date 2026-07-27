@@ -32,7 +32,7 @@ void main() {
 
 #else
 
-    gl_FragColor = vec4(diffuse, opacity);
+    gl_FragColor = vec4(sRGBTransferEOTF(vec4(diffuse, 1.0)).rgb, opacity);
 
     uvs[0] = vec3(vUv.xy, 0.);
 
@@ -44,6 +44,7 @@ void main() {
     #pragma unroll_loop
     for ( int i = 0; i < NUM_FS_TEXTURES; i ++ ) {
         color = getLayerColor( i , colorTextures, colorOffsetScales[ i ], colorLayers[ i ]);
+        color = sRGBTransferEOTF(color);
         gl_FragColor.rgb = mix(gl_FragColor.rgb, color.rgb, color.a);
     }
 
@@ -73,6 +74,7 @@ void main() {
 
     #include <fog_fragment>
     #include <itowns/overlay_fragment>
+    #include <colorspace_fragment>
 
 #endif
 }

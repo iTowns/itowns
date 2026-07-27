@@ -606,6 +606,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     style.setContext(context);
 
     const { vertices, colors, batchIds, indices } = buffers;
+    const { levelled_roofs } = style.fill;
 
     // geometry range
     const geometry = context.geometry;
@@ -619,6 +620,15 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     const startIn = start * 3;
     const startTop = start + numVertices / 3;
     const endIn = startIn + count * 3;
+
+    let minAltitude = Infinity;
+    if (levelled_roofs) {
+        for (let i = startIn; i < endIn; i += 3) {
+            if (!vertices) { continue; }
+            context.setLocalCoordinatesFromArray(feature.vertices, i);
+            minAltitude = Math.min(minAltitude, style.fill.base_altitude);
+        }
+    }
 
     for (let i = startIn; i < endIn; i += 3) {
         const t = numVertices + i;
@@ -641,9 +651,15 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
                 .toArray(vertices, i);
 
             // populate top geometry buffers
-            topCoord.copy(up)
-                .multiplyScalar(extrusion_height).add(baseCoord)
-                .toArray(vertices, t);
+            if (levelled_roofs) {
+                topCoord.copy(up)
+                    .multiplyScalar(minAltitude - worldCoord.z + extrusion_height).add(localCoord)
+                    .toArray(vertices, t);
+            } else {
+                topCoord.copy(up)
+                    .multiplyScalar(extrusion_height).add(baseCoord)
+                    .toArray(vertices, t);
+            }
         }
 
         if (batchIds) {
@@ -874,7 +890,10 @@ export default {
                 style.addEventListener('style-property-changed', (event) => {
                     if (event.parameter === 'color') {
                         this._styleColorVersion++;
-                    } else if (event.parameter === 'extrusion_height' || event.parameter === 'base_altitude') {
+                    } else if (
+                        event.parameter === 'extrusion_height' ||
+                        event.parameter === 'base_altitude' ||
+                        event.parameter === 'levelled_roofs') {
                         this._stylePositionVersion++;
                     }
                 });
