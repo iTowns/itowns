@@ -112,8 +112,13 @@ class Extent {
      * provided a new extent will be created.
      * @returns
      */
-    as(crs: string, target: Extent = new Extent('EPSG:4326')) {
+    as(crs: string, target: Extent = new Extent(crs)) {
         CRS.isValid(crs);
+        if (CRS.isGeocentric(crs)) {
+            throw new Error(
+                `Non-compatible geocentric projection ${crs} to build a geographical extent`,
+            );
+        }
         if (this.crs != crs) {
             // Compute min/max in x/y by projecting 8 cardinal points,
             // and then taking the min/max of each coordinates.
