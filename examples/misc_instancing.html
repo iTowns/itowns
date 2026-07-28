@@ -172,14 +172,13 @@
                 // called when the resource is loaded
                 (gltf) => {
                     var object = gltf.scene;
-                    object.rotateX(Math.PI / 2.0);
-
-                    gltf.scene.position.z = 2;
 
                     var styleModel3D = {
                         model: {
                             object,
                             scale: 6,
+                            up: new THREE.Vector3(0, 1, 0),
+                            north: new THREE.Vector3(0, 0, 1),
                         },
                     };
 

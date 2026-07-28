@@ -13,6 +13,8 @@ let style;
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
+const zVect = new THREE.Vector3(0, 0, 1);
+const yVect = new THREE.Vector3(0, 1, 0);
 const up = new THREE.Vector3();
 const baseCoord = new THREE.Vector3();
 const topCoord = new THREE.Vector3();
@@ -61,6 +63,9 @@ function refreshCollectionContext(feature) {
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 }
+
+const quaternion = new THREE.Quaternion();
+const quaternionY = new THREE.Quaternion();
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -225,7 +230,7 @@ function featureToPoint(feature, options) {
     let featureId = 0;
     const vertices = new Float32Array(ptsIn);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
 
     const pointMaterialSize = [];
 
@@ -346,7 +351,7 @@ function featureToLine(feature, options) {
         indexPtr: 0,
     };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     // Multi line case
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
@@ -798,7 +803,7 @@ function featureToPolygon(feature, options) {
     const batchId = options.batchId || ((p, id) => id);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     let featureId = 0;
 
     for (const geometry of feature.geometries) {
@@ -1123,6 +1128,19 @@ function pointsToInstancedMeshes(feature) {
     const ptsIn = feature.vertices;
     const geometries = feature.geometries;
     const modelObject = style.model.object;
+
+    /* Orientation of the model following up and north properties. */
+    //  Set quaternion using up
+    quaternion.setFromUnitVectors(style.model.up, zVect);
+    // Get quaternion to face north
+    const northWithRotation = style.model.north.applyQuaternion(quaternion);
+    const angletoNorth =  northWithRotation.angleTo(yVect);
+    quaternionY.setFromAxisAngle(yVect, angletoNorth);
+    // Orient the model
+    quaternion.multiply(quaternionY);
+    modelObject.setRotationFromQuaternion(quaternion);
+
+    /* Get the size of the object model once oriented. */
     bbox.setFromObject(modelObject);
     bbox.getSize(modelSize);
 
