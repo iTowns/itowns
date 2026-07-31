@@ -230,8 +230,6 @@ function wmsSource(endpoint, name) {
             format,
             extent: bboxToExtent(bbox, crs),
             version: endpoint.getVersion(),
-            // Note: keep those parameters until we have saner defaults
-            transparent: true,
         }),
         layerType: 'color',
     };
