@@ -195,6 +195,19 @@ function updateActiveList() {
     }
 }
 
+ogcURL.value = 'https://data.geopf.fr/wmts';
+const types = ['wmts', 'wms', 'wfs'];
+
+const params = new URLSearchParams(window.location.search);
+const url = params.get('url');
+if (url) {
+    ogcURL.value = url;
+}
+const type = params.get('type');
+if (type && types.includes(type)) {
+    ogcSelect.value = type;
+}
+
 toolbox.addEventListener('submit', async (event) => {
     event.preventDefault();
 
