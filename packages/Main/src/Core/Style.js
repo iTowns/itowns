@@ -3,17 +3,16 @@ import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
 import { Color, EventDispatcher } from 'three';
 import { deltaE } from 'Renderer/Color';
+import { sharedContext2D, sharedReadContext2D } from 'Utils/CanvasUtils';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
 const cachedImg = new LRUCache({ max: 500 });
 
 let matrix;
-let canvas;
 
 if (typeof document !== 'undefined') {
     matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
-    canvas = document.createElement('canvas');
 }
 
 function baseAltitudeDefault(properties, ctx) {
@@ -58,18 +57,10 @@ async function loadImage(url) {
     return (await promise).image;
 }
 
-function cropImage(img, cropValues) {
-    const x = cropValues.x || 0;
-    const y = cropValues.y || 0;
-    const width = cropValues.width || img.naturalWidth;
-    const height = cropValues.height || img.naturalHeight;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+function cropImage(ctx, img, x, y, width, height) {
     ctx.drawImage(img,
         x, y, width, height,
         0, 0, width, height);
-    return ctx.getImageData(0, 0, width, height);
 }
 
 function replaceWhitePxl(imgd, color, id) {
@@ -698,15 +689,17 @@ class Style extends EventDispatcher {
     async _applyFillToPolygon(txtrCtx, invCtxScale, polygon) {
         // if (this.fill.pattern && txtrCtx.fillStyle.src !== this.fill.pattern.src) {
         // need doc for the txtrCtx.fillStyle.src that seems to always be undefined
-        if (this.fill.pattern) {
-            let img = this.fill.pattern;
-            const cropValues = { ...this.fill.pattern.cropValues };
-            if (this.fill.pattern.source) {
-                img = await loadImage(this.fill.pattern.source);
-            }
-            cropImage(img, cropValues);
+        const { pattern } = this.fill;
+        if (pattern) {
+            const cropValues = 'cropValues' in pattern ? pattern.cropValues : {};
+            const img = 'source' in pattern ? await loadImage(pattern.source) : pattern;
+            const { x = 0, y = 0, width = img.naturalWidth, height = img.naturalHeight } = cropValues;
 
-            txtrCtx.fillStyle = txtrCtx.createPattern(canvas, 'repeat');
+            const cropCtx = sharedContext2D();
+            cropCtx.canvas.width = width;
+            cropCtx.canvas.height = height;
+            cropImage(cropCtx, img, x, y, width, height);
+            txtrCtx.fillStyle = txtrCtx.createPattern(cropCtx.canvas, 'repeat');
             if (txtrCtx.fillStyle.setTransform) {
                 txtrCtx.fillStyle.setTransform(matrix.scale(invCtxScale));
             } else {
@@ -755,16 +748,15 @@ class Style extends EventDispatcher {
             domElement.setAttribute('data-before', domElement.textContent);
         }
 
-        if (!this.icon.source) {
+        // Style properties are evaluated lazily within a shared and mutable
+        // context. Evaluating them after an await could yield incorrect values
+        // since the context has been mutated.
+        const { source, cropValues, color, id } = this.icon;
+        if (!source) {
             return;
         }
 
-        let icon;
-
-        if (typeof document !== 'undefined') {
-            icon = document.createElement('img');
-        }
-
+        const icon = document.createElement('img');
         const iconPromise = new Promise((resolve, reject) => {
             const opt = {
                 size: this.icon.size,
@@ -776,17 +768,19 @@ class Style extends EventDispatcher {
             icon.onerror = err => reject(err);
         });
 
-        if (!this.icon.cropValues && !this.icon.color) {
-            icon.src = this.icon.source;
+        if (!cropValues && !color) {
+            icon.src = source;
         } else {
-            const cropValues = { ...this.icon.cropValues };
-            const color = this.icon.color;
-            const id = this.icon.id || this.icon.source;
-            const img = await loadImage(this.icon.source);
-            const imgd = cropImage(img, cropValues);
-            const imgdColored = replaceWhitePxl(imgd, color, id);
-            canvas.getContext('2d').putImageData(imgdColored, 0, 0);
-            icon.src = canvas.toDataURL('image/png');
+            const img = await loadImage(source);
+            const { x = 0, y = 0, width = img.naturalWidth, height = img.naturalHeight } = cropValues ?? {};
+            const cropCtx = sharedReadContext2D();
+            cropCtx.canvas.width = width;
+            cropCtx.canvas.height = height;
+            cropImage(cropCtx, img, x, y, width, height);
+            const imgd = cropCtx.getImageData(0, 0, width, height);
+            const imgdColored = replaceWhitePxl(imgd, color, id ?? source);
+            cropCtx.putImageData(imgdColored, 0, 0);
+            icon.src = cropCtx.canvas.toDataURL('image/png');
         }
         return iconPromise;
     }

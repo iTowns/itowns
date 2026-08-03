@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { FEATURE_TYPES } from 'Core/Feature';
 import { Extent, Coordinates } from '@itowns/geographic';
 import Style, { StyleContext } from 'Core/Style';
+import { createContext2D } from 'Utils/CanvasUtils';
 
 const defaultStyle = new Style();
 const context = new StyleContext();
@@ -118,13 +119,9 @@ export default {
             // A texture is instancied drawn canvas
             // origin and dimension are used to transform the feature's coordinates to canvas's space
             extent.planarDimensions(dimension);
-            const c = document.createElement('canvas');
-
             coord.crs = extent.crs;
 
-            c.width = sizeTexture;
-            c.height = sizeTexture;
-            const ctx = c.getContext('2d', { willReadFrequently: true });
+            const ctx = createContext2D(sizeTexture, sizeTexture);
             if (backgroundColor) {
                 ctx.fillStyle = backgroundColor.getStyle();
                 ctx.fillRect(0, 0, sizeTexture, sizeTexture);
@@ -168,7 +165,7 @@ export default {
                 drawFeature(ctx, feature, featureExtent, invCtxScale);
             }
 
-            texture = new THREE.CanvasTexture(c);
+            texture = new THREE.CanvasTexture(ctx.canvas);
             texture.flipY = collection.isInverted;
         } else if (backgroundColor) {
             const data = new Uint8Array(3);
