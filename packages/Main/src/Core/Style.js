@@ -1,8 +1,7 @@
 import { Coordinates } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
-import { Color, EventDispatcher } from 'three';
-import { deltaE } from 'Renderer/Color';
+import { EventDispatcher } from 'three';
 import { sharedContext2D, sharedReadContext2D } from 'Utils/CanvasUtils';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
@@ -61,27 +60,6 @@ function cropImage(ctx, img, x, y, width, height) {
     ctx.drawImage(img,
         x, y, width, height,
         0, 0, width, height);
-}
-
-function replaceWhitePxl(imgd, color, id) {
-    if (!color) {
-        return imgd;
-    }
-    const imgdColored = cachedImg.get(`${id}_${color}`);
-    if (!imgdColored) {
-        const pix = imgd.data;
-        const newColor = new Color(color);
-        const colorToChange = new Color('white');
-        for (let i = 0, n = pix.length; i < n; i += 4) {
-            const d = deltaE(pix.slice(i, i + 3), colorToChange) / 100;
-            pix[i] = (pix[i] * d + newColor.r * 255 * (1 - d));
-            pix[i + 1] = (pix[i + 1] * d + newColor.g * 255 * (1 - d));
-            pix[i + 2] = (pix[i + 2] * d + newColor.b * 255 * (1 - d));
-        }
-        cachedImg.set(`${id}_${color}`, imgd);
-        return imgd;
-    }
-    return imgdColored;
 }
 
 const textAnchorPosition = {
@@ -751,7 +729,7 @@ class Style extends EventDispatcher {
         // Style properties are evaluated lazily within a shared and mutable
         // context. Evaluating them after an await could yield incorrect values
         // since the context has been mutated.
-        const { source, cropValues, color, id } = this.icon;
+        const { source, cropValues, color } = this.icon;
         if (!source) {
             return;
         }
@@ -777,9 +755,15 @@ class Style extends EventDispatcher {
             cropCtx.canvas.width = width;
             cropCtx.canvas.height = height;
             cropImage(cropCtx, img, x, y, width, height);
-            const imgd = cropCtx.getImageData(0, 0, width, height);
-            const imgdColored = replaceWhitePxl(imgd, color, id ?? source);
-            cropCtx.putImageData(imgdColored, 0, 0);
+            if (color) {
+                const oldGlobalCompositeOp = cropCtx.globalCompositeOperation;
+                cropCtx.globalCompositeOperation = 'multiply';
+                cropCtx.fillStyle = color;
+                cropCtx.fillRect(0, 0, width, height);
+                cropCtx.globalCompositeOperation = 'destination-in';
+                cropImage(cropCtx, img, x, y, width, height);
+                cropCtx.globalCompositeOperation = oldGlobalCompositeOp;
+            }
             icon.src = cropCtx.canvas.toDataURL('image/png');
         }
         return iconPromise;
