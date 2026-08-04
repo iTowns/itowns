@@ -39,20 +39,7 @@ async function addLayer(view, { endpoint, name }) {
     const { source } = sourceFromEndpoint(endpoint, name);
 
     /** @type {itowns.ColorLayer} */
-    let layer;
-    if (source.isWFSSource) {
-        layer = new itowns.ColorLayer(layerId, {
-            source,
-            name,
-            // Keep those parameters until we have saner defaults
-            style: {
-                fill: { color: 'orange', opacity: 0.5 },
-                stroke: { color: 'white', width: 1.5 },
-            },
-        });
-    } else {
-        layer = new itowns.ColorLayer(layerId, { source, name });
-    }
+    const layer = new itowns.ColorLayer(layerId, { source, name });
 
     await view.addLayer(layer);
     return layer;
