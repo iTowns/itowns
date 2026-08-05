@@ -11,6 +11,26 @@ on:
 
 jobs:
 
+  # Check commits messages
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Commit Type
+        uses: gsactions/commit-message-checker@v2
+        env:
+          type: 'feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others'
+        with:
+        # Regex
+        # group1: type - group2: scope (without '(' and ')') - group3: subject (no capital on first letter, no '.' at the end) - group4: body and footer
+        # OR 'release' with version number
+          pattern: '^(${{ env.type }})(?:\(([\w\-\.]+)\))?: ((?![A-Z])[^\r\n\f]*[^.\r\n\f])(?:[\r\n\f]([\s\S]*))?|release v\d+.\d+.\d+$'
+          error: 'One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md.'
+          excludeDescription: true
+          excludeTitle: true
+          checkAllCommitMessages: true
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
   # Build bundle, doc and check linter
   build:
     name: Build bundle, check Linter and generate documentation
@@ -58,22 +78,6 @@ jobs:
                 examples
                 buildDocs
 
-
-  # Check commits messages
-  check-commit-message:
-    name: Check Commit Message
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Commit Type
-        uses: gsactions/commit-message-checker@v2
-        with:
-          pattern: '^(feat|feature|features|fix|perf|revert|doc|docs|refactor|refacto|refactoring|test|tests|chore|rename|workflow|example|examples|others)(\([\w\-\.]+\))?: ([\w ])+([\s\S]*)|release v\d+.\d+.\d+'
-          error: 'One or several of the pushed commits do not match the conventional commit convention. Please read CONTRIBUTING.md.'
-          excludeDescription: true
-          excludeTitle: true
-          checkAllCommitMessages: true
-          accessToken: ${{ secrets.GITHUB_TOKEN }}
-
   # Typecheck
   typecheck:
     name: Typecheck
@@ -96,7 +100,7 @@ jobs:
   # Unit and coverage tests
   unit-and-coverage-tests:
     name: Unit and coverage tests
-    needs: [build, check-commit-message]
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -137,7 +141,7 @@ jobs:
 
   # Final Code coverage
   finish-coverage:
-    name: finish parallel test unit
+    name: close parallel unit tests coverall
     needs: unit-and-coverage-tests
     runs-on: ubuntu-latest
     steps:
@@ -146,6 +150,7 @@ jobs:
       with:
         parallel-finished: true
         github-token: ${{ secrets.GITHUB_TOKEN }}
+
   # Functional tests
   functional-tests:
     name: Functional tests
@@ -179,7 +184,7 @@ jobs:
   publish:
     name: Publish NPM package
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [finish-coverage, functional-tests]
+    needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     permissions:
         # id-token: write permission is required for npm provenance:
@@ -233,7 +238,7 @@ jobs:
   deploy:
     name: Deploy to itowns.github.io
     if: ${{ github.ref == 'refs/heads/master' }}
-    needs: [finish-coverage, functional-tests]
+    needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
 
@@ -294,7 +299,7 @@ jobs:
   release:
     name: Release GitHub
     if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
-    needs: [finish-coverage, functional-tests]
+    needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
 
