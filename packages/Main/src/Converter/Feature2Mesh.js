@@ -13,17 +13,26 @@ let style;
 
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
+const zVect = new THREE.Vector3(0, 0, 1);
+const yVect = new THREE.Vector3(0, 1, 0);
 const up = new THREE.Vector3();
 const baseCoord = new THREE.Vector3();
 const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
 const extent = new Extent('EPSG:4326', 0, 0, 0, 0);
+const scale = new THREE.Vector3();
+const mat = new THREE.Matrix4();
+const bbox = new THREE.Box3();
+const modelSize = new THREE.Vector3();
 
 const _color = new THREE.Color();
 const maxValueUint8 = 2 ** 8 - 1;
 const maxValueUint16 = 2 ** 16 - 1;
 const maxValueUint32 = 2 ** 32 - 1;
 const crsWGS84 = 'EPSG:4326';
+
+const quaternion = new THREE.Quaternion();
+const quaternionY = new THREE.Quaternion();
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -194,7 +203,7 @@ function featureToPoint(feature, options) {
     let featureId = 0;
     const vertices = new Float32Array(ptsIn);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
 
     const pointMaterialSize = [];
 
@@ -249,7 +258,7 @@ function updatePointBuffers(featureMesh, buffers, id) {
     // context setup
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 
@@ -319,7 +328,7 @@ function featureToLine(feature, options) {
         indexPtr: 0,
     };
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     // Multi line case
     for (const geometry of feature.geometries) {
         context.setGeometry(geometry);
@@ -370,7 +379,7 @@ function updateLineBuffers(featureMesh, buffers, id) {
     // context setup
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 
@@ -428,7 +437,7 @@ function featureToPolygon(feature, options) {
     const batchId = options.batchId || ((p, id) => id);
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     let featureId = 0;
 
     for (const geometry of feature.geometries) {
@@ -477,7 +486,7 @@ function updatePolygonBuffers(featureMesh, buffers, id) {
     // context setup
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 
@@ -558,7 +567,7 @@ function featureToExtrudedPolygon(feature, options) {
     let featureId = 0;
 
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
 
     for (const geometry of feature.geometries) {
@@ -601,7 +610,7 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
     // context setup
     context.setFeature(feature);
     inverseScale.setFromMatrixScale(context.collection.matrixWorldInverse);
-    up.set(0, 0, 1).multiply(inverseScale);
+    up.copy(zVect).multiply(inverseScale);
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 
@@ -714,19 +723,37 @@ function updateExtrudedPolygonBuffers(featureMesh, buffers, id) {
 /**
  * Created Instanced object from mesh
  *
- * @param {THREE.MESH} mesh Model 3D to instanciate
- * @param {*} count number of instances to create (int)
+ * @param {THREE.Mesh} mesh Model 3D to instanciate
  * @param {*} ptsIn positions of instanced (array double)
+ * @param {*} geometries geometries to use for the instanced meshes
+ * @param {number} geometries.length number of instances to create (int)
+ * @param {THREE.Vector3} modelSize size of the object model
+ *
  * @returns {THREE.InstancedMesh} Instanced mesh
  */
-function createInstancedMesh(mesh, count, ptsIn) {
+function createInstancedMesh(mesh, ptsIn, geometries, modelSize) {
+    const styleModel = style.model;
+    const count = geometries.length;
     const instancedMesh = new THREE.InstancedMesh(mesh.geometry, mesh.material, count);
-    let index = 0;
-    for (let i = 0; i < count * 3; i += 3) {
-        const mat = new THREE.Matrix4();
-        mat.setPosition(ptsIn[i], ptsIn[i + 1], ptsIn[i + 2]);
-        instancedMesh.setMatrixAt(index, mat);
-        index++;
+
+    for (let j = 0; j < count; j += 1) {
+        context.setGeometry(geometries[j]);
+        if (styleModel.size) {
+            scale.copy(styleModel.size);
+            scale.divide(modelSize);
+        } else {
+            scale.setScalar(1);
+        }
+        scale.multiplyScalar(styleModel.scale);
+
+        let headingRad = 0;
+        if (styleModel.heading) {
+            headingRad = styleModel.heading * THREE.MathUtils.DEG2RAD;
+        }
+        mat.makeRotationZ(-headingRad);
+        mat.setPosition(ptsIn[j * 3], ptsIn[j * 3 + 1], ptsIn[j * 3 + 2]);
+        mat.scale(scale);
+        instancedMesh.setMatrixAt(j, mat);
     }
 
     instancedMesh.instanceMatrix.needsUpdate = true;
@@ -741,17 +768,36 @@ function createInstancedMesh(mesh, count, ptsIn) {
  * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
  */
 function pointsToInstancedMeshes(feature) {
+    context.setFeature(feature);
+    style.setContext(context);
+
     const ptsIn = feature.vertices;
-    const count = feature.geometries.length;
-    const modelObject = style.point.model.object;
+    const geometries = feature.geometries;
+    const modelObject = style.model.object;
+
+    // orientation of the model following up and north properties.
+    quaternion.setFromUnitVectors(style.model.up, zVect);
+
+    const northWithRotation = style.model.north.applyQuaternion(quaternion);
+    const angletoNorth =  northWithRotation.angleTo(yVect);
+    quaternionY.setFromAxisAngle(yVect, angletoNorth);
+    quaternion.multiply(quaternionY);
+
+    modelObject.setRotationFromQuaternion(quaternion);
+
+    // Size of the object model
+    bbox.setFromObject(modelObject);
+    bbox.getSize(modelSize);
 
     if (modelObject instanceof THREE.Mesh) {
-        return createInstancedMesh(modelObject, count, ptsIn);
+        return createInstancedMesh(modelObject, ptsIn, geometries,  modelSize);
     } else if (modelObject instanceof THREE.Object3D) {
         const group = new THREE.Group();
         // Get independent meshes from more complexe object
         const meshes = separateMeshes(modelObject);
-        meshes.forEach(mesh => group.add(createInstancedMesh(mesh, count, ptsIn)));
+        meshes.forEach((mesh) => {
+            group.add(createInstancedMesh(mesh, ptsIn, geometries, modelSize));
+        });
         return group;
     } else {
         throw new Error('The format of the model object provided in the style (layer.style.point.model.object) is not supported. Only THREE.Mesh or THREE.Object3D are supported.');
@@ -773,7 +819,7 @@ function featureToMesh(feature, options) {
     let mesh;
     switch (feature.type) {
         case FEATURE_TYPES.POINT:
-            if (style.point?.model?.object) {
+            if (style.model?.object) {
                 try {
                     mesh = pointsToInstancedMeshes(feature);
                     mesh.isInstancedMesh = true;
@@ -945,8 +991,7 @@ export function applyStyle(featureMesh, collection, styleIn, buffersToUpdate = [
         context.setGeometry(geometry);
         switch (feature.type) {
             case FEATURE_TYPES.POINT: {
-                const pointStyle = style.point;
-                if (pointStyle?.model?.object) { break; } // instanced mesh
+                if (style.model?.object) { break; } // instanced mesh
                 updatePointBuffers(featureMesh, buffers);
                 break;
             }
