@@ -32,6 +32,7 @@ export { default as Feature2Mesh } from 'Converter/Feature2Mesh';
 export { default as FeaturesUtils } from 'Utils/FeaturesUtils';
 export { default as DEMUtils } from 'Utils/DEMUtils';
 export { default as CameraUtils } from 'Utils/CameraUtils';
+export { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
