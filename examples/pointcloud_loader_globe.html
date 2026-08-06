@@ -60,14 +60,12 @@
         <div id="viewerDiv"></div>
 
         <script type="module">
-            import { Vector3 } from 'three';
             import Stats from 'stats-gl';
             import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
             import { getFormat, getPointCloudClass, getDefaultAttribute, zoomToLayerGlobe } from './jsm/PointCloudHelper.js';
 
             import {
-                CRS, MAIN_LOOP_EVENTS, PNTS_MODE,
-                Coordinates,
+                CRS, MAIN_LOOP_EVENTS,
                 View,
                 GlobeView,
                 Fetcher,
@@ -97,6 +95,7 @@
             window.updateUrlParams = updateUrlParams;
 
             let currentView = null;
+            let gui = null;
 
             window.load = async function load(url, options = {}) {
                 // Cleanup previous view
@@ -104,6 +103,10 @@
                     currentView.dispose();
                     currentView = null;
                     viewerDiv.innerHTML = '';
+                }
+
+                if (gui) {
+                    gui.destroy();
                 }
 
                 const { format = 'auto', crs } = options;
@@ -162,7 +165,7 @@
                     view.controls.lookAtCoordinate(options.placement, true);
                 }
 
-                const gui = new GUI();
+                gui = new GUI();
                 PointCloudDebug.initTools(view, layer, gui);
             }
 
