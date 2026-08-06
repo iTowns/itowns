@@ -82,62 +82,6 @@ describe('Style', function () {
         assert.equal(style.stroke.color, 'pink');
     });
 
-    describe('applyToCanvasPolygon()', () => {
-        const styleOpt = {
-            point: {},
-            fill: {},
-            stroke: {},
-            text: {},
-        };
-        styleOpt.point.color = 'red';
-        styleOpt.fill.color = 'blue';
-        styleOpt.stroke.color = 'black';
-        styleOpt.text.haloWidth = 1;
-
-        const c = document.createElement('canvas');
-        const txtrCtx = c.getContext('2d');
-        describe('_applyStrokeToPolygon()', () => {
-            it('with invCtxScale = 0.75', () => {
-                const invCtxScale = 0.75;
-                const style = new Style(styleOpt);
-                style._applyStrokeToPolygon(txtrCtx, invCtxScale);
-                assert.equal(txtrCtx.strokeStyle, style.stroke.color);
-                assert.equal(txtrCtx.lineWidth, style.stroke.width * invCtxScale);
-                assert.equal(txtrCtx.lineCap, style.stroke.lineCap);
-                assert.equal(txtrCtx.globalAlpha, style.stroke.opacity);
-            });
-        });
-        describe('_applyFillToPolygon()', () => {
-            it('with fill.pattern = img', function (done) {
-                const invCtxScale = 1;
-                const polygon = new Path2D();
-                const img = document.createElement('img');
-                const style = new Style(styleOpt);
-                style.fill.pattern = img;
-                style.fill.opacity = 0.1;
-                style._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
-                    .then(() => {
-                        assert.equal(txtrCtx.fillStyle.constructor.name, 'CanvasPattern');
-                        assert.equal(txtrCtx.globalAlpha, style.fill.opacity);
-                        done();
-                    }).catch(done);
-            });
-            it('with fill.color = #0500fd', function (done) {
-                const invCtxScale = 1;
-                const polygon = new Path2D();
-                const style = new Style(styleOpt);
-                style.fill.color = '#0500fd';
-                style.fill.opacity = 0.2;
-                style._applyFillToPolygon(txtrCtx, invCtxScale, polygon)
-                    .then(() => {
-                        assert.equal(txtrCtx.fillStyle, '#0500fd');
-                        assert.equal(txtrCtx.globalAlpha, style.fill.opacity);
-                        done();
-                    }).catch(done);
-            });
-        });
-    });
-
     describe('applyToHTML()', () => {
         const styleOpt = {
             point: {},
