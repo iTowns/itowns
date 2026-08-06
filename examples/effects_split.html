@@ -82,17 +82,15 @@
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
 
-            const pOrtho = itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                orthoLayer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
-            const pOsm = itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
-                config.source = new itowns.TMSSource(config.source);
-                osmLayer = new itowns.ColorLayer('OSM', config);
-                view.addLayer(osmLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const osmConfig = await itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            osmConfig.source = new itowns.TMSSource(osmConfig.source);
+            osmLayer = new itowns.ColorLayer('OSM', osmConfig);
+            view.addLayer(osmLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
@@ -101,8 +99,10 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer);
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             // Slide handling
             function splitSliderMove(evt) {
@@ -155,8 +155,7 @@
             }
 
             // Override default rendering method when color layers are ready
-            Promise.all([pOrtho, pOsm]).then(
-                function _() { view.render = splitRendering; }).catch(console.error);
+            view.render = splitRendering;
             window.view = view;
             window.itowns = itowns;
             window.THREE = THREE;
