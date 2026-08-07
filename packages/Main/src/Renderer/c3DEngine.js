@@ -5,11 +5,11 @@
  */
 
 import * as THREE from 'three';
+import WEBGL from 'three/addons/capabilities/WebGL.js';
 import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
-import WEBGL from 'three/addons/capabilities/WebGL.js';
 import { EffectComposer } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
@@ -228,28 +228,6 @@ class c3DEngine {
 
         this.fullSizeRenderTarget.scissorTest = false;
         return target;
-    }
-
-    bufferToImage(pixelBuffer, width, height) {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d', { willReadFrequently: true });
-
-        // size the canvas to your desired image
-        canvas.width = width;
-        canvas.height = height;
-
-        const imgData = ctx.getImageData(0, 0, width, height);
-        imgData.data.set(pixelBuffer);
-
-        ctx.putImageData(imgData, 0, 0);
-
-        // create a new img object
-        const image = new Image();
-
-        // set the img.src to the canvas data url
-        image.src = canvas.toDataURL();
-
-        return image;
     }
 
     depthBufferRGBAValueToOrthoZ(depthBufferRGBA, camera) {
