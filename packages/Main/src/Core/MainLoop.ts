@@ -58,6 +58,10 @@ function updateElements<T extends Object3D>(
         return;
     }
     for (const element of elements) {
+        // update element
+        // TODO: find a way to notify attachedLayers when geometryLayer deletes
+        // some elements and then update Debug.js:addGeometryLayerDebugFeatures
+        const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
         const sub = geometryLayer.getObjectToUpdateForAttachedLayers(element);
 
         if (sub) {
@@ -78,10 +82,6 @@ function updateElements<T extends Object3D>(
                 }
             }
         }
-        // update element
-        // TODO: find a way to notify attachedLayers when geometryLayer deletes
-        // some elements and then update Debug.js:addGeometryLayerDebugFeatures
-        const newElementsToUpdate = geometryLayer.update(context, geometryLayer, element);
 
         updateElements(context, geometryLayer, newElementsToUpdate);
     }

@@ -90,7 +90,7 @@ class RasterLayer extends Layer {
      * @returns {?RasterTile} The matching raster tile, or `undefined` when none exists.
      */
     getRasterTile(node) {
-        return node.material.getTile(this.id);
+        return node.material.getTile(this.id) || this.setupRasterNode(node);
     }
 
     /**
@@ -104,16 +104,12 @@ class RasterLayer extends Layer {
      * @returns {Promise<void>|undefined} A loading promise when an update is scheduled.
      */
     update(context, layer, node) {
-        if (layer.visible && !layer.freeze && this.hasData(node)) {
-            let rasterTile = this.getRasterTile(node);
+        const raster = this.getRasterTile(node);
 
-            if (!rasterTile || this.overloadRasterTile(rasterTile)) {
-                rasterTile = this.setupRasterNode(node);
-            }
-
-            if (rasterTile && (!rasterTile.hasData() || (node.visible && node.material.visible))) {
-                return rasterTile.load(node, context.view).then(() => (node.material.layersNeedUpdate = true));
-            }
+        if (layer.visible && !layer.freeze && node.visible && node.material.visible &&
+            !raster.state.hasFinished()) {
+            return raster.load(node, context.view)
+                .then(() => (node.material.layersNeedUpdate = true));
         }
     }
 }

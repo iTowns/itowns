@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Itowns - Clamp to ground</title>
@@ -53,7 +54,7 @@
             const view = new itowns.GlobeView(viewerDiv, placement);
             window.view = view;
 
-            var menuGlobe = new GuiTools('menuDiv', view);
+            const debugMenu = new GuiTools('menuDiv', view);
             setupLoadingScreen(viewerDiv, view);
 
             // Add one imagery layer to the scene
@@ -62,21 +63,20 @@
             const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
             orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
             var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
-            view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+            view.addLayer(orthoLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(debugMenu.addLayerGUI.bind(debugMenu));
 
                 return layer;
             }
-            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
-            addElevationLayerFromConfig(ignMntHighResConfig);
             const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
             addElevationLayerFromConfig(worldDtmConfig);
-
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
 
             function addMeshToScene() {
                 // creation of the new mesh (a cylinder)
@@ -107,8 +107,11 @@
                 view.notifyChange();
             }
 
+            // debug.createTileDebugUI(debugMenu.gui, view);
+
+
             // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function init() {
+            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function init() {
                 console.log('GLOBE_INITIALIZED');
                 addMeshToScene();
             });
