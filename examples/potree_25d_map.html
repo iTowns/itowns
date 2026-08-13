@@ -59,11 +59,13 @@
                 import * as itowns_widgets from 'itowns_widgets';
                 import { zoomToLayer } from './jsm/PointCloudHelper.js';
 
+                window.itowns = itowns;
+                window.THREE = THREE;
+
                 var potreeLayer;
                 var oldPostUpdate;
                 var viewerDiv;
                 var debugGui;
-                var view;
                 var controls;
 
                 /* OTHER available dataset
@@ -108,7 +110,8 @@
                 debugGui = new lil();
 
                 // TODO: do we really need to disable logarithmicDepthBuffer ?
-                view = new itowns.View(crs, viewerDiv);
+                const view = new itowns.View(crs, viewerDiv);
+                window.view = view;
                 setupLoadingScreen(viewerDiv, view);
                 view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
@@ -151,11 +154,7 @@
                         info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
                     });
                 }
-                window.view = view;
                 view.addLayer(potreeLayer).then(onLayerReady);
-                window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

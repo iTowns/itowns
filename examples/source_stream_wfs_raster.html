@@ -36,6 +36,9 @@
             import * as itowns_widgets from 'itowns_widgets';
             import FeatureToolTip from 'FeatureToolTip';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             /* global itowns,document,GuiTools, window, debug, setupLoadingScreen */
             // Define initial camera position
             var placement = {
@@ -48,6 +51,7 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
             var menuGlobe = new GuiTools('menuDiv', view);
             var d = new debug.Debug(view, menuGlobe.gui);
             setupLoadingScreen(viewerDiv, view);
@@ -56,11 +60,10 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
@@ -69,8 +72,10 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             var wfsBuildingSource = new itowns.WFSSource({
                 url: 'https://data.geopf.fr/wfs/ows?',
@@ -139,9 +144,6 @@
             });
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 </script>
     </body>
 </html>

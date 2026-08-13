@@ -477,8 +477,11 @@ class LabelLayer extends GeometryLayer {
                 // Necessary event listener, to remove any Label attached to
                 node.addEventListener('removed', () => this.removeNodeDomElement(node));
 
-                if (labelsNode.needsAltitude && node.material.getElevationTile()) {
-                    node.material.getElevationTile().addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
+                // TODO : do more robust
+                const elevationTile = node.parent.material?.getCurrentElevationTile();
+
+                if (labelsNode.needsAltitude && elevationTile) {
+                    elevationTile.addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
                 }
 
                 if (this.performance) {
