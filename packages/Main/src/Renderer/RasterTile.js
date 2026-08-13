@@ -305,6 +305,10 @@ export class RasterElevationTile extends RasterTile {
         }
     }
 
+    hasData() {
+        return this.state.hasFinished() || (this.level > EMPTY_TEXTURE_ZOOM && this.tiles[0].zoom - this.level < 5);
+    }
+
     updateMinMaxElevation() {
         const firstValidIndex = this.textures.findIndex(texture => texture.isTexture);
         if (firstValidIndex !== -1 && !this.layer.useColorTextureElevation) {

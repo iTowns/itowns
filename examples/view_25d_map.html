@@ -87,10 +87,6 @@
 
             // Add a WMS imagery layer
             var wmsImageryLayer = new itowns.ColorLayer('wms_imagery', {
-                updateStrategy: {
-                    type: itowns.STRATEGY_DICHOTOMY,
-                    options: {},
-                },
                 source: wmsImagerySource,
             });
 

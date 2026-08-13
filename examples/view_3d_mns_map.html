@@ -93,6 +93,9 @@
             const ignMnsHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json');
             addElevationLayerFromConfig(ignMnsHighResConfig);
 
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
+
             // ---------- ADD SOME WIDGETS : ----------
 
             // ADD A SCALE :

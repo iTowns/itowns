@@ -72,18 +72,6 @@ class RasterLayer extends Layer {
     }
 
     /**
-     * Indicates whether an existing raster tile must be recreated.
-     * Subclasses can override this to force rebuilding tiles based on tile state.
-     *
-     * @param {RasterTile} rasterTile - Current raster tile attached to the node.
-     * @returns {boolean} `true` to recreate the raster tile, `false` to keep it.
-     */
-    // eslint-disable-next-line no-unused-vars
-    overloadRasterTile(rasterTile) {
-        return false;
-    }
-
-    /**
      * Returns the raster tile associated with this layer for a given node.
      *
      * @param {TileMesh} node - The tile mesh carrying layered material tiles.

@@ -92,7 +92,7 @@ describe('Provide in Sources', function () {
         elevationlayer.setupRasterNode(tile);
 
         nodeLayer = material.getColorTile(colorlayer.id);
-        nodeLayerElevation = material.getElevationTile();
+        nodeLayerElevation = material.getCurrentElevationTile();
 
         featureLayer = new GeometryLayer('geom', new THREE.Group(), {
             crs: 'EPSG:4978',

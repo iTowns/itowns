@@ -136,35 +136,15 @@ class ElevationLayer extends RasterLayer {
         });
 
         // Init the node by parent
-        rasterElevationNode.initFromParent(node.parent.material?.getElevationTile());
+        const parentTile = node.parent.material?.getCurrentElevationTile();
+
+        rasterElevationNode.initFromParent(parentTile);
 
         if (!this.hasData(node)) {
             rasterElevationNode.state.noMoreUpdatePossible();
         };
 
         return rasterElevationNode;
-    }
-
-    getRasterTile(node) {
-        let rasterTile = node.material.getElevationTile();
-
-        if (!rasterTile || this.overloadRasterTile(rasterTile)) {
-            rasterTile = this.setupRasterNode(node);
-        }
-
-        return rasterTile;
-    }
-
-    /**
-     * Compares source zoom ranges to detect whether the new source can provide
-     * more precise data than the source currently attached to this tile.
-     * If so, the raster tile is recreated to reload elevation with finer detail.
-     *
-     * @param {RasterElevationTile} rasterTile - Existing elevation raster tile on the node.
-     * @returns {boolean} `true` when the new source is more precise and tile reload is required.
-     */
-    overloadRasterTile(rasterTile) {
-        return this.source.zoom.min > rasterTile.layer.source.zoom.max;
     }
 }
 
