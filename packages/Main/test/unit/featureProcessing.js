@@ -7,6 +7,15 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 
 import geojson from '../data/geojson/map.geojson';
 
+const lineOnlyGeoJSON = {
+    type: 'FeatureCollection',
+    features: [{
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [[0, 0], [1, 0]] },
+        properties: {},
+    }],
+};
+
 describe('FeatureProcessing', function () {
     const parsed = GeoJsonParser.parse(geojson, {
         in: { crs: 'EPSG:4326' },
@@ -35,11 +44,8 @@ describe('FeatureProcessing', function () {
             };
             node.layerUpdateState[layer.id] = new LayerUpdateState();
             node.layerUpdateState[layer.id].canTryUpdate = () => false;
-            node.link[layer.id] = [{
-                collection: featureNode.collection,
-                meshes: featureNode.meshes,
-                layer: { object3d: { add: () => {} } },
-            }];
+            featureNode.layer = layer;
+            node.link[layer.id] = [featureNode];
 
             const context = { view: {} };
 
@@ -57,6 +63,47 @@ describe('FeatureProcessing', function () {
             assert.strictEqual(colorAttr1.array[0], 0);
             assert.strictEqual(colorAttr1.array[1], 0);
             assert.strictEqual(colorAttr1.array[2], 255);
+            done();
+        }).catch(done);
+    });
+
+    it('topology version mismatch triggers rebuildMeshTopology and notifyChange', function (done) {
+        GeoJsonParser.parse(lineOnlyGeoJSON, {
+            in: { crs: 'EPSG:4326' },
+            out: { crs: 'EPSG:4326', buildExtent: true, mergeFeatures: false, structure: '3d' },
+        }).then((collection) => {
+            const style = new Style({ stroke: { color: 'red' } });
+            const layer = {
+                id: 'topo-layer',
+                object3d: { add: () => {} },
+                style,
+                convert: Feature2Mesh.convert(),
+            };
+            const featureNode = layer.convert.call(layer, collection);
+
+            const node = {
+                parent: { id: 'parent' },
+                visible: true,
+                layerUpdateState: {},
+                link: {},
+            };
+            node.layerUpdateState[layer.id] = new LayerUpdateState();
+            node.layerUpdateState[layer.id].canTryUpdate = () => false;
+            featureNode.layer = layer;
+            node.link[layer.id] = [featureNode];
+
+            // Setting extrusion_radius from undefined dispatches 'topology' → increments _styleTopologyVersion
+            layer.style.stroke.extrusion_radius = 5;
+
+            let notifyChangeCalled = false;
+            const context = {
+                view: { notifyChange: () => { notifyChangeCalled = true; } },
+            };
+
+            FeatureProcessing.update(context, layer, node);
+
+            assert.ok(notifyChangeCalled);
+            assert.strictEqual(featureNode.styleTopologyVersion, layer._styleTopologyVersion);
             done();
         }).catch(done);
     });

@@ -103,7 +103,7 @@ describe('Style', function () {
                 style._applyStrokeToPolygon(txtrCtx, invCtxScale);
                 assert.equal(txtrCtx.strokeStyle, style.stroke.color);
                 assert.equal(txtrCtx.lineWidth, style.stroke.width * invCtxScale);
-                assert.equal(txtrCtx.lineCap, style.stroke.lineCap);
+                assert.equal(txtrCtx.lineCap, style.stroke.line_cap);
                 assert.equal(txtrCtx.globalAlpha, style.stroke.opacity);
             });
         });
@@ -326,6 +326,24 @@ describe('Style', function () {
                         done();
                     }).catch(done);
             });
+        });
+    });
+
+    describe('stroke.extrusion_radius', () => {
+        it('first assignment dispatches topology event', () => {
+            const s = new Style();
+            let param;
+            s.addEventListener('style-property-changed', (e) => { param = e.parameter; });
+            s.stroke.extrusion_radius = 10;
+            assert.strictEqual(param, 'topology');
+        });
+
+        it('subsequent change dispatches extrusion_radius event, not topology', () => {
+            const s = new Style({ stroke: { extrusion_radius: 5 } });
+            let param;
+            s.addEventListener('style-property-changed', (e) => { param = e.parameter; });
+            s.stroke.extrusion_radius = 20;
+            assert.strictEqual(param, 'extrusion_radius');
         });
     });
 });
