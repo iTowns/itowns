@@ -334,11 +334,15 @@ function _addIcon(icon, domElement, opt) {
  * @property {number|Function} stroke.opacity - The opacity of the line. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
  * For a `GeometryLayer`, this opacity property isn't used.
+ * @property {string|Function} [stroke.line_cap] - The shape used at the ends of lines.
+ * For extruded `GeometryLayer` lines, setting it to `round` adds half-sphere caps.
  * @property {number|Function} stroke.width - The width of the line. Default is `1.0`.
  * @property {number|Function} stroke.base_altitude - Only for {@link GeometryLayer}, defines altitude
  * for each coordinate.
  * If `base_altitude` is `undefined`, the original altitude is kept, and if it doesn't exist
  * then the altitude value is set to 0.
+ * @property {number|Function} [stroke.extrusion_radius] - Only for {@link GeometryLayer} and if user sets it.
+ * If defined, lines will be extruded as cylinders with the specified amount as a radius.
  *
  * @property {object} point - Point style.
  * @property {string|Function} point.color - The color of the point. Can be any [valid
@@ -569,11 +573,13 @@ class Style extends EventDispatcher {
                     return undefined;
                 },
                 set: (v) => {
+                    if (this._extrusionHeight === undefined && v === undefined) { return; }
+                    const extrudedStateChanged = this._extrusionHeight === undefined || v === undefined;
                     this._extrusionHeight = v;
                     this.dispatchEvent({
                         type: 'style-property-changed',
                         style: this,
-                        parameter: 'extrusion_height',
+                        parameter: extrudedStateChanged ? 'topology' : 'extrusion_height',
                     });
                 },
             },
@@ -587,9 +593,39 @@ class Style extends EventDispatcher {
         this._defineCategoryProperty('stroke');
         defineStyleProperty(this, 'stroke', 'color', params.color);
         defineStyleProperty(this, 'stroke', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'stroke', 'line_cap', params.line_cap, 'butt');
         defineStyleProperty(this, 'stroke', 'width', params.width, 1.0);
         defineStyleProperty(this, 'stroke', 'dasharray', params.dasharray, []);
         defineStyleProperty(this, 'stroke', 'base_altitude', params.base_altitude, baseAltitudeDefault);
+
+        // define a special case for extrusion_radius
+        // to be able to know if user set it or not without calling the getter
+        this._extrusionRadius = params.extrusion_radius;
+        Object.defineProperty(
+            this.stroke,
+            'extrusion_radius',
+            {
+                enumerable: true,
+                get: () => {
+                    if (this._extrusionRadius != undefined) {
+                        return readExpression(this._extrusionRadius, this.context);
+                    }
+                    const dataValue = this.context.featureStyle?.stroke?.extrusion_radius;
+                    if (dataValue != undefined) { return readExpression(dataValue, this.context); }
+                    return undefined;
+                },
+                set: (v) => {
+                    if (this._extrusionRadius === undefined && v === undefined) { return; }
+                    const extrudedStateChanged = this._extrusionRadius === undefined || v === undefined;
+                    this._extrusionRadius = v;
+                    this.dispatchEvent({
+                        type: 'style-property-changed',
+                        style: this,
+                        parameter: extrudedStateChanged ? 'topology' : 'extrusion_radius',
+                    });
+                },
+            },
+        );
     }
 
     /**
@@ -688,8 +724,8 @@ class Style extends EventDispatcher {
         if (alpha !== txtrCtx.globalAlpha && typeof alpha == 'number') {
             txtrCtx.globalAlpha = alpha;
         }
-        if (txtrCtx.lineCap !== this.stroke.lineCap) {
-            txtrCtx.lineCap = this.stroke.lineCap;
+        if (txtrCtx.lineCap !== this.stroke.line_cap) {
+            txtrCtx.lineCap = this.stroke.line_cap;
         }
         txtrCtx.setLineDash(this.stroke.dasharray.map(a => a * invCtxScale * 2));
         txtrCtx.stroke(polygon);
@@ -815,7 +851,7 @@ class Style extends EventDispatcher {
      * @returns {boolean} True if extrusion is enabled, false otherwise.
      */
     isExtruded() {
-        return this._extrusionHeight != undefined;
+        return this._extrusionHeight != undefined || this._extrusionRadius != undefined;
     }
 }
 

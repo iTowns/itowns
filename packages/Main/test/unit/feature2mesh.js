@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { CRS } from '@itowns/geographic';
 import assert from 'assert';
 import GeoJsonParser from 'Parser/GeoJsonParser';
-import Feature2Mesh, { applyStyle } from 'Converter/Feature2Mesh';
+import Feature2Mesh, { applyStyle, rebuildMeshTopology } from 'Converter/Feature2Mesh';
 import Style from 'Core/Style';
 
 import geojson from '../data/geojson/holes.geojson';
@@ -56,6 +56,18 @@ describe('Feature2Mesh', function () {
     const parsed = GeoJsonParser.parse(geojson, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
     const parsed2 = GeoJsonParser.parse(geojson2, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
     const parsed3 = GeoJsonParser.parse(geojson3, { in: { crs: 'EPSG:3946' }, out: { crs: 'EPSG:3946', buildExtent: true, mergeFeatures: false, structure: '3d' } });
+    // Line-only collection in EPSG:4326 for extruded line tests
+    const parsedLine = GeoJsonParser.parse(
+        {
+            type: 'FeatureCollection',
+            features: [{
+                type: 'Feature',
+                geometry: { type: 'LineString', coordinates: [[0, 0], [1, 0], [2, 0]] },
+                properties: {},
+            }],
+        },
+        { in: { crs: 'EPSG:4326' }, out: { crs: 'EPSG:4326', buildExtent: true, mergeFeatures: false, structure: '3d' } },
+    );
 
     it('rect mesh area should match geometry extent', function (done) {
         parsed
@@ -225,6 +237,57 @@ describe('Feature2Mesh', function () {
                 assert.equal(linePosAttr.array[2], 75);
                 assert.ok(lineColorAttr.version > initialLineColorVersion);
                 assert.ok(linePosAttr.version > initialLinePosVersion);
+                done();
+            }).catch(done);
+    });
+
+    it('line with extrusion_radius produces an indexed Mesh', function (done) {
+        parsedLine
+            .then((collection) => {
+                const layer = {
+                    style: new Style({ stroke: { extrusion_radius: 5, color: 'red' } }),
+                    convert: Feature2Mesh.convert(),
+                };
+                const featureNode = layer.convert.call(layer, collection);
+                const mesh = featureNode.meshes.children[0];
+                assert.equal(mesh.type, 'Mesh');
+                assert.ok(mesh.geometry.index !== null);
+                assert.ok(mesh.geometry.attributes.position.count > 0);
+                done();
+            }).catch(done);
+    });
+
+    it('round line caps produce more vertices than butt caps', function (done) {
+        parsedLine
+            .then((collection) => {
+                const layerButt = {
+                    style: new Style({ stroke: { extrusion_radius: 5, color: 'red', line_cap: 'butt' } }),
+                    convert: Feature2Mesh.convert(),
+                };
+                const layerRound = {
+                    style: new Style({ stroke: { extrusion_radius: 5, color: 'red', line_cap: 'round' } }),
+                    convert: Feature2Mesh.convert(),
+                };
+                const buttCount = layerButt.convert.call(layerButt, collection).meshes.children[0].geometry.attributes.position.count;
+                const roundCount = layerRound.convert.call(layerRound, collection).meshes.children[0].geometry.attributes.position.count;
+                assert.ok(roundCount > buttCount, `expected round (${roundCount}) > butt (${buttCount})`);
+                done();
+            }).catch(done);
+    });
+
+    it('rebuildMeshTopology replaces flat line with extruded mesh', function (done) {
+        parsedLine
+            .then((collection) => {
+                const layer = {
+                    style: new Style({ stroke: { color: 'red' } }),
+                    convert: Feature2Mesh.convert(),
+                };
+                const featureNode = layer.convert.call(layer, collection);
+                assert.equal(featureNode.meshes.children[0].type, 'LineSegments');
+
+                const extrudedStyle = new Style({ stroke: { extrusion_radius: 5, color: 'red' } });
+                rebuildMeshTopology(featureNode, extrudedStyle);
+                assert.equal(featureNode.meshes.children[0].type, 'Mesh');
                 done();
             }).catch(done);
     });
