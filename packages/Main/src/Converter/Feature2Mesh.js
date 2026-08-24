@@ -14,8 +14,8 @@ let style;
 const dim_ref = new THREE.Vector2();
 const dim = new THREE.Vector2();
 const zVect = new THREE.Vector3(0, 0, 1);
-const yVect = new THREE.Vector3(0, 1, 0);
 const up = new THREE.Vector3();
+const right = new THREE.Vector3();
 const baseCoord = new THREE.Vector3();
 const topCoord = new THREE.Vector3();
 const inverseScale = new THREE.Vector3();
@@ -63,9 +63,6 @@ function refreshCollectionContext(feature) {
     coord.setCrs(context.collection.crs);
     style.setContext(context);
 }
-
-const quaternion = new THREE.Quaternion();
-const quaternionY = new THREE.Quaternion();
 
 class FeatureMesh extends THREE.Group {
     #currentCrs;
@@ -1129,16 +1126,10 @@ function pointsToInstancedMeshes(feature) {
     const geometries = feature.geometries;
     const modelObject = style.model.object;
 
-    /* Orientation of the model following up and north properties. */
-    //  Set quaternion using up
-    quaternion.setFromUnitVectors(style.model.up, zVect);
-    // Get quaternion to face north
-    const northWithRotation = style.model.north.applyQuaternion(quaternion);
-    const angletoNorth =  northWithRotation.angleTo(yVect);
-    quaternionY.setFromAxisAngle(yVect, angletoNorth);
-    // Orient the model
-    quaternion.multiply(quaternionY);
-    modelObject.setRotationFromQuaternion(quaternion);
+    /* Orientation of the model following up and front properties. */
+    right.crossVectors(style.model.front, style.model.up);
+    mat.makeBasis(right, style.model.front, style.model.up).transpose();
+    modelObject.setRotationFromMatrix(mat);
 
     /* Get the size of the object model once oriented. */
     bbox.setFromObject(modelObject);
@@ -1155,7 +1146,7 @@ function pointsToInstancedMeshes(feature) {
         });
         return group;
     } else {
-        throw new Error('The format of the model object provided in the style (layer.style.point.model.object) is not supported. Only THREE.Mesh or THREE.Object3D are supported.');
+        throw new Error('The format of the model object provided in the style (layer.style.model.object) is not supported. Only THREE.Mesh or THREE.Object3D are supported.');
     }
 }
 

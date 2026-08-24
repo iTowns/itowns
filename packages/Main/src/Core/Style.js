@@ -368,10 +368,11 @@ function _addIcon(icon, domElement, opt) {
  * @property {THREE.Object3D} model.object - The 3D model object to instantiate at each position
  * @property {object|Function} model.size - The wanted size of the instanced model in local dimension.
  * Should be (or returning) an object containing 3 properties: x, y and z.
- * @property {object|Function} model.heading - The heading (or azimuth) to orient the model in degree.
- * @property {object|Function} model.scale - The value to scale the model. (default value is 1).
- * @property {object|Function} model.up - The vector pointing up. (default value is Vector3(0, 0, 1)).
- * @property {object|Function} model.north - The vector pointing north. (default value is Vector3(0, 1, 0)).
+ * @property {number|Function} model.heading - The heading (or azimuth) to orient the model in degree.
+ * @property {number|Function} model.scale - The value to scale the model. (default value is 1).
+ * @property {THREE.Vector3|Function} model.up - The vector pointing up. (default value is Vector3(0, 0, 1)).
+ * @property {THREE.Vector3|Function} model.front - The vector pointing toward the front of the model. It
+ * should be orthogonal to the 'up' vector. (default value is Vector3(0, 1, 0)).
  *
  * @property {object} text - All things {@link Label} related.
  * @property {string|Function} text.field - A string representing a property key of
@@ -661,7 +662,7 @@ class Style extends EventDispatcher {
         defineStyleProperty(this, 'model', 'heading', params.heading);
         defineStyleProperty(this, 'model', 'scale', params.scale, 1.0);
         defineStyleProperty(this, 'model', 'up', params.up, new Vector3(0, 0, 1));
-        defineStyleProperty(this, 'model', 'north', params.north, new Vector3(0, 1, 0));
+        defineStyleProperty(this, 'model', 'front', params.front, new Vector3(0, 1, 0));
     }
 
     /**
