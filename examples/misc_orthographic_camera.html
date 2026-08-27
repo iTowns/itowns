@@ -44,6 +44,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
         /* global itowns, setupLoadingScreen, GuiTools, debug */
 
             itowns.CRS.defs(
@@ -73,6 +76,7 @@
                     minResolution: 100, // a pixel shall not represent a metric size larger than 100m
                 }
             });
+            window.view = view;
             setupLoadingScreen(viewerDiv, view);
 
             // add a WMS imagery source
@@ -104,9 +108,6 @@
                 const menu = new GuiTools('menuDiv', view);
                 debug.createTileDebugUI(menu.gui, view);
             }
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

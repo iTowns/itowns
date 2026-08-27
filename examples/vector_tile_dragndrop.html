@@ -40,6 +40,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.475, 48.807),
                 range: 120000,
@@ -47,6 +50,7 @@
 
             var viewerDiv = document.getElementById('viewerDiv');
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
             var menu = new GuiTools('menuDiv', view, 300);
 
             setupLoadingScreen(viewerDiv, view);
@@ -94,9 +98,6 @@
             document.addEventListener('dragleave', function _(e) { e.preventDefault(); }, false);
             document.addEventListener('drop', function _(e) { loadStyle(e, e.dataTransfer.files); }, false);
             document.addEventListener('paste', function _(e) { loadStyle(e, e.clipboardData.files); }, false);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

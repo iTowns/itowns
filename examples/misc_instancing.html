@@ -41,6 +41,9 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // Define initial camera position
             var placement = {
                 coord: new itowns.Coordinates("EPSG:4326", -0.57918, 44.837789),
@@ -53,6 +56,7 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
@@ -62,14 +66,11 @@
             view.scene.add(ambLight);
 
             // Add one imagery layer to the scene
-            itowns.Fetcher.json("./layers/JSONLayers/Ortho.json").then(
-                function _(config) {
-                    config.source = new itowns.WMTSSource(config.source);
-                    var layer = new itowns.ColorLayer("Ortho", config);
-                    view.addLayer(layer).then(
-                        debugMenu.addLayerGUI.bind(debugMenu)
-                    );
-                }
+            const orthoConfig = await itowns.Fetcher.json("./layers/JSONLayers/Ortho.json");
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer("Ortho", orthoConfig);
+            view.addLayer(orthoLayer).then(
+                debugMenu.addLayerGUI.bind(debugMenu)
             );
 
             //Tree
@@ -234,9 +235,6 @@
             view.addLayer(treesLayer);
 
             debug.createTileDebugUI(debugMenu.gui, view);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

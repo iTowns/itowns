@@ -32,6 +32,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // # Loading gpx file
 
             // Define initial camera position
@@ -46,17 +49,17 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
             setupLoadingScreen(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
@@ -64,8 +67,10 @@
                 var layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer);
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             // update the waypoint
             var distance, scale, point = new THREE.Vector3();
@@ -91,44 +96,41 @@
             var waypointGeometry = new THREE.BoxGeometry(1, 1, 80);
             var waypointMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
             // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                console.info('Globe initialized');
-                itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
-                    .then(gpx => itowns.GpxParser.parse(gpx, {
-                        in: {
-                            crs: 'EPSG:4326',
-                        },
-                        out: {
-                            crs: view.referenceCrs,
-                            structure: '3d',
-                        }
-                    }))
-                    .then(itowns.Feature2Mesh.convert({style}))
-                    .then(function (mesh) {
-                        if (mesh) {
-                            mesh.updateMatrixWorld();
-                            mesh.traverse((m) => {
-                                if (m.type == 'Points') {
-                                    var vertices = m.feature.vertices;
-                                    for (var i = 0; i < vertices.length; i += 3) {
-                                        var waypoint = new THREE.Mesh(waypointGeometry, waypointMaterial);
-                                        waypoint.position.fromArray(vertices, i);
-                                        waypoint.lookAt(mesh.worldToLocal(new THREE.Vector3()));
-                                        waypoint.onBeforeRender = updatePointScale;
-                                        waypoint.updateMatrix();
-                                        mesh.add(waypoint);
-                                        waypoint.updateMatrixWorld();
-                                    }
+
+            itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
+                .then(gpx => itowns.GpxParser.parse(gpx, {
+                    in: {
+                        crs: 'EPSG:4326',
+                    },
+                    out: {
+                        crs: view.referenceCrs,
+                        structure: '3d',
+                    }
+                }))
+                .then(itowns.Feature2Mesh.convert({style}))
+                .then(function (mesh) {
+                    if (mesh) {
+                        mesh.updateMatrixWorld();
+                        mesh.traverse((m) => {
+                            if (m.type == 'Points') {
+                                var vertices = m.feature.vertices;
+                                for (var i = 0; i < vertices.length; i += 3) {
+                                    var waypoint = new THREE.Mesh(waypointGeometry, waypointMaterial);
+                                    waypoint.position.fromArray(vertices, i);
+                                    waypoint.lookAt(mesh.worldToLocal(new THREE.Vector3()));
+                                    waypoint.onBeforeRender = updatePointScale;
+                                    waypoint.updateMatrix();
+                                    mesh.add(waypoint);
+                                    waypoint.updateMatrixWorld();
                                 }
-                            });
-                            view.scene.add(mesh);
-                            view.notifyChange();
-                        }
-                    });
-            });
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
+                            }
+                        });
+                        view.scene.add(mesh);
+                        view.notifyChange();
+
+                        return mesh;
+                    }
+                });
 
         </script>
     </body>

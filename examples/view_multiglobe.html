@@ -46,6 +46,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             /* global itowns,document,GuiTools*/
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
@@ -67,15 +70,15 @@
                 noControls: true,
                 object3d,
             });
+            window.view = view;
             var cameraThree = view.camera3D;
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
 
             // Create a second smaller globe
             object3d = new THREE.Object3D();
@@ -90,15 +93,14 @@
 
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);
-            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
-                osm.source = new itowns.TMSSource(osm.source);
-                var layer = new itowns.ColorLayer(osm.id, osm);
-                itowns.View.prototype.addLayer.call(view, layer, globe2);
-            });
+            const openSmConfig = await itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            openSmConfig.source = new itowns.TMSSource(openSmConfig.source);
+            var globe2Layer = new itowns.ColorLayer(openSmConfig.id, openSmConfig);
+            itowns.View.prototype.addLayer.call(view, globe2Layer, globe2);
 
             // Globe animation
             // Exchange postion and scale of globes in a 1 second animation
-            var t = 0;
+            window.t = 0;
             function animator (dt, ignore) {
                 // "dt" is time difference in ms between this animation step and the previous one
                 // "ignore" is true if this is the first animation step
@@ -141,7 +143,7 @@
 
             // Zoom on mouse-wheel
             var onMouseWheel = function onMouseWheel(event) {
-                var geo = new itowns.Coordinates('EPSG:4978', cameraThree.position).as('EPSG:4326');
+                const geo = new itowns.Coordinates('EPSG:4978').setFromVector3(cameraThree.position).as('EPSG:4326');
                 let delta;
                 // WebKit / Opera / Explorer 9
                 if (event.wheelDelta !== undefined) {
@@ -165,9 +167,6 @@
             viewerDiv.addEventListener('DOMMouseScroll', onMouseWheel);
             viewerDiv.addEventListener('mousewheel', onMouseWheel);
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
             window.onKeyPress = onKeyPress;
             window.onMouseWheel = onMouseWheel;
         </script>

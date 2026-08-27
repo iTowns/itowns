@@ -33,6 +33,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
             itowns.CRS.defs('EPSG:3946', '+proj=lcc +lat_1=45.25 +lat_2=46.75 +lat_0=46 +lon_0=3 +x_0=1700000 +y_0=5200000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs');
 
@@ -49,6 +52,7 @@
                 5175682, 3000)
             const view = new itowns.PlanarView(viewerDiv, extent, { placement: {
                 coord: cameraCoord, heading: 30, range: 4000, tilt: 30 } });
+            window.view = view;
 
             setupLoadingScreen(viewerDiv, view);
 
@@ -141,9 +145,6 @@
             const menu = new GuiTools('menuDiv', view);
             const d = new debug.Debug(view, menu.gui);
             debug.createTileDebugUI(menu.gui, view, view.tileLayer, d);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

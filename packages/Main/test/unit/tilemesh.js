@@ -7,7 +7,6 @@ import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import { newTileGeometry } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 import ElevationLayer from 'Layer/ElevationLayer';
-import Source from 'Source/Source';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 
 // It is relatively long to create TileMesh on the go (in term of code), so we
@@ -148,7 +147,7 @@ describe('TileMesh', function () {
         });
     });
 
-    const elevationLayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: new Source({ url: 'node' }) });
+    const elevationLayer = new ElevationLayer('elevation', { crs: 'EPSG:3857', source: { url: 'node', zoom: { min: 0, max: Infinity }, hasData: () => true } });
     elevationLayer.parent = planarlayer;
 
     const material = new LayeredMaterial();

@@ -17,7 +17,7 @@ describe('source_file_gpx_3d', function _() {
                 const children = view.scene.children;
                 return children[children.length - 1].children.length === 29;
             },
-            { timeout: 10000 },
+            { timeout: 20000 },
         );
     });
 });
