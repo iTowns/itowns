@@ -72,25 +72,13 @@ class RasterLayer extends Layer {
     }
 
     /**
-     * Indicates whether an existing raster tile must be recreated.
-     * Subclasses can override this to force rebuilding tiles based on tile state.
-     *
-     * @param {RasterTile} rasterTile - Current raster tile attached to the node.
-     * @returns {boolean} `true` to recreate the raster tile, `false` to keep it.
-     */
-    // eslint-disable-next-line no-unused-vars
-    overloadRasterTile(rasterTile) {
-        return false;
-    }
-
-    /**
      * Returns the raster tile associated with this layer for a given node.
      *
      * @param {TileMesh} node - The tile mesh carrying layered material tiles.
      * @returns {?RasterTile} The matching raster tile, or `undefined` when none exists.
      */
     getRasterTile(node) {
-        return node.material.getTile(this.id);
+        return node.material.getTile(this.id) || this.setupRasterNode(node);
     }
 
     /**
@@ -104,16 +92,12 @@ class RasterLayer extends Layer {
      * @returns {Promise<void>|undefined} A loading promise when an update is scheduled.
      */
     update(context, layer, node) {
-        if (layer.visible && !layer.freeze && this.hasData(node)) {
-            let rasterTile = this.getRasterTile(node);
+        const raster = this.getRasterTile(node);
 
-            if (!rasterTile || this.overloadRasterTile(rasterTile)) {
-                rasterTile = this.setupRasterNode(node);
-            }
-
-            if (rasterTile && (!rasterTile.hasData() || (node.visible && node.material.visible))) {
-                return rasterTile.load(node, context.view).then(() => (node.material.layersNeedUpdate = true));
-            }
+        if (layer.visible && !layer.freeze && node.visible && node.material.visible &&
+            !raster.state.hasFinished()) {
+            return raster.load(node, context.view)
+                .then(() => (node.material.layersNeedUpdate = true));
         }
     }
 }

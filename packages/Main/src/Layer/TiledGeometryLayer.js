@@ -323,6 +323,7 @@ class TiledGeometryLayer extends GeometryLayer {
             return this.subdivideNode(context, node);
         }
 
+        node.material.layersNeedUpdate = true;
         node.material.visible = node.visible;
 
         this.info.update(node);

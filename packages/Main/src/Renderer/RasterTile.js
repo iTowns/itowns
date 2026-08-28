@@ -19,7 +19,10 @@ function refinementCommandCancellationFn(cmd) {
     const { requester } = cmd;
     const { children }  = requester;
 
-    return !cmd.force && !requester.visible && (!requester.parent || !requester.material.visible || children.find(c => c.visible));
+    return !requester.visible ||
+        !requester.material.visible ||
+        !requester.parent ||
+        children.find(c => c.visible);
 }
 
 function buildCommand(tile, extentsSource, requester, view) {
@@ -32,7 +35,6 @@ function buildCommand(tile, extentsSource, requester, view) {
         priority: materialCommandQueuePriorityFunction(requester.material),
         earlyDropFunction: refinementCommandCancellationFn,
         partialLoading: true,
-        force: !tile.hasData(),
     };
 }
 
@@ -120,7 +122,7 @@ export class RasterTile extends THREE.EventDispatcher {
     }
 
     hasData() {
-        return this.level > EMPTY_TEXTURE_ZOOM;
+        return this.state.hasFinished() || this.level > EMPTY_TEXTURE_ZOOM;
     }
 
     initFromParent(parent) {
@@ -301,6 +303,10 @@ export class RasterElevationTile extends RasterTile {
         if (currentLevel !== this.level) {
             this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
         }
+    }
+
+    hasData() {
+        return this.state.hasFinished() || (this.level > EMPTY_TEXTURE_ZOOM && this.tiles[0].zoom - this.level < 5);
     }
 
     updateMinMaxElevation() {

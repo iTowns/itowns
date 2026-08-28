@@ -173,6 +173,10 @@ class ColorLayer extends RasterLayer {
         // set up ColorLayer ordering.
         node.material.setColorTileIds(this.parent.colorLayersOrder);
 
+        if (!this.hasData(node)) {
+            rasterColorTile.state.noMoreUpdatePossible();
+        };
+
         return rasterColorTile;
     }
 }
