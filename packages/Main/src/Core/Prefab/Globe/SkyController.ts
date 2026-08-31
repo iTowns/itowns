@@ -54,8 +54,8 @@ class SkyController {
 
     get castShadow() { return this._sunLightLayer ? this._sunLightLayer.castShadow : false; }
     set castShadow(value: boolean) {
-        if (!this._sunLightLayer || this._sunLightLayer.castShadow === value) { return; }
-        this._sunLightLayer.castShadow = value;
+        if (this.castShadow === value) { return; }
+        this.sunLightLayer.castShadow = value;
         this.updateSunlightVisibility();
         this._view.notifyChange(this._view.camera3D);
     }
