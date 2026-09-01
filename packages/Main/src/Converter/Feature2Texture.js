@@ -109,7 +109,7 @@ const featureExtent = new Extent('EPSG:4326', 0, 0, 0, 0);
 export default {
     // backgroundColor is a THREE.Color to specify a color to fill the texture
     // with, given there is no feature passed in parameter
-    createTextureFromFeature(collection, extent, sizeTexture, layerStyle, backgroundColor) {
+    createTextureFromFeature(collection, extent, zoom, sizeTexture, layerStyle, backgroundColor) {
         style = layerStyle || defaultStyle;
         style.setContext(context);
         let texture;
@@ -160,7 +160,7 @@ export default {
             // to scale line width and radius circle
             const invCtxScale = Math.abs(1 / scale.x);
 
-            context.setZoom(extent.zoom);
+            context.setZoom(zoom);
 
             // Draw the canvas
             for (const feature of collection.features) {
