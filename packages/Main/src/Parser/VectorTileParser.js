@@ -4,26 +4,11 @@ import { VectorTile } from '@mapbox/vector-tile';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
-import { Coordinates } from '@itowns/geographic';
 
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').planarDimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
 const firstPoint = new Vector2();
-
-// Calculate the projected coordinates in EPSG:4326 of a given point in the VT local system
-// adapted from @mapbox/vector-tile
-function project(x, y, tileNumbers, tileExtent) {
-    const size = tileExtent * 2 ** tileNumbers.z;
-    const x0 = tileExtent * tileNumbers.x;
-    const y0 = tileExtent * tileNumbers.y;
-    const y2 = 180 - (y + y0) * 360 / size;
-    return new Coordinates(
-        'EPSG:4326',
-        (x + x0) * 360 / size - 180,
-        360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90,
-    );
-}
 
 // Classify option, it allows to classify a full polygon and its holes.
 // Each polygon with its holes are in one FeatureGeometry.
@@ -74,15 +59,9 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
                 sum = 0;
             }
             count++;
-            const coordProj = project(
-                x,
-                y,
-                vtFeature.tileNumbers,
-                vtFeature.extent);
-            geometry.pushCoordinatesValues(feature, { x, y }, coordProj);
+            geometry.pushCoordinatesValues(feature, { x, y });
             if (count == 1) {
                 firstPoint.set(x, y);
-                firstPoint.coordProj = coordProj;
                 lastPoint.set(x, y);
             } else if (isPolygon && count > 1) {
                 sum += (lastPoint.x - x) * (lastPoint.y + y);
@@ -91,7 +70,7 @@ function vtFeatureToFeatureGeometry(vtFeature, feature, classify = false) {
         } else if (cmd === 7) {
             if (count) {
                 count++;
-                geometry.pushCoordinatesValues(feature, { x: firstPoint.x, y: firstPoint.y }, firstPoint.coordProj);
+                geometry.pushCoordinatesValues(feature, { x: firstPoint.x, y: firstPoint.y });
                 if (isPolygon) {
                     sum += (lastPoint.x - firstPoint.x) * (lastPoint.y + firstPoint.y);
                 }
