@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Coordinates } from '@itowns/geographic';
+import { sharedReadContext2D } from 'Utils/CanvasUtils';
 import placeObjectOnGround from 'Utils/placeObjectOnGround';
 
 const FAST_READ_Z = 0;
@@ -106,7 +107,6 @@ function tileAt(pt, tile) {
     }
 }
 
-let _canvas;
 function _readTextureValueAt(metadata, texture, ...uv) {
     for (let i = 0; i < uv.length; i += 2) {
         uv[i] = THREE.MathUtils.clamp(uv[i], 0, texture.image.width - 1);
@@ -127,11 +127,6 @@ function _readTextureValueAt(metadata, texture, ...uv) {
         }
         return result;
     } else {
-        if (!_canvas) {
-            _canvas = document.createElement('canvas');
-            _canvas.width = 2;
-            _canvas.height = 2;
-        }
         let minx = Infinity;
         let miny = Infinity;
         let maxx = -Infinity;
@@ -144,10 +139,11 @@ function _readTextureValueAt(metadata, texture, ...uv) {
         }
         const dw = maxx - minx + 1;
         const dh = maxy - miny + 1;
-        _canvas.width = Math.max(_canvas.width, dw);
-        _canvas.height = Math.max(_canvas.height, dh);
 
-        const ctx = _canvas.getContext('2d', { willReadFrequently: true });
+        const ctx = sharedReadContext2D();
+        ctx.canvas.width = Math.max(ctx.canvas.width, dw);
+        ctx.canvas.height = Math.max(ctx.canvas.height, dh);
+
         ctx.drawImage(texture.image, minx, miny, dw, dh, 0, 0, dw, dh);
         const d = ctx.getImageData(0, 0, dw, dh);
 

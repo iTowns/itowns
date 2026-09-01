@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
 import CommonMaterial from 'Renderer/CommonMaterial';
+import { createContext2D } from 'Utils/CanvasUtils';
 import Gradients from 'Utils/Gradients';
 
 export const PNTS_MODE = {
@@ -25,6 +26,7 @@ export const PNTS_SHAPE = {
 export const PNTS_SIZE_MODE = {
     VALUE: 0,
     ATTENUATED: 1,
+    ADAPTIVE: 2,
 };
 
 const white = new THREE.Color(1.0,  1.0,  1.0);
@@ -82,12 +84,7 @@ function generateGradientTexture(gradient) {
     const size = 64;
 
     // create canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-
-    // get context
-    const context = canvas.getContext('2d');
+    const context = createContext2D(size, size);
 
     // draw gradient
     context.rect(0, 0, size, size);
@@ -102,7 +99,7 @@ function generateGradientTexture(gradient) {
     context.fillStyle = ctxGradient;
     context.fill();
 
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(context.canvas);
     texture.needsUpdate = true;
 
     texture.minFilter = THREE.LinearFilter;
@@ -161,7 +158,9 @@ class PointsMaterial extends THREE.ShaderMaterial {
      * @param      {Scheme}  [options.discreteScheme]  LUT for other discret point values colorization.
      * @param      {string}  [options.gradient]  Descrition of the gradient to use for continuous point values.
      *                          (Default value will be the 'SPECTRAL' gradient from Utils/Gradients)
-     * @param      {number}  [options.sizeMode=PNTS_SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ATTENUATED' are possible. VALUE use constant size, ATTENUATED compute size depending on distance from point to camera.
+     * @param      {number}  [options.sizeMode=PNTS_SIZE_MODE.VALUE]  point cloud size mode. Only 'VALUE' or 'ATTENUATED' or 'ADAPTIVE' are possible.
+     * VALUE use constant size, ATTENUATED compute size depending on distance from point to camera and ADAPTIVE computes the point size on a per-point basis rather than on a per-node basis.
+     * **Warning:** ADAPTIVE work only if point cloud is an octree
      * @param      {number}  [options.minAttenuatedSize=3]  minimum scale used by 'ATTENUATED' size mode
      * @param      {number}  [options.maxAttenuatedSize=10]  maximum scale used by 'ATTENUATED' size mode
      *
@@ -245,6 +244,13 @@ class PointsMaterial extends THREE.ShaderMaterial {
         CommonMaterial.setUniformProperty(this, 'gamma', gamma);
         CommonMaterial.setUniformProperty(this, 'ambientBoost', ambientBoost);
 
+        // Adaptive point size uniforms
+        CommonMaterial.setUniformProperty(this, 'octreeSpacing', 1.0);
+        CommonMaterial.setUniformProperty(this, 'octreeSize', new THREE.Vector3());
+        CommonMaterial.setUniformProperty(this, 'nodeDepth', 0.0);
+        CommonMaterial.setUniformProperty(this, 'nodeStartOffset', 0.0);
+        CommonMaterial.setUniformProperty(this, 'nodeBBoxMin', new THREE.Vector3());
+
         // add classification texture to apply classification lut.
         const data = new Uint8Array(256 * 4);
         const texture = new THREE.DataTexture(data, 256, 1, THREE.RGBAFormat);
@@ -266,6 +272,12 @@ class PointsMaterial extends THREE.ShaderMaterial {
         textureVisi.needsUpdate = true;
         textureVisi.magFilter = THREE.NearestFilter;
         CommonMaterial.setUniformProperty(this, 'visibilityTexture', textureVisi);
+
+        const dataNodes = new Uint8Array(2048 * 4);
+        const visibleNodesTexture = new THREE.DataTexture(dataNodes, 2048, 1, THREE.RGBAFormat);
+        visibleNodesTexture.needsUpdate = true;
+        visibleNodesTexture.magFilter = THREE.NearestFilter;
+        CommonMaterial.setUniformProperty(this, 'visibleNodes', visibleNodesTexture);
 
         // Classification and other discrete values scheme
         this.classificationScheme = classificationScheme;
