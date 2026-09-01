@@ -48,6 +48,9 @@
             }
 
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // # Simple Globe viewer
             // Define initial camera position
             // mars crs projection is EPSG:104905
@@ -70,6 +73,7 @@
                 realisticLighting: true,
                 farFactor: 0.6, // Less aggressive horizon scaling for this ellipsoid-based demo
             });
+            window.view = view;
 
             view.skyController.realisticSky.sky.material.moon = false;
             setupLoadingScreen(viewerDiv, view);
@@ -108,9 +112,6 @@
 
             debug.createRealisticLightingDebugUI(menuGlobe.gui, view);
             debug.createTileDebugUI(menuGlobe.gui, view);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

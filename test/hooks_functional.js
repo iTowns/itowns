@@ -126,6 +126,10 @@ const loadExample = async (url, screenshotName) => {
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
 
+    // page.on('console', (msg) => {
+    //     console.log(`[BROWSER ${msg.type()}]`, msg.text());
+    // });
+
     try {
         await page.goto(url);
     } catch (e) {

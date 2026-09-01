@@ -35,6 +35,9 @@
             import * as itowns_widgets from 'itowns_widgets';
             import FeatureToolTip from 'FeatureToolTip';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // # Orthographic viewer with one geojson layer and a TMS background layer
 
             // Define geographic extent: CRS, min/max X, min/max Y
@@ -61,6 +64,7 @@
                     maxResolution: 0.005  // a pixel shall not represent a metric size smaller than 5 mm
                 },
             });
+            window.view = view;
 
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
@@ -133,9 +137,6 @@
             view.notifyChange(true);
 
             debug.createTileDebugUI(menuGlobe.gui, view);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
