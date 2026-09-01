@@ -13,7 +13,7 @@ export function createRealisticLightingDebugUI(gui, view) {
     const dateTimeFolder = createDateTimeUI(realisticLightingFolder, view);
 
     function toggleDateTimeFolder() {
-        if (!view.realisticLighting || view.skyController.forceDaytime) {
+        if (!(view.realisticLighting || view.shadows) || view.skyController.forceDaytime) {
             dateTimeFolder.hide();
         } else {
             dateTimeFolder.show();
