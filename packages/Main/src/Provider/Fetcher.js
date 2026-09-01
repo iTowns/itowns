@@ -15,10 +15,24 @@ function checkResponse(response) {
     }
 }
 
-const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) => {
-    checkResponse(response);
-    return response.arrayBuffer();
-});
+// Only allow protocols that cannot be abused to reach local files or
+// non-http(s) internal resources (e.g. `file:`), mitigating SSRF/LFI
+// through attacker-controlled URLs.
+const ALLOWED_PROTOCOLS = ['http:', 'https:', 'blob:', 'data:'];
+function checkUrl(url) {
+    const { protocol } = new URL(url, window.location.href);
+    if (!ALLOWED_PROTOCOLS.includes(protocol)) {
+        throw new Error(`Unsupported URL protocol \`${protocol}\` for url: \`${url}\``);
+    }
+}
+
+const arrayBuffer = (url, options = {}) => {
+    checkUrl(url);
+    return fetch(url, options).then((response) => {
+        checkResponse(response);
+        return response.arrayBuffer();
+    });
+};
 
 /**
  * Utilitary to fetch resources from a server using the [fetch API](
@@ -38,6 +52,7 @@ export default {
      * @returns {Promise<string>} Promise containing the text.
      */
     text(url, options = {}) {
+        checkUrl(url);
         return fetch(url, options).then((response) => {
             checkResponse(response);
             return response.text();
@@ -55,6 +70,7 @@ export default {
      * @returns {Promise<object>} Promise containing the JSON object.
      */
     json(url, options = {}) {
+        checkUrl(url);
         return fetch(url, options).then((response) => {
             checkResponse(response);
             return response.json();
@@ -72,6 +88,7 @@ export default {
      * @returns {Promise<Document>} Promise containing the XML Document.
      */
     xml(url, options = {}) {
+        checkUrl(url);
         return fetch(url, options).then((response) => {
             checkResponse(response);
             return response.text();
@@ -92,6 +109,7 @@ export default {
      * [THREE.Texture](https://threejs.org/docs/api/en/textures/Texture.html).
      */
     texture(url, options = {}) {
+        checkUrl(url);
         let res;
         let rej;
 
@@ -147,6 +165,7 @@ export default {
     },
 
     geotiff(url) {
+        checkUrl(url);
         return GeoTIFF.fromUrl(url, { allowFullFile: true }).then(geotiff => geotiff.getImage());
     },
 
