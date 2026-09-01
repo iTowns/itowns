@@ -2,17 +2,11 @@ import { Coordinates } from '@itowns/geographic';
 import { LRUCache } from 'lru-cache';
 import Fetcher from 'Provider/Fetcher';
 import { EventDispatcher } from 'three';
-import { sharedContext2D, sharedReadContext2D } from 'Utils/CanvasUtils';
+import { sharedReadContext2D } from 'Utils/CanvasUtils';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
 const cachedImg = new LRUCache({ max: 500 });
-
-let matrix;
-
-if (typeof document !== 'undefined') {
-    matrix = document.createElementNS('http://www.w3.org/2000/svg', 'svg').createSVGMatrix();
-}
 
 function baseAltitudeDefault(properties, ctx) {
     return ctx?.coordinates?.z || 0;
@@ -46,17 +40,24 @@ export function readExpression(property, ctx) {
     return property;
 }
 
-async function loadImage(url) {
-    const imgUrl = url.split('?')[0];
+/**
+ * @param {string | HTMLImageElement | HTMLCanvasElement} source
+ * @returns {Promise<HTMLImageElement | HTMLCanvasElement>}
+ */
+export async function loadImage(source) {
+    if (typeof source !== 'string') {
+        return source;
+    }
+    const imgUrl = source.split('?')[0];
     let promise = cachedImg.get(imgUrl);
     if (!promise) {
-        promise = Fetcher.texture(url, { crossOrigin: 'anonymous' });
+        promise = Fetcher.texture(source, { crossOrigin: 'anonymous' });
         cachedImg.set(imgUrl, promise);
     }
     return (await promise).image;
 }
 
-function cropImage(ctx, img, x, y, width, height) {
+export function cropImage(ctx, img, x, y, width, height) {
     ctx.drawImage(img,
         x, y, width, height,
         0, 0, width, height);
@@ -622,74 +623,6 @@ class Style extends EventDispatcher {
 
     setContext(ctx) {
         this.context = ctx;
-    }
-
-    /**
-     * Applies the style.fill to a polygon of the texture canvas.
-     * @param {CanvasRenderingContext2D} txtrCtx The Context 2D of the texture canvas.
-     * @param {Path2D} polygon The current texture canvas polygon.
-     * @param {number} invCtxScale The ratio to scale line width and radius circle.
-     * @param {boolean} canBeFilled - true if feature.type == FEATURE_TYPES.POLYGON.
-     */
-    applyToCanvasPolygon(txtrCtx, polygon, invCtxScale, canBeFilled) {
-        // draw line or edge of polygon
-        if (this.stroke.width > 0) {
-            // TO DO add possibility of using a pattern (https://github.com/iTowns/itowns/issues/2210)
-            this._applyStrokeToPolygon(txtrCtx, invCtxScale, polygon);
-        }
-
-        // fill inside of polygon
-        if (canBeFilled && (this.fill.pattern || this.fill.color)) {
-            // canBeFilled can be move to StyleContext in the later PR
-            this._applyFillToPolygon(txtrCtx, invCtxScale, polygon);
-        }
-    }
-
-    _applyStrokeToPolygon(txtrCtx, invCtxScale, polygon) {
-        if (txtrCtx.strokeStyle !== this.stroke.color) {
-            txtrCtx.strokeStyle = this.stroke.color;
-        }
-        const width = this.stroke.width * invCtxScale;
-        if (txtrCtx.lineWidth !== width) {
-            txtrCtx.lineWidth = width;
-        }
-        const alpha = this.stroke.opacity;
-        if (alpha !== txtrCtx.globalAlpha && typeof alpha == 'number') {
-            txtrCtx.globalAlpha = alpha;
-        }
-        if (txtrCtx.lineCap !== this.stroke.lineCap) {
-            txtrCtx.lineCap = this.stroke.lineCap;
-        }
-        txtrCtx.setLineDash(this.stroke.dasharray.map(a => a * invCtxScale * 2));
-        txtrCtx.stroke(polygon);
-    }
-
-    async _applyFillToPolygon(txtrCtx, invCtxScale, polygon) {
-        // if (this.fill.pattern && txtrCtx.fillStyle.src !== this.fill.pattern.src) {
-        // need doc for the txtrCtx.fillStyle.src that seems to always be undefined
-        const { pattern } = this.fill;
-        if (pattern) {
-            const cropValues = 'cropValues' in pattern ? pattern.cropValues : {};
-            const img = 'source' in pattern ? await loadImage(pattern.source) : pattern;
-            const { x = 0, y = 0, width = img.naturalWidth, height = img.naturalHeight } = cropValues;
-
-            const cropCtx = sharedContext2D();
-            cropCtx.canvas.width = width;
-            cropCtx.canvas.height = height;
-            cropImage(cropCtx, img, x, y, width, height);
-            txtrCtx.fillStyle = txtrCtx.createPattern(cropCtx.canvas, 'repeat');
-            if (txtrCtx.fillStyle.setTransform) {
-                txtrCtx.fillStyle.setTransform(matrix.scale(invCtxScale));
-            } else {
-                console.warn('Raster pattern isn\'t completely supported on Ie and edge', txtrCtx.fillStyle);
-            }
-        } else if (txtrCtx.fillStyle !== this.fill.color) {
-            txtrCtx.fillStyle = this.fill.color;
-        }
-        if (this.fill.opacity !== txtrCtx.globalAlpha) {
-            txtrCtx.globalAlpha = this.fill.opacity;
-        }
-        txtrCtx.fill(polygon);
     }
 
     /**
