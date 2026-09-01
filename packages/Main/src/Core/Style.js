@@ -537,8 +537,8 @@ class Style extends EventDispatcher {
        @private */
     _initFill(params) {
         this._defineCategoryProperty('fill');
-        defineStyleProperty(this, 'fill', 'color', params.color);
-        defineStyleProperty(this, 'fill', 'opacity', params.opacity, 1.0);
+        defineStyleProperty(this, 'fill', 'color', params.color, '#ff0000');
+        defineStyleProperty(this, 'fill', 'opacity', params.opacity, 0.5);
         defineStyleProperty(this, 'fill', 'pattern', params.pattern);
         defineStyleProperty(this, 'fill', 'base_altitude', params.base_altitude, baseAltitudeDefault);
 
@@ -591,7 +591,7 @@ class Style extends EventDispatcher {
        @private */
     _initStroke(params) {
         this._defineCategoryProperty('stroke');
-        defineStyleProperty(this, 'stroke', 'color', params.color);
+        defineStyleProperty(this, 'stroke', 'color', params.color, '#ff0000');
         defineStyleProperty(this, 'stroke', 'opacity', params.opacity, 1.0);
         defineStyleProperty(this, 'stroke', 'line_cap', params.line_cap, 'butt');
         defineStyleProperty(this, 'stroke', 'width', params.width, 1.0);
@@ -633,7 +633,7 @@ class Style extends EventDispatcher {
        @private */
     _initPoint(params) {
         this._defineCategoryProperty('point');
-        defineStyleProperty(this, 'point', 'color', params.color);
+        defineStyleProperty(this, 'point', 'color', params.color, '#ff0000');
         defineStyleProperty(this, 'point', 'line', params.line);
         defineStyleProperty(this, 'point', 'opacity', params.opacity, 1.0);
         defineStyleProperty(this, 'point', 'radius', params.radius, 2.0);

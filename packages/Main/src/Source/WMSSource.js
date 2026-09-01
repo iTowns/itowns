@@ -127,7 +127,7 @@ class WMSSource extends Source {
         this.width = source.width || source.height || 256;
         this.height = source.height || source.width || 256;
         this.version = source.version || '1.3.0';
-        this.transparent = source.transparent || false;
+        this.transparent = source.transparent || true;
         this.bboxDigits = source.bboxDigits;
 
         if (source.axisOrder) {
