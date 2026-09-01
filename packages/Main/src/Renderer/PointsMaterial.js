@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import PointsVS from 'Renderer/Shader/PointsVS.glsl';
 import PointsFS from 'Renderer/Shader/PointsFS.glsl';
 import CommonMaterial from 'Renderer/CommonMaterial';
+import { createContext2D } from 'Utils/CanvasUtils';
 import Gradients from 'Utils/Gradients';
 
 export const PNTS_MODE = {
@@ -83,12 +84,7 @@ function generateGradientTexture(gradient) {
     const size = 64;
 
     // create canvas
-    const canvas = document.createElement('canvas');
-    canvas.width = size;
-    canvas.height = size;
-
-    // get context
-    const context = canvas.getContext('2d');
+    const context = createContext2D(size, size);
 
     // draw gradient
     context.rect(0, 0, size, size);
@@ -103,7 +99,7 @@ function generateGradientTexture(gradient) {
     context.fillStyle = ctxGradient;
     context.fill();
 
-    const texture = new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(context.canvas);
     texture.needsUpdate = true;
 
     texture.minFilter = THREE.LinearFilter;
