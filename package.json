@@ -104,7 +104,7 @@
     "proj4": "^2.20.4",
     "puppeteer": "^25.1.0",
     "sinon": "^21.0.1",
-    "three": "^0.182.0",
+    "three": "mrdoob/three.js#dev",
     "tsc-alias": "^1.8.16",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.2",
