@@ -27,7 +27,14 @@ export default {
                 undefined;
 
             destinationTile.toExtent(layer.crs, extentTexture);
-            texture = Feature2Texture.createTextureFromFeature(data, extentTexture, layer.subdivisionThreshold, layer.style, backgroundColor);
+            texture = Feature2Texture.createTextureFromFeature(
+                data,
+                extentTexture,
+                destinationTile.zoom,
+                layer.subdivisionThreshold,
+                layer.style,
+                backgroundColor,
+            );
             texture.features = data;
             texture.extent = destinationTile;
         } else if (data.isTexture) {
