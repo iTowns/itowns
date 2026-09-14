@@ -71,16 +71,14 @@
 
             view.controls.minDistance = 50;
 
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer);
-            });
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer(config.id, config);
-                view.addLayer(layer);
-            });
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            ignMntHighResConfig.source = new itowns.WMTSSource(ignMntHighResConfig.source);
+            var elevationLayer = new itowns.ElevationLayer(ignMntHighResConfig.id, ignMntHighResConfig);
+            view.addLayer(elevationLayer);
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer(orthoConfig.id, orthoConfig);
+            view.addLayer(orthoLayer);
 
             /* OTHER dataset
             Donnees geocentrique -> probleme pour le placement camera

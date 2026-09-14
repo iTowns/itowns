@@ -61,11 +61,10 @@
     // Add one imagery layer to the scene
     // This layer is defined in a json file but it could be defined as a plain js
     // object. See Layer* for more info.
-    itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-        config.source = new itowns.WMTSSource(config.source);
-        var layer = new itowns.ColorLayer('Ortho', config);
-        view.addLayer(layer).then(debugMenu.addLayerGUI.bind(debugMenu));
-    });
+    const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+    orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+    var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+    view.addLayer(orthoLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
 
 
 

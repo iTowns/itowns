@@ -55,11 +55,10 @@
 
             setupLoadingScreen(viewerDiv, view);
 
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                return view.addLayer(layer);
-            }));
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
 
             // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             var mvtSource = new itowns.VectorTilesSource({
@@ -80,10 +79,8 @@
             var menuGlobe = new GuiTools('menuDiv', view, 300);
             // Listen for globe full initialisation event
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                Promise.all(promises).then(function () {
-                    menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.isColorLayer; }));
-                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
-                }).catch(console.error);
+                menuGlobe.addImageryLayersGUI(view.getLayers(function (l) { return l.isColorLayer; }));
+                itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
             });
 
             debug.createTileDebugUI(menuGlobe.gui, view);

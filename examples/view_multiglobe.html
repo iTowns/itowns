@@ -71,11 +71,10 @@
             setupLoadingScreen(viewerDiv, view);
             object3ds.push(object3d);
 
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
 
             // Create a second smaller globe
             object3d = new THREE.Object3D();
@@ -90,11 +89,10 @@
 
             // add globe2 to the view so it gets updated
             itowns.View.prototype.addLayer.call(view, globe2);
-            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(osm) {
-                osm.source = new itowns.TMSSource(osm.source);
-                var layer = new itowns.ColorLayer(osm.id, osm);
-                itowns.View.prototype.addLayer.call(view, layer, globe2);
-            });
+            const openSmConfig = await itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            openSmConfig.source = new itowns.TMSSource(openSmConfig.source);
+            var globe2Layer = new itowns.ColorLayer(openSmConfig.id, openSmConfig);
+            itowns.View.prototype.addLayer.call(view, globe2Layer, globe2);
 
             // Globe animation
             // Exchange postion and scale of globes in a 1 second animation
