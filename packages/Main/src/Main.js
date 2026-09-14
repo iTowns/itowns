@@ -19,6 +19,7 @@ export { default as ObjectRemovalHelper } from 'Process/ObjectRemovalHelper';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
 export { default as PointsMaterial, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
+export { default as PointsMaterialTsl } from 'Renderer/PointsMaterialTsl';
 export { default as GlobeControls } from 'Controls/GlobeControls';
 export { default as FlyControls } from 'Controls/FlyControls';
 export { default as FirstPersonControls } from 'Controls/FirstPersonControls';
