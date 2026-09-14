@@ -1,13 +1,19 @@
 import * as THREE from 'three';
 import Feature2Texture from 'Converter/Feature2Texture';
+import Capabilities from 'Core/System/Capabilities';
 import { Extent } from '@itowns/geographic';
 
 const extentTexture = new Extent('EPSG:4326');
 
 const textureLayer = (texture, layer) => {
     texture.generateMipmaps = false;
-    texture.magFilter = layer.magFilter || THREE.LinearFilter;
-    texture.minFilter = layer.minFilter || THREE.LinearFilter;
+    const defaultFilter = texture.type === THREE.FloatType &&
+        !Capabilities.isFloatTextureLinearFilteringSupported() ?
+        THREE.NearestFilter : THREE.LinearFilter;
+    texture.magFilter = defaultFilter === THREE.NearestFilter ?
+        THREE.NearestFilter : layer.magFilter || defaultFilter;
+    texture.minFilter = defaultFilter === THREE.NearestFilter ?
+        THREE.NearestFilter : layer.minFilter || defaultFilter;
     return texture;
 };
 

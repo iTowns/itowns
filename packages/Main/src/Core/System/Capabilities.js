@@ -5,6 +5,7 @@ import SampleTestVS from '../../Renderer/Shader/SampleTestVS.glsl';
 let logDepthBufferSupported = false;
 let maxTexturesUnits = 8;
 let maxTextureSize = 4096;
+let floatTextureLinearFilteringSupported = true;
 
 function _WebGLShader(renderer, type, string) {
     const gl = renderer.getContext();
@@ -25,10 +26,14 @@ export default {
     getMaxTextureSize() {
         return maxTextureSize;
     },
+    isFloatTextureLinearFilteringSupported() {
+        return floatTextureLinearFilteringSupported;
+    },
     updateCapabilities(renderer) {
         const gl = renderer.getContext();
         maxTexturesUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
         maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+        floatTextureLinearFilteringSupported = Boolean(gl.getExtension('OES_texture_float_linear'));
 
         const program = gl.createProgram();
         const glVertexShader = _WebGLShader(renderer, gl.VERTEX_SHADER, SampleTestVS);
