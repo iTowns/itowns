@@ -34,6 +34,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // # Orthographic viewer
 
             // Define geographic extent: CRS, min/max X, min/max Y
@@ -58,31 +61,16 @@
                     maxResolution: 0.005  // a pixel shall not represent a metric size smaller than 5 mm
                 },
             });
+            window.view = view;
 
             setupLoadingScreen(viewerDiv, view);
 
             // Add a TMS imagery source
-            var opensmSource = new itowns.TMSSource({
-                isInverted: true,
-                url: 'https://watercolormaps.collection.cooperhewitt.org/tile/watercolor/{z}/{x}/{y}.jpg',
-                networkOptions: { crossOrigin: 'anonymous' },
-                extent,
-                crs: 'EPSG:3857',
-                attribution: {
-                    name: 'OpenStreetMap',
-                    url: 'http://www.openstreetmap.org/',
-                },
-            });
-
-            // Add a TMS imagery layer
-            var opensmLayer = new itowns.ColorLayer('OPENSM', {
-                updateStrategy: {
-                    type: itowns.STRATEGY_DICHOTOMY,
-                },
-                source: opensmSource,
-            });
-
-            view.addLayer(opensmLayer);
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            view.addLayer(
+                new itowns.ColorLayer('Ortho', orthoConfig),
+            ); // .then(debugMenu.addLayerGUI.bind(debugMenu));
 
             // Add a scale :
             const scale = new itowns_widgets.Scale(view, {
@@ -92,9 +80,6 @@
 
             // Request redraw
             view.notifyChange();
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

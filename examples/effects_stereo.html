@@ -43,6 +43,9 @@
             import { ParallaxBarrierEffect } from 'three/addons/effects/ParallaxBarrierEffect.js';
             import { StereoEffect } from 'three/addons/effects/StereoEffect.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // Define initial camera position
             const placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
@@ -56,6 +59,7 @@
 
             // Instanciate iTowns GlobeView*
             const view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
             // Eye separation value
             let eyeSep = 0.064;
@@ -78,11 +82,10 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                const source = new itowns.WMTSSource(config.source);
-                const layer = new itowns.ColorLayer(config.id, { source });
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            const orthoSource = new itowns.WMTSSource(orthoConfig.source);
+            const orthoLayer = new itowns.ColorLayer(orthoConfig.id, { source: orthoSource });
+            view.addLayer(orthoLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
@@ -90,8 +93,10 @@
                 const layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             /* eslint-disable no-unused-vars */
             function updateEyeSep(value) {
@@ -210,7 +215,7 @@
             }
 
             // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
+            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function () {
                 // eslint-disable-next-line no-console
                 console.info('Globe initialized');
                 updateScaleWidget();
@@ -222,11 +227,7 @@
 
             // Warning: the following code is not part of this example, those
             // variables are only exposed for internal functional test uses.
-            window.view = view;
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

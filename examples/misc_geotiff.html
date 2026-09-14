@@ -32,6 +32,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
 
 
             // ---------- CREATE A GlobeView TO SUPPORT DATA VISUALIZATION: ----------
@@ -47,6 +50,7 @@
             const viewContainer = document.getElementById('viewerDiv');
             // Create a GlobeView
             const view = new itowns.GlobeView(viewContainer, placement);
+            window.view = view;
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
@@ -57,16 +61,15 @@
 
             // ---------- DISPLAY ORTHO IMAGES: ----------
 
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
-                const colorLayer = new itowns.ColorLayer(
-                    'Ortho',
-                    {
-                        ...config,
-                        source: new itowns.WMTSSource(config.source),
-                    },
-                );
-                view.addLayer(colorLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            const colorLayer = new itowns.ColorLayer(
+                'Ortho',
+                {
+                    ...orthoConfig,
+                    source: new itowns.WMTSSource(orthoConfig.source),
+                },
+            );
+            view.addLayer(colorLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
 
 
 
@@ -101,9 +104,6 @@
 
 
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
