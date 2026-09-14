@@ -628,7 +628,8 @@
                                         ${category.items.map(item =>
                                             `<li class="example-item" data-slug='${item.id}' id="${item.id}">
                                                 <div class="example-img-container">
-                                                    <img src="images/thumbnails/${item.id}.webp" alt="${item.label}"/>
+                                                    <img src="images/thumbnails/${item.id}.webp" alt="${item.label}"
+                                                        onerror="this.onerror=null;this.src='images/thumbnails/${item.id}.svg'"/>
                                                 </div>
                                                 <div class="example-info">
                                                     <h3 class="example-title">${item.label}</h3>
