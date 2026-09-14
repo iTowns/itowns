@@ -1,8 +1,29 @@
 import Layer from 'Layer/Layer';
 import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
-import { removeLayeredMaterialNodeTile } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+
+export function removeLayeredMaterialNodeTile(tileId) {
+    /**
+     * @param {TileMesh} node - The node to udpate.
+     */
+    return (node) => {
+        if (node.material?.removeTile) {
+            node.material.removeTile(tileId);
+            if (node.material.getCurrentElevationTile()) {
+                const rasterElevationNode = node.material.getCurrentElevationTile();
+                node.setBBoxZ({
+                    min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
+                });
+            } else {
+                node.setBBoxZ({ min: 0, max: 0 });
+            }
+        }
+        if (node.layerUpdateState && node.layerUpdateState[tileId]) {
+            delete node.layerUpdateState[tileId];
+        }
+    };
+}
 
 class RasterLayer extends Layer {
     constructor(id, config) {
@@ -19,6 +40,7 @@ class RasterLayer extends Layer {
             cacheLifeTime,
         });
 
+        this.visible = true;
         this.minFilter = minFilter;
         this.magFilter = magFilter;
 
@@ -42,6 +64,45 @@ class RasterLayer extends Layer {
         }
         for (const root of this.parent.level0Nodes) {
             root.traverse(removeLayeredMaterialNodeTile(this.id));
+        }
+    }
+
+    hasData(node) {
+        const minZoom = Math.max(this.source.zoom.min, this.zoom.min);
+
+        const tiles  = node.getExtentsByProjection(this.crs)
+            .map(e => e.tiledExtentParent(minZoom));
+
+        return tiles.some(e => e.zoom >= minZoom && this.source.hasData(e));
+    }
+
+    /**
+     * Returns the raster tile associated with this layer for a given node.
+     *
+     * @param {TileMesh} node - The tile mesh carrying layered material tiles.
+     * @returns {?RasterTile} The matching raster tile, or `undefined` when none exists.
+     */
+    getRasterTile(node) {
+        return node.material.getTile(this.id) || this.setupRasterNode(node);
+    }
+
+    /**
+     * Updates raster data for a node if the layer is active and data is available.
+     * Creates or recreates the raster tile when needed, then triggers loading.
+     *
+     * @param {object} context - Update context.
+     * @param {View} context.view - Active view used to schedule loading.
+     * @param {RasterLayer} layer - Current raster layer.
+     * @param {TileMesh} node - Tile node to update.
+     * @returns {Promise<void>|undefined} A loading promise when an update is scheduled.
+     */
+    update(context, layer, node) {
+        const raster = this.getRasterTile(node);
+
+        if (layer.visible && !layer.frozen && node.visible && node.material.visible &&
+            !raster.state.hasFinished()) {
+            return raster.load(node, context.view)
+                .then(() => (node.material.layersNeedUpdate = true));
         }
     }
 }
