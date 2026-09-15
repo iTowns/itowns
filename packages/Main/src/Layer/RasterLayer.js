@@ -3,25 +3,24 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
-export function removeLayeredMaterialNodeTile(tileId) {
+const _updateBBox = (node) => {
+    if (node.material.getCurrentElevationTile()) {
+        const { min, max, layer } = node.material.getCurrentElevationTile();
+        node.setBBoxZ({ min, max, scale: layer.scale });
+    } else {
+        node.setBBoxZ({ min: 0, max: 0, scale: 1.0 });
+    }
+};
+
+export function removeLayeredMaterialNodeTile(tileId, isElevationLayer) {
+    const updateBBox = !isElevationLayer ? () => {} : _updateBBox;
+
     /**
      * @param {TileMesh} node - The node to udpate.
      */
     return (node) => {
-        if (node.material?.removeTile) {
-            node.material.removeTile(tileId);
-            if (node.material.getCurrentElevationTile()) {
-                const rasterElevationNode = node.material.getCurrentElevationTile();
-                node.setBBoxZ({
-                    min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
-                });
-            } else {
-                node.setBBoxZ({ min: 0, max: 0 });
-            }
-        }
-        if (node.layerUpdateState && node.layerUpdateState[tileId]) {
-            delete node.layerUpdateState[tileId];
-        }
+        node.material.removeTile(tileId);
+        updateBBox(node);
     };
 }
 
@@ -63,7 +62,7 @@ class RasterLayer extends Layer {
             this.cache.clear();
         }
         for (const root of this.parent.level0Nodes) {
-            root.traverse(removeLayeredMaterialNodeTile(this.id));
+            root.traverse(removeLayeredMaterialNodeTile(this.id, this.isElevationLayer));
         }
     }
 
