@@ -43,6 +43,6 @@ describe('view_multiglobe', function _() {
         });
 
         assert.equal('globe2', layer);
-        assert.equal(4, level);
+        assert.equal(8, level);
     });
 });
