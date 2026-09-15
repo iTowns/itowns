@@ -57,6 +57,8 @@ export class TileGeometry extends THREE.BufferGeometry {
     /** Resolution of the tile geometry in segments per side. */
     public segments: number;
 
+    public boundingBox: THREE.Box3;
+
     /**
      * [TileGeometry] instances are shared between tiles. Since a geometry
      * handles its own GPU resource, it needs a reference counter to dispose of
@@ -87,6 +89,7 @@ export class TileGeometry extends THREE.BufferGeometry {
             this.setAttribute(`uv_${i}`, bufferAttributes.uvs[i]);
         }
 
+        this.boundingBox = new THREE.Box3();
         this.computeBoundingBox();
         this.OBB = null;
         this.hideSkirt = params.hideSkirt ?? false;
@@ -110,7 +113,7 @@ export class TileGeometry extends THREE.BufferGeometry {
      * @param key - The [south, level, epsg] key of this geometry.
      */
     public initRefCount(
-        cacheTile: LRUCache<string, Promise<this>>,
+        cacheTile: LRUCache<string, this>,
         key: string,
     ): void {
         if (this._refCount !== null) {

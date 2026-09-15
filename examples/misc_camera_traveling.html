@@ -51,6 +51,9 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // ---------- Display a GlobeView with ortho-images and digital elevation model : ----------
 
             // `viewerDiv` will contain iTowns rendering area (`<canvas>`) :
@@ -64,6 +67,7 @@
 
             // Instantiate iTowns GlobeView :
             let view = new itowns.GlobeView(viewerDiv, initialPlacement);
+            window.view = view;
 
             // Sets a loading screen :
             setupLoadingScreen(viewerDiv, view);
@@ -71,11 +75,10 @@
             // Add one imagery layer to the scene and the miniView.
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                const orthoLayer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(orthoLayer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            const orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
 
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
@@ -84,8 +87,10 @@
                 let layer = new itowns.ElevationLayer(config.id, config);
                 view.addLayer(layer);
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
 
             // ---------- Select camera positions and travel through these positions : ----------
@@ -159,9 +164,6 @@
                 view.notifyChange();
             })
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
