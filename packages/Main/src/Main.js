@@ -16,7 +16,6 @@ export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { default as ObjectRemovalHelper } from 'Process/ObjectRemovalHelper';
-export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
 export { default as PointsMaterial, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
 export { default as GlobeControls } from 'Controls/GlobeControls';
