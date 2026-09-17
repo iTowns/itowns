@@ -35,6 +35,9 @@
             import * as itowns_widgets from 'itowns_widgets';
             import FeatureToolTip from 'FeatureToolTip';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // Define initial camera position
             var placement = {
                 coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
@@ -46,6 +49,7 @@
 
             // Instantiate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
             var menuGlobe = new GuiTools('menuDiv', view);
 
             setupLoadingScreen(viewerDiv, view);
@@ -54,11 +58,10 @@
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json').then(function _(config) {
-                config.source = new itowns.TMSSource(config.source);
-                var layer = new itowns.ColorLayer('OPENSM', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const openSmConfig = await itowns.Fetcher.json('./layers/JSONLayers/OPENSM.json');
+            openSmConfig.source = new itowns.TMSSource(openSmConfig.source);
+            var openSmLayer = new itowns.ColorLayer('OPENSM', openSmConfig);
+            view.addLayer(openSmLayer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
 
 
 
@@ -106,9 +109,6 @@
                 FeatureToolTip.addLayer(layer, { filterAllProperties: false });
             }));
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
