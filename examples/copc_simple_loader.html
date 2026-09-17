@@ -53,6 +53,9 @@
             import { zoomToLayer } from './jsm/PointCloudHelper.js';
             import {getShareableURL} from './jsm/ExampleUtils.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             let layer; // COPCLayer
 
             const viewerDiv = document.getElementById('viewerDiv');
@@ -132,10 +135,9 @@
 
             loadAutzenBtn.addEventListener('click', loadAutzen);
             loadSofiBtn.addEventListener('click', loadSofi);
-            loadTrestleBridgeBtn.addEventListener('click', loadTrestleBridge);
+            loadMillsiteBtn.addEventListener('click', loadMillsite);
 
-            window.itowns = itowns;
-            window.THREE = THREE;
+            // window.view = view;
 
             function load() {
                 const url = document.getElementById('loadUrl').value;
