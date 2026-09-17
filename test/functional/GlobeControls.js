@@ -32,6 +32,7 @@ describe('GlobeControls with globe example', function _() {
             navigation.hide();
             searchbar.hide();
             scale.hide();
+            view.controls.enableDamping = false;
         });
 
         middleWidth = await page.evaluate(() => window.innerWidth / 2);
@@ -107,10 +108,6 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should move like expected', async () => {
-        await page.evaluate(() => {
-            view.controls.enableDamping = false;
-        });
-
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down();
@@ -124,7 +121,6 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should zoom like expected with middle button', async () => {
-        await page.evaluate(() => { view.controls.enableDamping = false; });
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
         await mouse.down({ button: 'middle' });
@@ -135,7 +131,6 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should change tilt like expected', async () => {
-        await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight);
@@ -148,7 +143,6 @@ describe('GlobeControls with globe example', function _() {
     });
 
     it('should change heading like expected', async () => {
-        await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');
         const mouse = page.mouse;
         await mouse.move(middleWidth, middleHeight, { steps: 20 });
@@ -178,7 +172,6 @@ describe('GlobeControls with globe example', function _() {
 
     it('should zoom like expected with mouse wheel', async () => {
         // FIX Me: use puppetter mouse#wheel instead of new WheelEvent
-        await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.mouse.move(middleWidth, middleHeight, { steps: 20 });
         const finalRange = await page.evaluate(() => new Promise((resolve) => {
             view.mainLoop.addEventListener('command-queue-empty', () => {

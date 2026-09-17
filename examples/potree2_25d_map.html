@@ -56,11 +56,13 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             var potreeLayer;
             var oldPostUpdate;
             var viewerDiv;
             var debugGui;
-            var view;
             var controls;
 
             // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -72,7 +74,9 @@
             debugGui = new lil();
 
             const crs = 'EPSG:4326';
-            view = new itowns.View(crs, viewerDiv);
+            const view = new itowns.View(crs, viewerDiv);
+            window.view = view;
+
             setupLoadingScreen(viewerDiv, view);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
 
@@ -138,11 +142,7 @@
                     info.textContent = potreeLayer.displayedCount.toLocaleString() + ' points';
                 });
             }
-            window.view = view;
             view.addLayer(potreeLayer).then(onLayerReady);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
