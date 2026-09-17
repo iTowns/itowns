@@ -48,6 +48,9 @@
 
             import { VRButton } from 'three/addons/webxr/VRButton.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // ---------- SETUP THE VR VIEW : ----------
 
             // Define camera initial position
@@ -63,6 +66,7 @@
 
             // Create a GlobeView
             const view = new itowns.GlobeView(viewerDiv, placement, { webXR: { controllers: true } });
+            window.view = view;
 
             // Instantiate three's VR Button
             const vrButton = VRButton.createButton(view.renderer);
@@ -73,11 +77,10 @@
             // Add one imagery layer to the scene. This layer's properties are
             // defined in a json file, but it could be defined as a plain js
             // object. See `Layer` documentation for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
-                config.source = new itowns.WMTSSource(config.source);
-                view.addLayer(new itowns.ColorLayer('Ortho', config),
-                );
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            view.addLayer(new itowns.ColorLayer('Ortho', orthoConfig),
+            );
 
             // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
 
@@ -89,13 +92,10 @@
                     new itowns.ElevationLayer(config.id, config),
                 );
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
-                .then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
-                .then(addElevationLayerFromConfig);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
         </script>
     </body>

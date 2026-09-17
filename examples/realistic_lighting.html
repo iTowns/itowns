@@ -34,6 +34,9 @@
 
             import { zoomToLayer } from './jsm/OGC3DTilesHelper.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             const {
                 WMTSSource, OGC3DTilesSource,
                 ColorLayer, ElevationLayer, OGC3DTilesLayer,
@@ -112,9 +115,6 @@
             // ---------- Load Lille dataset ----------
             load("https://webimaging.lillemetropole.fr/externe/maillage/2020_mel_5cm/tileset.json");
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>
