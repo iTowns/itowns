@@ -100,6 +100,11 @@ class Source {
 
         this.uid = uid++;
 
+        this.zoom = {
+            min: source.zoom?.min ?? 0,
+            max: source.zoom?.max ?? Infinity,
+        };
+
         this.url = source.url;
         this.format = source.format;
         this.fetcher = source.fetcher || Fetcher.get(source.format);
