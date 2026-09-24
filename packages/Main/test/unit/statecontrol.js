@@ -94,27 +94,27 @@ describe('StateControl', () => {
         event.offsetX = 100;
         event.offsetY = 100;
 
-        assert(testEventTriggering('state-changed', event, states._onPointerDown));
+        assert(testEventTriggering('state-changed', event, states._on.pointerdown));
     });
 
     it('should trigger drag event', () => {
-        assert(testEventTriggering('drag', event, states._onPointerMove));
-        states._onPointerUp();
+        assert(testEventTriggering('drag', event, states._on.pointermove));
+        states._on.pointerup();
     });
 
     it('should trigger state-changed event from ctrl + left-click', () => {
         event.keyCode = 17;
 
         assert(testEventTriggering('state-changed', event, (event) => {
-            states._onKeyDown(event);
-            states._onPointerDown(event);
+            states._on.keydown(event);
+            states._on.pointerdown(event);
         }));
     });
 
     it('should trigger rotate event', () => {
         assert(testEventTriggering('rotate', event, states._on.pointermove));
-        states._onPointerUp();
-        states._onKeyUp();
+        states._on.pointerup();
+        states._on.keyup();
     });
 
     it('should trigger state-changed event from middle click', () => {
@@ -125,7 +125,7 @@ describe('StateControl', () => {
 
     it('should trigger dolly event', () => {
         assert(testEventTriggering('dolly', event, states._on.pointermove));
-        states._onPointerUp();
+        states._on.pointerup();
     });
 
     it('should trigger state-changed event from right-click', () => {
@@ -145,28 +145,28 @@ describe('StateControl', () => {
         // UP arrow key
         event.keyCode = 38;
         assert(testEventTriggering('pan', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should trigger pan event from bottom arrow key press', () => {
         // BOTTOM arrow key
         event.keyCode = 40;
         assert(testEventTriggering('pan', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should trigger pan event from left arrow key press', () => {
         // LEFT arrow key
         event.keyCode = 37;
         assert(testEventTriggering('pan', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should trigger pan event from right arrow key press', () => {
         // RIGHT arrow key
         event.keyCode = 39;
         assert(testEventTriggering('pan', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should trigger state-changed event from shift + left-click', () => {
@@ -174,25 +174,25 @@ describe('StateControl', () => {
         event.keyCode = 16;
 
         assert(testEventTriggering('state-changed', event, (event) => {
-            states._onKeyDown(event);
-            states._onPointerDown(event);
+            states._on.keydown(event);
+            states._on.pointerdown(event);
         }));
     });
 
     it('should trigger panoramic event', () => {
         assert(testEventTriggering('panoramic', event, states._on.pointermove));
-        states._onPointerUp();
-        states._onKeyUp();
+        states._on.pointerup();
+        states._on.keyup();
     });
 
     it('should trigger travel_in event from mouse event', () => {
         assert(testEventTriggering('travel_in', event, (event) => {
             event.timeStamp = 100;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
             event.timeStamp = 200;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
     });
 
@@ -207,7 +207,7 @@ describe('StateControl', () => {
         event.keyCode = 80;
 
         assert(testEventTriggering('travel_in', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should no longer trigger travel_in event from mouse event', () => {
@@ -216,11 +216,11 @@ describe('StateControl', () => {
 
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.timeStamp = 700;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
             event.timeStamp = 800;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
         }));
     });
 
@@ -229,11 +229,11 @@ describe('StateControl', () => {
 
         assert(testEventTriggering('travel_out', event, (event) => {
             event.timeStamp = 1300;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
             event.timeStamp = 1400;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
     });
 
@@ -249,7 +249,7 @@ describe('StateControl', () => {
         event.keyCode = 77;
 
         assert(testEventTriggering('travel_out', event, states._on.keydown));
-        states._onKeyUp();
+        states._on.keyup();
     });
 
     it('should no longer trigger travel_out event from mouse event', () => {
@@ -258,11 +258,11 @@ describe('StateControl', () => {
 
         assert(!testEventTriggering('travel_out', event, (event) => {
             event.timeStamp = 1900;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
             event.timeStamp = 2000;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
         }));
     });
 
@@ -292,53 +292,53 @@ describe('StateControl', () => {
         assert(!testEventTriggering('state-changed', event, (event) => {
             // Single left click
             event.button = MOUSE.LEFT;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
 
             // Single right click
             event.button = MOUSE.RIGHT;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
 
             // Single middle click
             event.button = MOUSE.MIDDLE;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
 
         event.button = undefined;
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.keyCode = 80;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.keyCode = 77;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
         assert(!testEventTriggering('pan', event, (event) => {
             // Left arrow key
             event.keyCode = 37;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Up arrow key
             event.keyCode = 38;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Right arrow key
             event.keyCode = 39;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Bottom arrow key
             event.keyCode = 40;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
         assert(!testEventTriggering('zoom', event, states._on.wheel));
