@@ -335,6 +335,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
         } else {
             node.notVisibleSince = Date.now();
             node.sse = -1;
+            if (node.obj) { node.obj.visible = false; }
         }
         this._visibilityTextureNeedsUpdate = true;
     }
