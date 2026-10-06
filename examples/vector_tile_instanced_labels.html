@@ -1,0 +1,113 @@
+<html>
+    <head>
+        <title>Itowns - Globe + instanced labels</title>
+
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.182.0/examples/jsm/"
+            }
+        }
+        </script>
+
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/noto.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <div id="description">
+            <p>Labels of the vector tile layer are drawn as instanced SDF text
+            (<b>@itowns/labels</b>) instead of DOM elements.</p>
+        </div>
+        <script type="module">
+
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+            import * as THREE from 'three';
+            import * as itowns from 'itowns';
+            // # Globe viewer with GPU instanced labels
+            //
+            // `addLabelLayer.instanced` draws the labels of the vector tile layer
+            // as SDF text, in one instanced draw call. They are not culled behind
+            // the horizon and not depth tested against the terrain.
+
+            // Define initial camera position
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 2.3488, 48.8534),
+                range: 8000,
+                tilt: 45,
+            };
+
+            // `viewerDiv` will contain iTowns' rendering area (`<canvas>`)
+            const viewerDiv = document.getElementById('viewerDiv');
+
+            // Instanciate iTowns GlobeView
+            const view = new itowns.GlobeView(viewerDiv, placement);
+
+            // define pole texture
+            view.tileLayer.noTextureColor = new THREE.Color(0x95c1e1);
+
+            setupLoadingScreen(viewerDiv, view);
+
+            const promises = [];
+
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                return view.addLayer(new itowns.ColorLayer('Ortho', config));
+            }));
+
+            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then((config) => {
+                config.source = new itowns.WMTSSource(config.source);
+                return view.addLayer(new itowns.ElevationLayer(config.id, config));
+            }));
+
+            // Define a VectorTilesSource to load Vector Tiles data from the geoportail
+            const mvtSource = new itowns.VectorTilesSource({
+                style: 'https://data.geopf.fr/annexes/ressources/vectorTiles/styles/PLAN.IGN/standard.json',
+                // We don't display mountains related data to ease visualisation
+                filter: layer => !layer['source-layer'].includes('oro_')
+                    && !layer['source-layer'].includes('parcellaire'),
+            });
+
+            const mvtLayer = new itowns.ColorLayer('MVT', {
+                source: mvtSource,
+                effect_type: itowns.colorLayerEffects.removeLightColor,
+                effect_parameter: 2.5,
+                addLabelLayer: { performance: true, instanced: true },
+            });
+
+            view.addLayer(mvtLayer);
+
+            const menuGlobe = new GuiTools('menuDiv', view, 300);
+
+            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
+                Promise.all(promises).then(() => {
+                    menuGlobe.addImageryLayersGUI(view.getLayers(l => l.isColorLayer));
+                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
+
+                    const labelLayer = view.getLayerById('MVT-label');
+                    menuGlobe.gui.add({ labels: true }, 'labels').name('Labels')
+                        .onChange((value) => {
+                            labelLayer.visible = value;
+                            view.notifyChange(view.camera3D);
+                        });
+                }).catch(console.error);
+            });
+
+            window.view = view;
+            window.itowns = itowns;
+            window.THREE = THREE;
+
+        </script>
+    </body>
+</html>

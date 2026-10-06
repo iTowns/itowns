@@ -11,6 +11,7 @@ import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { InstancedLabelManager } from '@itowns/labels';
 
 export const VIEW_EVENTS = {
     /**
@@ -75,6 +76,7 @@ function _preprocessLayer(view, layer, parentLayer) {
             style: layer.style,
             zoom: layer.zoom,
             performance: layer.addLabelLayer.performance,
+            instanced: layer.addLabelLayer.instanced,
             crs: source.crs,
             visible: layer.visible,
             margin: 15,
@@ -134,6 +136,9 @@ class View extends THREE.EventDispatcher {
     #layers = [];
     #pixelDepthBuffer = new Uint8Array(4);
     #fullSizeDepthBuffer;
+    #instancedLabelManager = null;
+    // Time until which the instanced labels may still be placing or fading.
+    #labelSettleUntil = 0;
 
     static ALTITUDE_MAX = 10000; // more than Mount Everest
 
@@ -290,6 +295,75 @@ class View extends THREE.EventDispatcher {
     }
 
     /**
+     * The manager drawing the labels of the {@link LabelLayer}s created with
+     * `instanced: true`. Built on first access.
+     * @type {InstancedLabelManager}
+     */
+    get instancedLabelManager() {
+        this.#instancedLabelManager ??= this.#createInstancedLabelManager();
+        return this.#instancedLabelManager;
+    }
+
+    #createInstancedLabelManager() {
+        const manager = new InstancedLabelManager(this.renderer, {
+            autoUpdate: false,
+            atlasFontSize: 40,
+            atlasCapacityMultiplier: 2,
+            downscale: 16,
+            occlusionTolerance: 0.1,
+        });
+
+        // The label shader writes clip-space depth, which cannot be compared
+        // with the logarithmic depth buffer.
+        manager.mesh.material.depthTest = false;
+        this.scene.add(manager.mesh);
+
+        const viewProjection = new THREE.Matrix4();
+        const lastViewProjection = new THREE.Matrix4();
+
+        // Labels ignore scene.fog: they are dropped at this fraction of the fog band.
+        const FOG_LABEL_CUTOFF = 0.3;
+
+        this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
+            const fog = this.scene.fog;
+            manager.config.labelFar = (fog && fog.far !== undefined)
+                ? fog.near + (fog.far - fog.near) * FOG_LABEL_CUTOFF
+                : Infinity;
+
+            manager.update();
+            manager.cull(this.camera3D);
+
+            viewProjection.multiplyMatrices(this.camera3D.projectionMatrix,
+                this.camera3D.matrixWorldInverse);
+            if (!viewProjection.equals(lastViewProjection)) {
+                lastViewProjection.copy(viewProjection);
+                this.notifyLabelChange();
+            } else if (performance.now() < this.#labelSettleUntil) {
+                this.notifyChange(undefined, true);
+            }
+        });
+
+        return manager;
+    }
+
+    /**
+     * Keeps the view drawing until the instanced labels have been placed and
+     * faded. Call it before changing instanced labels: after an idle period it
+     * resets the manager's fade clock, which steps fades by the time since the
+     * previous cull.
+     */
+    notifyLabelChange() {
+        const manager = this.#instancedLabelManager;
+        if (!manager) { return; }
+        const now = performance.now();
+        if (now >= this.#labelSettleUntil) {
+            manager.cull(this.camera3D);
+        }
+        this.#labelSettleUntil = now + manager.config.placementIntervalMs + manager.config.fadeDurationMs;
+        this.notifyChange(undefined, true);
+    }
+
+    /**
      * Dispose viewer before delete it.
      *
      * Method dispose all viewer objects
@@ -329,6 +403,11 @@ class View extends THREE.EventDispatcher {
         const tileLayers = this.getLayers(l => l.isTiledGeometryLayer);
         for (const tileLayer of tileLayers) {
             this.removeLayer(tileLayer.id, clearCache);
+        }
+        if (this.#instancedLabelManager) {
+            this.scene.remove(this.#instancedLabelManager.mesh);
+            this.#instancedLabelManager.dispose();
+            this.#instancedLabelManager = null;
         }
         viewers.splice(id, 1);
         // Remove remaining objects in the scene (e.g. helpers, debug, etc.)
