@@ -78,16 +78,7 @@ class VpcSource extends Source {
                 this._promises = [];
                 this.urls = metadata.features.map(f => f.assets.data.href);
                 this.urls.forEach((url, i) => {
-                    let resolve;
-                    let reject;
-                    const whenReady = new Promise((re, rj) => {
-                        // waiting for source to be instantiate;
-                        resolve = re;
-                        reject = rj;
-                    }).catch((err) => {
-                        console.warn(err);
-                        this.handlingError(err);
-                    });
+                    const { promise: whenReady, resolve, reject } = Promise.withResolvers();
 
                     const mockSource = {
                         boundsConforming: boundsConformings[i],
@@ -101,8 +92,9 @@ class VpcSource extends Source {
                             } else if (url.includes('.json')) {
                                 newSource = new EntwinePointTileSource({ url });
                             } else {
-                                const err = new Error('[VPCLayer]: stack point cloud format not supporter');
+                                const err = new Error(`[VPCLayer]: stack point cloud format not supported (${url})`);
                                 reject(err);
+                                newSource = { whenReady: Promise.reject(err) };
                             }
 
                             resolve(newSource.whenReady);
