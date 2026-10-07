@@ -32,10 +32,14 @@ describe('Fetcher', function () {
                     res = err;
                 })
                 .finally(() => {
-                    if (res.response?.status === 404) {
-                        done();
+                    if (Error.isError(res)) {
+                        if (res.name === 'FetchError') {
+                            done();
+                        } else {
+                            done(new Error('The Error received is not a FetchError'));
+                        }
                     } else {
-                        done(new Error('response.status !== 404'));
+                        done(new Error('No Error received'));
                     }
                 });
         });
