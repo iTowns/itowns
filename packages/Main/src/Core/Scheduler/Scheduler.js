@@ -1,7 +1,9 @@
 /**
  * Generated On: 2015-10-5
  * Class: Scheduler
- * Description: Cette classe singleton gère les requetes/Commandes  de la scène. Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile. Les commandes executées sont placées dans une autre file d'attente.
+ * Description: Cette classe singleton gère les requetes/Commandes  de la scène.
+ * Ces commandes peuvent etre synchrone ou asynchrone. Elle permet d'executer, de prioriser  et d'annuler les commandes de la pile.
+ * Les commandes executées sont placées dans une autre file d'attente.
  */
 
 import PriorityQueue from 'js-priority-queue';
@@ -46,6 +48,8 @@ function drawNextLayer(storages) {
     }
 }
 
+const MAX_ERRORS = 5;
+
 function _instanciateQueue() {
     return {
         queue(command) {
@@ -60,7 +64,7 @@ function _instanciateQueue() {
                 this.storages.set(layer.id, st);
             }
             // update priority (layer.priority may have changed)
-            st.priority = layer.priority || 1;
+            st.priority = layer.priority ?? 1;
             st.q.queue(command);
             this.counters.pending++;
         },
@@ -77,26 +81,40 @@ function _instanciateQueue() {
             // commands pending
             pending: 0,
         },
+        errors: {
+            printed: 0,
+            maxLogged: __DEBUG__ ? MAX_ERRORS : Infinity,
+            unlogged: [],
+        },
         execute(cmd, provider) {
             this.counters.pending--;
             this.counters.executing++;
             return provider.executeCommand(cmd)
                 .then((result) => {
-                    this.counters.executing--;
                     cmd.resolve(result);
                     // only count successul commands
                     this.counters.executed++;
                 })
                 .catch((err) => {
-                    this.counters.executing--;
                     cmd.reject(err);
                     this.counters.failed++;
-                    if (__DEBUG__ && this.counters.failed < 3) {
+                    if (this.counters.failed <= this.errors.maxLogged) {
                         if (err instanceof AggregateError) {
                             console.error(err, ...err.errors);
                         } else {
                             console.error(err);
                         }
+                    } else if (__DEBUG__) {
+                        this.errors.unlogged.push(err);
+                    }
+                })
+                .finally (() => {
+                    this.counters.executing--;
+                    const isQueueEmpty = this.counters.pending === 0 && this.counters.executing === 0;
+
+                    if (isQueueEmpty && this.errors.unlogged.length > 0) {
+                        console.error(`${this.errors.unlogged.length} others errors:`, this.errors.unlogged);
+                        this.errors.unlogged = [];
                     }
                 });
         },
@@ -156,7 +174,6 @@ Scheduler.prototype.runCommand = function runCommand(command, queue, executingCo
 
 Scheduler.prototype.execute = function execute(command) {
     // TODO: check for mandatory commands fields
-
 
     // parse host
     const layer = command.layer;

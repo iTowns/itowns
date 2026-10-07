@@ -21,8 +21,7 @@ function _instantiateSubRoot(source, crs) {
             root = new EntwinePointTileNode(0, 0, 0, 0, src, crs);
         } else {
             const msg = '[VPCLayer]: stack point cloud format not supporter';
-            console.warn(msg);
-            PointCloudLayer.handlingError(msg);
+            throw new Error(msg);
         }
         root.voxelOBB.setFromArray(bounds).projOBB(source.crs, crs);
         root.clampOBB.copy(root.voxelOBB).clampZ(src.zmin, src.zmax);
@@ -101,13 +100,15 @@ class VpcLayer extends PointCloudLayer {
                     this.object3d.add(r.clampOBB);
                     r.clampOBB.updateMatrixWorld(true);
                     this.root.children[i] = r;
-                });
+                }).catch(() => {});
 
                 const mockSubRoot = new PointCloudNode(0);
                 mockSubRoot.source = src;
                 // when load() is called on the mockSubRoot, we need the associated source to be loaded
                 // as well as the octree, before calling load() on the real root.
-                mockSubRoot.load = promisedRoot.then(root => root.load);
+                mockSubRoot.load = promisedRoot
+                    .then(r => r.load)
+                    .catch(() => {});
 
                 mockSubRoot.voxelOBB.setFromArray(boundsConforming).projOBB(source.crs, this.crs);
                 mockSubRoot.clampOBB.copy(mockSubRoot.voxelOBB).clampZ(source.zmin, source.zmax);
@@ -137,7 +138,8 @@ class VpcLayer extends PointCloudLayer {
                 },
                 view: context.view,
             };
-            context.scheduler.execute(cmd);
+
+            context.scheduler.execute(cmd).catch(() => {});
 
             elt.load
                 .then(() => {

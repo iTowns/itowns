@@ -154,8 +154,7 @@ class Source {
         if (!features) {
             // otherwise fetch/parse the data
             features = this.fetcher(this.urlFromExtent(extent), this.networkOptions)
-                .then(file => this.parser(file, { out, in: this, extent }))
-                .catch(err => this.handlingError(err));
+                .then(file => this.parser(file, { out, in: this, extent }));
 
             cache.set(key, features);
         }
