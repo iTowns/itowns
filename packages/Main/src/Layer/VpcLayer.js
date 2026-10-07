@@ -11,7 +11,11 @@ function _instantiateSubRoot(source, crs) {
         if (src.isCopcSource) {
             const { info } = src;
             bounds = info.cube;
-            root = new CopcNode(0, 0, 0, 0, src, crs);
+            const rootHierarchy = {
+                nodes: {},
+                pages: { '0-0-0-0': info.rootHierarchyPage },
+            };
+            root = new CopcNode(0, 0, 0, 0, src, crs, rootHierarchy);
         } else if (src.isEntwinePointTileSource) {
             bounds = src.bounds;
             root = new EntwinePointTileNode(0, 0, 0, 0, src, crs);
