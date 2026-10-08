@@ -11,7 +11,8 @@ class SkyController {
     private _activeSky: ISkyStrategy | undefined;
     private _realisticSky: RealisticSky | undefined;
     private _simpleSky: SimpleSky | undefined;
-    private _sunLightLayer: SunLightLayer | undefined;
+    private readonly _sunLightLayer: SunLightLayer;
+    private _sunlight: boolean;
     private _realisticLighting = false;
     private _realisticParams?: RealisticSkyParameters | undefined;
     private _simpleParams?: SimpleSkyParameters | undefined;
@@ -20,14 +21,23 @@ class SkyController {
     constructor(view: GlobeView,
         options: {
             realisticLighting?: boolean;
+            sunlight?: boolean;
+            forceDaytime?: boolean;
             realisticSky?: AtmosphereParameters;
             simpleSky?: SimpleSkyParameters;
         } = {}) {
         this._view = view;
         this._realisticParams = options.realisticSky;
         this._simpleParams = options.simpleSky;
-        this._ambientLight = new THREE.AmbientLight(0xffffff, 3);
+        this._ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         this._view.scene.add(this._ambientLight);
+        this._sunlight = options.sunlight ?? true;
+        this._sunLightLayer = new SunLightLayer(options.forceDaytime ?? true);
+        this._view.addLayer(this._sunLightLayer).then(() => {
+            this._view.notifyChange(this._view.camera3D);
+        }).catch((error: unknown) => {
+            console.error('Failed to add SunLightLayer:', error);
+        });
         this.realisticLighting = options.realisticLighting ?? false;
     }
 
@@ -52,7 +62,15 @@ class SkyController {
         this._view.notifyChange(this._view.camera3D);
     }
 
-    get castShadow() { return this._sunLightLayer ? this._sunLightLayer.castShadow : false; }
+    get sunlight() { return this._sunlight; }
+    set sunlight(value: boolean) {
+        if (this._sunlight === value) { return; }
+        this._sunlight = value;
+        this.updateSunlightVisibility();
+        this._view.notifyChange(this._view.camera3D);
+    }
+
+    get castShadow() { return this._sunLightLayer.castShadow; }
     set castShadow(value: boolean) {
         if (this.castShadow === value) { return; }
         this.sunLightLayer.castShadow = value;
@@ -61,13 +79,12 @@ class SkyController {
     }
 
     get forceDaytime() {
-        return this._sunLightLayer?.forceDaytime ?? false;
+        return this._sunLightLayer.forceDaytime;
     }
 
     set forceDaytime(value: boolean) {
-        const layer = this.sunLightLayer;
-        if (layer.forceDaytime === value) return;
-        layer.forceDaytime = value;
+        if (this._sunLightLayer.forceDaytime === value) { return; }
+        this._sunLightLayer.forceDaytime = value;
         this._view.notifyChange(this._view.camera3D);
     }
 
@@ -105,29 +122,16 @@ class SkyController {
     }
 
     get sunLightLayer() {
-        if (!this._sunLightLayer) {
-            const sunLightLayer = new SunLightLayer();
-            this._sunLightLayer = sunLightLayer;
-            this._view.addLayer(sunLightLayer).then(() => {
-                this._view.notifyChange(this._view.camera3D);
-            }).catch((error: unknown) => {
-                console.error('Failed to add SunLightLayer:', error);
-            });
-        }
         return this._sunLightLayer;
     }
 
-    // Sunlight (and its ambient-light fallback) is needed whenever the sky is enabled and either realistic
-    // lighting or cast-shadows requires an actual directional light in the scene.
+    // The sun light is shown when the sky is enabled and sunlight, realistic lighting
+    // or cast-shadows is requested. The ambient light is only hidden with realistic lighting.
     private updateSunlightVisibility() {
         const skyEnabled = this._activeSky?.enabled;
-        const sunlightNeeded = skyEnabled && (this._realisticLighting || this.castShadow);
-        this._ambientLight.visible = !sunlightNeeded;
-        if (sunlightNeeded) {
-            this.sunLightLayer.visible = true;
-        } else if (this._sunLightLayer) {
-            this.sunLightLayer.visible = false;
-        }
+        const sunlightNeeded = skyEnabled && (this._sunlight || this._realisticLighting || this.castShadow);
+        this._ambientLight.visible = !this._realisticLighting;
+        this._sunLightLayer.visible = !!sunlightNeeded;
     }
 }
 
