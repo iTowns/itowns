@@ -4,6 +4,7 @@ import GeometryLayer from 'Layer/GeometryLayer';
 import PointsMaterial, { PNTS_MODE, PNTS_SIZE_MODE } from 'Renderer/PointsMaterial';
 import Picking from 'Core/Picking';
 import { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
+import { releaseObjectPickingIds } from 'Utils/PointCloudPickingUtils';
 
 import type PointCloudNode from 'Core/PointCloudNode';
 
@@ -534,6 +535,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             if (node.notVisibleSince && (now - node.notVisibleSince > 10000)) {
                 this.group.remove(obj);
                 obj.geometry.dispose();
+                releaseObjectPickingIds(obj);
                 node.obj = undefined;
                 this.dispatchEvent({ type: 'dispose-model', scene: obj, tile: obj.userData.node });
             }
