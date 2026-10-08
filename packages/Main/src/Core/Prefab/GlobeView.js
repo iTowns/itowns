@@ -89,6 +89,11 @@ class GlobeView extends View {
      * @param {number} [options.minFarDistance=10000] - the minimum horizon distance (meters).
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * It can later be switched by setting this.realisticLighting to true/false.
+     * @param {boolean} [options.sunlight=true] - Enable the sun directional light.
+     * It can later be switched by setting `this.skyController.sunlight`.
+     * @param {boolean} [options.forceDaytime=true] - Keep the sun above the horizon
+     * at the camera position regardless of the view date.
+     * It can later be switched by setting `this.skyController.forceDaytime`.
      * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
      * later via `this.shadows`.
      */
