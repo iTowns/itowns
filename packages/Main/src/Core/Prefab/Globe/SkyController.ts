@@ -47,15 +47,16 @@ class SkyController {
         // Activate the new strategy
         this._activeSky = value ? this.realisticSky : this.simpleSky;
         this._activeSky.enabled = previousSkyEnabled;
-        this.setSunlightVisible(previousSkyEnabled && value);
+        this.updateSunlightVisibility();
 
         this._view.notifyChange(this._view.camera3D);
     }
 
     get castShadow() { return this._sunLightLayer ? this._sunLightLayer.castShadow : false; }
     set castShadow(value: boolean) {
-        if (!this._sunLightLayer || this._sunLightLayer.castShadow === value) { return; }
-        this._sunLightLayer.castShadow = value;
+        if (this.castShadow === value) { return; }
+        this.sunLightLayer.castShadow = value;
+        this.updateSunlightVisibility();
         this._view.notifyChange(this._view.camera3D);
     }
 
@@ -78,7 +79,7 @@ class SkyController {
         if (this._activeSky) {
             this._activeSky.enabled = value;
         }
-        this.setSunlightVisible(this._realisticLighting && value);
+        this.updateSunlightVisibility();
     }
 
     get enabled() {
@@ -116,9 +117,13 @@ class SkyController {
         return this._sunLightLayer;
     }
 
-    private setSunlightVisible(value: boolean) {
-        this._ambientLight.visible = !value;
-        if (value) {
+    // Sunlight (and its ambient-light fallback) is needed whenever the sky is enabled and either realistic
+    // lighting or cast-shadows requires an actual directional light in the scene.
+    private updateSunlightVisibility() {
+        const skyEnabled = this._activeSky?.enabled;
+        const sunlightNeeded = skyEnabled && (this._realisticLighting || this.castShadow);
+        this._ambientLight.visible = !sunlightNeeded;
+        if (sunlightNeeded) {
             this.sunLightLayer.visible = true;
         } else if (this._sunLightLayer) {
             this.sunLightLayer.visible = false;
