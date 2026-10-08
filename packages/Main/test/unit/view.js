@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { getMaxColorSamplerUnitsCount } from 'Renderer/LayeredMaterial';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import assert from 'assert';
 import View from 'Core/View';
@@ -136,12 +135,6 @@ describe('Viewer', function () {
 
         // pretend that MAX_TEXTURE_IMAGE_UNITS is 42
         renderer.context.getParameter = () => 42;
-
-        // Simulate a success of linkProgram by making getProgramParameter return true.
-        // In that case, the maximum color sampler count is computed.
-        renderer.context.getProgramParameter = () => true;
-        Capabilities.updateCapabilities(renderer);
-        assert.equal(getMaxColorSamplerUnitsCount(), 41);
 
         // Simulate a failure of linkProgram by making getProgramParameter return false.
         // In that case, throw an error.

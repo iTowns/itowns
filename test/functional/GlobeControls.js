@@ -147,6 +147,7 @@ describe('GlobeControls with globe example', function _() {
         assert.ok(initialPosition.tilt - endTilt > 20);
     });
 
+    // Doesn't work in master
     it('should change heading like expected', async () => {
         await page.evaluate(() => { view.controls.enableDamping = false; });
         await page.keyboard.down('Control');

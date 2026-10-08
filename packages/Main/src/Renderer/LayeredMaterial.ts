@@ -1,14 +1,12 @@
 import * as THREE from 'three';
+import { Extent } from '@itowns/geographic';
 import TileVS from 'Renderer/Shader/TileVS.glsl';
 import TileFS from 'Renderer/Shader/TileFS.glsl';
 import ShaderUtils from 'Renderer/Shader/ShaderUtils';
-import Capabilities from 'Core/System/Capabilities';
 import RenderMode from 'Renderer/RenderMode';
 import { RasterTile, RasterElevationTile, RasterColorTile } from './RasterTile';
-import { makeDataArrayRenderTarget } from './WebGLComposer';
+import { drawMap } from './WebGLComposer';
 import { RenderTargetCache } from './RenderTargetCache';
-
-const identityOffsetScale = new THREE.Vector4(0.0, 0.0, 1.0, 1.0);
 
 // from three.js packDepthToRGBA
 const UnpackDownscale = 255 / 256; // 0..1 -> fraction (excluding 1)
@@ -23,29 +21,12 @@ export function unpack1K(color: THREE.Vector4Like, factor: number): number {
     return factor ? bitSh.dot(color) * factor : bitSh.dot(color);
 }
 
-const samplersElevationCount = 1;
-
-export function getMaxColorSamplerUnitsCount(): number {
-    const maxSamplerUnitsCount = Capabilities.getMaxTextureUnitsCount();
-    return maxSamplerUnitsCount - samplersElevationCount;
-}
-
 export const colorLayerEffects = {
     noEffect: 0,
     removeLightColor: 1,
     removeWhiteColor: 2,
     customEffect: 3,
 } as const;
-
-/** GPU struct for color layers */
-interface StructColorLayer {
-    textureOffset: number;
-    crs: number;
-    opacity: number;
-    effect_parameter: number;
-    effect_type: number;
-    transparent: boolean;
-}
 
 /** GPU struct for elevation layers */
 interface StructElevationLayer {
@@ -57,25 +38,12 @@ interface StructElevationLayer {
 }
 
 /** Default GPU struct values for initialization QoL */
-const defaultStructLayers: Readonly<{
-    color: StructColorLayer;
-    elevation: StructElevationLayer;
-}> = {
-    color: {
-        textureOffset: 0,
-        crs: 0,
-        opacity: 0,
-        effect_parameter: 0,
-        effect_type: colorLayerEffects.noEffect,
-        transparent: false,
-    },
-    elevation: {
-        scale: 0,
-        bias: 0,
-        mode: 0,
-        zmin: 0,
-        zmax: 0,
-    },
+const defaultStructElevationLayer: StructElevationLayer = {
+    scale: 0,
+    bias: 0,
+    mode: 0,
+    zmin: 0,
+    zmax: 0,
 };
 
 /**
@@ -85,93 +53,35 @@ const defaultStructLayers: Readonly<{
  *
  * @param uniforms - The uniforms object for your material.
  * @param tiles - An array of RasterTile objects, each containing textures.
- * @param max - The maximum number of layers for the DataArrayTexture.
- * @param type - Layer set identifier: 'c' for color, 'e' for elevation.
  * @param renderer - The renderer used to render textures.
  * @param renderTargetCache - Cache for managing render targets.
+ * @param extent - tile extent
  */
-function updateLayersUniformsForType<Type extends 'c' | 'e'>(
+function updateLayersUniforms(
     uniforms: Record<string, THREE.IUniform>,
     tiles: RasterTile[],
-    max: number,
-    type: Type,
     renderer: THREE.WebGLRenderer,
     renderTargetCache: RenderTargetCache | undefined,
-) {
-    // Aliases for readability
-    const uLayers = uniforms.layers.value;
-    const uTextures = uniforms.textures;
-    const uOffsetScales = uniforms.offsetScales.value;
-    const uTextureCount = uniforms.textureCount;
-
-    // Flatten the 2d array: [i, j] -> layers[_layerIds[i]].textures[j]
-    let count = 0;
-    let width = 0;
-    let height = 0;
-    let setSize = false;
-
-    // Determine total count of textures and dimensions
-    // (assuming all textures are same size)
-    let textureSetId: string = type;
-    for (const tile of tiles) {
-        // FIXME: RasterElevationTile are always passed to this function
-        // alone so this works, but it's really not great even ignoring
-        // the dynamic addition of a field.
-        // @ts-expect-error: adding field to passed layer
-        tile.textureOffset = count;
-
-        for (
-            let i = 0;
-            i < tile.textures.length && count < max;
-            ++i, ++count
-        ) {
-            const texture = tile.textures[i];
-            if (!texture.isTexture) { continue; }
-
-            textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
-            uLayers[count] = tile;
-
-            const img = texture.image;
-            if (!img || img.width <= 0 || img.height <= 0) {
-                console.error('Texture image not loaded or has zero dimensions');
-                uTextureCount.value = 0;
-            } else if (setSize === false) {
-                width = img.width;
-                height = img.height;
-                setSize = true;
-            } else if (width !== img.width || height !== img.height) {
-                console.error('Texture dimensions mismatch');
-                uTextureCount.value = 0;
-            }
-        }
-    }
-
-    const cachedRT = renderTargetCache?.get(textureSetId);
-
-    if (cachedRT) {
-        uTextures.value = cachedRT.texture;
-        uTextureCount.value = count;
+    extent: Extent) {
+    if (tiles.length == 0 || tiles.find(tile => tile.textures.length == 0) || !renderTargetCache) {
         return;
     }
 
-    const rt = makeDataArrayRenderTarget(width, height, count, tiles, max, renderer);
-    if (!rt) {
-        uTextureCount.value = 0;
-        return;
+    const textureSetId = extent.toString();
+
+    let renderTarget = renderTargetCache.get(textureSetId);
+
+    if (!renderTarget) {
+        renderTarget = new THREE.WebGLRenderTarget(256, 256, { depthBuffer: false });
+        renderTarget.texture.extent = extent;
+
+        renderTargetCache.set(textureSetId, renderTarget);
     }
 
-    renderTargetCache?.set(textureSetId, rt);
-    rt.texture.userData = { textureSetId };
-    uniforms.textures.value = rt.texture;
+    drawMap(renderTarget, tiles, renderer);
 
-    if (count > max) {
-        console.warn(
-            `LayeredMaterial: Not enough texture units (${max} < ${count}), `
-            + 'excess textures have been discarded.',
-        );
-    }
-    uTextureCount.value = count;
+    uniforms.mapTransform.value.identity();
+    uniforms.map.value = renderTarget.texture;
 }
 
 export const ELEVATION_MODES = {
@@ -218,22 +128,18 @@ interface LayeredMaterialRawUniforms {
     // Debug
     showOutline: boolean;
     outlineWidth: number;
-    outlineColors: THREE.Color[];
+    outlineColors: THREE.Color;
 
     // Elevation layers
-    elevationLayers: StructElevationLayer[];
-    elevationTextures: THREE.DataArrayTexture | null;
-    elevationOffsetScales: THREE.Vector4[];
-    elevationTextureCount: number;
+    elevationLayer: StructElevationLayer;
+    displacementMap: THREE.DataTexture | null;
+    displacementMapTransform: THREE.Matrix3;
 
     // Color layers
-    colorLayers: StructColorLayer[];
-    colorTextures: THREE.DataArrayTexture | null;
-    colorOffsetScales: THREE.Vector4[];
-    colorTextureCount: number;
+    map: THREE.DataTexture | null;
+    mapTransform: THREE.Matrix3;
 }
 
-let nbSamplers: [number, number] | undefined;
 const fragmentShader: string[] = [];
 
 /** Replacing the default uniforms dynamic type with our own static map. */
@@ -268,9 +174,8 @@ function fillInProp<
 type ElevationModeDefines = DefineMapping<'ELEVATION', typeof ELEVATION_MODES>;
 type RenderModeDefines = DefineMapping<'MODE', typeof RenderMode.MODES>;
 type LayeredMaterialDefines = {
-    NUM_VS_TEXTURES: number;
-    NUM_FS_TEXTURES: number;
-    NUM_CRS: number;
+    USE_MAP: number;
+    USE_DISPLACEMENTMAP: number;
     DEBUG: number;
     MODE: number;
 } & ElevationModeDefines & RenderModeDefines;
@@ -309,31 +214,46 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         super(options);
         this.name = 'LayeredMaterial';
 
-        nbSamplers ??= [samplersElevationCount, getMaxColorSamplerUnitsCount()];
-
         const defines: Partial<typeof this.defines> = {};
 
-        fillInProp(defines, 'NUM_VS_TEXTURES', nbSamplers[0]);
-        fillInProp(defines, 'NUM_FS_TEXTURES', nbSamplers[1]);
-        fillInProp(defines, 'NUM_CRS', crsCount);
+        fillInProp(defines, 'USE_MAP', 1);
+        fillInProp(defines, 'USE_DISPLACEMENTMAP', 1);
 
         initModeDefines(defines);
         fillInProp(defines, 'MODE', RenderMode.MODES.FINAL);
 
         fillInProp(defines, 'DEBUG', +__DEBUG__);
 
-        if (__DEBUG__) {
-            const outlineColors = [new THREE.Color(1.0, 0.0, 0.0)];
-            if (crsCount > 1) {
-                outlineColors.push(new THREE.Color(1.0, 0.5, 0.0));
-            }
+        // iTowns-specific uniforms + overrides of lambert defaults.
+        const itownsUniforms: Record<string, THREE.IUniform> = {
+            lightingEnabled: { value: false },
+            lightPosition: { value: new THREE.Vector3(-0.5, 0.0, 1.0) },
+            overlayAlpha: { value: 0 },
+            overlayColor: { value: new THREE.Color(1.0, 0.3, 0.0) },
+            objectId: { value: 0 },
+            geoidHeight: { value: 0.0 },
+            minBorderDistance: { value: -0.01 },
+            elevationLayer: { value: defaultStructElevationLayer },
+            diffuse: { value: new THREE.Color(0.04, 0.23, 0.35) },
+            opacity: { value: this.opacity },
+            fogFar: { value: 1000 },
+            fogColor: { value: new THREE.Color(0.76, 0.85, 1.0) },
+        };
 
-            this.initUniforms({
-                showOutline: true,
-                outlineWidth: 0.008,
-                outlineColors,
-            });
+        if (__DEBUG__) {
+            itownsUniforms.showOutline = { value: true };
+            itownsUniforms.outlineWidth = { value: 0.008 };
+            itownsUniforms.outlineColors = { value: new THREE.Color(1.0, 0.0, 0.0) };
         }
+
+        // Merge Three.js lambert uniforms (fog, map, displacementmap, diffuse,
+        // opacity…) with iTowns-specific uniforms.
+        // User-provided options.uniforms take final precedence.
+        this.uniforms = THREE.UniformsUtils.merge([
+            THREE.ShaderLib.lambert.uniforms,
+            itownsUniforms,
+            options.uniforms ?? {},
+        ]);
 
         this.defines = defines;
         this.lights = true;
@@ -346,62 +266,10 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         fragmentShader[crsCount] ??= ShaderUtils.unrollLoops(TileFS, defines);
         this.fragmentShader = fragmentShader[crsCount];
 
-        this.initUniforms({
-            // Color uniforms
-            diffuse: new THREE.Color(0.04, 0.23, 0.35),
-            opacity: this.opacity,
-
-            // Lighting uniforms
-            lightingEnabled: false,
-            lightPosition: new THREE.Vector3(-0.5, 0.0, 1.0),
-
-            // Misc properties
-            fogNear: 1,
-            fogFar: 1000,
-            fogColor: new THREE.Color(0.76, 0.85, 1.0),
-            fogDensity: 0.00025,
-            overlayAlpha: 0,
-            overlayColor: new THREE.Color(1.0, 0.3, 0.0),
-            objectId: 0,
-
-            geoidHeight: 0.0,
-
-            // > 0 produces gaps,
-            // < 0 causes oversampling of textures
-            // = 0 causes sampling artefacts due to bad estimation of texture-uv
-            // gradients
-            // best is a small negative number
-            minBorderDistance: -0.01,
-        });
-
         // LayeredMaterialLayers
         this.colorTiles = [];
         this.colorTileIds = [];
         this.layersNeedUpdate = false;
-
-        // elevation/color layer uniforms, to be updated using updateUniforms()
-        this.initUniforms({
-            elevationLayers: new Array(nbSamplers[0])
-                .fill(defaultStructLayers.elevation),
-            elevationTextures: null,
-            elevationOffsetScales: new Array(nbSamplers[0])
-                .fill(identityOffsetScale),
-            elevationTextureCount: 0,
-
-            colorLayers: new Array(nbSamplers[1])
-                .fill(defaultStructLayers.color),
-            colorTextures: null,
-            colorOffsetScales: new Array(nbSamplers[1])
-                .fill(identityOffsetScale),
-            colorTextureCount: 0,
-        });
-
-        const lambertUniforms = THREE.UniformsUtils.clone(THREE.ShaderLib.lambert.uniforms);
-        const lambertUniformValues: Record<string, unknown> = {};
-        for (const [name, uniform] of Object.entries(lambertUniforms)) {
-            lambertUniformValues[name] = uniform.value;
-        }
-        this.initUniforms(lambertUniformValues);
 
         // Can't do an ES6 getter/setter here because it would override the
         // Material::visible property with accessors, which is not allowed.
@@ -476,59 +344,28 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         }
     }
 
-    public getLayerUniforms<Type extends 'color' | 'elevation'>(type: Type):
-    MappedUniforms<{
-        layers: (Type extends 'color'
-            ? StructColorLayer
-            : StructElevationLayer)[];
-        textures: THREE.Texture[];
-        offsetScales: THREE.Vector4[];
-        textureCount: number;
-    }> {
-        return {
-            layers: this.uniforms[`${type}Layers`],
-            textures: this.uniforms[`${type}Textures`],
-            offsetScales: this.uniforms[`${type}OffsetScales`],
-            textureCount: this.uniforms[`${type}TextureCount`],
-        };
-    }
-
-    /**
-     * Updates uniforms for both color and elevation layers.
-     * Orchestrates the processing of visible color layers and elevation tiles.
-     *
-     * @param renderer - The renderer used to render textures into arrays.
-     */
-    public updateLayersUniforms(renderer: THREE.WebGLRenderer): void {
-        const colorlayers = this.colorTiles
-            .filter(rt => rt.visible && rt.opacity > 0);
-        colorlayers.sort((a, b) =>
-            this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
-        );
-
-        updateLayersUniformsForType(
-            this.getLayerUniforms('color'),
-            colorlayers,
-            this.defines.NUM_FS_TEXTURES,
-            'c',
-            renderer,
-            this.renderTargetCache,
-        );
-
-        if (this.elevationTileId !== undefined && this.getElevationTile()) {
-            if (this.elevationTile !== undefined) {
-                updateLayersUniformsForType(
-                    this.getLayerUniforms('elevation'),
-                    [this.elevationTile],
-                    this.defines.NUM_VS_TEXTURES,
-                    'e',
-                    renderer,
-                    this.renderTargetCache,
+    public updateLayersUniforms(renderer: THREE.WebGLRenderer, extent: Extent): void {
+        if (!this.layersNeedUpdate) {
+            return;
+        } else {
+            const colorlayers = this.colorTiles
+                .filter(rt => rt.visible && rt.opacity > 0)
+                .sort((a, b) =>
+                    this.colorTileIds.indexOf(a.id) - this.colorTileIds.indexOf(b.id),
                 );
-            }
-        }
 
-        this.layersNeedUpdate = false;
+            updateLayersUniforms(this.uniforms,
+                colorlayers, renderer, this.renderTargetCache, extent);
+
+            if (this.elevationTile && this.elevationTile.level > 0) {
+                const { uniforms, elevationTile } = this;
+                uniforms.displacementMap.value = elevationTile.textures[0];
+                uniforms.displacementMapTransform.value = elevationTile.mapTransforms[0];
+                uniforms.elevationLayer.value = elevationTile;
+            }
+
+            this.layersNeedUpdate = false;
+        }
     }
 
     /**
@@ -540,14 +377,14 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             throw new Error('renderTargetCache is not initialized');
         }
 
-        const colorTextures = this.getUniform('colorTextures');
-        if (colorTextures?.userData?.textureSetId) {
-            this.renderTargetCache.markAsUsed(colorTextures.userData.textureSetId);
+        const map = this.uniforms.map.value;
+        if (map?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(map.userData.textureSetId);
         }
 
-        const elevationTextures = this.getUniform('elevationTextures');
-        if (elevationTextures?.userData?.textureSetId) {
-            this.renderTargetCache.markAsUsed(elevationTextures.userData.textureSetId);
+        const displacementMap = this.uniforms.displacementMap.value;
+        if (displacementMap?.userData?.textureSetId) {
+            this.renderTargetCache.markAsUsed(displacementMap.userData.textureSetId);
         }
     }
 
@@ -620,6 +457,18 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     public getTile(id: string): RasterTile | undefined {
         return this.elevationTile?.id === id
             ? this.elevationTile : this.colorTiles.find(l => l.id === id);
+    }
+
+    public colorDataHasLoaded() {
+        return this.colorTiles.length == 0 || !this.colorTiles.some(colorTile => !colorTile.hasData());
+    }
+
+    public elevationDataHasLoaded() {
+        return !this.elevationTile || this.elevationTile.hasData();
+    }
+
+    public dataHasLoaded() {
+        return this.colorDataHasLoaded() && this.elevationDataHasLoaded();
     }
 
     public getTiles(ids: string[]): RasterTile[] {

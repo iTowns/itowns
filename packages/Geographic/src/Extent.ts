@@ -1,4 +1,4 @@
-import { Vector2, Vector3, Vector4, Box3, type Matrix4 } from 'three';
+import { Vector2, Vector3, Vector4, Box3, Matrix3, type Matrix4 } from 'three';
 import Coordinates from './Coordinates';
 import * as CRS from './Crs';
 
@@ -288,13 +288,20 @@ class Extent {
         this.planarDimensions(_dim2);
 
         const originX = (this.west - extent.west) / _dim.x;
-        const originY = (extent.north - this.north) / _dim.y;
+        const originY = (this.south - extent.south) / _dim.y;
 
         const scaleX = _dim2.x / _dim.x;
         const scaleY = _dim2.y / _dim.y;
 
         return target.set(originX, originY, scaleX, scaleY);
     }
+
+    transformToParent(extent: Extent, target = new Matrix3()) {
+        const { x: ox, y: oy, z: sx, w: sy } = this.offsetToParent(extent);
+
+        return target.setUvTransform(ox, oy, sx, sy, 0, 0, 0);
+    }
+
 
     /**
      * Checks wheter this bounding box intersects with the given extent

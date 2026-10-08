@@ -73,16 +73,17 @@
                 view.addLayer(new itowns.ElevationLayer(config.id, config))
                     .then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
 
             // ---------- DISPLAY ORTHO-IMAGES : ----------
 
-            const ortho = itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                return view.addLayer(layer);
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer);
 
             // ---------- DISPLAY VECTOR TILED MAP DATA AS A ColorLayer : ----------
 
@@ -158,9 +159,7 @@
             debug.createTileDebugUI(debugMenu.gui, view);
 
             view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function () {
-                ortho.then(function () {
-                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
-                }).catch(console.error);
+                itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
             });
 
             window.view = view;

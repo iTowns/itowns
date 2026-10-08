@@ -39,7 +39,7 @@ describe('Tile', function () {
         const parent = new Tile('EPSG:4326', zoom - 2, row, col);
         const offset = withValues.offsetToParent(parent);
         assert.equal(offset.x, 0.5);
-        assert.equal(offset.y, 0.5);
+        assert.equal(offset.y, 0.25);
         assert.equal(offset.z, 0.25);
         assert.equal(offset.w, 0.25);
     });

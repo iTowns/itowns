@@ -69,12 +69,11 @@
 
             // Add one imagery layer to the scene. This layer's properties are defined in a json file, but it could be
             // defined as a plain js object. See `Layer` documentation for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                view.addLayer(
-                    new itowns.ColorLayer('Ortho', config),
-                ).then(debugMenu.addLayerGUI.bind(debugMenu));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            view.addLayer(
+                new itowns.ColorLayer('Ortho', orthoConfig),
+            ).then(debugMenu.addLayerGUI.bind(debugMenu));
 
 
             // ---------- DISPLAY A DIGITAL ELEVATION MODEL : ----------
@@ -87,7 +86,8 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json').then(addElevationLayerFromConfig);
+            const ignMnsHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNS_HIGHRES.json');
+            addElevationLayerFromConfig(ignMnsHighResConfig);
 
             // ---------- ADD SOME WIDGETS : ----------
 
