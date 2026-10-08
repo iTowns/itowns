@@ -12,7 +12,7 @@ class SkyController {
     private _realisticSky: RealisticSky | undefined;
     private _simpleSky: SimpleSky | undefined;
     private readonly _sunLightLayer: SunLightLayer;
-    private _sunlight: boolean;
+    private _withSunlight: boolean;
     private _realisticLighting = false;
     private _realisticParams?: RealisticSkyParameters | undefined;
     private _simpleParams?: SimpleSkyParameters | undefined;
@@ -21,7 +21,7 @@ class SkyController {
     constructor(view: GlobeView,
         options: {
             realisticLighting?: boolean;
-            sunlight?: boolean;
+            withSunlight?: boolean;
             forceDaytime?: boolean;
             realisticSky?: AtmosphereParameters;
             simpleSky?: SimpleSkyParameters;
@@ -31,7 +31,7 @@ class SkyController {
         this._simpleParams = options.simpleSky;
         this._ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         this._view.scene.add(this._ambientLight);
-        this._sunlight = options.sunlight ?? true;
+        this._withSunlight = options.withSunlight ?? true;
         this._sunLightLayer = new SunLightLayer(options.forceDaytime ?? true);
         this._view.addLayer(this._sunLightLayer).then(() => {
             this._view.notifyChange(this._view.camera3D);
@@ -62,10 +62,10 @@ class SkyController {
         this._view.notifyChange(this._view.camera3D);
     }
 
-    get sunlight() { return this._sunlight; }
-    set sunlight(value: boolean) {
-        if (this._sunlight === value) { return; }
-        this._sunlight = value;
+    get withSunlight() { return this._withSunlight; }
+    set withSunlight(value: boolean) {
+        if (this._withSunlight === value) { return; }
+        this._withSunlight = value;
         this.updateSunlightVisibility();
         this._view.notifyChange(this._view.camera3D);
     }
@@ -129,7 +129,7 @@ class SkyController {
     // or cast-shadows is requested. The ambient light is only hidden with realistic lighting.
     private updateSunlightVisibility() {
         const skyEnabled = this._activeSky?.enabled;
-        const sunlightNeeded = skyEnabled && (this._sunlight || this._realisticLighting || this.castShadow);
+        const sunlightNeeded = skyEnabled && (this._withSunlight || this._realisticLighting || this.castShadow);
         this._ambientLight.visible = !this._realisticLighting;
         this._sunLightLayer.visible = !!sunlightNeeded;
     }
