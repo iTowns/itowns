@@ -381,6 +381,20 @@ describe('PointCloudLayer', function () {
             layer.removeEventListener('node-visibility-change', listener);
         });
 
+        it('hides points of nodes that become not visible', function () {
+            const n = createNode({ numPoints: 100, sse: 1 });
+            const obj = createLoadedObj(n, layer);
+
+            // Frame 1 : set node as visible
+            layer._candidateNodes.push(n);
+            layer.postUpdate();
+            assert.ok(obj.visible, 'Expected points to be displayed');
+
+            // Frame 2 : set node as not visible
+            layer.postUpdate();
+            assert.ok(!obj.visible, 'Expected points to be hidden');
+        });
+
         it('never collects points whose are not set for disposal', function () {
             const node = createNode({ numPoints: 100 });
             const obj = createLoadedObj(node, layer);
