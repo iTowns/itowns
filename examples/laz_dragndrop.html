@@ -35,6 +35,9 @@
             import * as THREE from 'three';
             import * as itowns from 'itowns';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             var viewerDiv = document.getElementById('viewerDiv');
             var view = new itowns.View('EPSG:3946', viewerDiv);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
@@ -92,9 +95,6 @@
             document.addEventListener('dragleave', function _(e) { e.preventDefault(); }, false);
             document.addEventListener('drop', function _(e) { addFiles(e, e.dataTransfer.files); }, false);
             document.addEventListener('paste', function _(e) { addFiles(e, e.clipboardData.files); }, false);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

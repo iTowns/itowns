@@ -35,6 +35,9 @@
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
             import TIFFParser from 'TIFFParser';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // # Simple Globe viewer
 
             // Define initial camera position
@@ -48,6 +51,7 @@
 
             // Instanciate iTowns GlobeView*
             var view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
             var menuGlobe = new GuiTools('menuDiv', view);
             setupLoadingScreen(viewerDiv, view);
 
@@ -79,13 +83,11 @@
                     menuGlobe.elevationGui.__folders.GEOIDMNT.open();
                 });
             }
-            itowns.Fetcher.json('./layers/JSONLayers/GeoidMNT.json').then(addElevationLayerFromConfig);
+            const geoidMntConfig = await itowns.Fetcher.json('./layers/JSONLayers/GeoidMNT.json');
+            addElevationLayerFromConfig(geoidMntConfig);
 
             const d = new debug.Debug(view, menuGlobe.gui);
             debug.createTileDebugUI(menuGlobe.gui, view, view.tileLayer, d);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

@@ -254,17 +254,19 @@ class Layer extends THREE.EventDispatcher {
     }
 
     getData(from, to) {
-        const key = this.source.getDataKey(this.source.isVectorSource ? to : from);
-        let data = this.cache.get(key);
-        if (!data) {
-            data = this.source.loadData(from, this)
-                .then(feat => this.convert(feat, to))
-                .catch((err) => {
-                    this.source.handlingError(err);
-                });
-            this.cache.set(key, data);
+        if (from) {
+            const key = this.source.getDataKey(this.source.isVectorSource ? to : from);
+            let data = this.cache.get(key);
+            if (!data) {
+                data = this.source.loadData(from, this)
+                    .then(feat => this.convert(feat, to))
+                    .catch((err) => {
+                        this.source.handlingError(err);
+                    });
+                this.cache.set(key, data);
+            }
+            return data;
         }
-        return data;
     }
 
     /**

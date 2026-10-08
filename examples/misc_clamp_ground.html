@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <title>Itowns - Clamp to ground</title>
@@ -32,6 +33,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // Define initial camera position
             // Coordinate can be found on https://www.geoportail.gouv.fr/carte
             // setting is "coordonnée geographiques en degres decimaux"
@@ -47,40 +51,57 @@
             var viewerDiv = document.getElementById('viewerDiv');
 
             // Instanciate iTowns GlobeView*
-            var view = new itowns.GlobeView(viewerDiv, placement);
+            const view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
-            var menuGlobe = new GuiTools('menuDiv', view);
+            const debugMenu = new GuiTools('menuDiv', view);
             setupLoadingScreen(viewerDiv, view);
 
             // Add one imagery layer to the scene
             // This layer is defined in a json file but it could be defined as a plain js
             // object. See Layer* for more info.
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then(function _(config) {
-                config.source = new itowns.WMTSSource(config.source);
-                var layer = new itowns.ColorLayer('Ortho', config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
-            });
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            var orthoLayer = new itowns.ColorLayer('Ortho', orthoConfig);
+            view.addLayer(orthoLayer).then(debugMenu.addLayerGUI.bind(debugMenu));
             // Add two elevation layers.
             // These will deform iTowns globe geometry to represent terrain elevation.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
                 var layer = new itowns.ElevationLayer(config.id, config);
-                view.addLayer(layer).then(menuGlobe.addLayerGUI.bind(menuGlobe));
+                view.addLayer(layer).then(debugMenu.addLayerGUI.bind(debugMenu));
+
+                return layer;
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json').then(addElevationLayerFromConfig);
+            const worldDtmConfig = await itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
+            addElevationLayerFromConfig(worldDtmConfig);
+            const ignMntHighResConfig = await itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json');
+            addElevationLayerFromConfig(ignMntHighResConfig);
+
+            let mesh;
 
             function addMeshToScene() {
-                // creation of the new mesh (a cylinder)
-                var geometry = new THREE.CylinderGeometry(0, 10, 60, 8);
-                var material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                var mesh = new THREE.Mesh(geometry, material);
+                if (!mesh) {
+                }
+            }
 
-                // get the position on the globe, from the camera
-                var cameraTargetPosition = view.controls.getLookAtCoordinate();
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+            // creation of the new mesh (a cylinder)
+            const geometry = new THREE.CylinderGeometry(0, 10, 60, 8);
+            const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            mesh = new THREE.Mesh(geometry, material);
+            // add the mesh to the scene
+            view.scene.add(mesh);
+            view.mesh = mesh;
+
+            // Listen for globe full initialisation event
+            view.addEventListener(itowns.VIEW_EVENTS.LAYERS_INITIALIZED, function init() {
+                console.log('GLOBE_INITIALIZED');
+                const cameraTargetPosition = view.controls.getLookAtCoordinate();
 
                 // position of the mesh
-                var meshCoord = cameraTargetPosition;
+                const meshCoord = cameraTargetPosition;
                 meshCoord.altitude += 30;
 
                 // position and orientation of the mesh
@@ -90,24 +111,8 @@
 
                 // update coordinate of the mesh
                 mesh.updateMatrixWorld();
-
-                // add the mesh to the scene
-                view.scene.add(mesh);
-
-                // make the object usable from outside of the function
-                view.mesh = mesh;
                 view.notifyChange();
-            }
-
-            // Listen for globe full initialisation event
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, function globeInitialized() {
-                // eslint-disable-next-line no-console
-                console.info('Globe initialized');
-                addMeshToScene();
             });
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

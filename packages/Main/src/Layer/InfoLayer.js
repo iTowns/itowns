@@ -33,7 +33,14 @@ export class InfoTiledGeometryLayer extends InfoLayer {
                     let layers = [];
                     this.displayed.tiles.forEach((tile) => {
                         const m = tile.material;
-                        layers = [...new Set([...layers, ...m.colorTileIds.filter(id => m.getColorTile(id)), m.elevationTileId])];
+                        const displayedColorLayers = m.colorTileIds.filter(id => m.getColorTile(id)?.level > -1);
+
+                        const elevationlayers = m.elevationTiles.filter(rt => rt.visible && rt.level >= rt.layer.source.zoom.min);
+                        elevationlayers.sort((a, b) => b.level - a.level).splice(1);
+                        layers = [...new Set([
+                            ...layers,
+                            ...displayedColorLayers,
+                            ...elevationlayers.map(l => l.id)])];
                     });
 
                     return this.layer.attachedLayers.filter(l => layers.includes(l.id));

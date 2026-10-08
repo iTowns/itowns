@@ -41,6 +41,9 @@
             import * as debug from 'debug';
             import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
             // Define camera initial position
@@ -56,6 +59,7 @@
 
             // Create a GlobeView
             const view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
@@ -130,11 +134,7 @@
 
             // Warning: the following code is not part of this example, those
             // variables are only exposed for internal functional test uses.
-            window.view = view;
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

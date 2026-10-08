@@ -1,16 +1,17 @@
 // max retry loading before changing the status to definitiveError
 const MAX_RETRY = 4;
 
-export default function handlingError(err, node, layer, targetLevel, view) {
+export default function handlingError(err, node, layer, targetLevel, view, layerState) {
+    const state = node.layerUpdateState[layer.id] || layerState;
     // Cancel error handling if the layer was removed between command scheduling and its execution
-    if (!node.layerUpdateState[layer.id]) {
+    if (!state) {
         return;
     }
 
     if (err.isCancelledCommandException) {
-        node.layerUpdateState[layer.id].success();
+        state.success();
     } else if (err instanceof SyntaxError) {
-        node.layerUpdateState[layer.id].failure(0, true);
+        state.failure(0, true);
     } else {
         if (__DEBUG__) {
             if (layer.isColorLayer) {
@@ -21,12 +22,12 @@ export default function handlingError(err, node, layer, targetLevel, view) {
                 console.warn('Error in process feature on layer', layer.id, ', node', node, err);
             }
         }
-        const definitiveError = node.layerUpdateState[layer.id].errorCount > MAX_RETRY;
-        node.layerUpdateState[layer.id].failure(Date.now(), definitiveError, { targetLevel });
+        const definitiveError = state.errorCount > MAX_RETRY;
+        state.failure(Date.now(), definitiveError, { targetLevel });
         if (!definitiveError) {
             window.setTimeout(() => {
                 view.notifyChange(node, false);
-            }, node.layerUpdateState[layer.id].secondsUntilNextTry() * 1000);
+            }, state.secondsUntilNextTry() * 1000);
         }
     }
 }
