@@ -24,16 +24,18 @@ if (typeof document !== 'undefined') {
 /**
  * An object that handles the display of a text and/or an icon, linked to a 3D
  * position. The content of the `Label` is managed through a DOM object, in a
- * `<div>` handled by the `Label2DRenderer`.
+ * `<div>` handled by the `Label2DRenderer`, unless the label is `instanced`.
  *
  * @property {boolean} isLabel - Used to checkout whether this object is a
  * Label. Default is true. You should not change this, as it is used internally
  * for optimisation.
- * @property {Element} content - The DOM object that contains the content of the
- * label. The style and the position are applied on this object. All labels
- * contain the `itowns-label` class, as well as a specific class related to the
- * layer linked to it: `itowns-label-[layer-id]` (replace `[layer-id]` by the
- * correct string).
+ * @property {boolean} instanced - Whether this label is drawn by the view's
+ * instanced label manager. An instanced label has no `content`.
+ * @property {Element|undefined} content - The DOM object that contains the
+ * content of the label. The style and the position are applied on this object.
+ * All labels contain the `itowns-label` class, as well as a specific class
+ * related to the layer linked to it: `itowns-label-[layer-id]` (replace
+ * `[layer-id]` by the correct string).
  * @property {THREE.Vector3} position - The position in the 3D world of the
  * label.
  * @property {number} padding - sets the padding area on all four sides of an element at once.
@@ -51,12 +53,16 @@ class Label extends THREE.Object3D {
      * is applied, it cannot be changed directly. However, if it really needed,
      * it can be accessed through `label.content.style`, but it is highly
      * discouraged to do so.
+     * @param {object} [options] - Optional settings.
+     * @param {boolean} [options.instanced=false] - Build no DOM element: the
+     * label is drawn by the view's instanced label manager.
      */
-    constructor(content = '', coordinates, style = {}) {
+    constructor(content = '', coordinates, style = {}, options = {}) {
         if (coordinates == undefined) {
             throw new Error('coordinates are mandatory to add a Label');
         }
-        if (arguments.length > 3) {
+        // A fourth argument without `instanced` is the deprecated sprite sheet.
+        if (arguments.length > 3 && options?.instanced === undefined) {
             console.warn('Deprecated argument sprites in Label constructor. Sprites must be configured in style argument.');
         }
 
@@ -68,7 +74,9 @@ class Label extends THREE.Object3D {
             set(v) {
                 if (v != _visible) { // avoid changing the style
                     _visible = v;
-                    this.content.style.display = v ? 'block' : 'none';
+                    if (this.content) {
+                        this.content.style.display = v ? 'block' : 'none';
+                    }
                     // TODO: add smooth transition for fade in/out
                 }
             },
@@ -78,26 +86,29 @@ class Label extends THREE.Object3D {
         });
 
         this.isLabel = true;
+        this.instanced = options?.instanced === true;
         this.coordinates = coordinates;
 
         this.projectedPosition = { x: 0, y: 0 };
         this.boundaries = { left: 0, right: 0, top: 0, bottom: 0 };
 
-        if (typeof content === 'string') {
-            this.content = document.createElement('div');
-            this.content.textContent = style.text.field;
-        } else {
-            this.content = content.cloneNode(true);
-        }
+        if (!this.instanced) {
+            if (typeof content === 'string') {
+                this.content = document.createElement('div');
+                this.content.textContent = style.text.field;
+            } else {
+                this.content = content.cloneNode(true);
+            }
 
-        this.content.classList.add('itowns-label');
-        this.content.style.userSelect = 'none';
-        this.content.style.position = 'absolute';
+            this.content.classList.add('itowns-label');
+            this.content.style.userSelect = 'none';
+            this.content.style.position = 'absolute';
+        }
 
         if (style.isStyle) {
             this.anchor = style.getTextAnchorPosition();
             this.styleOffset = style.text.offset;
-            if (typeof content === 'string') {
+            if (this.content && typeof content === 'string') {
                 if (style.text.haloWidth > 0) {
                     this.content.classList.add('itowns-stroke-single');
                 }
