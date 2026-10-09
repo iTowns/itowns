@@ -258,10 +258,7 @@ class Layer extends THREE.EventDispatcher {
         let data = this.cache.get(key);
         if (!data) {
             data = this.source.loadData(from, this)
-                .then(feat => this.convert(feat, to))
-                .catch((err) => {
-                    this.source.handlingError(err);
-                });
+                .then(feat => this.convert(feat, to));
             this.cache.set(key, data);
         }
         return data;

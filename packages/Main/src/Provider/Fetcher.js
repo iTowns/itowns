@@ -8,9 +8,8 @@ const textureLoader = new TextureLoader();
 
 function checkResponse(response) {
     if (!response.ok) {
-        const error = new Error(response.url, { cause: `status ${response.status}` });
+        const error = new Error(`status ${response.status}\n${response.url}`, { cause: { response: response } });
         error.name = 'FetchError';
-        error.response = response;
         throw error;
     }
 }

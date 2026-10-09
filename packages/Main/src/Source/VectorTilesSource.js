@@ -175,8 +175,7 @@ class VectorTilesSource extends TMSSource {
             features = Promise.all(this.urls.map(url =>
                 this.fetcher(this.urlFromExtent(extent, url), this.networkOptions)
                     .then(file => this.parser(file, { out, in: this, extent }))))
-                .then(collections => mergeCollections(collections))
-                .catch(err => this.handlingError(err));
+                .then(collections => mergeCollections(collections));
 
             cache.set(key, features);
         }

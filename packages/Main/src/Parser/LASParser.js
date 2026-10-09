@@ -155,17 +155,15 @@ export default {
      * `THREE.BufferGeometry`.
      *
      * @param {ArrayBuffer} data - The file content to parse.
-     * @param {object} [options]
-     * @param {object} [options.in] - Options to give to the parser.
-     * @param {string} options.in.crs - Crs of the source.
-     * @param { 8 | 16 } [options.in.colorDepth] - Color depth (in bits).
+     * @param {object} options - Options to give to the parser.
+     * @param {object} options.in
+     * @param {object} options.in.source - source information
+     * @param {object} options.in.source.crs - crs of the source
+     * @param { 8 | 16 } [options.in.source.colorDepth] - Color depth (in bits).
+     * @param {OBB} options.in.clampOBB - OBB of the data.
+     * @param {crs} options.in.crs - Crs of the view.
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
-     * @param {string} options.out.crs - Crs of the view.
-     * @param {string} options.out.origin - The coordinate of the local origin
-     * in the world referentiel.
-     * @param {string} options.out.rotation - Rotation to go from the local referetiel
-     * to a geocentrique one (in appliable).
      *
      * @returns {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
