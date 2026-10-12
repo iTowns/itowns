@@ -115,14 +115,15 @@ export class RasterTile extends THREE.EventDispatcher {
                 }
 
                 return textures;
-            }, () => this.state.success())
-                .catch(err => handlingError(err, requester, this.layer, nextLevel, view, this.state));
+            }, err =>
+                handlingError(err, requester, this.layer, nextLevel, view, this.state));
         }
 
         return Promise.resolve();
     }
 
     hasData() {
+        // to remove this.state.inError()
         return this.state.hasFinished() || this.level > EMPTY_TEXTURE_ZOOM;
     }
 

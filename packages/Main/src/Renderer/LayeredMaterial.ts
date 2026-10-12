@@ -589,7 +589,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     public addColorTile(rasterTile: RasterColorTile) {
-        if (rasterTile.layer.id in this.colorTiles) {
+        if (this.getColorTile(rasterTile.id)) {
             console.warn(
                 'Layer "{layer.id}" already present in material, overwriting.',
             );
@@ -602,7 +602,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     }
 
     public setElevationTile(rasterTile: RasterElevationTile) {
-        if (rasterTile.layer.id in this.elevationTiles) {
+        if (this.getElevationTile(rasterTile.id)) {
             console.warn(
                 'Layer "{layer.id}" already present in material, overwriting.',
             );
@@ -631,12 +631,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         return this.getElevationTile(id) || this.getColorTile(id);
     }
 
-    private static tilesHasLoaded(tiles: RasterTile[]) {
-        return tiles.length == 0 || !tiles.some((tile: RasterTile) => tile.visible && !tile.hasData());
-    }
-
-    public dataHasLoaded() {
-        return LayeredMaterial.tilesHasLoaded(this.colorTiles) && LayeredMaterial.tilesHasLoaded(this.elevationTiles);
+    public getAllTiles() {
+        return [...this.colorTiles, ...this.elevationTiles];
     }
 
     public getTiles(ids: string[]): RasterTile[] {
