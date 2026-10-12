@@ -118,7 +118,7 @@ class TiledGeometryLayer extends GeometryLayer {
         /**
          * @type {number}
          */
-        this.maxDeltaElevationLevel = maxDeltaElevationLevel || 5;
+        this.maxDeltaElevationLevel = maxDeltaElevationLevel || 7;
 
         this.segments = segments;
         this.schemeTile = schemeTile;
@@ -313,14 +313,6 @@ class TiledGeometryLayer extends GeometryLayer {
             return ObjectRemovalHelper.removeChildrenAndCleanup(this, node);
         }
 
-        // early exit if parent's subdivision is in progress
-        if (node.parent.pendingSubdivision) {
-            node.visible = false;
-            node.material.visible = false;
-            this.info.update(node);
-            return undefined;
-        }
-
         node.visible = !this.culling(node, context.camera);
 
         if (node.visible && this.subdivision(context, node)) {
@@ -329,14 +321,19 @@ class TiledGeometryLayer extends GeometryLayer {
             node.material.visible = node.pendingSubdivision;
             node.material.layersNeedUpdate = true;
             this.info.update(node);
-            return node.children.filter(n => n.layer == this);
+            return node.children;
         }
 
         node.material.layersNeedUpdate = true;
         node.material.visible = node.visible;
 
         this.info.update(node);
-        return ObjectRemovalHelper.removeChildren(this, node);
+
+        if (node.visible && node.children.length) {
+            const children = node.children.slice();
+            node.clear();
+            return children;
+        }
     }
 
     convert(requester, extent) {
@@ -406,14 +403,18 @@ class TiledGeometryLayer extends GeometryLayer {
      * @returns {boolean} - True if the node is subdivisable, otherwise false.
      */
     subdivision(context, node) {
-        // avoid subdision if tile
-        // TO DO extent global visible is bugged with altitude not refresh
+        // avoid subdision if raster dara isn't loaded or pending subdivision
         if (!node.material.dataHasLoaded() || node.pendingSubdivision) {
             return false;
         }
 
         const currentElevationTile = node.material.getCurrentElevationTile();
-        if (currentElevationTile && currentElevationTile.deltaZoomData() > this.maxDeltaElevationLevel) {
+
+        // if delta zoom elevation is too big avoid subdivision
+        // TODO could be amelioré
+        if (currentElevationTile &&
+            !currentElevationTile.state.hasFinished() &&
+            currentElevationTile.deltaZoomData() > this.maxDeltaElevationLevel) {
             return false;
         }
 
