@@ -613,6 +613,9 @@ class OGC3DTilesLayer extends GeometryLayer {
     preUpdate(context) {
         this.scale = context.camera._preSSE;
         this.handleTasks();
+        // Keep the resolution used for screen space error in sync with the
+        // view size (it may have been resized since the layer was added).
+        this.tilesRenderer.setResolutionFromRenderer(context.camera.camera3D, context.view.renderer);
         this.tilesRenderer.update();
         return null; // don't return any element because 3d-tiles-renderer already updates them
     }
