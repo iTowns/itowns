@@ -206,6 +206,14 @@ class View extends THREE.EventDispatcher {
         this._resizeListener = () => this.resize();
         window.addEventListener('resize', this._resizeListener, false);
 
+        // Track devicePixelRatio changes (browser zoom, window moved to
+        // another screen), which do not always fire a resize event.
+        this._pixelRatioListener = () => {
+            this._watchPixelRatio();
+            this.resize();
+        };
+        this._watchPixelRatio();
+
         this._changeSources = new Set();
 
         if (__DEBUG__) {
@@ -307,6 +315,8 @@ class View extends THREE.EventDispatcher {
         }
 
         window.removeEventListener('resize', this._resizeListener);
+        this._pixelRatioQuery?.removeEventListener('change', this._pixelRatioListener);
+        this._pixelRatioQuery = undefined;
 
         // controls dispose
         if (this.controls) {
@@ -1142,6 +1152,18 @@ class View extends THREE.EventDispatcher {
     pickCoordinates(mouse, target = new Coordinates(this.referenceCrs)) {
         console.warn('Deprecated, use View#pickTerrainCoordinates instead.');
         return this.pickTerrainCoordinates(mouse, target);
+    }
+
+    /**
+     * (Re)registers a media query listener firing when `devicePixelRatio`
+     * changes from its current value.
+     * @private
+     */
+    _watchPixelRatio() {
+        this._pixelRatioQuery?.removeEventListener('change', this._pixelRatioListener);
+        if (typeof window.matchMedia !== 'function') { return; }
+        this._pixelRatioQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+        this._pixelRatioQuery.addEventListener?.('change', this._pixelRatioListener);
     }
 
     /**
