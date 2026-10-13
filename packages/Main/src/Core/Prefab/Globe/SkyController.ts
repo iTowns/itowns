@@ -18,9 +18,9 @@ class SkyController {
     private _ambientLight: THREE.AmbientLight;
 
     constructor(view: GlobeView,
+        sunLightLayer: SunLightLayer,
         options: {
             realisticLighting?: boolean;
-            forceDaytime?: boolean;
             realisticSky?: AtmosphereParameters;
             simpleSky?: SimpleSkyParameters;
         } = {}) {
@@ -29,12 +29,7 @@ class SkyController {
         this._simpleParams = options.simpleSky;
         this._ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
         this._view.scene.add(this._ambientLight);
-        this._sunLightLayer = new SunLightLayer(options.forceDaytime ?? true);
-        this._view.addLayer(this._sunLightLayer).then(() => {
-            this._view.notifyChange(this._view.camera3D);
-        }).catch((error: unknown) => {
-            console.error('Failed to add SunLightLayer:', error);
-        });
+        this._sunLightLayer = sunLightLayer;
         this.realisticLighting = options.realisticLighting ?? false;
     }
 
@@ -54,26 +49,8 @@ class SkyController {
         // Activate the new strategy
         this._activeSky = value ? this.realisticSky : this.simpleSky;
         this._activeSky.enabled = previousSkyEnabled;
-        this.updateSunlightVisibility();
+        this.updateAmbientLight();
 
-        this._view.notifyChange(this._view.camera3D);
-    }
-
-    get castShadow() { return this._sunLightLayer.castShadow; }
-    set castShadow(value: boolean) {
-        if (this.castShadow === value) { return; }
-        this.sunLightLayer.castShadow = value;
-        this.updateSunlightVisibility();
-        this._view.notifyChange(this._view.camera3D);
-    }
-
-    get forceDaytime() {
-        return this._sunLightLayer.forceDaytime;
-    }
-
-    set forceDaytime(value: boolean) {
-        if (this._sunLightLayer.forceDaytime === value) { return; }
-        this._sunLightLayer.forceDaytime = value;
         this._view.notifyChange(this._view.camera3D);
     }
 
@@ -85,7 +62,7 @@ class SkyController {
         if (this._activeSky) {
             this._activeSky.enabled = value;
         }
-        this.updateSunlightVisibility();
+        this.updateAmbientLight();
     }
 
     get enabled() {
@@ -100,7 +77,7 @@ class SkyController {
     get realisticSky() {
         this._realisticSky ??= new RealisticSky(
             this._view,
-            this.sunLightLayer,
+            this._sunLightLayer,
             this._realisticParams);
         return this._realisticSky;
     }
@@ -110,14 +87,9 @@ class SkyController {
         return this._simpleSky;
     }
 
-    get sunLightLayer() {
-        return this._sunLightLayer;
-    }
-
-    // The sun light is shown whenever the sky is enabled.
-    // The ambient light is only hidden with realistic lighting.
-    private updateSunlightVisibility() {
-        this._sunLightLayer.visible = !!this._activeSky?.enabled;
+    // The ambient light compensates for the absence of sky light and is only needed
+    // when realistic lighting is off.
+    private updateAmbientLight() {
         this._ambientLight.visible = !this._realisticLighting;
     }
 }
