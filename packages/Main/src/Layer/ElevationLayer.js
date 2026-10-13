@@ -134,9 +134,10 @@ class ElevationLayer extends RasterLayer {
         });
 
         // Init the node by parent
-        const parentTile = node.parent.material?.getCurrentElevationTile();
+        // const parentTile = node.parent.material?.getCurrentElevationTile();
 
-        rasterElevationNode.initFromParent(parentTile);
+        // remove in original WARNING
+        // rasterElevationNode.initFromParent(parentTile);
 
         node.material.setElevationTile(rasterElevationNode);
 

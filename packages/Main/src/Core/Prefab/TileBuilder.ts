@@ -16,8 +16,8 @@ export interface GpuBufferAttributes {
     index: THREE.BufferAttribute | null;
     position: THREE.BufferAttribute;
     normal: THREE.BufferAttribute;
-    uvs: THREE.BufferAttribute[];
-}
+    uv: THREE.BufferAttribute | null;
+};
 
 /**
  * Reference to a tile's extent with rigid transformations.
@@ -74,7 +74,7 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileB
     computeShareableExtent(extent: Extent): ShareableExtent;
 }
 
-type UintArray = Uint8Array | Uint16Array | Uint32Array;
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
 export function newTileGeometry(
     builder: TileBuilder,
@@ -104,8 +104,7 @@ export function newTileGeometry(
             { ...params, center },
             cachedBuffers !== undefined
                 ? {
-                    index: cachedBuffers.index.array as
-                        Uint8Array | Uint16Array | Uint32Array,
+                    index: cachedBuffers.index.array as UintArray,
                     uv: cachedBuffers.uv.array as Float32Array,
                 }
                 : undefined,
@@ -117,8 +116,10 @@ export function newTileGeometry(
             // TODO: Make this brain-based check compiler-based.
 
             cachedBuffers = {
-                index: new THREE.BufferAttribute(buffers.index as UintArray, 1),
-                uv: new THREE.BufferAttribute(buffers.uvs[0] as Float32Array, 2),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                index: new THREE.BufferAttribute(buffers.index!, 1),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                uv: new THREE.BufferAttribute(buffers.uv!, 2),
             };
 
             // Update cacheBuffer
@@ -127,13 +128,7 @@ export function newTileGeometry(
 
         const gpuBuffers: GpuBufferAttributes = {
             index: cachedBuffers.index,
-            uvs: [
-                cachedBuffers.uv,
-                ...(buffers.uvs[1] !== undefined
-                    ? [new THREE.BufferAttribute(buffers.uvs[1], 1)]
-                    : []
-                ),
-            ],
+            uv: cachedBuffers.uv,
             position: new THREE.BufferAttribute(buffers.position, 3),
             normal: new THREE.BufferAttribute(buffers.normal, 3),
         };
