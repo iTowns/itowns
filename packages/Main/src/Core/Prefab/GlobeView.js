@@ -159,6 +159,9 @@ class GlobeView extends View {
         }).catch((error) => {
             console.error('Failed to add SunLightLayer:', error);
         });
+        const notifyChange = () => this.notifyChange(this.camera3D);
+        this.sunLightLayer.addEventListener('forceDaytime-property-changed', notifyChange);
+        this.sunLightLayer.addEventListener('castShadow-property-changed', notifyChange);
         this.skyController = new SkyController(this, this.sunLightLayer, options);
         this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
             this.skyController.update();
