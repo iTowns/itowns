@@ -99,8 +99,7 @@ class Tile {
     }
 
     /**
-     * Returns the translation and scale to transform this tile to the input
-     * tile.
+     * Returns UV transform values to map this tile in the input tile.
      *
      * @param tile - the input tile.
      * @param target - copy the result to target.
@@ -112,10 +111,17 @@ class Tile {
         }
 
         const r = _rowColfromParent(this, tile.zoom);
+        const offsetX = this.col * r.invDiff - r.col;
+        const offsetY = 1 - r.invDiff - (this.row * r.invDiff - r.row);
         return target.set(
-            this.col * r.invDiff - r.col,
-            this.row * r.invDiff - r.row,
+            offsetX,
+            offsetY,
             r.invDiff, r.invDiff);
+    }
+
+    transformToParent(tile: Tile, target = new THREE.Matrix3()) {
+        const { x: ox, y: oy, z: sx, w: sy } = this.offsetToParent(tile);
+        return target.setUvTransform(ox, oy, sx, sy, 0, 0, 0);
     }
 
     /**
