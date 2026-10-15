@@ -126,6 +126,10 @@ const loadExample = async (url, screenshotName) => {
     const pageErrors = [];
     page.on('pageerror', (e) => { pageErrors.push(e); });
 
+    // page.on('console', (msg) => {
+    //     console.log(`[BROWSER ${msg.type()}]`, msg.text());
+    // });
+
     try {
         await page.goto(url);
     } catch (e) {
@@ -186,23 +190,31 @@ async function saveInitialPosition() {
 }
 
 // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
-const waitUntilItownsIsIdle = async (screenshotName) => {
-    const result = await page.evaluate(() => new Promise((resolve) => {
-        function resolveWhenReady() {
-            if (view.mainLoop.renderingState === 0) {
-                view.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
-                itowns.CameraUtils.stop(view, view.camera3D);
-                resolve(true);
-            }
+const waitUntilItownsIsIdle = async (screenshotName, timeout = TIMEOUT) => {
+    // Polling via waitForFunction (like initializeLayers) instead of a long-lived
+    // page.evaluate promise, which puppeteer can occasionally garbage-collect
+    // under CPU/memory pressure (e.g. several test jobs running in parallel).
+    try {
+        await page.waitForFunction(
+            () => view.mainLoop.renderingState === 0 &&
+                view.mainLoop.scheduler.commandsWaitingExecutionCount() === 0,
+            { timeout },
+        );
+    } catch (e) {
+        if (e instanceof Error && e.name === 'TimeoutError') {
+            console.warn('     *** Warning: waitUntilItownsIsIdle timed out ***');
+        } else {
+            throw e;
         }
-        view.mainLoop.addEventListener('command-queue-empty', resolveWhenReady);
-    }));
+    }
+
+    await page.evaluate(() => itowns.CameraUtils.stop(view, view.camera3D));
 
     await waitNextRender(page);
 
     await saveScreenshot(page, screenshotName);
 
-    return result;
+    return true;
 };
 
 // helper function to launch browser with GL enabled
