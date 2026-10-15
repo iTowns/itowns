@@ -437,12 +437,6 @@ class OGC3DTilesLayer extends GeometryLayer {
         if (config.sseThreshold) {
             this.sseThreshold = config.sseThreshold;
         }
-
-        // Used for custom schedule callbacks (VR)
-        this.tasks = [];
-        this.tilesSchedulingCB = (func) => {
-            this.tasks.push(func);
-        };
     }
 
     /**
@@ -459,33 +453,15 @@ class OGC3DTilesLayer extends GeometryLayer {
             this.tilesRenderer.lruCache = viewers[id].lruCache;
             this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
             this.tilesRenderer.parseQueue = viewers[id].parseQueue;
-
-            // Add this layer's callback to the map
-            viewers[id].layerCallbacks[this.id] = this.tilesSchedulingCB;
+            viewers[id].layers.add(this.id);
         } else {
-            // Create a combined callback that calls all layer callbacks
-            const combinedCallback = (func) => {
-                Object.values(viewers[id].layerCallbacks).forEach((callback) => {
-                    callback(func);
-                });
-            };
-
-            // Set the combined callback
-            // We set our scheduling callback for tiles downloading and parsing -> MANDATORY for VR
-            // (WebXR session has its own requestAnimationFrame method separate from that of the window
-            //  https://github.com/NASA-AMMOS/3DTilesRendererJS/issues/213#issuecomment-947943386)
-            // Necessary to update rendering of the tiles in VR
-            // Example: https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/de25d27dc0e75278962b5f401faee30f8dce2fe0/example/vr.js
-            this.tilesRenderer.downloadQueue.schedulingCallback = combinedCallback;
-            this.tilesRenderer.parseQueue.schedulingCallback = combinedCallback;
-
+            // Jobs of the queues are scheduled on requestAnimationFrame, or on
+            // the XR session one while presenting (see Renderer/WebXR.js).
             viewers[id] = {
                 lruCache: this.tilesRenderer.lruCache,
                 downloadQueue: this.tilesRenderer.downloadQueue,
                 parseQueue: this.tilesRenderer.parseQueue,
-                layerCallbacks: {
-                    [this.id]: this.tilesSchedulingCB,
-                },
+                layers: new Set([this.id]),
             };
             view.addEventListener(VIEW_EVENTS.DISPOSED, (evt) => {
                 delete viewers[evt.target.id];
@@ -603,16 +579,8 @@ class OGC3DTilesLayer extends GeometryLayer {
         }
     }
 
-    handleTasks() {
-        for (let t = 0, l = this.tasks.length; t < l; t++) {
-            this.tasks[t]();
-        }
-        this.tasks.length = 0;
-    }
-
     preUpdate(context) {
         this.scale = context.camera._preSSE;
-        this.handleTasks();
         // Keep the resolution used for screen space error in sync with the
         // view size (it may have been resized since the layer was added).
         this.tilesRenderer.setResolutionFromRenderer(context.camera.camera3D, context.view.renderer);
@@ -628,20 +596,18 @@ class OGC3DTilesLayer extends GeometryLayer {
      * Deletes the layer and frees associated memory
      */
     delete() {
-        // Clean up the callback reference from the shared callbacks
-        if (this._viewId != null && viewers[this._viewId]?.layerCallbacks) {
-            delete viewers[this._viewId].layerCallbacks[this.id];
+        // Remove this layer from the layers sharing the view's cache and queues
+        if (this._viewId != null && viewers[this._viewId]) {
+            viewers[this._viewId].layers.delete(this.id);
 
             // If no more layers are using this view's queues, clean up completely
-            if (Object.keys(viewers[this._viewId].layerCallbacks).length === 0) {
+            if (viewers[this._viewId].layers.size === 0) {
                 delete viewers[this._viewId];
             }
         }
 
         this.tilesRenderer.dispose();
 
-        // Clean up references
-        this.tilesSchedulingCB = null;
         this._viewId = null;
     }
 
