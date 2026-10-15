@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { Scheduler } from '3d-tiles-renderer';
 import VRControls from 'Controls/VRControls';
 
 // TODO handle xr session end
@@ -89,8 +90,17 @@ class WebXR extends THREE.EventDispatcher {
     initializeWebXR = () => {
         const xr = this.view.renderer.xr;
 
+        xr.addEventListener('sessionend', () => {
+            Scheduler.setXRSession(null);
+        });
+
         xr.addEventListener('sessionstart', () => {
             xr.enabled = true;
+
+            // 3d-tiles-renderer schedules its download and parse jobs with
+            // requestAnimationFrame, which the browser may not call during an
+            // immersive session: use the session's one instead.
+            Scheduler.setXRSession(xr.getSession());
 
             xr.getReferenceSpace('local');
 
