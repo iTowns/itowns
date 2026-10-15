@@ -22,14 +22,8 @@ import PointsMaterial, {
     PNTS_SIZE_MODE,
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
-import { VIEW_EVENTS } from 'Core/View';
 
 const _raycaster = new THREE.Raycaster();
-
-// Stores lruCache, downloadQueue and parseQueue for each id of view {@link View}
-// every time a tileset has been added
-// https://github.com/iTowns/itowns/issues/2426
-const viewers = {};
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
@@ -440,39 +434,6 @@ class OGC3DTilesLayer extends GeometryLayer {
     }
 
     /**
-     * Sets the lruCache and download and parse queues so they are shared amongst
-     * all tilesets from a same {@link View} view.
-     * @param {View} view - view associated to this layer.
-     * @private
-     */
-    _setupCacheAndQueues(view) {
-        const id = view.id;
-        // Share the caches and queues to cut down on memory and correctly prioritize downloads.
-        // https://github.com/NASA-AMMOS/3DTilesRendererJS?tab=readme-ov-file#multiple-tilesrenderers-with-shared-caches-and-queues
-        if (viewers[id]) {
-            this.tilesRenderer.lruCache = viewers[id].lruCache;
-            this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
-            this.tilesRenderer.parseQueue = viewers[id].parseQueue;
-            viewers[id].layers.add(this.id);
-        } else {
-            // Jobs of the queues are scheduled on requestAnimationFrame, or on
-            // the XR session one while presenting (see Renderer/WebXR.js).
-            viewers[id] = {
-                lruCache: this.tilesRenderer.lruCache,
-                downloadQueue: this.tilesRenderer.downloadQueue,
-                parseQueue: this.tilesRenderer.parseQueue,
-                layers: new Set([this.id]),
-            };
-            view.addEventListener(VIEW_EVENTS.DISPOSED, (evt) => {
-                delete viewers[evt.target.id];
-            });
-        }
-
-        // Store the view reference for cleanup
-        this._viewId = id;
-    }
-
-    /**
      * Binds 3d-tiles-renderer events to this layer.
      * @private
      */
@@ -511,7 +472,6 @@ class OGC3DTilesLayer extends GeometryLayer {
             view.notifyChange(this);
         });
 
-        this._setupCacheAndQueues(view);
         this._setupEvents();
 
         // Start loading tileset and tiles
@@ -596,19 +556,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * Deletes the layer and frees associated memory
      */
     delete() {
-        // Remove this layer from the layers sharing the view's cache and queues
-        if (this._viewId != null && viewers[this._viewId]) {
-            viewers[this._viewId].layers.delete(this.id);
-
-            // If no more layers are using this view's queues, clean up completely
-            if (viewers[this._viewId].layers.size === 0) {
-                delete viewers[this._viewId];
-            }
-        }
-
         this.tilesRenderer.dispose();
-
-        this._viewId = null;
     }
 
     /**
