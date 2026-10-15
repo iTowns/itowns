@@ -676,7 +676,7 @@ class View extends THREE.EventDispatcher {
      * @param {event} event - event can be a MouseEvent or a TouchEvent
      * @param {THREE.Vector2} target - the target to set the view coords in
      * @param {number} [touchIdx=0] - finger index when using a TouchEvent
-     * @returns {THREE.Vector2|undefined} - view coordinates (in pixels, 0-0 = top-left of the View).
+     * @returns {THREE.Vector2} - view coordinates (in pixels, 0-0 = top-left of the View).
      * If the event is neither a `MouseEvent` nor a `TouchEvent`, the return is `undefined`.
      */
     eventToViewCoords(event, target = _eventCoords, touchIdx = 0) {
