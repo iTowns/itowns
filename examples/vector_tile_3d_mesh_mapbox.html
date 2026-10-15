@@ -87,7 +87,7 @@
                     return view.addLayer(layer);
                 });
 
-            // Add an elevation layer, whose properties are defined in a json 
+            // Add an elevation layer, whose properties are defined in a json
             // file.
             function addElevationLayerFromConfig(config) {
                 config.source = new itowns.WMTSSource(config.source);
@@ -96,7 +96,7 @@
             }
             itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
                 .then(addElevationLayerFromConfig);
-            
+
 
 
             // ---------- DISPLAY VECTOR TILED BUILDING DATA AS 3D MESHES : ----------
@@ -108,7 +108,12 @@
                 style: 'mapbox://styles/mapbox/streets-v8',
                 accessToken: 'pk.eyJ1IjoiZnRvcm9tYW5vZmYiLCJhIjoiY2xrc2Zpa2o3MDQxNTNxcG5sczJyaTlncyJ9.5KFKdMLIiy-b_fAjSVhjCQ',
                 filter: (layer) => {
-                    return layer.id === 'building';
+                    if (layer.id !== 'building') {
+                        return false;
+                    }
+                    // Force opaque: iTowns can't evaluate Mapbox's zoom-based fade.
+                    layer.paint['fill-opacity'] = 1;
+                    return true;
                 },
             });
 
