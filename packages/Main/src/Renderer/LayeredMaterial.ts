@@ -129,7 +129,7 @@ function updateLayersUniformsForType<Type extends 'c' | 'e'>(
             if (!texture.isTexture) { continue; }
 
             textureSetId += `${texture.id}.`;
-            uOffsetScales[count] = tile.offsetScales[i];
+            uOffsetScales[count] = tile.offsetScales[i] || uOffsetScales[count];
             uLayers[count] = tile;
 
             const img = texture.image;
@@ -294,7 +294,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
     private _visible = true;
 
     public colorTiles: RasterColorTile[];
-    public elevationTile: RasterElevationTile | undefined;
+    public elevationTiles: RasterElevationTile[];
 
     public colorTileIds: string[];
     public elevationTileId: string | undefined;
@@ -376,6 +376,7 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
 
         // LayeredMaterialLayers
         this.colorTiles = [];
+        this.elevationTiles = [];
         this.colorTileIds = [];
         this.layersNeedUpdate = false;
 
@@ -515,18 +516,17 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             this.renderTargetCache,
         );
 
-        if (this.elevationTileId !== undefined && this.getElevationTile()) {
-            if (this.elevationTile !== undefined) {
-                updateLayersUniformsForType(
-                    this.getLayerUniforms('elevation'),
-                    [this.elevationTile],
-                    this.defines.NUM_VS_TEXTURES,
-                    'e',
-                    renderer,
-                    this.renderTargetCache,
-                );
-            }
-        }
+        const elevationlayers = this.elevationTiles.filter(rt => rt.visible && rt.level > -1);
+        elevationlayers.sort((a, b) => b.level - a.level).splice(1);
+
+        updateLayersUniformsForType(
+            this.getLayerUniforms('elevation'),
+            elevationlayers,
+            this.defines.NUM_VS_TEXTURES,
+            'e',
+            renderer,
+            this.renderTargetCache,
+        );
 
         this.layersNeedUpdate = false;
     }
@@ -557,7 +557,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         this.colorTiles.forEach(l => l.dispose(true));
         this.colorTiles.length = 0;
 
-        this.elevationTile?.dispose(true);
+        this.elevationTiles.forEach(l => l.dispose(true));
+        this.elevationTiles.length = 0;
 
         this.layersNeedUpdate = true;
     }
@@ -567,13 +568,8 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         this.layersNeedUpdate = true;
     }
 
-    public setElevationTileId(id: string): void {
-        this.elevationTileId = id;
-        this.layersNeedUpdate = true;
-    }
-
     public removeTile(tileId: string): void {
-        const index = this.colorTiles.findIndex(l => l.id === tileId);
+        let index = this.colorTiles.findIndex(l => l.id === tileId);
         if (index > -1) {
             this.colorTiles[index].dispose();
             this.colorTiles.splice(index, 1);
@@ -584,10 +580,11 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             return;
         }
 
-        if (this.elevationTileId === tileId) {
-            this.elevationTile?.dispose();
-            this.elevationTileId = undefined;
-            this.elevationTile = undefined;
+        index = this.elevationTiles.findIndex(l => l.id === tileId);
+        if (index > -1) {
+            this.elevationTiles[index].dispose();
+            this.elevationTiles.splice(index, 1);
+            return;
         }
     }
 
@@ -598,28 +595,48 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
             );
         }
         this.colorTiles.push(rasterTile);
+
+        if (rasterTile.hasData()) {
+            this.layersNeedUpdate = true;
+        }
     }
 
     public setElevationTile(rasterTile: RasterElevationTile) {
-        const old = this.elevationTile;
-        if (old !== undefined) {
-            old.dispose();
+        if (rasterTile.layer.id in this.elevationTiles) {
+            console.warn(
+                'Layer "{layer.id}" already present in material, overwriting.',
+            );
         }
 
-        this.elevationTile = rasterTile;
+        this.elevationTiles.push(rasterTile);
+
+        if (rasterTile.hasData()) {
+            this.layersNeedUpdate = true;
+        }
     }
 
     public getColorTile(id: string): RasterColorTile | undefined {
         return this.colorTiles.find(l => l.id === id);
     }
 
-    public getElevationTile(): RasterElevationTile | undefined {
-        return this.elevationTile;
+    public getElevationTile(id: string): RasterElevationTile | undefined {
+        return this.elevationTiles.find(l => l.id === id);
+    }
+
+    public getCurrentElevationTile(): RasterElevationTile | undefined {
+        return this.elevationTiles.filter(a => a.visible && a.hasData()).sort((a, b) => b.level - a.level)[0];
     }
 
     public getTile(id: string): RasterTile | undefined {
-        return this.elevationTile?.id === id
-            ? this.elevationTile : this.colorTiles.find(l => l.id === id);
+        return this.getElevationTile(id) || this.getColorTile(id);
+    }
+
+    private static tilesHasLoaded(tiles: RasterTile[]) {
+        return tiles.length == 0 || !tiles.some((tile: RasterTile) => tile.visible && !tile.hasData());
+    }
+
+    public dataHasLoaded() {
+        return LayeredMaterial.tilesHasLoaded(this.colorTiles) && LayeredMaterial.tilesHasLoaded(this.elevationTiles);
     }
 
     public getTiles(ids: string[]): RasterTile[] {
@@ -627,10 +644,10 @@ export class LayeredMaterial extends THREE.ShaderMaterial {
         // unfound IDs. Need to identify a use case for it though as it would
         // probably have a performance cost (albeit minor in the grand scheme of
         // things).
-        const res: RasterTile[] = this.colorTiles.filter(l => ids.includes(l.id));
-        if (this.elevationTile !== undefined && ids.includes(this.elevationTile?.id)) {
-            res.push(this.elevationTile);
-        }
-        return res;
+        const resC: RasterTile[] = this.colorTiles.filter(l => ids.includes(l.id));
+
+        const resE: RasterTile[] = this.elevationTiles.filter(l => ids.includes(l.id));
+
+        return [...resC, ...resE];
     }
 }
