@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@itowns/geographic": "^2.46.0",
+    "@itowns/labels": "^0.2.0",
     "@mapbox/vector-tile": "^2.0.4",
     "@maplibre/maplibre-gl-style-spec": "^24.7.0",
     "@takram/three-atmosphere": "^0.19.1",
