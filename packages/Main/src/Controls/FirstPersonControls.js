@@ -44,6 +44,9 @@ function moveCameraVerticalGlobe(value) {
     normal.normalize();
     this.camera.position.add(normal.multiplyScalar(value));
 }
+/**
+ * @category Controls
+ */
 
 class FirstPersonControls extends THREE.EventDispatcher {
     /**

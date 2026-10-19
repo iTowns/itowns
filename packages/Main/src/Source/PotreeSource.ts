@@ -37,6 +37,7 @@ interface PotreeSourceParameters {
  * PotreeSource are object containing informations on how to fetch
  * points cloud resources.
  *
+ * @category Source
  */
 
 class PotreeSource extends Source {

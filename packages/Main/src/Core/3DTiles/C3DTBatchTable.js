@@ -16,6 +16,7 @@ const utf8Decoder = new TextDecoder();
  * @property {object} extensions - 3D Tiles extensions of the batch table
  * stored in the following format:
  * {extensioName1: extensionObject1, extensioName2: extensionObject2, ...}
+ * @category Base
  */
 class C3DTBatchTable {
     /**

@@ -10,6 +10,7 @@ import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
  * internally for optimisation.
  *
  * @extends TiledGeometryLayer
+ * @category Layer
  */
 class GlobeLayer extends TiledGeometryLayer {
     /**

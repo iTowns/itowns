@@ -10,6 +10,7 @@ import Fetcher from 'Provider/Fetcher';
  * true. You should not change this, as it is used internally for optimisation.
  * @property {string} url - The URL of the tileset json.
  * @property {string} baseUrl - The base URL to access tiles.
+ * @category Source
  */
 class C3DTilesSource extends Source {
     /**

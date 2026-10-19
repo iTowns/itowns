@@ -25,7 +25,7 @@ function subDomains(url) {
  * through the following alternative each time (no random). For example
  * `https://${u:xyz.org|yzx.org|zxy.org}/{z}/{x}/{y}.png`
  *
- * @module URLBuilder
+ * @category Provider
  */
 export default {
     subDomains,

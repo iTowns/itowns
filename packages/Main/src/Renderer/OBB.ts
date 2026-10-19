@@ -15,6 +15,7 @@ const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 // it could be considered to remove THREE.Object3D extend.
 /**
  * Represents an oriented bounding box.
+ * @category Geographic
  */
 class OBB extends THREE.Object3D {
     box3D: THREE.Box3;
@@ -25,10 +26,10 @@ class OBB extends THREE.Object3D {
     matrixWorldInverse: THREE.Matrix4;
 
     /**
-     * @param min - (optional) A {@link THREE.Vector3} representing the lower
+     * @param min - (optional) A Vector3 representing the lower
      * (x, y, z) boundary of the box.
      * Default is ( + Infinity, + Infinity, + Infinity ).
-     * @param max - (optional) A {@link THREE.Vector3} representing the upper
+     * @param max - (optional) A Vector3 representing the upper
      * (x, y, z) boundary of the box.
      * Default is ( - Infinity, - Infinity, - Infinity ).
      */
@@ -51,6 +52,12 @@ class OBB extends THREE.Object3D {
         return this._center;
     }
 
+    /**
+     * Recomputes this OBB's world matrix and its inverse.
+     *
+     * @param force - Recompute the world matrix even if it is not flagged
+     * as needing an update.
+     */
     override updateMatrixWorld(force?: boolean) {
         const matrixWorldInverseNeedsUpdate = this.matrixAutoUpdate || this.matrixWorldNeedsUpdate;
         super.updateMatrixWorld(force);

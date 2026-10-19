@@ -12,11 +12,11 @@ export function getHeaderAttribute(header, attributeName) {
 
 
 /**
- * The `GDFParser` module provides a `[parse]{@link module:GDFParser.parse}` method. This method takes the content of a
- * GDF file in, and returns a `{@link GeoidGrid}`. the `{@link GeoidGrid}` contains all the necessary attributes and
+ * The `GDFParser` module provides a `parse` method. This method takes the content of a
+ * GDF file in, and returns a {@link GeoidGrid}. the {@link GeoidGrid} contains all the necessary attributes and
  * methods to access the GDF data in iTowns.
  *
- * @module GDFParser
+ * @category Parser
  */
 export default {
     /**

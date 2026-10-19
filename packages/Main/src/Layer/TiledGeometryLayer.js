@@ -21,6 +21,7 @@ const boundingSphereCenter = new THREE.Vector3();
  * @property {RenderTargetCache} renderTargetCache - Manages render target caching and disposal
  *
  * @extends GeometryLayer
+ * @category Layer
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -35,7 +36,7 @@ class TiledGeometryLayer extends GeometryLayer {
      *
      * Some `GeometryLayer` can also be attached to the `TiledGeometryLayer` if they want to take advantage of the quadtree.
      *
-     * ![tiled geometry](/docs/static/images/tiledGeometry.jpeg)
+     * ![tiled geometry](../../../../docs/static/images/tiledGeometry.jpeg)
      * _In `GlobeView`, **red lines** represents the **WGS84 grid** and **orange lines** the **Pseudo-mercator grid**._
      * _In this picture, there are tiles with 3 different zoom/levels._
      *
@@ -186,7 +187,7 @@ class TiledGeometryLayer extends GeometryLayer {
         }
     }
     /**
-     * Picking method for this layer. It uses the {@link Picking#pickTilesAt}
+     * Picking method for this layer. It uses the `Picking.pickTilesAt`
      * method.
      *
      * @param {View} view - The view instance.
@@ -204,27 +205,23 @@ class TiledGeometryLayer extends GeometryLayer {
 
     /**
      * Does pre-update work on the context:
-     * <ul>
-     *  <li>update the `colorLayers` and `elevationLayers`</li>
-     *  <li>update the `maxElevationLevel`</li>
-     * </ul>
+     * - update the `colorLayers` and `elevationLayers`
+     * - update the `maxElevationLevel`
      *
      * Once this work is done, it returns a list of nodes to update. Depending
      * on the origin of `sources`, it can return a few things:
-     * <ul>
-     *  <li>if `sources` is empty, it returns the first node of the layer
-     *  (stored as `level0Nodes`), which will trigger the update of the whole
-     *  tree</li>
-     *  <li>if the update is triggered by a camera move, the whole tree is
-     *  returned too</li>
-     *  <li>if `source.layer` is this layer, it means that `source` is a node; a
-     *  common ancestor will be found if there are multiple sources, with the
-     *  default common ancestor being the first source itself</li>
-     *  <li>else it returns the whole tree</li>
-     * </ul>
+     * - if `sources` is empty, it returns the first node of the layer
+     *   (stored as `level0Nodes`), which will trigger the update of the whole
+     *   tree
+     * - if the update is triggered by a camera move, the whole tree is
+     *   returned too
+     * - if `source.layer` is this layer, it means that `source` is a node; a
+     *   common ancestor will be found if there are multiple sources, with the
+     *   default common ancestor being the first source itself
+     * - else it returns the whole tree
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {Set<GeometryLayer|TileMesh>} sources - A list of sources to
      * generate a list of nodes to update.
      *
@@ -294,14 +291,12 @@ class TiledGeometryLayer extends GeometryLayer {
 
     /**
      * Update a node of this layer. The node will not be updated if:
-     * <ul>
-     *  <li>it does not have a parent, then it is removed</li>
-     *  <li>its parent is being subdivided</li>
-     *  <li>is not visible in the camera</li>
-     * </ul>
+     * - it does not have a parent, then it is removed
+     * - its parent is being subdivided
+     * - is not visible in the camera
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {Layer} layer - Parameter to be removed once all update methods
      * have been aligned.
      * @param {TileMesh} node - The node to update.
@@ -370,8 +365,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * south-east. Once all four nodes are created, they will be added to the
      * current node and the view of the context will be notified of this change.
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {TileMesh} node - The node to subdivide.
      */
 
@@ -397,8 +392,8 @@ class TiledGeometryLayer extends GeometryLayer {
     /**
      * Test the subdvision of a node, compared to this layer.
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {TileMesh} node - The node to test.
      *
      * @returns {boolean} - True if the node is subdivisable, otherwise false.

@@ -19,7 +19,7 @@ export interface PointCloudSource {
 export interface PointCloudLayerParameters {
     /**
      * Description and options of the source.
-     * @see {@link Layer}.
+     * @see `Layer`.
      */
     source: PointCloudSource;
     object3d?: THREE.Group;
@@ -147,6 +147,9 @@ function changeAngleRange(layer: PointCloudLayer) {
     // @ts-expect-error PointsMaterial is not typed yet
     layer.material.angleRange?.set(layer.minAngleRange, layer.maxAngleRange);
 }
+/**
+ * @category Layer
+ */
 
 abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
     extends GeometryLayer {

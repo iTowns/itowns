@@ -20,6 +20,9 @@ const _extent = new Extent('EPSG:4326');
 const _extent2 = new Extent('EPSG:4326');
 
 const _c = new Coordinates('EPSG:4326', 0, 0);
+/**
+ * @category Base
+ */
 
 class Tile {
     readonly isTile: true;
@@ -248,6 +251,7 @@ interface TileLimitJson {
  *
  * This class stores tile boundaries per zoom level, along with
  * global extent information and intersection constraints.
+ * @category Base
  */
 export class TileMatrixSetLimits {
     /**

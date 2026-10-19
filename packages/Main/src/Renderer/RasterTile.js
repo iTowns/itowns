@@ -60,7 +60,7 @@ function getIndiceWithPitch(i, pitch, w) {
 }
 
 /**
- * A `RasterTile` is part of raster {@link Layer} data.
+ * A `RasterTile` is part of raster `Layer` data.
  * This part is a spatial subdivision of the extent of a layer.
  * In the `RasterTile`, The data are converted on three.js textures.
  * This `RasterTile` textures are assigned to a `LayeredMaterial`.
@@ -68,7 +68,7 @@ function getIndiceWithPitch(i, pitch, w) {
  * The color textures are mapped to color the terrain.
  * The elevation textures are used to displace vertex terrain.
  *
- * @class RasterTile
+ * @category Renderer
  */
 export class RasterTile extends THREE.EventDispatcher {
     constructor(layer, tiles) {
@@ -246,6 +246,9 @@ export class RasterTile extends THREE.EventDispatcher {
         return !this.textures[index] || (texture && texture.isTexture);
     }
 }
+/**
+ * @category Renderer
+ */
 
 export class RasterColorTile extends RasterTile {
     get effect_type() {
@@ -258,6 +261,9 @@ export class RasterColorTile extends RasterTile {
         return this.layer.transparent;
     }
 }
+/**
+ * @category Renderer
+ */
 
 export class RasterElevationTile extends RasterTile {
     constructor(layer, tiles) {

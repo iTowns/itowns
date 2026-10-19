@@ -83,6 +83,7 @@ function createBackground(radius) {
  * and a set of texture (each image for each camera for each panoramic), all organised in an {@link OrientedImageSource}. </br>
  * It creates an {@link OrientedImageMaterial} used to do projective texture mapping on the scene.
  * @extends GeometryLayer
+ * @category Layer
  */
 class OrientedImageLayer extends GeometryLayer {
     /**

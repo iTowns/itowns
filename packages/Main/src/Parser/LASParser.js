@@ -82,13 +82,12 @@ function getQuaternion(origin, crsIn, crsOut) {
 }
 
 /**
- * The LASParser module provides a [parse]{@link
- * module:LASParser.parse} method that takes a LAS or LAZ (LASZip) file in, and
+ * The LASParser module provides a `parse` method that takes a LAS or LAZ (LASZip) file in, and
  * gives a `THREE.BufferGeometry` containing all the necessary attributes to be
  * displayed in iTowns. It uses the
  * [copc.js](https://github.com/connormanning/copc.js/) library.
  *
- * @module LASParser
+ * @category Parser
  */
 export default {
     /*
@@ -162,8 +161,10 @@ export default {
      * @param { 8 | 16 } [options.in.source.colorDepth] - Color depth (in bits).
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
+     * @param {object} options.in.clampOBB - Oriented bounding box of the node.
      * @param {THREE.Matrix4} options.in.clampOBB.matrix - World transformation
      * matrix of the node
+     * @param {object} options.out - Output options.
      * @param {string} options.out.crs - Crs of the view.
      *
      * @returns {Promise} A promise resolving with a `THREE.BufferGeometry`. The

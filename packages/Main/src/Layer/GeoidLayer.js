@@ -7,7 +7,7 @@ export function geoidLayerIsVisible(tilelayer) {
 }
 
 /**
- * `GeoidLayer` is a specific `{@link Layer}` which supports geoid height data. When added to a `{@link View}`, it
+ * `GeoidLayer` is a specific {@link Layer} which supports geoid height data. When added to a {@link View}, it
  * vertically translates each of the view's tiles by a proper geoid height value. For a given tile, the geoid height
  * value used for translation is the geoid height computed at the center of the tile.
  *
@@ -20,6 +20,7 @@ export function geoidLayerIsVisible(tilelayer) {
  *         format: 'application/gtx',
  *     }),
  * });
+ * @category Layer
  */
 class GeoidLayer extends Layer {
     /**
@@ -33,9 +34,9 @@ class GeoidLayer extends Layer {
      * parameter is mandatory.
      * @param   {object}    config.source   The source of the geoid data displayed by the `GeoidLayer`. It is mandatory
      * that the source data for a `GeoidLayer` be parsed into a
-     * `{@link GeoidGrid}`. You can refer to `{@link GTXParser}`,
-     * `{@link GDFParser}` and `{@link ISGParser}` to see how three standard
-     * geoid height grid file formats are parsed into `{@link GeoidGrid}`.
+     * {@link GeoidGrid}. You can refer to {@link GTXParser},
+     * {@link GDFParser} and {@link ISGParser} to see how three standard
+     * geoid height grid file formats are parsed into {@link GeoidGrid}.
      */
     constructor(id, config = {}) {
         super(id, config);

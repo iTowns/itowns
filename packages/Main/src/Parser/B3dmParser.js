@@ -56,7 +56,9 @@ function transformToZUp(gltfScene, gltfUpAxis) {
 }
 
 /**
- * @module B3dmParser
+ * Parser to convert Batched 3D Model (b3dm) tiles to THREE.js meshes.
+ *
+ * @category Parser
  */
 
 export default {

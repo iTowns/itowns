@@ -6,6 +6,11 @@ import { globalExtentTMS } from 'Core/Tile/TileGrid';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 import { Coordinates } from '@itowns/geographic';
 
+/**
+ * @import Source, { ParsingOptions } from 'Source/Source'
+ * @import { FeatureBuildingOptions } from 'Core/Feature'
+ */
+
 const worldDimension3857 = globalExtentTMS.get('EPSG:3857').planarDimensions();
 const globalExtent = new Vector3(worldDimension3857.x, worldDimension3857.y, 1);
 const lastPoint = new Vector2();
@@ -207,32 +212,38 @@ function readPBF(file, options) {
 }
 
 /**
- * @module VectorTileParser
+ * Parser to extract vector tile features from Mapbox Vector Tile data.
+ *
+ * @category Parser
  */
 export default {
     /**
-     * Parse a vector tile file and return a [Feature]{@link module:GeoJsonParser.Feature}
-     * or an array of Features. While multiple formats of vector tile are
-     * available, the only one supported for the moment is the
+     * Parse a vector tile file and return a {@link FeatureCollection}. While
+     * multiple formats of vector tile are available, the only one supported
+     * for the moment is the
      * [Mapbox Vector Tile](https://www.mapbox.com/vector-tiles/specification/).
      *
      * @param {ArrayBuffer} file - The vector tile file to parse.
      *
-     * @param {object} options - Options controlling the parsing {@link ParsingOptions}.
+     * @param {object} options - Options controlling the parsing, see
+     * `ParsingOptions`. `options.in` is the {@link Source} (styles,
+     * layers and informations data) and `options.out` the
+     * {@link FeatureBuildingOptions} indicating how the features should be
+     * built.
      *
      * @param {object} options.in - Object containing all styles,
-     * layers and informations data, see {@link Source}.
+     * layers and informations data.
      *
      * @param {object} options.in.styles - Object containing subobject with
      * informations on a specific style layer. Styles available is by `layer.id` and by zoom.
      *
      * @param {object} options.in.layers - Object containing subobject with
      *
-     * @param {FeatureBuildingOptions} options.out - options indicates how the features should be built,
-     * see {@link FeatureBuildingOptions}.
+     * @param {FeatureBuildingOptions} options.out - options indicates how the
+     * features should be built.
      *
-     * @returns {Promise} A Promise resolving with a Feature or an array a
-     * Features.
+     * @returns {Promise<FeatureCollection>} A Promise resolving with a
+     * {@link FeatureCollection}.
      */
     parse(file, options) {
         options = deprecatedParsingOptionsToNewOne(options);

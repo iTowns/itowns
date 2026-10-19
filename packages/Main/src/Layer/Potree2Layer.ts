@@ -40,6 +40,9 @@ import type Potree2Source from 'Source/Potree2Source';
 interface Potree2LayerParameters extends PointCloudLayerParameters {
     source: Potree2Source;
 }
+/**
+ * @category Layer
+ */
 
 class Potree2Layer extends PointCloudLayer<Potree2Source> {
     /**

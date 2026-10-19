@@ -64,7 +64,12 @@ function refreshCollectionContext(feature) {
     style.setContext(context);
 }
 
-class FeatureMesh extends THREE.Group {
+/**
+ * Internal three.js group wrapping the meshes generated for a feature
+ * collection.
+ * @internal
+ */
+export class FeatureMesh extends THREE.Group {
     #currentCrs;
     #originalCrs;
     #collection = new THREE.Group();
@@ -1223,12 +1228,14 @@ export function rebuildMeshTopology(featureMesh, layerStyle) {
 }
 
 /**
- * @module Feature2Mesh
+ * Convert `Feature`s to THREE.js meshes.
+ *
+ * @category Converter
  */
 export default {
     /**
-     * Return a function that converts [Features]{@link module:GeoJsonParser} to Meshes. Feature collection will be converted to a
-     * a THREE.Group.
+     * Return a function that converts `Feature`s to Meshes. Feature
+     * collection will be converted to a THREE.Group.
      *
      * @param {object} options - options controlling the conversion
      * @param {Function} [options.batchId] - optional function to create batchId attribute.
@@ -1237,7 +1244,8 @@ export default {
      * @param {StyleOptions} [options.style] - optional style properties. Only needed if the convert is used without instancing
      * a layer beforehand.
      * @returns {Function}
-     * @example <caption>Example usage of batchId with featureId.</caption>
+     * @example Example usage of batchId with featureId.
+     * ```js
      * view.addLayer({
      *     id: 'WFS Buildings',
      *     type: 'geometry',
@@ -1248,8 +1256,10 @@ export default {
      *     filter: acceptFeature,
      *     source,
      * });
+     * ```
      *
-     * @example <caption>Example usage of batchId with property.</caption>
+     * @example Example usage of batchId with property.
+     * ```js
      * view.addLayer({
      *     id: 'WFS Buildings',
      *     type: 'geometry',
@@ -1260,6 +1270,7 @@ export default {
      *     filter: acceptFeature,
      *     source,
      * });
+     * ```
      */
     convert(options = {}) {
         deprecatedFeature2MeshOptions(options);

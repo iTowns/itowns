@@ -12,6 +12,11 @@ const threeExamples = {};
 
 threeExamples.LegacyGLTFLoader = ( function () {
 
+    /**
+     * Loader for legacy glTF 1.0 files.
+     *
+     * @category Parser
+     */
     class LegacyGLTFLoader extends THREE.Loader {
         constructor ( manager ) {
             super(manager);

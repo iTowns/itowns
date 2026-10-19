@@ -80,6 +80,7 @@ function updatePreSse(camera, height, fov) {
  * @property    {number}    width           The width of the camera.
  * @property    {number}    height          The height of the camera.
  * @property    {number}    _preSSE         The precomputed constant part of the screen space error.
+ * @category Renderer
  */
 class Camera {
     #_viewMatrixNeedsUpdate = true;
@@ -96,7 +97,6 @@ class Camera {
      * around.
      * @param   {Camera.CAMERA_TYPE}    [options.type=CAMERA_TYPE.PERSPECTIVE]  The type of the camera. See {@link
      * CAMERA_TYPE}.
-     * @class
      */
     constructor(crs, width, height, options = {}) {
         this.crs = crs;

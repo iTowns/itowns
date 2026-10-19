@@ -4,6 +4,7 @@ import Fetcher from 'Provider/Fetcher';
 /**
  * OrientedImageSource is a specific source used to load oriented images.
  * @extends Source
+ * @category Source
  */
 class OrientedImageSource extends Source {
     /**

@@ -6,11 +6,11 @@ import { BYTES_PER_DOUBLE } from 'Parser/GTXParser';
 
 
 /**
- * The `ISGParser` module provides a `[parse]{@link module:ISGParser.parse}` method. This method takes the content of a
- * ISG file in, and returns a `{@link GeoidGrid}`. the `{@link GeoidGrid}` contains all the necessary attributes and
+ * The `ISGParser` module provides a `parse` method. This method takes the content of a
+ * ISG file in, and returns a {@link GeoidGrid}. the {@link GeoidGrid} contains all the necessary attributes and
  * methods to access the ISG data in iTowns.
  *
- * @module ISGParser
+ * @category Parser
  */
 export default {
     /**

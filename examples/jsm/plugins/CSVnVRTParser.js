@@ -27,7 +27,7 @@ import * as itowns from 'itowns';
  *     view.addLayer(layer);
  * });
  *
- * @module CSVnVRTParser
+ * @category Plugins
  */
 const CSVnVRTParser = (function _() {
     const coord = new itowns.Coordinates('EPSG:4326');
@@ -166,8 +166,7 @@ const CSVnVRTParser = (function _() {
 
     return {
         /**
-         * Parse a CSV associated to a VRT and return a {@link
-         * FeatureCollection}.
+         * Parse a CSV associated to a VRT and return a `FeatureCollection`.
          *
          * @param {object} data - The data needed.
          * @param {string} data.csv - Data from the CSV, with values separated
@@ -175,10 +174,7 @@ const CSVnVRTParser = (function _() {
          * @param {Document} data.vrt - The OGR VRT file, describing the CSV.
          * @param {geojsonParserOptions} [options]
          *
-         * @returns {Promise} A promise resolving with a [FeatureCollection]{@link
-         * module:GeoJsonParser~FeatureCollection}.
-         *
-         * @memberof module:CSVnVRTParser
+         * @returns {Promise} A promise resolving with a `FeatureCollection`.
          */
         parse: function _(data, options) {
             if (!data.csv || !data.vrt) {

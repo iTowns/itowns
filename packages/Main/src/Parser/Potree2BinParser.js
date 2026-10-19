@@ -63,6 +63,11 @@ function buildBufferGeometry(attributeBuffers) {
     return geometry;
 }
 
+/**
+ * Parser to extract point cloud data from a Potree 2.0 .bin buffer.
+ *
+ * @category Parser
+ */
 export default {
     /**
      * @returns {Promise<void>}
@@ -73,12 +78,11 @@ export default {
         return Thread.terminate(currentThread);
     },
 
-    /** @module Potree2BinParser */
     /**
      * Parse .bin PotreeConverter 2.0 format and convert to a THREE.BufferGeometry
-     * @function parse
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {object} options
+     * @param {object} options.in
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in metadata.js
      * @param {THREE.Box3} options.in.bbox - the bbox of the node
      * @param {string} options.out.crs - crs of the view

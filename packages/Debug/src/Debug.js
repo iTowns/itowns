@@ -9,9 +9,10 @@ import OBBHelper from './OBBHelper';
 /**
  * Create a debug instance attached to an itowns instance
  *
- * @class
- * @param {Scene} scene the itowns Scene
- * @returns {Debug} a debug instance
+ * @param {View} view the itowns view to debug
+ * @param {object} [datDebugTool] a dat.gui instance to add debug controls to
+ * @param {HTMLElement} [chartDivContainer] the container for the debug charts
+ * @category Debug
  */
 
 // disabling eslint errors as it is the exported constructor

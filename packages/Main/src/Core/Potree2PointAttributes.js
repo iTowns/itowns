@@ -36,7 +36,7 @@ of the authors and should not be interpreted as representing official policies,
 /**
  * Some types of possible point attribute data formats
  *
- * @class
+ * @category Points
  */
 const PointAttributeTypes = {
     DATA_TYPE_DOUBLE: { name: 'double', size: 8 },
@@ -56,6 +56,9 @@ Object.keys(PointAttributeTypes).forEach((type, index) => {
 });
 
 export { PointAttributeTypes };
+/**
+ * @category Points
+ */
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 class PointAttribute {
@@ -117,6 +120,9 @@ PointAttribute.GPS_TIME = new PointAttribute(
     'GPS_TIME', PointAttributeTypes.DATA_TYPE_DOUBLE, 1);
 
 export { PointAttribute };
+/**
+ * @category Points
+ */
 
 export class Potree2PointAttributes {
     constructor() {

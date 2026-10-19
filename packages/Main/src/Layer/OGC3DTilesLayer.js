@@ -340,6 +340,9 @@ async function getMetadataFromIntersection(intersection) {
 
     return metadata;
 }
+/**
+ * @category Layer
+ */
 
 class OGC3DTilesLayer extends GeometryLayer {
     /**
@@ -572,7 +575,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * stored in property attributes and textures.
      *
      * If present in GLTF 2.0 assets, this method leverages the
-     * [`EXT_mesh_features`](`https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
+     * [`EXT_mesh_features`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
      * extension and the returned featured to index metadata stored in property tables.
      *
      * @param {Array<THREE.Intersection>} intersections
