@@ -9,6 +9,7 @@ import { PlanarTileBuilder } from './PlanarTileBuilder';
  * PlanarLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
  * @extends TiledGeometryLayer
+ * @category Layer
  */
 class PlanarLayer extends TiledGeometryLayer {
     /**

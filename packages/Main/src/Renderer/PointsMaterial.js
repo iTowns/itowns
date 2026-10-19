@@ -43,6 +43,7 @@ const white = new THREE.Color(1.0,  1.0,  1.0);
  * @property {string} name - category name,
  * @property {THREE.Color} color - category color,
  * @property {number} opacity - category opacity,
+ * @category Points
  */
 
 export const ClassificationScheme = {
@@ -145,6 +146,9 @@ function recomputeTexture(scheme, texture, nbClass) {
     }
     texture.needsUpdate = true;
 }
+/**
+ * @category Points
+ */
 
 class PointsMaterial extends THREE.ShaderMaterial {
     /**

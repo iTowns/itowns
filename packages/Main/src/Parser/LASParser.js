@@ -82,13 +82,12 @@ function getQuaternion(origin, crsIn, crsOut) {
 }
 
 /**
- * The LASParser module provides a [parse]{@link
- * module:LASParser.parse} method that takes a LAS or LAZ (LASZip) file in, and
+ * The LASParser module provides a `parse` method that takes a LAS or LAZ (LASZip) file in, and
  * gives a `THREE.BufferGeometry` containing all the necessary attributes to be
  * displayed in iTowns. It uses the
  * [copc.js](https://github.com/connormanning/copc.js/) library.
  *
- * @module LASParser
+ * @category Parser
  */
 export default {
     /*

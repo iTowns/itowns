@@ -1,4 +1,7 @@
 import Source from 'Source/Source';
+/**
+ * @category Source
+ */
 
 class OGC3DTilesSource extends Source {
     /**

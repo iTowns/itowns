@@ -11,7 +11,7 @@ export const BYTES_PER_FLOAT = 4;
  * GTX file in, and returns a {@link GeoidGrid}. The {@link GeoidGrid} contains all the necessary attributes and
  * methods to access the GTX data in iTowns.
  *
- * @module GTXParser
+ * @category Parser
  */
 export default {
     /**

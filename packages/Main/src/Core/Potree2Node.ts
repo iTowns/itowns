@@ -117,6 +117,9 @@ Record<string, Potree2NodeHierarchy> {
     }
     return hierarchy;
 }
+/**
+ * @category Points
+ */
 
 class Potree2Node extends PotreeNodeBase {
     source: Potree2Source;

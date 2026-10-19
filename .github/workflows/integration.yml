@@ -62,10 +62,15 @@ jobs:
         if: ${{ success() }}
         run: npm run build
 
+      # Lint documentation
+      - name: Lint documentation
+        if: ${{ success() }}
+        run: npm run doclint
+
       # Build documentation
       - name: Build documentation
         if: ${{ success() && github.ref == 'refs/heads/master' }}
-        run: npm run doc -- -d buildDocs
+        run: npm run doc -- --out buildDocs
 
       # Prepare archive for deploying
       - name: Archive production artifacts

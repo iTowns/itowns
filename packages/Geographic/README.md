@@ -2,13 +2,13 @@
 
 The geographic package provides utilities for handling coordinates, ellipsoids, extents and rotations across different coordinate systems.
 
-* [Coordinates](http://www.itowns-project.org/itowns/docs/#api/Geographic/Coordinates) : A Coordinates object (geodetic datum), defined by a [crs] and three values.
+* [Coordinates](https://www.itowns-project.org/itowns/docs/classes/packages_Geographic_src.Coordinates.html) : A Coordinates object (geodetic datum), defined by a [crs] and three values.
 * [Coordinates stars] : get sun position, azimuth, ascention, ecliptic longitude and declination from date.
-* [Coordinate Reference System](http://www.itowns-project.org/itowns/docs/#api/Geographic/CRS) : This module provides basic methods to manipulate a CRS (as a string). to explore available coordinates systems and use their **proj4js** definition to define them in itowns with `proj4.defs(crs, proj4def)`.
+* [Coordinate Reference System](https://www.itowns-project.org/itowns/docs/modules/packages_Geographic_src_Crs.html) : This module provides basic methods to manipulate a CRS (as a string). to explore available coordinates systems and use their **proj4js** definition to define them in itowns with `proj4.defs(crs, proj4def)`.
 * Ellipsoid : A representation of an [ellipsoid](https://en.wikipedia.org/wiki/Ellipsoid) and useful computation methods (geodetic normal, etc.)
 * Ellipsoid Size: The length of the earth ellispoid semi-axes.
-* [Extent](http://www.itowns-project.org/itowns/docs/#api/Geographic/Extent) : Extent is geographical bounding rectangle defined by a crs and 4 limits: west, east, south and north .
-* [OrientationUtils](http://www.itowns-project.org/itowns/docs/#api/Geographic/OrientationUtils) : utilities to compute a rotation quaternion from various rotation conventions, including between different crs.
+* [Extent](https://www.itowns-project.org/itowns/docs/classes/packages_Geographic_src.Extent.html) : Extent is geographical bounding rectangle defined by a crs and 4 limits: west, east, south and north .
+* [OrientationUtils](https://www.itowns-project.org/itowns/docs/modules/packages_Geographic_src_OrientationUtils.html) : utilities to compute a rotation quaternion from various rotation conventions, including between different crs.
 
 # Install
 

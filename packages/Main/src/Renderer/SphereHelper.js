@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+/**
+ * @category Renderer
+ */
 
 function SphereHelper(radius) {
     THREE.Mesh.call(this);

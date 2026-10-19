@@ -133,6 +133,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
  *                                      from the local coordinates?
  * @property {Feature}              feature  (private) The itowns feature of interest.
  * @property {FeatureGeometry}      geometry  (private) The FeatureGeometry to compute the style.
+ * @category Base
  */
 export class StyleContext {
     #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -443,13 +444,14 @@ function _addIcon(icon, domElement, opt) {
  * // The spread evaluates every getter immediately, which executes dynamic
  * // properties (functions, expressions) without a feature context and will
  * // either crash or freeze their values.
+ * @category Base
  */
 
 class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style ({@link StyleOptions}).
+     * and sub properties of a Style (`StyleOptions`).
      */
     constructor(params = {}) {
         super();

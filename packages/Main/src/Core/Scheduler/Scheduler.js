@@ -122,12 +122,13 @@ function _instanciateQueue() {
 }
 
 /**
- * The Scheduler is in charge of managing the [Providers]{@link Provider} that
- * are used to gather resources needed to display the layers on a {@link View}.
+ * The Scheduler is in charge of managing the `Provider`s that
+ * are used to gather resources needed to display the layers on a `View`.
  * There is only one instance of a Scheduler per webview, and it is instanciated
  * with the creation of the first view.
  *
  * @class
+ * @category Base
  */
 function Scheduler() {
     // Constructor
@@ -263,7 +264,7 @@ Scheduler.prototype.execute = function execute(command) {
 
 /**
  * Adds a provider for a specified protocol. The provider will be used when
- * executing the queue to provide resources. See {@link Provider} for more
+ * executing the queue to provide resources. See `Provider` for more
  * informations.
  * By default, some protocols are already set in iTowns: WMTS, WMS, WFS, TMS,
  * XYZ, PotreeConverter, Rasterizer, 3D-Tiles and Static.
@@ -275,9 +276,9 @@ Scheduler.prototype.execute = function execute(command) {
  * `protocol` parameter put inside the configuration when adding a layer. The
  * capitalization of the name is not taken into account here.
  * @param {Provider} provider - The provider to link to the protocol, that must
- * respect the {@link Provider} interface description.
+ * respect the `Provider` interface description.
  *
- * @throws {Error} an error if any method of the {@link Provider} is not present
+ * @throws {Error} an error if any method of the `Provider` is not present
  * in the provider.
  */
 Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol, provider) {
@@ -289,7 +290,7 @@ Scheduler.prototype.addProtocolProvider = function addProtocolProvider(protocol,
 };
 
 /**
- * Get a specific {@link Provider} given a particular protocol.
+ * Get a specific `Provider` given a particular protocol.
  *
  * @param {string} protocol
  *

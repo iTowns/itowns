@@ -108,6 +108,7 @@ function computeTime(distance) {
  * @property {number} keySetCameraToCurrentPositionAndLookAtNext key code set camera to current position, default to 65 for key  A
  * @property {number} keySetCameraToCurrentPositionAndLookAtPrevious key code set camera to current position, default to 81 for key  Q
  * @extends FirstPersonControls
+ * @category Controls
  */
 class StreetControls extends FirstPersonControls {
     /**

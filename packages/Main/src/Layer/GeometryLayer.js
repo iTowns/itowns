@@ -19,6 +19,7 @@ import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
  * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
  * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
+ * @category Layer
  */
 class GeometryLayer extends Layer {
     /**
@@ -38,7 +39,7 @@ class GeometryLayer extends Layer {
      * name.
      * @param {Source} config.source - Description and options of the source.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
-     * This value is used for [Cache]{@link Cache} expiration mechanism.
+     * This value is used for cache expiration mechanism.
      * @param {boolean} [config.visible]
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.

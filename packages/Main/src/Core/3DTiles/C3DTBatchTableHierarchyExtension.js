@@ -13,6 +13,7 @@
  * of the class (from this.classes) of the instance. instanceIdx is the index of
  * the instance in this class. Goal: Ease the retrieval of the properties of an
  * instance.
+ * @category Base
  */
 class C3DTBatchTableHierarchyExtension {
     /**

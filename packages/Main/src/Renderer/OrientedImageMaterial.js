@@ -20,10 +20,10 @@ if (__DEBUG__) { shaderMaterial.name = 'OrientedImage'; }
  * OrientedImageMaterial is a custom shader material used to do projective texture mapping.<br/>
  *
  * This Material is designed to project many textures simultaneously.
- * Each projected texture setting is stored as an {@link OrientedImageCamera}.<br/>
+ * Each projected texture setting is stored as an `OrientedImageCamera`.<br/>
  * <br/>
  * All cameras settings, like distorsion, can be specified in a configuration file.
- * See [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse}
+ * See `CameraCalibrationParser`
  * used to parse a configuration file and create an array of camera.<br/>
  * <br/>
  * The current implementation supports the following distortion models : <br/>
@@ -33,11 +33,12 @@ if (__DEBUG__) { shaderMaterial.name = 'OrientedImage'; }
  * (Note: radial decentric parameters P1 are P2 not supported and assumed to be 0).<br/>
  * <br/>
  * To get a more comprehensive support of camera Micmac models, you can consider using [three-photogrammetric-camera]{@link https://github.com/mbredif/three-photogrammetric-camera} instead.
+ * @category Renderer
  */
 class OrientedImageMaterial extends THREE.ShaderMaterial {
     /**
-     * @param { OrientedImageCamera[]} cameras - Array of {@link OrientedImageCamera}. Each camera will project a texture.
-     * [CameraCalibrationParser]{@link module:CameraCalibrationParser.parse} can used to create this array of camera from a configuration file.
+     * @param { OrientedImageCamera[]} cameras - Array of `OrientedImageCamera`. Each camera will project a texture.
+     * `CameraCalibrationParser` can be used to create this array of camera from a configuration file.
      * @param {object} [options={}] - Object with one or more properties defining the material's appearance.
      * Any property of the material (including any property inherited from
      * [THREE.Material]{@link https://threejs.org/docs/#api/en/materials/Material} and

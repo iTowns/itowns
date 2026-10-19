@@ -26,6 +26,7 @@ const DEFAULT_OPTIONS = {
 /**
  * Renders a simple sky representation with fog effects, atmospheric gradient, and color blending based on altitude,
  * for a globe view.
+ * @category View
  */
 class SimpleSky implements ISkyStrategy {
     view: GlobeView;

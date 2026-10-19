@@ -49,6 +49,9 @@ export interface RealisticSkyParameters {
     mieExtinction: THREE.Vector3;
     miePhaseFunctionG: number;
 }
+/**
+ * @category View
+ */
 
 class RealisticSky implements ISkyStrategy {
     sky: THREE.Mesh;

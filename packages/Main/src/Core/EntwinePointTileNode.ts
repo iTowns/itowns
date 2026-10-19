@@ -2,6 +2,9 @@ import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 import Fetcher from 'Provider/Fetcher';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 import LasNodeBase from 'Core/LasNodeBase';
+/**
+ * @category Points
+ */
 
 class EntwinePointTileNode extends LasNodeBase {
     source: EntwinePointTileSource;

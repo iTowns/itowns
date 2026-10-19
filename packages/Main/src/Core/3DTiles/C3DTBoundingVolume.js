@@ -98,6 +98,7 @@ function initFromSphere(sphere) {
  * @property {object} extensions - 3D Tiles extensions of the bounding volume
  * stored in the following format:
  * {extensioName1: extensionObject1, extensioName2: extensionObject2, ...}
+ * @category Base
  */
 class C3DTBoundingVolume {
     constructor(json, tileMatrixInverse, registeredExtensions) {

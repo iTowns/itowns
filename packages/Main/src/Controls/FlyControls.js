@@ -87,6 +87,7 @@ function onDocumentMouseWheel(event) {
  * - left + right keys: strafing movements
  * - PageUp + PageDown: roll movement
  * - mouse click+drag: pitch and yaw movements (as looking at a panorama, not as in FPS games for instance)
+ * @category Controls
  */
 class FlyControls extends THREE.EventDispatcher {
     /**

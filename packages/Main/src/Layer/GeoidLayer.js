@@ -20,6 +20,7 @@ export function geoidLayerIsVisible(tilelayer) {
  *         format: 'application/gtx',
  *     }),
  * });
+ * @category Layer
  */
 class GeoidLayer extends Layer {
     /**

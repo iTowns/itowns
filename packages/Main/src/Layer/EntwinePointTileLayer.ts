@@ -6,6 +6,9 @@ interface EntwinePointTileLayerParameters extends PointCloudLayerParameters {
     crs?: string;
     source: EntwinePointTileSource;
 }
+/**
+ * @category Layer
+ */
 
 class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
     /**

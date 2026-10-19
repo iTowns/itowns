@@ -24,6 +24,7 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
  *
  * @extends RasterLayer
+ * @category Layer
  */
 class ElevationLayer extends RasterLayer {
     /**
