@@ -13,12 +13,12 @@ const PRECISE_READ_Z = 1;
  * the tiles (globe or plane). This implies that the return value may change
  * depending on the current tile resolution.
  *
- * @module DEMUtils
+ * @category Geographic
  */
 export default {
     /**
-     * Gives the elevation value of a {@link TiledGeometryLayer}, at a specific
-     * {@link Coordinates}.
+     * Gives the elevation value of a `TiledGeometryLayer`, at a specific
+     * `Coordinates`.
      *
      * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
      * textures we're going to query. This is typically a `GlobeLayer` or
@@ -42,16 +42,7 @@ export default {
     },
 
     /**
-     * @typedef Terrain
-     * @type {object}
-     *
-     * @property {Coordinates} coord - Pick coordinate with the elevation in coord.z.
-     * @property {THREE.Texture} texture - the picked elevation texture.
-     * The texture where the `z` value has been read from
-     * @property {TileMesh} tile - the picked tile and the tile containing the texture
-     */
-    /**
-     * Gives a {@link Terrain} object, at a specific {@link Coordinates}. The returned
+     * Gives a `Terrain` object, at a specific {@link Coordinates}. The returned
      * object is as follow:
      * - `coord`, Coordinate, coord.z is the value in meters of the elevation at the coordinates
      * - `texture`, the texture where the `z` value has been read from
@@ -77,7 +68,9 @@ export default {
      * Otherwise the lookup process starts from the root of `layer`.
      * @param {object} [cache] - Object to cache previous result and speed up the next `getTerrainObjectAt`` use.
      *
-     * @returns {Terrain} - The {@link Terrain} object.
+     * @returns {object} - The `Terrain` object, with `coord` (`Coordinates`),
+     * `texture` (`THREE.Texture`) and `tile` (`TileMesh`)
+     * properties.
      */
     getTerrainObjectAt(layer, coord, method = FAST_READ_Z, tileHint, cache) {
         return _readZ(layer, method, coord, tileHint || layer.level0Nodes, cache);

@@ -48,6 +48,8 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
  * @property {string} LAYER_ADDED - Deprecated: emit when layer id added in viewer (use VIEW_EVENTS.LAYER_ADDED instead).
  * @property {string} LAYER_REMOVED - Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
  * @property {string} COLOR_LAYERS_ORDER_CHANGED - Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
+ * @category View
+ * @deprecated Use {@link itowns!VIEW_EVENTS | VIEW_EVENTS} instead.
  */
 
 export const GLOBE_VIEW_EVENTS = {
@@ -58,6 +60,9 @@ export const GLOBE_VIEW_EVENTS = {
 };
 
 const camToSeaLevel = new Coordinates('EPSG:4978');
+/**
+ * @category View
+ */
 
 class GlobeView extends View {
     /**
@@ -65,13 +70,15 @@ class GlobeView extends View {
      *
      * @extends View
      *
-     * @example <caption><b>Instance GlobeView.</b></caption>
+     * @example Instance GlobeView.
+     * ```js
      * var viewerDiv = document.getElementById('viewerDiv');
      * const placement = {
      *     coord: new itowns.Coordinates('EPSG:4326', 2.351323, 48.856712),
      *     range: 25000000,
      * }
      * var view = new itowns.GlobeView(viewerDiv, placement);
+     * ```
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.

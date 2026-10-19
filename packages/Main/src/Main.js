@@ -1,3 +1,6 @@
+/**
+ * @module itowns
+ */
 const conf = {
     version: '2.46.0',
 };
@@ -5,12 +8,17 @@ const conf = {
 export const REVISION = conf.version;
 
 // Geographic tools
-export { Coordinates, Extent, CRS, Ellipsoid, ellipsoidSizes, OrientationUtils } from '@itowns/geographic';
+export { Coordinates, Extent, Ellipsoid, ellipsoidSizes } from '@itowns/geographic';
+/** @category Geographic */
+export { CRS } from '@itowns/geographic';
+/** @category Geographic */
+export { OrientationUtils } from '@itowns/geographic';
 export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
 
 export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';
+export { default as URLBuilder } from 'Provider/URLBuilder';
 export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
@@ -18,6 +26,7 @@ export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { default as ObjectRemovalHelper } from 'Process/ObjectRemovalHelper';
 export { updateLayeredMaterialNodeImagery, updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
+export { default as OrientedImageMaterial } from 'Renderer/OrientedImageMaterial';
 export { default as PointsMaterial, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
 export { default as GlobeControls } from 'Controls/GlobeControls';
 export { default as FlyControls } from 'Controls/FlyControls';
@@ -48,8 +57,9 @@ export { default as Label } from 'Core/Label';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
-// See http://www.itowns-project.org/itowns/docs/#api/Layer/Layer
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Layer.html
 export { default as Layer } from 'Layer/Layer';
+/** @category Layer */
 export * as ImageryLayers from 'Layer/ImageryLayers';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
@@ -80,7 +90,7 @@ export { default as GeoidLayer } from 'Layer/GeoidLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source
-// See http://www.itowns-project.org/itowns/docs/#api/Source/Source
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Source.html
 export { default as Source } from 'Source/Source';
 export { default as FileSource } from 'Source/FileSource';
 export { default as TMSSource } from 'Source/TMSSource';

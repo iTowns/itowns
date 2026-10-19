@@ -10,6 +10,11 @@ import VectorTileParser from 'Parser/VectorTileParser';
 import Fetcher from 'Provider/Fetcher';
 import { LRUCache } from 'lru-cache';
 
+/**
+ * @import { FeatureBuildingOptions } from 'Core/Feature'
+ * @import Layer from 'Layer/Layer'
+ */
+
 /** @private */
 export const supportedParsers = new Map([
     ['application/geo+json', GeoJsonParser.parse],
@@ -30,6 +35,7 @@ const noCache = { get: () => {}, set: a => a, clear: () => {} };
  * @typedef {object} ParsingOptions
  * @property {Source} in - data informations contained in the file.
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
+ * @category Source
  */
 
 let uid = 0;
@@ -71,10 +77,11 @@ let uid = 0;
  * When calling this method, two parameters are passed:
  * <ul>
  *  <li>the fetched data, i.e. the data to parse</li>
- *  <li>an {@link ParsingOptions}  containing severals properties, set when this method is
+ *  <li>a `ParsingOptions` object containing severals properties, set when this method is
  *  called: it is specific to each call, so the value of each property can vary
  *  depending on the current fetched tile for example</li>
  * </ul>
+ * @category Source
  */
 class Source {
     /**

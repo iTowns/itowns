@@ -27,6 +27,9 @@ dat.GUI.prototype.colorLayerFolder = function colorLayerFolder(name, value) {
 dat.GUI.prototype.hasFolder = function hasFolder(name) {
     return this.__folders[name];
 };
+/**
+ * @category Debug
+ */
 
 function GuiTools(domId, view, w) {
     if (view) {

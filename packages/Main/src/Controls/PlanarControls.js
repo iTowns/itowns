@@ -133,7 +133,6 @@ export const PLANAR_CONTROL_EVENT = {
  *     <li><b>T key:</b> go to the top view (animated).</li>
  * </ul>
  *
- * @class   PlanarControls
  * @param   {PlanarView}    view                                the view where the controls will be used
  * @param   {object}        options
  * @param   {boolean}       [options.enabled=true]              Set to false to disable this control
@@ -169,6 +168,7 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {number}        [options.maxZenithAngle=82.5]       The maximum reachable zenith angle for a camera
  * rotation, in degrees.
  * @param   {boolean}       [options.handleCollision=true]
+ * @category Controls
  */
 class PlanarControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {
@@ -396,7 +396,7 @@ class PlanarControls extends THREE.EventDispatcher {
 
     /**
      * Handle the drag movement (translation on (xy) plane) when user moves the mouse while in STATE.DRAG. The
-     * drag movement is previously initiated by [initiateDrag]{@link PlanarControls#initiateDrag}. Compute the
+     * drag movement is previously initiated by {@link PlanarControls#initiateDrag | initiateDrag}. Compute the
      * drag value and update the camera controls. The movement value is derived from the actual world point under
      * the mouse cursor. This allows the user to 'grab' a world point and drag it to move.
      *
@@ -426,7 +426,7 @@ class PlanarControls extends THREE.EventDispatcher {
 
     /**
      * Handle the pan movement (translation on local x / world z plane) when user moves the mouse while
-     * STATE.PAN. The drag movement is previously initiated by [initiatePan]{@link PlanarControls#initiatePan}.
+     * STATE.PAN. The drag movement is previously initiated by {@link PlanarControls#initiatePan | initiatePan}.
      * Compute the pan value and update the camera controls.
      *
      * @ignore
@@ -457,7 +457,7 @@ class PlanarControls extends THREE.EventDispatcher {
     /**
      * Handle the rotate movement (orbit) when user moves the mouse while in STATE.ROTATE. The movement is an
      * orbit around `centerPoint`, the camera focus point (ground point at screen center). The rotate movement
-     * is previously initiated in [initiateRotation]{@link PlanarControls#initiateRotation}.
+     * is previously initiated in {@link PlanarControls#initiateRotation | initiateRotation}.
      * Compute the new position value and update the camera controls.
      *
      * @ignore
@@ -509,7 +509,7 @@ class PlanarControls extends THREE.EventDispatcher {
      * Triggers a Zoom animated movement (travel) toward / away from the world point under the mouse cursor. The
      * zoom intensity varies according to the distance between the camera and the point. The closer to the ground,
      * the lower the intensity. Orientation will not change (null parameter in the call to
-     * [initiateTravel]{@link PlanarControls#initiateTravel} function).
+     * {@link PlanarControls#initiateTravel | initiateTravel} function).
      *
      * @param   {Event} event   the mouse wheel event.
      * @ignore
@@ -865,7 +865,7 @@ class PlanarControls extends THREE.EventDispatcher {
     /**
      * Returns the world point (xyz) under the posXY screen point. If geometry is under the cursor, the point is
      * obtained with getPickingPositionFromDepth. If no geometry is under the cursor, the point is obtained with
-     * [getWorldPointFromMathPlaneAtScreenXY]{@link PlanarControls#getWorldPointFromMathPlaneAtScreenXY}.
+     * {@link PlanarControls#getWorldPointFromMathPlaneAtScreenXY | getWorldPointFromMathPlaneAtScreenXY}.
      *
      * @param   {THREE.Vector2} posXY   the mouse position in screen space (unit : pixel)
      * @param   {THREE.Vector3} target  the target World coordinates.

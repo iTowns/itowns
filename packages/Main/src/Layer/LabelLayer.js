@@ -20,7 +20,7 @@ const labelPosition = new THREE.Vector2();
 /**
  * DomNode is a node in the tree data structure of labels divs.
  *
- * @class DomNode
+ * @category Layer
  */
 class DomNode {
     #domVisibility = false;
@@ -55,7 +55,6 @@ class DomNode {
  * LabelsNode is node of tree data structure for LabelLayer.
  * the node is made of dom elements and 3D labels.
  *
- * @class      LabelsNode
  */
 class LabelsNode extends THREE.Group {
     constructor(node) {
@@ -144,6 +143,7 @@ class LabelsNode extends THREE.Group {
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
  * LabelLayer.  Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @category Layer
  */
 class LabelLayer extends GeometryLayer {
     #filterGrid = new ScreenGrid();

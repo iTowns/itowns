@@ -74,7 +74,7 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * then the altitude value is set to 0.
  * @property {object} [point.model] - 3D model to instantiate at each point position.
  *
- * @property {object} [text] - All things {@link Label} related. (Supported for Points features, not yet
+ * @property {object} [text] - All things `Label` related. (Supported for Points features, not yet
  * for Lines and Polygons features.)
  * @property {string|Function} [text.field] - A string representing a property key of
  * a `FeatureGeometry` enclosed in brackets, that will be replaced by the value of the
@@ -92,7 +92,7 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * color string](https://developer.mozilla.org/en-US/docs/Web/CSS/color_value).
  * Default is `#000000`.
  * @property {string|number[]|Function} [text.anchor] - The anchor of the text compared to its
- * position (see {@link Label} for the position). Can be one of the following values: `top`,
+ * position (see `Label` for the position). Can be one of the following values: `top`,
  * `left`, `bottom`, `right`, `center`, `top-left`, `top-right`, `bottom-left`
  * or `bottom-right`. Default is `center`.
  *
@@ -145,6 +145,7 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * It will change the color of the white pixels of the icon source image.
  * @property {number|Function} [icon.opacity] - The opacity of the icon. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
+ * @category Base
  */
 
 /**

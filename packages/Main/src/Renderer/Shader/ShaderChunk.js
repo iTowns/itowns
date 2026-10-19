@@ -53,12 +53,11 @@ const itownsShaderChunk = {
  * @property {object} target - The target to install the chunks into.
  * @property {string} [path] - A path to add before a chunk name as a prefix.
  *
+ * @category Renderer
  */
 class ShaderChunkManager {
     /**
      * Constructs a new instance ShaderChunkManager.
-     *
-     * @class
      *
      * @param {object} target - The target to install the chunks into.
      * @param {string} [path] - A path to add before a chunk name as a prefix.
@@ -83,7 +82,8 @@ class ShaderChunkManager {
      * Set the body ColorLayer shader.
      * You could define you color terrain shader, with a header and a body.
      * the header defines yours fonctions and the body defines the process on ColorLayer.
-     * @example <caption>Custom shader chunk</caption>
+     * @example Custom shader chunk
+     * ```js
      *  itowns.ShaderChunk.customHeaderColorLayer(`
      *  // define yours methods
      *  vec4 myColor(vec4 color, float a) {
@@ -101,6 +101,7 @@ class ShaderChunkManager {
      *    type_effect: itowns.colorLayerEffects.customEffect,
      *    amount_effect: 0.5,
      *  });
+     * ```
      *
      * @param  {string}  body  The glsl body
      */

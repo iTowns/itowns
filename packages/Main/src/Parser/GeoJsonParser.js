@@ -2,6 +2,10 @@ import { Coordinates } from '@itowns/geographic';
 import { FeatureCollection, FEATURE_TYPES } from 'Core/Feature';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
+/**
+ * @import { ParsingOptions } from 'Source/Source'
+ */
+
 function readCRS(json) {
     if (json.crs) {
         if (json.crs.type.toLowerCase() == 'epsg') {
@@ -187,11 +191,11 @@ function jsonFeaturesToFeatures(crsIn, jsonFeatures, options) {
 }
 
 /**
- * The GeoJsonParser module provide a [parse]{@link module:GeoJsonParser.parse}
+ * The GeoJsonParser module provide a `parse`
  * method that takes a GeoJSON in and gives an object formatted for iTowns
  * containing all necessary informations to display this GeoJSON.
  *
- * @module GeoJsonParser
+ * @category Parser
  */
 export default {
     /**

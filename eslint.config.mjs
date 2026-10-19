@@ -15,7 +15,6 @@ const ignores = [
     'docs/out/',
     'docs/static/',
     'docs/tutorials/',
-    'docs/tmpl/',
     '**/test/data/**',
     '**/examples/libs/**',
     '**/examples/layers/**',
@@ -89,18 +88,11 @@ const scriptsConfig = {
 
 const docsConfig = {
     name: 'itowns/docs',
-    files: ['docs/**/*.{js,cjs}'],
+    files: ['docs/**/*.{js,mjs}'],
     languageOptions: {
         globals: {
             ...globals.node,
-            ...globals.commonjs,
         },
-    },
-    rules: {
-        // Those rules will be enabled once we migrate to TypeDoc.
-        '@typescript-eslint/no-require-imports': 'off',
-        'import-x/extensions': 'off',
-        'no-var': 'off',
     },
 };
 

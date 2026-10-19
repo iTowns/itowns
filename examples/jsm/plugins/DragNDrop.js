@@ -10,7 +10,7 @@ import * as itowns from 'itowns';
  * Note: only files with the crs projection `EPSG:4326` can be projected correctly
  * using this plugin.
  *
- * @module DragNDrop
+ * @category Plugins
  *
  * @example
  * &lt;script src="js/DragNDrop.js">&lt;/script>
@@ -186,8 +186,6 @@ const DragNDrop = (function _() {
          * @param {number} mode - Choose the mode the file is displayed: either
          * `DragNDrop.COLOR` (equivalent to a `ColorLayer`) or
          * `DragNDrop.GEOMETRY` (equivalent to a `GeometryLayer`).
-         *
-         * @memberof module:DragNDrop
          */
         register: function _(extension, type, parser, mode) {
             extensionsMap[extension.toLowerCase()] = {
@@ -202,8 +200,6 @@ const DragNDrop = (function _() {
          * this method.
          *
          * @param {View} view - The view to bind to the DragNDrop interface.
-         *
-         * @memberof module:DragNDrop
          */
         setView: function _(view) {
             _view = view;

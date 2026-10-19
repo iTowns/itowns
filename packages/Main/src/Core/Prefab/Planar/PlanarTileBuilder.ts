@@ -24,6 +24,7 @@ export interface PlanarTileBuilderParams extends TileBuilderParams {
 /**
  * TileBuilder implementation for the purpose of generating planar
  * tile arrangements.
+ * @category View
  */
 export class PlanarTileBuilder implements TileBuilder<PlanarTileBuilderParams> {
     private _uvCount: number;

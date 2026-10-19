@@ -66,6 +66,7 @@ function extractCameraAttributesFromProjectionMatrix(projectionMatrix) {
 }
 /**
  * @property {VRControls} vrControls - WebXR controllers handler
+ * @category Renderer
  */
 class WebXR extends THREE.EventDispatcher {
     /**

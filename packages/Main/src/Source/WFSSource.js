@@ -26,9 +26,9 @@ const _extent = new Extent('EPSG:4326');
  * is 21.
  * @property {string} bboxDigits - The bbox digits precision used in URL
  * @property {object} vendorSpecific - An object containing vendor specific
- * parameters. See for example a [list of these parameters for GeoServer]{@link
- * https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html}. This
- * object is read simply with the `key` being the name of the parameter and
+ * parameters. See for example a
+ * [list of these parameters for GeoServer](https://docs.geoserver.org/latest/en/user/services/wfs/vendor.html).
+ * This object is read simply with the `key` being the name of the parameter and
  * `value` being the value of the parameter. If used, this property should be
  * set in the constructor parameters.
  *
@@ -96,6 +96,7 @@ const _extent = new Extent('EPSG:4326');
  *
  * // Add the layer
  * view.addLayer(geometryLayer);
+ * @category Source
  */
 class WFSSource extends Source {
     /**

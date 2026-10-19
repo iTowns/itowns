@@ -111,7 +111,7 @@ const viewCoords = new THREE.Vector2();
 
 /**
  * @typedef {object} State
- * @property {boolean} enable=true Indicate whether the state is enabled or not.
+ * @property {boolean} [enable=true] Indicate whether the state is enabled or not.
  * @property {number} [mouseButton] The mouse button bound to this state.
  * @property {number} [keyboard] The keyCode of the keyboard input bound to this state.
  * @property {number} [finger] The number of fingers on the pad bound to this state.
@@ -124,7 +124,6 @@ const viewCoords = new THREE.Vector2();
  * It represents the control's states.
  * Each {@link State} is a control mode of the camera and how to interact with
  * the interface to activate this mode.
- * @class StateControl
  *
  * @property {State}    NONE        {@link State} when camera is idle.
  * @property {State}    ORBIT       {@link State} describing camera orbiting movement : the camera moves around its
@@ -150,6 +149,7 @@ const viewCoords = new THREE.Vector2();
  * Default is true.
  * @property {boolean}  enableKeys  Defines whether keyboard input will be communicated to the associated `Controls` or
  * not. Default is true.
+ * @category Controls
  */
 class StateControl extends THREE.EventDispatcher {
     constructor(view, options = {}) {

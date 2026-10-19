@@ -1,3 +1,8 @@
+---
+title: WGS84 (EPSG:4326)
+group: Raster visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize data in a global geocentric Coordinate Reference System (CRS).
 It shows how to display ortho-images as well as a Digital Elevation Model (DEM).
 ## Preparing the webpage
@@ -38,9 +43,9 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 
 ## Creating a view
 
-In order to be able to display anything with iTowns, we always need to create a `{@link View}`, that will contain the data 
-layers. In this tutorial, we will use a `{@link GlobeView}` and add data layers in `EPSG:4326` and in `EPSG:3857` which 
-are the two CRS supported for data displayed in a `{@link GlobeView}`. We can add a `{@link GlobeView}` with the following 
+In order to be able to display anything with iTowns, we always need to create a {@link itowns!View}, that will contain the data 
+layers. In this tutorial, we will use a {@link itowns!GlobeView} and add data layers in `EPSG:4326` and in `EPSG:3857` which 
+are the two CRS supported for data displayed in a {@link itowns!GlobeView}. We can add a {@link itowns!GlobeView} with the following 
 code:
 
 ```js
@@ -56,8 +61,8 @@ First we get the element of the page on which the view will be displayed. Then, 
 initial placement information. This object has two properties : a position which the camera is 
 facing (the lookAt coordinate of the camera, `coord`), and the distance between the camera and this coordinate (`range`)
 in meters.
-For the `coord` argument, we can create a `{@link Coordinates}` object in the WGS84 system - whose EPSG code is 4326.
-Then, having those two objects, we create the `{@link GlobeView}`. 
+For the `coord` argument, we can create a {@link itowns!Coordinates} object in the WGS84 system - whose EPSG code is 4326.
+Then, having those two objects, we create the {@link itowns!GlobeView}. 
 
 The result should be a simple blue globe like below.
 
@@ -66,8 +71,8 @@ The result should be a simple blue globe like below.
 ## Adding a color layer
 
 Now that we have a globe, let's display data on it. For this, let's add a basic layer composed of aerial photos. 
-Adding a layer to itowns is done in three steps: creating a data `{@link Source}`, adding this source to a 
-`{@link Layer}` and adding this layer to the `{@link View}`.
+Adding a layer to itowns is done in three steps: creating a data {@link itowns!Source}, adding this source to a 
+{@link itowns!Layer} and adding this layer to the {@link itowns!View}.
 
 ```js
 var orthoSource = new itowns.WMTSSource({
@@ -85,7 +90,7 @@ var orthoLayer = new itowns.ColorLayer('Ortho', {
 view.addLayer(orthoLayer);
 ```
 
-Images that we chose to display are coming from a WMTS server, so we use a `{@link WMTSSource}`. 
+Images that we chose to display are coming from a WMTS server, so we use a {@link itowns!WMTSSource}. 
 To declare this source, three elements are needed :
 - a `url`, describing the path to the WMTS service
 - a `crs` projection in which to fetch the data
@@ -95,7 +100,7 @@ To declare this source, three elements are needed :
 A `format` is alse specified in our case, as we are looking for jpeg images.
 
 Once the source is defined, we need to add it to a layer. We want to create and add a layer containing images, 
-`{@link ColorLayer}` is the right layer type to display raster images. `{@link ColorLayer}`, only needs an `id` of the 
+{@link itowns!ColorLayer} is the right layer type to display raster images. {@link itowns!ColorLayer}, only needs an `id` of the 
 layer and the data `source`.
 
 Finally, we simply add the layer to the view with `addLayer`.
@@ -106,8 +111,8 @@ The result should be a globe with orthoimages on it:
 
 ## Adding an elevation layer
 
-We can add more depth to the current globe by providing an `{@link ElevationLayer}`. The
-process is quite similar to adding a `{@link ColorLayer}`. In this case, we are also using a
+We can add more depth to the current globe by providing an {@link itowns!ElevationLayer}. The
+process is quite similar to adding a {@link itowns!ColorLayer}. In this case, we are also using a
 `WMTSSource`, but we need to create a new one as the elevation data source is different from the
 previous one.
 
@@ -129,9 +134,9 @@ view.addLayer(elevationLayer);
 ```
 
 Two things have changed:
-- the configuration of the `{@link WMTSSource}`, adapted to fit the data source and a `zoom` property was added. It 
+- the configuration of the {@link itowns!WMTSSource}, adapted to fit the data source and a `zoom` property was added. It 
 contains the minimum and maximum zoom levels, between which data shall be fetched in the data source.
-- the layer created, which is an `{@link ElevationLayer}`
+- the layer created, which is an {@link itowns!ElevationLayer}
 
 Now we can zoom in and see some elevations and beautiful mountains !
 

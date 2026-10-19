@@ -1,3 +1,8 @@
+// TypeDoc uses the `@module` tag to name the module.
+/* eslint-disable jsdoc/check-tag-names */
+/**
+ * @module @itowns/geographic
+ */
 // Geodesic tools
 export { default as Extent, type ExtentLike } from './Extent';
 export { default as Coordinates, type CoordinatesLike } from './Coordinates';

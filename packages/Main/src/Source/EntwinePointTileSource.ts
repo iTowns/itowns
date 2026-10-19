@@ -37,6 +37,7 @@ interface EntwinePointTileMetadata {
  * An object defining the source of Entwine Point Tile data. It fetches and
  * parses the main configuration file of Entwine Point Tile format,
  * [`ept.json`](https://entwine.io/entwine-point-tile.html#ept-json).
+ * @category Source
  */
 class EntwinePointTileSource extends Source {
     /**

@@ -1,3 +1,6 @@
+/**
+ * @module @itowns/debug
+ */
 export { default as Debug } from 'Debug';
 export { default as PointCloudDebug } from 'PointCloudDebug';
 export { default as createTileDebugUI } from 'TileDebug';

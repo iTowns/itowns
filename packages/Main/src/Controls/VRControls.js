@@ -5,6 +5,7 @@ import { XRControllerModelFactory } from 'three/addons/webxr/XRControllerModelFa
 
 /**
  * @property {Array} controllers - WebXR controllers list
+ * @category Controls
  */
 class VRControls {
     static MIN_DELTA_ALTITUDE = 1.8;

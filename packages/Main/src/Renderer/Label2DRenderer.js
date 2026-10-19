@@ -6,6 +6,9 @@ function isIntersectedOrOverlaped(a, b) {
 }
 
 const frustum = new THREE.Frustum();
+/**
+ * @category Renderer
+ */
 
 // A grid to manage labels on the screen.
 export class ScreenGrid {
@@ -87,6 +90,7 @@ const worldPosition = new THREE.Vector3();
  * This renderer is inspired by the
  * [`THREE.CSS2DRenderer`](https://threejs.org/docs/#examples/en/renderers/CSS2DRenderer).
  * It is instantiated in `c3DEngine`, as another renderer to handles Labels.
+ * @category Renderer
  */
 class Label2DRenderer {
     constructor() {
