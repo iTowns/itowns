@@ -1,9 +1,14 @@
+---
+title: As 3D objects
+group: Vector visualization
+---
+
 The goal of this tutorial is to give a brief example on how to use iTowns to visualize some vector data as 3D objects.
-The vector data we will use in this tutorial represent buildings and will be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+The vector data we will use in this tutorial represent buildings and will be displayed on the `GlobeView` we created in the [WGS84 tutorial](Raster-data-WGS84.md).
 
 ## Preparing the field
 
-To display our buildings, we are going to use the data created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}. As we are trying to display some buildings,
+To display our buildings, we are going to use the data created in the [WGS84 tutorial](Raster-data-WGS84.md). As we are trying to display some buildings,
 let's move closer to the ground to see something and let's give the camera an initial rotation. 
 For this, we need to change the starting position to something more appropriate. We also need to modify the elevation
 layer to a more precise one.
@@ -138,7 +143,7 @@ So let's start modifying these polygons' altitude to place them on the ground !
 
 To achieve the positioning relative to the elevation layer, we will need to add
 a parameter to the `FeatureGeometryLayer`, which is its `{@link Style}`.
-As mentioned in the [fundamentals]{@tutorial Fundamentals} tutorial, we can modify the appearance and positioning of polygons thanks to the `fill` property of `Style`.
+As mentioned in the [fundamentals](Fundamentals.md) tutorial, we can modify the appearance and positioning of polygons thanks to the `fill` property of `Style`.
 The altitude at which polygons are displayed can be modified using the `base_altitude` parameter, which we set as follows :
 
 ```js

@@ -21,9 +21,9 @@ function updateLayersOrdering(geometryLayer, imageryLayers) {
 export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
 
 /**
- * Utilitary to organize {@link ColorLayer} in a {@link View}.
+ * Utilitary to organize `ColorLayer` in a `View`.
  *
- * @module ColorLayersOrdering
+ * @category Layer
  */
 export default {
     /**

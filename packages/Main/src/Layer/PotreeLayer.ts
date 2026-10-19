@@ -11,6 +11,9 @@ interface PotreeLayerParameters extends PointCloudLayerParameters {
     crs?: string;
     source: PotreeSource;
 }
+/**
+ * @category Layer
+ */
 
 class PotreeLayer extends PointCloudLayer<PotreeSource> {
     /**

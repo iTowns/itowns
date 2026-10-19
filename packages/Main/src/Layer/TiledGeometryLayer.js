@@ -21,6 +21,7 @@ const boundingSphereCenter = new THREE.Vector3();
  * @property {RenderTargetCache} renderTargetCache - Manages render target caching and disposal
  *
  * @extends GeometryLayer
+ * @category Layer
  */
 class TiledGeometryLayer extends GeometryLayer {
     /**
@@ -35,7 +36,7 @@ class TiledGeometryLayer extends GeometryLayer {
      *
      * Some `GeometryLayer` can also be attached to the `TiledGeometryLayer` if they want to take advantage of the quadtree.
      *
-     * ![tiled geometry](/docs/static/images/tiledGeometry.jpeg)
+     * ![tiled geometry](../../../../docs/static/images/tiledGeometry.jpeg)
      * _In `GlobeView`, **red lines** represents the **WGS84 grid** and **orange lines** the **Pseudo-mercator grid**._
      * _In this picture, there are tiles with 3 different zoom/levels._
      *
@@ -187,7 +188,7 @@ class TiledGeometryLayer extends GeometryLayer {
         }
     }
     /**
-     * Picking method for this layer. It uses the {@link Picking#pickTilesAt}
+     * Picking method for this layer. It uses the `Picking.pickTilesAt`
      * method.
      *
      * @param {View} view - The view instance.
@@ -224,8 +225,8 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>else it returns the whole tree</li>
      * </ul>
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {Set<GeometryLayer|TileMesh>} sources - A list of sources to
      * generate a list of nodes to update.
      *
@@ -301,8 +302,8 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>is not visible in the camera</li>
      * </ul>
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {Layer} layer - Parameter to be removed once all update methods
      * have been aligned.
      * @param {TileMesh} node - The node to update.
@@ -388,8 +389,8 @@ class TiledGeometryLayer extends GeometryLayer {
      *  <li>a color texture is missing</li>
      * </ul>
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {TileMesh} node - The node to subdivide.
      *
      * @returns {boolean} False if the node can not be subdivided, true
@@ -437,8 +438,8 @@ class TiledGeometryLayer extends GeometryLayer {
      * south-east. Once all four nodes are created, they will be added to the
      * current node and the view of the context will be notified of this change.
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {TileMesh} node - The node to subdivide.
      * @returns {Promise}  { description_of_the_return_value }
      */
@@ -479,8 +480,8 @@ class TiledGeometryLayer extends GeometryLayer {
     /**
      * Test the subdvision of a node, compared to this layer.
      *
-     * @param {object} context - The context of the update; see the {@link
-     * MainLoop} for more informations.
+     * @param {object} context - The context of the update; see `MainLoop`
+     * for more informations.
      * @param {PlanarLayer} layer - This layer, parameter to be removed.
      * @param {TileMesh} node - The node to test.
      *

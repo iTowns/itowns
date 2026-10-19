@@ -1,5 +1,8 @@
 import { Chart } from 'chart.js';
 import { scales, color_rose, color_blue } from './ChartConfig';
+/**
+ * @category Debug
+ */
 
 export default function TileObjectsChart(ctx, tileLayer) {
     let lastValidCompareIndex = 0;

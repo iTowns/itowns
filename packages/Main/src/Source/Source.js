@@ -30,6 +30,7 @@ const noCache = { get: () => {}, set: a => a, clear: () => {} };
  * @typedef {object} ParsingOptions
  * @property {Source} in - data informations contained in the file.
  * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
+ * @category Source
  */
 
 let uid = 0;
@@ -75,6 +76,7 @@ let uid = 0;
  *  called: it is specific to each call, so the value of each property can vary
  *  depending on the current fetched tile for example</li>
  * </ul>
+ * @category Source
  */
 class Source {
     /**

@@ -96,6 +96,7 @@ const _extent = new Extent('EPSG:4326');
  *
  * // Add the layer
  * view.addLayer(geometryLayer);
+ * @category Source
  */
 class WFSSource extends Source {
     /**

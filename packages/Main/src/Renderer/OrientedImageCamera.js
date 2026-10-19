@@ -33,6 +33,7 @@ const zoom = new THREE.Vector3();
 /**
  * OrientedImageCamera is a ThreeJs camera adapted to photogrammetric description.
  * So we can build a ThreeJs perspective camera from size and focal information.
+ * @category Controls
  */
 class OrientedImageCamera extends THREE.PerspectiveCamera {
     /**
@@ -98,6 +99,14 @@ class OrientedImageCamera extends THREE.PerspectiveCamera {
         this.projectionMatrix.scale(zoom);
     }
 
+    /**
+     * Copies the properties of the source `OrientedImageCamera` into this one.
+     *
+     * @param {OrientedImageCamera} source - The camera to copy.
+     * @param {boolean} [recursive] - If true, descendants of the source are
+     * recursively copied too.
+     * @returns {this} This camera.
+     */
     copy(source, recursive) {
         super.copy(source, recursive);
         this.size = source.size.clone();

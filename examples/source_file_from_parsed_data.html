@@ -78,16 +78,16 @@
     ).then((fetched) => {
         // Handle parsing step.
         // We parse the fetched data into a FeatureCollection.
-        // See http://www.itowns-project.org/itowns/docs/#api/Base/FeatureCollection.
+        // See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Core_Feature.FeatureCollection.html.
         // Should you implement a custom parser, it would need to be called here.
         return itowns.GeoJsonParser.parse(fetched, {
             // Information on the fetched data.
-            // See http://www.itowns-project.org/itowns/docs/#api/Source/ParsingOptions.
+            // See https://www.itowns-project.org/itowns/docs/interfaces/packages_Main_src_Source_Source.ParsingOptions.html.
             in: {
                 crs: 'EPSG:4326',
             },
             // Information on the FeatureCollection that should be created from the fetched data. Here, we pass a
-            // FeatureBuildingOptions (http://www.itowns-project.org/itowns/docs/#api/Base/FeatureBuildingOptions).
+            // FeatureBuildingOptions (https://www.itowns-project.org/itowns/docs/interfaces/packages_Main_src_Core_Feature.FeatureBuildingOptions.html).
             out: {
                 crs: view.tileLayer.extent.crs,
             },

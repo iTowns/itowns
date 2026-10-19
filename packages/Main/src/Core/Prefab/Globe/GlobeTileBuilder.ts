@@ -45,6 +45,7 @@ export interface GlobeTileBuilderParams extends TileBuilderParams {
 /**
  * TileBuilder implementation for the purpose of generating globe (or more
  * precisely ellipsoidal) tile arrangements.
+ * @category View
  */
 export class GlobeTileBuilder
 implements TileBuilder<GlobeTileBuilderParams> {

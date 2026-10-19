@@ -1,3 +1,8 @@
+---
+title: Lambert conformal conic
+group: Raster visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize data that are in [RGF93 / Lambert-93](https://epsg.io/2154) Coordinate Reference System (CRS).
 We will display a Digital Elevation Model (DEM) and layer ortho-images from the 
 [French Geoportail](https://www.geoportail.gouv.fr) API on it.
@@ -40,7 +45,7 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 
 ## Create a view
 
-As mentioned in [fundamentals tutorial]{@tutorial Fundamentals}, we need a `{@link View}` to support any geographic data we wish to display.
+As mentioned in [fundamentals tutorial](Fundamentals.md), we need a `{@link View}` to support any geographic data we wish to display.
 What we want here is to display data in a RGF93 / Lambert-93 projection, which is a conic local projection. 
 Therefore, we should use a `{@link PlanarView}`, which is a specific type of `View` adapted to local projections.
 We can create it as such :

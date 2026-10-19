@@ -49,6 +49,7 @@ interface CogSourceConfig {
  * At the moment, iTowns only displays data either as single band or RGBA
  * textures. Therefore, a COG image with a number of samples other than 1, 2 or
  * 3 won't be displayed.
+ * @category Source
  */
 class CogSource extends Source {
     isCogSource: true;

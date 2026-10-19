@@ -10,7 +10,7 @@ import { BYTES_PER_DOUBLE } from 'Parser/GTXParser';
  * ISG file in, and returns a `{@link GeoidGrid}`. the `{@link GeoidGrid}` contains all the necessary attributes and
  * methods to access the ISG data in iTowns.
  *
- * @module ISGParser
+ * @category Parser
  */
 export default {
     /**

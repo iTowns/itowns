@@ -55,6 +55,7 @@ function object3DHasFeature(object3d) {
 
 /**
  * @extends GeometryLayer
+ * @category Layer
  */
 class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;

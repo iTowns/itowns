@@ -1,3 +1,8 @@
+---
+title: WGS84 (EPSG:4326)
+group: Raster visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize data in a global geocentric Coordinate Reference System (CRS).
 It shows how to display ortho-images as well as a Digital Elevation Model (DEM).
 ## Preparing the webpage
