@@ -6,7 +6,7 @@
         "tutorials": "docs/tutorials/",
         "navigation": {
             "Base": [
-                "Cache",
+                "CACHE_POLICIES",
                 "Scheduler",
                 "TileMesh",
                 "Feature",
@@ -55,7 +55,7 @@
                 "LabelLayer",
                 "GlobeLayer",
                 "PlanarLayer",
-                "Atmosphere"
+                "SunLightLayer"
             ],
 
             "Points": [
@@ -64,7 +64,6 @@
             ],
 
             "Source": [
-                "InformationsData",
                 "ParsingOptions",
                 "Source",
                 "WMTSSource",
@@ -182,7 +181,8 @@
     },
     "source": {
         "include": [ "examples/jsm/plugins", "packages" ],
-        "excludePattern": "(^|\\/|\\\\)(lib|test)|node_modules"
+        "includePattern": ".+\\.(js|jsx|jsdoc|ts)$",
+        "excludePattern": "(^|\\/|\\\\)(lib|test)|node_modules|\\.d\\.ts$"
     },
-    "plugins": ["plugins/markdown"]
+    "plugins": ["plugins/markdown", "docs/plugins/typescript"]
 }

@@ -38,6 +38,28 @@ interface LCCProjection { long0: number; lat0: number }
 interface TMercProjection { a: number; b: number; e?: number; long0: number }
 
 /**
+ * The OrientationUtils module provides methods to compute the quaternion that
+ * models a rotation defined with various conventions, including between different
+ * CRS.
+ * The local <a href="https://en.wikipedia.org/wiki/Local_tangent_plane_coordinates#Local_east,_north,_up_(ENU)_coordinates">
+ * East/North/Up frame (ENU)</a> is used as a pivot frame when computing the rotation between two distinct CRS.
+ * If the origin of the frame is undefined, CRS-related methods precompute and return a function
+ * that can be applied efficiently to many points of origin.
+ * Otherwise, the target quaternion is returned at the provided origin coordinates.
+ *
+ * @example
+ * // Compute the rotation around the point of origin from a frame aligned with Lambert93 axes (epsg:2154),
+ * // to the geocentric frame (epsg:4978)
+ * quat_crs2crs = OrientationUtils.quaternionFromCRSToCRS("EPSG:2154", "EPSG:4978")(origin);
+ * // Compute the rotation of a sensor platform defined by its attitude
+ * quat_attitude = OrientationUtils.quaternionFromAttitude(attitude);
+ * // Compute the rotation from the sensor platform frame to the geocentric frame
+ * quat = quat_crs2crs.multiply(quat_attitude);
+ *
+ * @module OrientationUtils
+ */
+
+/**
  * The transform from the platform frame to the local East, North, Up (ENU)
  * frame is `RotationZ(heading).RotationX(pitch).RotationY(roll)`.
  *
@@ -53,7 +75,7 @@ export function quaternionFromRollPitchHeading(
     pitch = 0,
     heading = 0,
     target = new Quaternion(),
-) {
+): Quaternion {
     roll *= MathUtils.DEG2RAD;
     pitch *= MathUtils.DEG2RAD;
     heading *= MathUtils.DEG2RAD;
@@ -88,7 +110,7 @@ export function quaternionFromOmegaPhiKappa(
     phi = 0,
     kappa = 0,
     target = new Quaternion(),
-) {
+): Quaternion {
     omega *= MathUtils.DEG2RAD;
     phi *= MathUtils.DEG2RAD;
     kappa *= MathUtils.DEG2RAD;
@@ -107,7 +129,7 @@ export function quaternionFromOmegaPhiKappa(
  *
  * @returns The target quaternion
  */
-export function quaternionFromAttitude(attitude: Attitude, target = new Quaternion()) {
+export function quaternionFromAttitude(attitude: Attitude, target = new Quaternion()): Quaternion {
     if ('roll' in attitude || 'pitch' in attitude || 'heading' in attitude) {
         return quaternionFromRollPitchHeading(
             attitude.roll, attitude.pitch, attitude.heading,

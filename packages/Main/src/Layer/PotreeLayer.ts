@@ -25,12 +25,12 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
      * @example
      * // Create a new point cloud layer
      * const points = new PotreeLayer('points',
-     *  \{
-     *      source: new PotreeLayer(\{
+     *  {
+     *      source: new PotreeLayer({
      *          url: 'https://pointsClouds/',
      *          file: 'points.js',
-     *      \}
-     *  \});
+     *      })
+     *  });
      *
      * View.prototype.addLayer.call(view, points);
      *
