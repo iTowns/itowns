@@ -6,6 +6,7 @@ import { Coordinates, ellipsoidSizes } from '@itowns/geographic';
 import GlobeLayer from 'Core/Prefab/Globe/GlobeLayer';
 import CameraUtils from 'Utils/CameraUtils';
 import WebXR from 'Renderer/WebXR';
+import SunLightLayer from 'Layer/SunLightLayer';
 import SkyController from 'Core/Prefab/Globe/SkyController';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
@@ -89,6 +90,10 @@ class GlobeView extends View {
      * @param {number} [options.minFarDistance=10000] - the minimum horizon distance (meters).
      * @param {boolean} [options.realisticLighting=false] - Enable realistic lighting.
      * It can later be switched by setting this.realisticLighting to true/false.
+     * @param {boolean} [options.forceDaytime=true] - Keep the sun above the horizon
+     * at the camera position regardless of the view date.
+     * It can later be switched by setting `this.sunLightLayer.forceDaytime`.
+     * The sun light can be toggled with `this.sunLightLayer.visible`.
      * @param {boolean} [options.shadows=false] - Enable shadow map rendering. Can be toggled
      * later via `this.shadows`.
      */
@@ -148,7 +153,16 @@ class GlobeView extends View {
         }
 
         this.date = new Date(); // now
-        this.skyController = new SkyController(this, options);
+        this.sunLightLayer = new SunLightLayer(options.forceDaytime ?? true);
+        this.addLayer(this.sunLightLayer).then(() => {
+            this.notifyChange(this.camera3D);
+        }).catch((error) => {
+            console.error('Failed to add SunLightLayer:', error);
+        });
+        const notifyChange = () => this.notifyChange(this.camera3D);
+        this.sunLightLayer.addEventListener('forceDaytime-property-changed', notifyChange);
+        this.sunLightLayer.addEventListener('castShadow-property-changed', notifyChange);
+        this.skyController = new SkyController(this, this.sunLightLayer, options);
         this.addFrameRequester(MAIN_LOOP_EVENTS.BEFORE_RENDER, () => {
             this.skyController.update();
         });
@@ -286,8 +300,8 @@ class GlobeView extends View {
      * Does not affect shadows cast by user-defined lights.
      * @type {boolean}
      */
-    get shadows() { return this.skyController.castShadow; }
-    set shadows(value) { this.skyController.castShadow = value; }
+    get shadows() { return this.sunLightLayer.castShadow; }
+    set shadows(value) { this.sunLightLayer.castShadow = value; }
 
     get realisticLighting() {
         return this.skyController?.realisticLighting;
