@@ -11,8 +11,8 @@ class VRControls {
     static MAX_NUMBER_CONTROLLERS = 2;  // For now, we are fully supporting a maximum of 2 controllers.
     /**
      * Requires a contextXR variable.
-     * @param {*} _view itowns view object
-     * @param {*} _groupXR XR 3D object group
+     * @param {View} _view itowns view object
+     * @param {object} _groupXR XR 3D object group
      */
     constructor(_view, _groupXR = {}) {
     // Store instance references.
