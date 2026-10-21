@@ -1,14 +1,19 @@
+---
+title: Projected on the ground
+group: Vector visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize some vector data projected on the ground.
 These data are contained within two GeoJSON files that you can find 
 [here](https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson) and 
 [here](https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/cities.geojson).
 The first file data consist in polygons which represent flood risk areas along the Marne river.
 The second file data consist in polygons which delimit city areas, and points at the center of some cities.
-These data shall be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+These data shall be displayed on the `GlobeView` we created in the [WGS84 tutorial](Raster-data-WGS84.md).
 
 ## Preparing the field
 
-We are going to use the data displayed in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+We are going to use the data displayed in the [WGS84 tutorial](Raster-data-WGS84.md).
 However, we want the camera to be closer to the area our vector data will occupy.
 We need to change the starting position to something more appropriate.
 

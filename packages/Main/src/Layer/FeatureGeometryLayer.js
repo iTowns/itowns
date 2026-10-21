@@ -16,6 +16,7 @@ import Style from 'Core/Style';
  * internally for optimisation.
  *
  * @extends GeometryLayer
+ * @category Layer
  */
 class FeatureGeometryLayer extends GeometryLayer {
     /**

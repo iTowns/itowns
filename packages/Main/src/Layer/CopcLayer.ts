@@ -23,6 +23,7 @@ interface CopcLayerParameters extends PointCloudLayerParameters {
  * });
  *
  * View.prototype.addLayer.call(view, copcLayer);
+ * @category Layer
  */
 class CopcLayer extends PointCloudLayer {
     readonly isCopcLayer: true;

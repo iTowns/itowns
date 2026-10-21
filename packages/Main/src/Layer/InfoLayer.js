@@ -1,4 +1,7 @@
 import { Extent } from '@itowns/geographic';
+/**
+ * @category Layer
+ */
 
 export default class InfoLayer {
     constructor(layer) {
@@ -11,15 +14,16 @@ export default class InfoLayer {
 
 /**
  * InfoTiledGeometryLayer that provides some states layer informations. These
- * informations are displayed tiles, displayed {@link ColorLayer} and {@link
- * ElevationLayer} and extent of displayed tiles.
+ * informations are displayed tiles, displayed `ColorLayer` and
+ * `ElevationLayer` and extent of displayed tiles.
  *
  * @class InfoTiledGeometryLayer
  *
  * @property {object} displayed
- * @property {Layer[]} displayed.layers - Displayed {@link ColorLayer} and {@link ElevationLayer}.
+ * @property {Layer[]} displayed.layers - Displayed `ColorLayer` and `ElevationLayer`.
  * @property {Extent} displayed.extent - {@link Extent} of displayed tiles.
  * @property {Set} displayed.tiles - Set of displayed tiles.
+ * @category Layer
  */
 export class InfoTiledGeometryLayer extends InfoLayer {
     constructor(tiledGeometryLayer) {

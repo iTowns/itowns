@@ -16,6 +16,7 @@ export type UpdateState = (typeof UPDATE_STATE)[keyof typeof UPDATE_STATE];
  * (e.g. tile).
  * It stores information to allow smart update decisions, and especially
  * network error handling.
+ * @category Layer
  */
 class LayerUpdateState {
     errorCount: number;

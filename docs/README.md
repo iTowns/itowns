@@ -10,17 +10,20 @@ tutorials.
 
 ### API reference
 
-The API reference is written in the source of itowns, using
-[JSDoc](http://usejsdoc.org/), along with support for the
-[Markdown](https://commonmark.org/help/) syntax. This is a
-classic documentation, explaining all exposed methods and classes in itowns, and
-some internal others.
+The API reference is written in the source of itowns using
+[TypeDoc](https://typedoc.org/), which relies on standard
+[TSDoc](https://tsdoc.org/)/JSDoc comments and supports the
+[Markdown](https://commonmark.org/help/) syntax. It documents both the `.ts`
+and `.js` sources, and generates a classic reference explaining all exposed
+methods and classes in itowns.
 
-When documenting something, don't forget to check the presence of your file
-inside `docs/config.json`.
-
-If the file you are editing is not present, add it to the `navigation` list, in
-the correct package.
+Every documented class must carry an `@category` tag (e.g. `@category Layer`,
+`@category View`...), so it gets grouped under the correct navigation section
+instead of falling back to "Other". The list of known sections is declared in
+`typedoc.json` (`categoryOrder`); reuse an existing one when it fits, or add a
+new one there if it doesn't. This rule is enforced by `npm run doclint` (see
+`docs/scripts/check-categories.mjs`), which fails the build if a class (or a
+legacy module-style default export) has no `@category` tag.
 
 #### How to document a class
 
@@ -28,28 +31,29 @@ A typical class should have the following documenting parts:
 
 ```js
 /**
- * @classdesc
  * The description of the class.
  *
- * @property {type} prop - Description of a property of the class.
- * @property {type} prop2 - Description of another property of the class.
+ * @category Layer
  */
 class AClass {
     /**
-     * @param - Description of the parameter.
-     *
-     * @constructor
+     * Description of a property of the class.
      */
-    constructor() {}
+    prop;
+
+    /**
+     * @param {Type} param - Description of the parameter.
+     */
+    constructor(param) {}
 
     /**
      * Description and explanation of the method.
      *
-     * @param {type} param - Description of the parameter.
+     * @param {Type} param - Description of the parameter.
      *
-     * @return {type} The returned value.
+     * @returns {Type} The returned value.
      */
-    method() {}
+    method(param) {}
 }
 ```
 
@@ -58,56 +62,49 @@ pull request.
 
 ### Tutorials
 
-Tutorials don't use JSDoc, but rather
-[Markdown](https://daringfireball.net/projects/markdown/). Note that some JSDoc
-tags are still working inside Markdown in our case.
+Tutorials are plain [Markdown](https://daringfireball.net/projects/markdown/)
+files living in `docs/tutorials/`, and are listed as TypeDoc project
+documents in `typedoc.json` (`projectDocuments`).
 
-When adding a tutorial, also add it in `docs/tutorials/list.json`, and following
-the already present tutorials, add a name to it.
+Each tutorial starts with a YAML frontmatter block declaring at least a
+`title` and a `group` (the navigation section it belongs to), for example:
 
-You will also need to specify the section of your tutorial in `docs/config.json`, 
-at the `tutorialSections` property. You can add a new section as long as the 
-`sectionTitle` and `sectionId` parameters you set for your tutorial are different 
-from the ones that are already present.
+```md
+---
+title: Fundamentals
+group: Getting started
+---
 
-If you want to add images to the tutorial, add them inside
-`docs/tutorials/images`, and name under `$TUTORIAL_NAME_xxx`, `$TUTORIAL_NAME`
-being the name of the markdown file containing the tutorial, and `xxx` the
-number of the picture.
+Tutorial content...
+```
+
+When adding a tutorial, create the Markdown file in `docs/tutorials/` and
+reference it in the `projectDocuments` array of `typedoc.json`.
+
+If you want to add images to a tutorial, put them inside
+`docs/tutorials/images`.
 
 ## Generating documentation
 
-Make sure all dependencies are installed (do a `npm install` if not), and simply
-run this command:
+Make sure all dependencies are installed (do a `npm install` if not), and
+simply run this command:
 
 ```
 npm run doc
 ```
 
-The generation process should take less than 5 seconds, and result in the
-creation of a `out/` folder in `docs/`.
+This runs TypeDoc and generates the API reference and tutorials into
+`docs/out/`.
+
+To only validate the documentation (missing `@category` tags, broken links,
+etc.) without generating the output, run:
+
+```
+npm run doclint
+```
 
 ## Consulting the documentation locally
 
-The documentation can't be viewed without a server, as it uses `XHR` requests to
-make the link between the navigation and the content.
-
-If you have `npm start`
-running, you can browse the documentation at `http://localhost:8080/docs/out/`.
-
-Otherwise, if you have another server running that can serve the itowns
-directory, you can go in `$YOUR_SERVER/$ITOWNS_PATH/docs/out` and it should be
-here, with `$YOUR_SERVER` and `$ITOWNS_PATH` to replace by a working value given
-your configuration.
-
-## Modifying the template
-
-If you wish to modify the current template, there are multiple things to change:
-
-- `docs/static/styles/` contains the CSS styles of the template
-- `docs/tmpl/` contains the templates of each part
-- `publish.js` and `templateHelper.js` define the generation process of the
-  documentation from the template
-
-The architecture of the template follows roughly [the one from
-JSDoc](https://github.com/jsdoc/jsdoc/tree/master/packages/jsdoc/templates/default).
+Once generated, `docs/out/` is a static site: open `docs/out/index.html`
+directly in a browser, or serve the itowns directory with any static server
+and browse to `$YOUR_SERVER/$ITOWNS_PATH/docs/out/`.

@@ -36,6 +36,7 @@ export interface TileLayerLike {
  * @param layer - The layer the tile is added to
  * @param extent - The tile extent
  * @param level - The tile level (default = 0)
+ * @category Base
  */
 class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
     readonly isTileMesh: true;

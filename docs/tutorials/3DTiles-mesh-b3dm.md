@@ -1,3 +1,8 @@
+---
+title: 3D textured buildings
+group: 3D Tiles visualization
+---
+
 The goal of this tutorial is to learn how to visualize 3D tiles textured mesh data (in the b3dm format). 
 We will use a [data set](https://github.com/iTowns/iTowns2-sample-data/tree/master/3DTiles/lyon_1_3946_textured_draco) representing buildings of the 1st borrough of Lyon.
 The original data are openly available on [Lyon metropolis open data](https://data.grandlyon.com/) and have been transformed in 3D tiles with [py3dtilers](https://github.com/VCityTeam/py3dtilers/).
@@ -37,7 +42,7 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 We will first create a view, add a layer with ortho images and a digital elevation model (DEM).
 The 3D Tiles dataset we are using is in the `EPSG:3946` CRS, so we will use a `{@link PlanarView}` in this CRS to display it.
 
-We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [Raster visualization in Lambert Conformical conic projection]{@tutorial Raster-data-Lambert93} in which we do the same but in the `EPSG:2154` projection. You can use the following code that prepared the field with such data:
+We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [Raster visualization in Lambert Conformical conic projection](Raster-data-Lambert93.md) in which we do the same but in the `EPSG:2154` projection. You can use the following code that prepared the field with such data:
 
 ```js
 // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)

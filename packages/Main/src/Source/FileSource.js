@@ -95,6 +95,7 @@ import { LRUCache } from 'lru-cache';
  *
  *         return view.addLayer(ariegeLayer);
  *     });
+ * @category Source
  */
 class FileSource extends Source {
     /**

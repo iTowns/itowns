@@ -144,6 +144,7 @@ class LabelsNode extends THREE.Group {
  * @property {boolean} isLabelLayer - Used to checkout whether this layer is a
  * LabelLayer.  Default is true. You should not change this, as it is used
  * internally for optimisation.
+ * @category Layer
  */
 class LabelLayer extends GeometryLayer {
     #filterGrid = new ScreenGrid();

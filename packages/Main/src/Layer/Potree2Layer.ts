@@ -46,6 +46,9 @@ interface Potree2LayerParameters extends PointCloudLayerParameters {
     crs?: string;
     source: Potree2Source;
 }
+/**
+ * @category Layer
+ */
 
 class Potree2Layer extends PointCloudLayer<Potree2Source> {
     /**

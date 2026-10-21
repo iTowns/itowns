@@ -88,8 +88,6 @@ const cameraPos = new THREE.Vector3();
 const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set to view crs when used
 
 /**
- * @module Picking
- *
  * Implement various picking methods for geometry layers.
  * These methods are not meant to be used directly, see View.pickObjectsAt
  * instead.
@@ -99,6 +97,8 @@ const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set
  *   - view coordinates (in pixels) where picking should be done
  *   - radius (in pixels) of the picking circle
  *   - layer: the geometry layer used for picking
+ *
+ * @category View
  */
 export default {
     pickTilesAt(view, viewCoords, radius, layer, results = []) {

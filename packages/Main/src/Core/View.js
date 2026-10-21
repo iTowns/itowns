@@ -129,6 +129,7 @@ let id = 0;
  * @property {THREE.Camera} camera3D - threejs camera that is stored in itowns camera
  * @property {THREE.WebGLRenderer} renderer - threejs webglrenderer rendering this view
  * @property {undefined | function(): void} render - custom rendering callback
+ * @category View
  */
 class View extends THREE.EventDispatcher {
     #layers = [];
@@ -153,11 +154,11 @@ class View extends THREE.EventDispatcher {
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {object} [options] - Optional properties.
-     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
-     * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
-     * @param {WebGLRenderer | object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
+     * @param {object} [options.camera] - Options for the camera associated to the view. See `Camera` options.
+     * @param {MainLoop} [options.mainLoop] - `MainLoop` instance to use, otherwise a default one will be constructed
+     * @param {WebGLRenderer | object} [options.renderer] - `WebGLRenderer` instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
-     * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
+     * configure the renderer (see `c3DEngine`.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
      * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
      * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.

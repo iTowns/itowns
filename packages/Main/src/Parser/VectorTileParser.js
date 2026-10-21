@@ -207,7 +207,9 @@ function readPBF(file, options) {
 }
 
 /**
- * @module VectorTileParser
+ * Parser to extract vector tile features from Mapbox Vector Tile data.
+ *
+ * @category Parser
  */
 export default {
     /**

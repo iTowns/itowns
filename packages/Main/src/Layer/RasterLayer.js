@@ -3,6 +3,9 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import { removeLayeredMaterialNodeTile } from 'Process/LayeredMaterialNodeProcessing';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+/**
+ * @category Layer
+ */
 
 class RasterLayer extends Layer {
     constructor(id, config) {

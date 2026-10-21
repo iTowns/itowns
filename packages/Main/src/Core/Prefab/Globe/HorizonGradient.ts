@@ -16,6 +16,7 @@ const geodeticUp = new THREE.Vector3();
  * - Based on `ellipsoidSizes`.
  * - It relies on scene fog color (`view.scene.fog`).
  * - It is rendered late (`renderOrder = 999`) as a transparent pass.
+ * @category View
  */
 class HorizonGradient {
     mesh: THREE.Mesh<THREE.PlaneGeometry, THREE.ShaderMaterial>;

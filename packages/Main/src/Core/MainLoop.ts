@@ -104,6 +104,9 @@ function filterChangeSources(
     });
     return fullUpdate ? new Set([geometryLayer]) : filtered;
 }
+/**
+ * @category Base
+ */
 
 class MainLoop extends EventDispatcher<MainLoopEvents> {
     private _needsRedraw = false;

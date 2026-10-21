@@ -5,6 +5,9 @@ import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
+/**
+ * @category View
+ */
 
 class PlanarView extends View {
     /**
@@ -23,7 +26,7 @@ class PlanarView extends View {
      * @param {object} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
      * @param {CameraTransformOptions|Extent} [options.placement] - The
-     * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at
+     * `CameraUtils.CameraTransformOptions` to apply to view's camera or the extent it must display at
      * initialization. By default, camera will display the view's extent (given in `extent` parameter).
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.

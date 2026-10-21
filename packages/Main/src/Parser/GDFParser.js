@@ -16,7 +16,7 @@ export function getHeaderAttribute(header, attributeName) {
  * GDF file in, and returns a `{@link GeoidGrid}`. the `{@link GeoidGrid}` contains all the necessary attributes and
  * methods to access the GDF data in iTowns.
  *
- * @module GDFParser
+ * @category Parser
  */
 export default {
     /**

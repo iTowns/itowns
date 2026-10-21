@@ -96,14 +96,20 @@ for (const potreeName of Object.keys(POINT_ATTRIBUTES)) {
         function getValue(view, offset) { return view[fnName](offset, true); };
 }
 
+/**
+ * Parser to extract point cloud data from a Potree .bin buffer.
+ *
+ * @category Parser
+ */
 export default {
-    /** @module PotreeBinParser */
     /**
      * Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
      * @function parse
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {object} options
+     * @param {object} options.in
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in cloud.js
+     * @param {object} options.out
      * @param {THREE.Vector3} options.out.origin - the origin position of the data
      * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *

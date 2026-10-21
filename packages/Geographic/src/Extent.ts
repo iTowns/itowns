@@ -44,6 +44,7 @@ export interface ExtentLike {
  *
  * **Warning**: Using a geocentric projection is not suitable for representing a
  * geographical extent. Please use a geographic projection.
+ * @category Geographic
  */
 class Extent {
     /**
@@ -274,7 +275,7 @@ class Extent {
      *
      * @param extent - input extent
      * @param target - copy the result to target.
-     * @returns A {@link THREE.Vector4} where the `x` property encodes the
+     * @returns A Vector4 where the `x` property encodes the
      * translation on west-east, the `y` property the translation on
      * south-north, the `z` property the scale on west-east, the `w` property
      * the scale on south-north.

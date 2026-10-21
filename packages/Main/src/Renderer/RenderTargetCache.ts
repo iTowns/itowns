@@ -5,6 +5,7 @@ import { LRUCache } from 'lru-cache';
  * Manages render target cache with deferred disposal for better memory
  * management. Tracks which render targets are currently in use and
  * disposes those that are no longer needed.
+ * @category Renderer
  */
 export class RenderTargetCache {
     /**

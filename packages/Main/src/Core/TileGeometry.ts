@@ -48,6 +48,9 @@ function defaultBuffers(
 
     return bufferAttributes;
 }
+/**
+ * @category Base
+ */
 
 export class TileGeometry extends THREE.BufferGeometry {
     /** Oriented Bounding Box of the tile geometry. */
