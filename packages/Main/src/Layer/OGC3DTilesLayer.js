@@ -22,14 +22,8 @@ import PointsMaterial, {
     PNTS_SIZE_MODE,
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
-import { VIEW_EVENTS } from 'Core/View';
 
 const _raycaster = new THREE.Raycaster();
-
-// Stores lruCache, downloadQueue and parseQueue for each id of view {@link View}
-// every time a tileset has been added
-// https://github.com/iTowns/itowns/issues/2426
-const viewers = {};
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
 // Temporary exported to be used in deprecated B3dmParser
@@ -437,63 +431,6 @@ class OGC3DTilesLayer extends GeometryLayer {
         if (config.sseThreshold) {
             this.sseThreshold = config.sseThreshold;
         }
-
-        // Used for custom schedule callbacks (VR)
-        this.tasks = [];
-        this.tilesSchedulingCB = (func) => {
-            this.tasks.push(func);
-        };
-    }
-
-    /**
-     * Sets the lruCache and download and parse queues so they are shared amongst
-     * all tilesets from a same {@link View} view.
-     * @param {View} view - view associated to this layer.
-     * @private
-     */
-    _setupCacheAndQueues(view) {
-        const id = view.id;
-        // Share the caches and queues to cut down on memory and correctly prioritize downloads.
-        // https://github.com/NASA-AMMOS/3DTilesRendererJS?tab=readme-ov-file#multiple-tilesrenderers-with-shared-caches-and-queues
-        if (viewers[id]) {
-            this.tilesRenderer.lruCache = viewers[id].lruCache;
-            this.tilesRenderer.downloadQueue = viewers[id].downloadQueue;
-            this.tilesRenderer.parseQueue = viewers[id].parseQueue;
-
-            // Add this layer's callback to the map
-            viewers[id].layerCallbacks[this.id] = this.tilesSchedulingCB;
-        } else {
-            // Create a combined callback that calls all layer callbacks
-            const combinedCallback = (func) => {
-                Object.values(viewers[id].layerCallbacks).forEach((callback) => {
-                    callback(func);
-                });
-            };
-
-            // Set the combined callback
-            // We set our scheduling callback for tiles downloading and parsing -> MANDATORY for VR
-            // (WebXR session has its own requestAnimationFrame method separate from that of the window
-            //  https://github.com/NASA-AMMOS/3DTilesRendererJS/issues/213#issuecomment-947943386)
-            // Necessary to update rendering of the tiles in VR
-            // Example: https://github.com/NASA-AMMOS/3DTilesRendererJS/blob/de25d27dc0e75278962b5f401faee30f8dce2fe0/example/vr.js
-            this.tilesRenderer.downloadQueue.schedulingCallback = combinedCallback;
-            this.tilesRenderer.parseQueue.schedulingCallback = combinedCallback;
-
-            viewers[id] = {
-                lruCache: this.tilesRenderer.lruCache,
-                downloadQueue: this.tilesRenderer.downloadQueue,
-                parseQueue: this.tilesRenderer.parseQueue,
-                layerCallbacks: {
-                    [this.id]: this.tilesSchedulingCB,
-                },
-            };
-            view.addEventListener(VIEW_EVENTS.DISPOSED, (evt) => {
-                delete viewers[evt.target.id];
-            });
-        }
-
-        // Store the view reference for cleanup
-        this._viewId = id;
     }
 
     /**
@@ -535,7 +472,6 @@ class OGC3DTilesLayer extends GeometryLayer {
             view.notifyChange(this);
         });
 
-        this._setupCacheAndQueues(view);
         this._setupEvents();
 
         // Start loading tileset and tiles
@@ -597,22 +533,18 @@ class OGC3DTilesLayer extends GeometryLayer {
                     new THREE.BufferAttribute(classificationData, 1),
                 );
             }
-        } else if (model.isMesh && geometry) {
+        } else if (model.isMesh && geometry && !geometry.hasAttribute('normal')) {
+            // Only compute normals when missing: recomputing would overwrite
+            // quantized normals (e.g. KHR_mesh_quantization int8 normals).
             geometry.computeVertexNormals();
-            geometry.needsUpdate = true;
         }
-    }
-
-    handleTasks() {
-        for (let t = 0, l = this.tasks.length; t < l; t++) {
-            this.tasks[t]();
-        }
-        this.tasks.length = 0;
     }
 
     preUpdate(context) {
         this.scale = context.camera._preSSE;
-        this.handleTasks();
+        // Keep the resolution used for screen space error in sync with the
+        // view size (it may have been resized since the layer was added).
+        this.tilesRenderer.setResolutionFromRenderer(context.camera.camera3D, context.view.renderer);
         this.tilesRenderer.update();
         return null; // don't return any element because 3d-tiles-renderer already updates them
     }
@@ -625,21 +557,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * Deletes the layer and frees associated memory
      */
     delete() {
-        // Clean up the callback reference from the shared callbacks
-        if (this._viewId != null && viewers[this._viewId]?.layerCallbacks) {
-            delete viewers[this._viewId].layerCallbacks[this.id];
-
-            // If no more layers are using this view's queues, clean up completely
-            if (Object.keys(viewers[this._viewId].layerCallbacks).length === 0) {
-                delete viewers[this._viewId];
-            }
-        }
-
         this.tilesRenderer.dispose();
-
-        // Clean up references
-        this.tilesSchedulingCB = null;
-        this._viewId = null;
     }
 
     /**

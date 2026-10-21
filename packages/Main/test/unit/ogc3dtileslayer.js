@@ -6,7 +6,7 @@ import OGC3DTilesLayer, {
     enableKtx2Loader,
     enableMeshoptDecoder,
 } from 'Layer/OGC3DTilesLayer';
-import { BufferAttribute, PointsMaterial, Matrix4, Vector3, WebGLRenderer } from 'three';
+import { BufferAttribute, BufferGeometry, PointsMaterial, Matrix4, Vector3, WebGLRenderer } from 'three';
 
 describe('OGC3DTilesLayer', function () {
     const source =  new OGC3DTilesSource({ url: 'https://mock.com/tileset.json' });
@@ -249,5 +249,32 @@ describe('OGC3DTilesLayer', function () {
         material.classificationTexture.userData.transparent = false;
         assert.equal(material.opacity, layer.opacity);
         assert.equal(material.transparent, layer.opacity < 1.0);
+    });
+
+    it('should keep existing normals of a mesh', function () {
+        const layer = new OGC3DTilesLayer('3dtiles', { source });
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), 3));
+        // int8 quantized normals pointing along +x
+        const normals = new Int8Array([127, 0, 0, 127, 0, 0, 127, 0, 0]);
+        const normal = new BufferAttribute(normals, 3, true);
+        geometry.setAttribute('normal', normal);
+
+        layer._assignFinalAttributes({ isMesh: true, geometry });
+
+        assert.equal(geometry.getAttribute('normal'), normal);
+        assert.deepEqual(Array.from(normal.array), [127, 0, 0, 127, 0, 0, 127, 0, 0]);
+    });
+
+    it('should compute normals of a mesh without normals', function () {
+        const layer = new OGC3DTilesLayer('3dtiles', { source });
+        const geometry = new BufferGeometry();
+        geometry.setAttribute('position', new BufferAttribute(new Float32Array([0, 0, 0, 1, 0, 0, 0, 1, 0]), 3));
+
+        layer._assignFinalAttributes({ isMesh: true, geometry });
+
+        const normal = geometry.getAttribute('normal');
+        assert.ok(normal);
+        assert.deepEqual(Array.from(normal.array), [0, 0, 1, 0, 0, 1, 0, 0, 1]);
     });
 });

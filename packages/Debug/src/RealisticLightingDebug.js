@@ -9,11 +9,11 @@ export function createRealisticLightingDebugUI(gui, view) {
     }
     const realisticLightingFolder = gui.addFolder('Realistic lighting');
     const realisticLightingProperty = realisticLightingFolder.add(view, 'realisticLighting');
-    const forceDayTimeProperty = realisticLightingFolder.add(view.skyController, 'forceDaytime');
+    const forceDayTimeProperty = realisticLightingFolder.add(view.sunLightLayer, 'forceDaytime');
     const dateTimeFolder = createDateTimeUI(realisticLightingFolder, view);
 
     function toggleDateTimeFolder() {
-        if (!view.realisticLighting || view.skyController.forceDaytime) {
+        if (!(view.realisticLighting || view.shadows) || view.sunLightLayer.forceDaytime) {
             dateTimeFolder.hide();
         } else {
             dateTimeFolder.show();

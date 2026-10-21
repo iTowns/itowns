@@ -178,6 +178,7 @@ describe('VPC', function () {
 
                 const mock = sinon.mock(context.scheduler);
                 mock.expects('execute')
+                    .returns(Promise.resolve())
                     .once();
 
                 const sources = vpcLayer.source.sources;

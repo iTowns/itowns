@@ -36,7 +36,7 @@
             import * as itowns from 'itowns';
 
             var viewerDiv = document.getElementById('viewerDiv');
-            var view = new itowns.View('EPSG:3946', viewerDiv);
+            var view = new itowns.View('EPSG:4978', viewerDiv);
             view.mainLoop.gfxEngine.renderer.setClearColor(0xcccccc);
             var controls = new itowns.FirstPersonControls(view, { focusOnClick: true });
 
@@ -52,7 +52,20 @@
                 fileReader.onload = function onload(e) {
                     var data = e.target.result;
 
-                    itowns.LASParser.parse(data, {}).then(function _(geometry) {
+                    // /!\ when source.crs != view.crs this Matrix4 need to be calculated
+                    const projMatrix = new THREE.Matrix4();
+
+                    const options = {
+                        in: {
+                            source: {
+                                crs: 'EPSG:4978',
+                            },
+                            crs: view.camera.crs,
+                            clampOBB: { matrix: projMatrix, },
+                        }
+                    }
+
+                    itowns.LASParser.parse(data, options).then(function _(geometry) {
                         if (stack.length > 0) {
                             fileReader.readAsArrayBuffer(stack.shift());
                         }
@@ -76,6 +89,8 @@
 
                         view.camera3D.position.copy(position);
                         view.camera3D.lookAt(lookAt);
+
+                        view.camera3D.updateProjectionMatrix();
 
                         controls.options.moveSpeed = size.length();
 
