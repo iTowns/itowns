@@ -41,8 +41,6 @@ let uid = 0;
  * To extend a Source, it is necessary to implement two functions:
  * `urlFromExtent` and `extentInsideLimit`.
  *
- * @extends InformationsData
- *
  * @property {boolean} isSource - Used to checkout whether this source is a
  * Source. Default is true. You should not change this, as it is used internally
  * for optimisation.

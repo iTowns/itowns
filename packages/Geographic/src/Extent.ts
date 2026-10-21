@@ -260,7 +260,7 @@ class Extent {
      * @param epsilon - error margin when comparing the extent bounds.
      * @returns
      */
-    isInside(extent: Extent, epsilon = CRS.reasonableEpsilon(this.crs)) {
+    isInside(extent: Extent, epsilon: number = CRS.reasonableEpsilon(this.crs)): boolean {
         extent.as(this.crs, _extent);
         return this.east - _extent.east <= epsilon &&
             _extent.west - this.west <= epsilon &&
@@ -279,7 +279,7 @@ class Extent {
      * south-north, the `z` property the scale on west-east, the `w` property
      * the scale on south-north.
      */
-    offsetToParent(extent: Extent, target = new Vector4()) {
+    offsetToParent(extent: Extent, target = new Vector4()): Vector4 {
         if (this.crs != extent.crs) {
             throw new Error('unsupported mix');
         }
@@ -552,7 +552,7 @@ class Extent {
      * @returns An array containing the four sections of the extent. The order
      * of the sections is [NW, NE, SW, SE].
      */
-    subdivision() {
+    subdivision(): Extent[] {
         return this.subdivisionByScheme();
     }
 
@@ -562,7 +562,7 @@ class Extent {
      * @param scheme - The scheme to subdivise.
      * @returns subdivised extents.
      */
-    subdivisionByScheme(scheme = defaultScheme): Extent[] {
+    subdivisionByScheme(scheme: Vector2 = defaultScheme): Extent[] {
         const subdivisedExtents = [];
         const dimSub = this.planarDimensions(_dim).divide(scheme);
         for (let x = scheme.x - 1; x >= 0; x--) {
