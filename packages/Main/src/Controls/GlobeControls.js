@@ -286,20 +286,21 @@ class GlobeControls extends THREE.EventDispatcher {
 
         this.states.addEventListener('state-changed', this._onStateChange, false);
 
-        this.states.addEventListener(this.states.ORBIT._event, this._onRotation, false);
-        this.states.addEventListener(this.states.MOVE_GLOBE._event, this._onDrag, false);
-        this.states.addEventListener(this.states.DOLLY._event, this._onDolly, false);
-        this.states.addEventListener(this.states.PAN._event, this._onPan, false);
-        this.states.addEventListener(this.states.PANORAMIC._event, this._onPanoramic, false);
-
-        this.states.addEventListener('zoom', this._onZoom, false);
+        /** @import { State } from 'Controls/StateControl' */
+        /** @type {[State, (event: any) => void][]} */
+        const stateToHandler = [
+            [this.states.ORBIT, this._onRotation], /*     */[this.states.MOVE_GLOBE, this._onDrag],
+            [this.states.DOLLY, this._onDolly], /*        */[this.states.PAN, this._onPan],
+            [this.states.PANORAMIC, this._onPanoramic], /**/[this.states.ZOOM, this._onZoom],
+            [this.states.TRAVEL_IN, this._onTravel], /*   */[this.states.TRAVEL_OUT, this._onTravel],
+        ];
+        for (const [state, handler] of stateToHandler) {
+            this.states.addEventListener(state.event, handler, false);
+        }
 
         this.view.domElement.addEventListener('touchstart', this._onTouchStart, false);
         this.view.domElement.addEventListener('touchend', this._onTouchEnd, false);
         this.view.domElement.addEventListener('touchmove', this._onTouchMove, false);
-
-        this.states.addEventListener(this.states.TRAVEL_IN._event, this._onTravel, false);
-        this.states.addEventListener(this.states.TRAVEL_OUT._event, this._onTravel, false);
 
         view.scene.add(cameraTarget);
         if (enableTargetHelper) {
@@ -785,8 +786,7 @@ class GlobeControls extends THREE.EventDispatcher {
             return this.lookAtCoordinate({       // update view to the interpolate point
                 coord: point,
                 range,
-            },
-            false);
+            }, false);
         }
     }
 
