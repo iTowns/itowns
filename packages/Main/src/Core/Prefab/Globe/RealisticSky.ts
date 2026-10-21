@@ -9,7 +9,7 @@ import {
     SkyMaterialParameters,
 } from '@takram/three-atmosphere';
 
-import { EffectComposer, EffectMaterial, EffectPass, FXAAEffect, RenderPass } from 'postprocessing';
+import { EffectComposer, EffectMaterial, EffectPass } from 'postprocessing';
 import GlobeView from 'Core/Prefab/GlobeView';
 import SunLightLayer from 'Layer/SunLightLayer';
 import ISkyStrategy from './ISkyStrategy';
@@ -54,9 +54,7 @@ class RealisticSky implements ISkyStrategy {
     sky: THREE.Mesh;
     skyLight: SkyLightProbe;
     aerialPerspective: AerialPerspectiveEffect;
-    renderPass: RenderPass;
     effectPass: EffectPass;
-    FXAAPass: EffectPass;
     scene: THREE.Scene;
     composer: EffectComposer;
     view: GlobeView;
@@ -93,12 +91,10 @@ class RealisticSky implements ISkyStrategy {
         view.mainLoop.gfxEngine.renderer.getSize(rendererSize);
         this.aerialPerspective.setSize(rendererSize.x, rendererSize.y);
 
-        this.renderPass = new RenderPass(scene, camera);
         this.effectPass = new EffectPass(
             camera,
             this.aerialPerspective,
         );
-        this.FXAAPass = new EffectPass(camera, new FXAAEffect());
 
         // Generate precomputed textures.
         const renderer = view.renderer;
@@ -177,9 +173,7 @@ class RealisticSky implements ISkyStrategy {
         this.scene.remove(this.skyLight);
 
         this.aerialPerspective.dispose();
-        this.renderPass.dispose();
         this.effectPass.dispose();
-        this.FXAAPass.dispose();
     }
 
     private _setState(on: boolean) {
@@ -188,13 +182,11 @@ class RealisticSky implements ISkyStrategy {
         this.skyLight.visible = on;
 
         if (on) {
-            this.composer.addPass(this.renderPass);
+            // TODO: add passes in the middle of the pipeline
+            this.effectPass.enabled = true;
             this.composer.addPass(this.effectPass);
-            this.composer.addPass(this.FXAAPass);
         } else {
-            this.composer.removePass(this.renderPass);
             this.composer.removePass(this.effectPass);
-            this.composer.removePass(this.FXAAPass);
         }
     }
 }

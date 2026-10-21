@@ -10,7 +10,7 @@ import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
-import { EffectComposer } from 'postprocessing';
+import { EffectComposer, RenderPass, EffectPass, FXAAEffect } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -56,24 +56,6 @@ class c3DEngine {
         this.fullSizeRenderTarget.depthBuffer = true;
         this.fullSizeRenderTarget.depthTexture = new THREE.DepthTexture();
         this.fullSizeRenderTarget.depthTexture.type = THREE.UnsignedShortType;
-
-        this.renderView = function _(view) {
-            // force internally calling state.buffers.color.setClear
-            // to get a correct background color
-            this.renderer.setClearAlpha(this.renderer.getClearAlpha());
-
-            this.renderer.clear();
-            if (view._camXR) {
-                this.renderer.render(view.scene, view._camXR);
-            } else if (this.composer.passes.length) {
-                this.composer.render();
-            } else {
-                this.renderer.render(view.scene, view.camera3D);
-            }
-            if (view.tileLayer) {
-                this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
-            }
-        }.bind(this);
 
         /**
          * @type {Function}
@@ -133,11 +115,14 @@ class c3DEngine {
             viewerDiv.appendChild(this.renderer.domElement);
         }
 
+        // The first pass is always necessarily the main render pass that processes the scene.
         // Use floating-point render buffer, as radiance/luminance will be stored here.
         /** @type {EffectComposer} */
         this.composer = new EffectComposer(this.renderer, {
             frameBufferType: THREE.HalfFloatType,
         });
+        this.renderPass = null;
+        this.fxaaPass = null;
     }
 
     dispose() {
@@ -160,6 +145,61 @@ class c3DEngine {
      */
     getRenderer() {
         return this.renderer;
+    }
+
+    /**
+     * @param {Pass} pass
+     * @param {number} [index] Defaults to the index right before the anti-aliasing pass.
+     * @returns {Pass}
+     */
+    addPass(pass, index) {
+        index ??= this.composer.passes.length - 2;
+        index = Math.max(0, Math.min(index, this.composer.passes.length));
+        this.composer.addPass(pass, index);
+        return pass;
+    }
+
+    /**
+     * @param {Pass} pass
+     * @returns {void}
+     */
+    removePass(pass) {
+        this.composer.removePass(pass);
+    }
+
+    /**
+     * @param {View} view
+     * @returns {void}
+     */
+    renderView(view) {
+        // force internally calling state.buffers.color.setClear
+        // to get a correct background color
+        this.renderer.setClearAlpha(this.renderer.getClearAlpha());
+        this.renderer.clear();
+
+        if (view._camXR && (!this.renderPass || this.renderPass.name != 'RenderPassXR')) {
+            this.renderPass = new RenderPass(view.scene, view._camXR);
+            this.renderPass.name = 'RenderPassXR';
+        } else if (!this.renderPass || this.renderPass?.name != 'RenderPass') {
+            this.renderPass = new RenderPass(view.scene, view.camera3D);
+            this.renderPass.name = 'RenderPass';
+        }
+
+        if (this.composer.passes[0]?.name.startsWith('RenderPass')) {
+            this.composer.passes[0] = this.renderPass;
+        } else {
+            this.composer.addPass(this.renderPass, 0);
+        }
+
+        if (!this.fxaaPass) {
+            this.fxaaPass = this.addPass(new EffectPass(view.camera3D, new FXAAEffect()), this.composer.passes.length);
+        }
+
+        this.composer.render();
+
+        if (view.tileLayer) {
+            this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
+        }
     }
 
     /**
