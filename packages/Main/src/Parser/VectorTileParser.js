@@ -221,7 +221,7 @@ export default {
      * @param {object} options - Options controlling the parsing {@link ParsingOptions}.
      *
      * @param {object} options.in - Object containing all styles,
-     * layers and informations data, see {@link InformationsData}.
+     * layers and informations data, see {@link Source}.
      *
      * @param {object} options.in.styles - Object containing subobject with
      * informations on a specific style layer. Styles available is by `layer.id` and by zoom.

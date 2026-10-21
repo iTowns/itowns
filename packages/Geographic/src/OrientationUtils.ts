@@ -53,7 +53,7 @@ export function quaternionFromRollPitchHeading(
     pitch = 0,
     heading = 0,
     target = new Quaternion(),
-) {
+): Quaternion {
     roll *= MathUtils.DEG2RAD;
     pitch *= MathUtils.DEG2RAD;
     heading *= MathUtils.DEG2RAD;
@@ -88,7 +88,7 @@ export function quaternionFromOmegaPhiKappa(
     phi = 0,
     kappa = 0,
     target = new Quaternion(),
-) {
+): Quaternion {
     omega *= MathUtils.DEG2RAD;
     phi *= MathUtils.DEG2RAD;
     kappa *= MathUtils.DEG2RAD;
@@ -107,7 +107,7 @@ export function quaternionFromOmegaPhiKappa(
  *
  * @returns The target quaternion
  */
-export function quaternionFromAttitude(attitude: Attitude, target = new Quaternion()) {
+export function quaternionFromAttitude(attitude: Attitude, target = new Quaternion()): Quaternion {
     if ('roll' in attitude || 'pitch' in attitude || 'heading' in attitude) {
         return quaternionFromRollPitchHeading(
             attitude.roll, attitude.pitch, attitude.heading,

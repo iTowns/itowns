@@ -10,6 +10,12 @@ interface proj4Def {
     title: string;
 }
 
+/**
+ * This module provides basic methods to manipulate a CRS (as a string).
+ *
+ * @module Crs
+ */
+
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
 
 // Redefining proj4 global projections to match epsg.org database axis order.
