@@ -7,6 +7,12 @@ import { applyStyle, rebuildMeshTopology } from 'Converter/Feature2Mesh';
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);
 
+// A removed layer is no longer returned by the view. Comparing the instance also
+// covers a new layer added with the same id.
+function isLayerRemoved(cmd) {
+    return cmd.view.getLayerById(cmd.layer.id) !== cmd.layer;
+}
+
 export default {
     update(context, layer, node) {
         if (!node.parent && node.children.length) {
@@ -82,41 +88,49 @@ export default {
 
         node.layerUpdateState[layer.id].newTry();
 
+        const layerUpdateState = node.layerUpdateState[layer.id];
         const command = {
             layer,
             extentsSource: extentsDestination,
             view: context.view,
             requester: node,
+            earlyDropFunction: isLayerRemoved,
         };
 
         return context.scheduler.execute(command).then((featureMeshes) => {
-            node.layerUpdateState[layer.id].noMoreUpdatePossible();
+            // The layer may have been removed while the command was executing
+            const layerRemoved = isLayerRemoved(command);
+            layerUpdateState.noMoreUpdatePossible();
 
             featureMeshes.forEach((featureMesh) => {
                 if (featureMesh) {
-                    node.link[layer.id] = node.link[layer.id] || [];
-                    featureMesh.as(context.view.referenceCrs);
-                    featureMesh.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
-                    featureMesh.updateMatrixWorld();
-
-                    if (layer.onMeshCreated) {
-                        layer.onMeshCreated(featureMesh, context);
-                    }
-
-                    if (!node.parent) {
-                        // TODO: Clean cache needs a refactory, because it isn't really efficient and used
+                    if (layerRemoved) {
                         ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, featureMesh);
                     } else {
-                        layer.object3d.add(featureMesh);
-                        node.link[layer.id].push(featureMesh);
+                        node.link[layer.id] = node.link[layer.id] || [];
+                        featureMesh.as(context.view.referenceCrs);
+                        featureMesh.meshes.position.z = geoidLayerIsVisible(layer.parent) ? node.geoidHeight : 0;
+                        featureMesh.updateMatrixWorld();
+
+                        if (layer.onMeshCreated) {
+                            layer.onMeshCreated(featureMesh, context);
+                        }
+
+                        if (!node.parent) {
+                            // TODO: Clean cache needs a refactory, because it isn't really efficient and used
+                            ObjectRemovalHelper.removeChildrenAndCleanupRecursively(layer, featureMesh);
+                        } else {
+                            layer.object3d.add(featureMesh);
+                            node.link[layer.id].push(featureMesh);
+                        }
+                        featureMesh.layer = layer;
                     }
-                    featureMesh.layer = layer;
                 } else {
                     // TODO: verify if it's possible the featureMesh is undefined.
-                    node.layerUpdateState[layer.id].failure(1, true);
+                    layerUpdateState.failure(1, true);
                 }
             });
         },
-        err => handlingError(err, node, layer, node.level, context.view));
+        err => !isLayerRemoved(command) && handlingError(err, node, layer, node.level, context.view));
     },
 };
