@@ -6,6 +6,13 @@ import { Coordinates, Extent } from '@itowns/geographic';
 import Label from 'Core/Label';
 import Style, { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
+import {
+    Label as InstancedLabel,
+    TextAlign,
+    TextTransform,
+    RotationAlignment,
+} from '@itowns/labels';
+import { rgba2rgb } from 'Core/StyleOptions';
 
 const context = new StyleContext();
 
@@ -16,6 +23,64 @@ const _extent = new Extent('EPSG:4326', 0, 0, 0, 0);
 const nodeDimensions = new THREE.Vector2();
 const westNorthNode = new THREE.Vector2();
 const labelPosition = new THREE.Vector2();
+
+const capitalize = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+/**
+ * Reads the options of an instanced label from the style, which must be set to
+ * the context of the label's geometry.
+ *
+ * @param {Style} style - The layer style.
+ * @param {string} text - The label text.
+ * @param {number[]} anchor - The anchor from `Style.getTextAnchorPosition()`.
+ * @returns {object} Options for the `@itowns/labels` `Label` constructor.
+ */
+function instancedOptionsFromStyle(style, text, anchor) {
+    const { size, offset } = style.text;
+    // Colours may carry an alpha, which THREE.Color drops.
+    const color = rgba2rgb(String(style.text.color));
+    const halo = rgba2rgb(String(style.text.haloColor));
+    return {
+        text,
+        // Only the first font of the stack is used.
+        font: style.text.font?.[0] ?? 'sans-serif',
+        fontSize: size,
+        color: color.color,
+        opacity: style.text.opacity * color.opacity,
+        haloColor: halo.color,
+        haloOpacity: halo.opacity,
+        haloWidth: style.text.haloWidth,
+        haloBlur: style.text.haloBlur,
+        offset: [offset[0] / size, offset[1] / size], // px to em
+        padding: style.text.padding,
+        maxWidth: style.text.wrap,
+        letterSpacing: style.text.spacing,
+        textAlign: TextAlign[capitalize(style.text.justify)] ?? TextAlign.Auto,
+        textTransform: TextTransform[capitalize(style.text.transform)] ?? TextTransform.None,
+        // Anchors 0, -0.5 and -1 map to the enum values 0, 1 and 2.
+        anchorX: Math.round(-2 * anchor[0]),
+        anchorY: Math.round(-2 * anchor[1]),
+        rotationAlignment: RotationAlignment.Viewport,
+    };
+}
+
+// An instanced label has no element to measure: the `performance` filter gets
+// a box estimated from the text, at this average glyph advance in em.
+const GLYPH_ADVANCE = 0.55;
+
+function ensureEstimatedOffset(label) {
+    if (label.offset) { return; }
+
+    const { text, fontSize } = label.instancedOptions;
+    const longestLine = text.split('\n').reduce((m, l) => Math.max(m, l.length), 0);
+    const width = Math.max(fontSize, longestLine * fontSize * GLYPH_ADVANCE);
+    const height = fontSize * 1.2;
+
+    const left = width * label.anchor[0] + label.styleOffset[0];
+    const top = height * label.anchor[1] + label.styleOffset[1];
+
+    label.offset = { left, top, right: left + width, bottom: top + height };
+}
 
 /**
  * DomNode is a node in the tree data structure of labels divs.
@@ -58,16 +123,33 @@ class DomNode {
  * @class      LabelsNode
  */
 class LabelsNode extends THREE.Group {
-    constructor(node) {
+    /**
+     * @param {TileMesh} node - The tile the labels belong to.
+     * @param {View} view - The view the labels are displayed in.
+     * @param {boolean} [instanced=false] - Draw the labels with the view's
+     * instanced label manager.
+     */
+    constructor(node, view, instanced = false) {
         super();
         // attached node parent
         this.nodeParent = node;
+        this.view = view;
+        // Instanced label of each `Label` of this node; null for DOM labels.
+        this.instancedLabels = instanced ? new Map() : null;
+        this.manager = instanced ? view.instancedLabelManager : null;
+        this.labelsVisible = true;
         // When this is set, it calculates the position in that frame and resets this property to false.
         this.needsUpdate = true;
     }
 
+    get isInstanced() {
+        return this.instancedLabels !== null;
+    }
+
     // instantiate dom elements
     initializeDom() {
+        if (this.isInstanced) { return; }
+
         // create root dom
         this.domElements = new DomNode();
         // create labels container dom
@@ -81,6 +163,16 @@ class LabelsNode extends THREE.Group {
     // add node label
     // add label 3d and dom label
     addLabel(label) {
+        if (this.isInstanced) {
+            const instanced = new InstancedLabel({ ...label.instancedOptions, visible: this.labelsVisible });
+            this.instancedLabels.set(label, instanced);
+            // Placed here, and again when the elevation changes.
+            this.needsUpdate = true;
+            this.updatePosition(label);
+            this.manager.addLabel(instanced);
+            return;
+        }
+
         // add 3d object
         this.add(label);
 
@@ -102,11 +194,41 @@ class LabelsNode extends THREE.Group {
     // remove node label
     // remove label 3d and dom label
     removeLabel(label) {
+        if (this.isInstanced) {
+            const instanced = this.instancedLabels.get(label);
+            if (instanced) {
+                this.manager.removeLabel(instanced);
+                this.instancedLabels.delete(label);
+            }
+            return;
+        }
+
         // remove 3d object
         this.remove(label);
 
         // remove dom label
         this.domElements.labels.dom.removeChild(label.content);
+    }
+
+    // Fades out every instanced label of this node, then releases them.
+    clearLabels() {
+        const labels = [...this.instancedLabels.values()];
+        this.instancedLabels.clear();
+        this.view.notifyLabelChange();
+        labels.forEach((l) => { l.visible = false; });
+        setTimeout(() => this.manager.removeLabels(labels), this.manager.config.fadeDurationMs);
+    }
+
+    /**
+     * Shows or hides every instanced label of this node. Labels fade in and out.
+     *
+     * @param {boolean} visible - Whether the labels are shown.
+     */
+    setLabelsVisible(visible) {
+        if (this.labelsVisible === visible) { return; }
+        this.labelsVisible = visible;
+        this.view.notifyLabelChange();
+        this.instancedLabels.forEach((l) => { l.visible = visible; });
     }
 
     // update position if it's necessary
@@ -120,6 +242,11 @@ class LabelsNode extends THREE.Group {
             // update elevation label
             label.update3dPosition(this.nodeParent.layer.crs);
 
+            if (this.isInstanced) {
+                const instanced = this.instancedLabels.get(label);
+                if (instanced) { instanced.position = label.position; }
+            }
+
             // update horizon culling
             label.updateHorizonCullingPoint();
         }
@@ -127,11 +254,11 @@ class LabelsNode extends THREE.Group {
 
     // return labels count
     count() {
-        return this.children.length;
+        return this.isInstanced ? this.instancedLabels.size : this.children.length;
     }
 
     get labels() {
-        return this.children;
+        return this.isInstanced ? [...this.instancedLabels.keys()] : this.children;
     }
 }
 
@@ -163,6 +290,9 @@ class LabelLayer extends GeometryLayer {
      * proportional to the amount of unnecessary labels that are removed.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * We advise you to not use this option if your data is optimized.
+     * @param {boolean} [config.instanced=false] - Draw the labels as GPU
+     * instanced text with the view's `instancedLabelManager`. Icons are not
+     * drawn in this mode.
      * @param {HTMLElement|Function} config.domElement - An HTML domElement.
      * If set, all `Label` displayed within the current instance `LabelLayer`
      * will be this domElement.
@@ -177,6 +307,7 @@ class LabelLayer extends GeometryLayer {
         const {
             domElement,
             performance = true,
+            instanced = false,
             forceClampToTerrain = false,
             margin,
             style = {},
@@ -194,6 +325,7 @@ class LabelLayer extends GeometryLayer {
         this.buildExtent = true;
         this.crs = config.source.crs;
         this.performance = performance;
+        this.instanced = instanced;
         this.forceClampToTerrain = forceClampToTerrain;
         this.margin = margin;
 
@@ -304,7 +436,15 @@ class LabelLayer extends GeometryLayer {
 
                     if (!_extent.isPointInside(coord)) { return; }
 
-                    const label = new Label(content, coord.clone(), this.style);
+                    const label = new Label(content, coord.clone(), this.style,
+                        { instanced: this.instanced });
+
+                    if (this.instanced) {
+                        const text = typeof content === 'string'
+                            ? content
+                            : content?.textContent ?? this.style.text.field ?? '';
+                        label.instancedOptions = instancedOptionsFromStyle(this.style, text, label.anchor);
+                    }
 
                     label.layerId = this.id;
                     label.order = f.order;
@@ -333,6 +473,10 @@ class LabelLayer extends GeometryLayer {
     }
 
     #disallowToRendering(labelsNode) {
+        if (labelsNode.isInstanced) {
+            labelsNode.setLabelsVisible(false);
+            return;
+        }
         this.toHide.add(labelsNode);
     }
 
@@ -352,7 +496,7 @@ class LabelLayer extends GeometryLayer {
     // We use the screen grid with maximum size of node on screen
     #removeCulledLabels(node) {
         // copy labels array
-        const labels = node.children.slice();
+        const labels = node.labels.slice();
 
         // reset filter
         this.#filterGrid.reset();
@@ -361,6 +505,10 @@ class LabelLayer extends GeometryLayer {
         labels.sort((a, b) => b.order - a.order);
 
         labels.forEach((label) => {
+            if (node.isInstanced) {
+                ensureEstimatedOffset(label);
+            }
+
             // get node dimensions
             node.nodeParent.extent.planarDimensions(nodeDimensions);
             coord.crs = node.nodeParent.extent.crs;
@@ -393,8 +541,15 @@ class LabelLayer extends GeometryLayer {
             return;
         }
 
-        const labelsNode = node.link[layer.id] || new LabelsNode(node);
+        const labelsNode = node.link[layer.id]
+            || new LabelsNode(node, context.view, this.instanced);
         node.link[layer.id] = labelsNode;
+
+        if (labelsNode.isInstanced) {
+            // Must match the checks below, or a node is shown and hidden again
+            // on every update.
+            labelsNode.setLabelsVisible(this.visible && node.visible && node.material.visible);
+        }
 
         if (this.frozen || !node.visible || !this.visible) {
             return;
@@ -444,14 +599,18 @@ class LabelLayer extends GeometryLayer {
 
             labelsNode.initializeDom();
 
-            this.#findClosestDomElement(node).add(labelsNode.domElements);
+            if (!labelsNode.isInstanced) {
+                this.#findClosestDomElement(node).add(labelsNode.domElements);
+            }
 
             result.forEach((labels) => {
                 // Clean if there isnt' parent
                 if (!node.parent) {
                     labels.forEach((l) => {
                         ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, l);
-                        renderer.removeLabelDOM(l);
+                        if (!labelsNode.isInstanced) {
+                            renderer.removeLabelDOM(l);
+                        }
                     });
                     return;
                 }
@@ -467,10 +626,12 @@ class LabelLayer extends GeometryLayer {
             });
 
             if (labelsNode.count()) {
-                labelsNode.domElements.labels.hide();
-                labelsNode.domElements.labels.dom.style.opacity = '1.0';
+                if (!labelsNode.isInstanced) {
+                    labelsNode.domElements.labels.hide();
+                    labelsNode.domElements.labels.dom.style.opacity = '1.0';
 
-                node.addEventListener('show', () => labelsNode.domElements.labels.show());
+                    node.addEventListener('show', () => labelsNode.domElements.labels.show());
+                }
 
                 node.addEventListener('hidden', () => this.#disallowToRendering(labelsNode));
 
@@ -478,11 +639,24 @@ class LabelLayer extends GeometryLayer {
                 node.addEventListener('removed', () => this.removeNodeDomElement(node));
 
                 if (labelsNode.needsAltitude && node.material.getElevationTile()) {
-                    node.material.getElevationTile().addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
+                    node.material.getElevationTile().addEventListener('rasterElevationLevelChanged', () => {
+                        labelsNode.needsUpdate = true;
+                        // The 2D renderer, which repositions DOM labels, skips
+                        // instanced ones.
+                        if (labelsNode.isInstanced) {
+                            labelsNode.labels.forEach(l => labelsNode.updatePosition(l));
+                            labelsNode.needsUpdate = false;
+                            context.view.notifyLabelChange();
+                        }
+                    });
                 }
 
                 if (this.performance) {
                     this.#removeCulledLabels(labelsNode);
+                }
+
+                if (labelsNode.isInstanced) {
+                    context.view.notifyLabelChange();
                 }
             }
 
@@ -502,6 +676,10 @@ class LabelLayer extends GeometryLayer {
     }
 
     removeNodeDomElement(node) {
+        if (node.link[this.id]?.isInstanced) {
+            node.link[this.id].clearLabels();
+        }
+
         if (node.link[this.id]?.domElements) {
             const child = node.link[this.id].domElements.dom;
             child.parentElement.removeChild(child);

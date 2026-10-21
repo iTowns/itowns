@@ -218,7 +218,7 @@ function readVectorProperty(property, options) {
 
 const inv255 = 1 / 255;
 
-function rgba2rgb(orig) {
+export function rgba2rgb(orig) {
     if (!orig) {
         return {};
     } else if (orig.stops || orig.expression) {

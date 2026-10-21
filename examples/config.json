@@ -148,6 +148,11 @@
         "description": "Draws vector data (roads, borders, labels) as a transparent imagery layer on top of the 3D globe."
       },
       {
+        "id": "vector_tile_instanced_labels",
+        "label": "Instanced labels on 3D map",
+        "description": "Draws the labels of a vector tile layer as GPU instanced SDF text instead of DOM elements."
+      },
+      {
         "id": "vector_tile_raster_2d",
         "label": "Raster on 2D map",
         "description": "Classic 2D map rendering using vector tile sources."
