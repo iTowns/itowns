@@ -7,7 +7,6 @@
  * @property {number} INFINITE - The entry is never flushed.
  * @property {number} TEXTURE - Shortcut for texture resources. Time is 15 minutes.
  * @property {number} GEOMETRY - Shortcut for geometry resources. Time is 15 minutes.
- * minutes.
  */
 export const CACHE_POLICIES = {
     INFINITE: Infinity,

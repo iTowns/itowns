@@ -13,7 +13,7 @@ interface proj4Def {
 /**
  * This module provides basic methods to manipulate a CRS (as a string).
  *
- * @module CRS
+ * @module Crs
  */
 
 proj4.defs('EPSG:4978', '+proj=geocent +datum=WGS84 +units=m +no_defs');
