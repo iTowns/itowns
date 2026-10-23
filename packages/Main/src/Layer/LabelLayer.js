@@ -386,8 +386,8 @@ class LabelLayer extends GeometryLayer {
         });
     }
 
-    update(context, layer, node, parent) {
-        if (!parent && node.link[layer.id]) {
+    update(context, layer, node) {
+        if (!node.parent && node.link[layer.id]) {
             // if node has been removed dispose three.js resource
             ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, node);
             return;
@@ -450,6 +450,8 @@ class LabelLayer extends GeometryLayer {
                 // Clean if there isnt' parent
                 if (!node.parent) {
                     labels.forEach((l) => {
+                        // Label already attached to another tile: keep it
+                        if (l.parent) { return; }
                         ObjectRemovalHelper.removeChildrenAndCleanupRecursively(this, l);
                         renderer.removeLabelDOM(l);
                     });
@@ -477,8 +479,10 @@ class LabelLayer extends GeometryLayer {
                 // Necessary event listener, to remove any Label attached to
                 node.addEventListener('removed', () => this.removeNodeDomElement(node));
 
-                if (labelsNode.needsAltitude && node.material.getElevationTile()) {
-                    node.material.getElevationTile().addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
+                const elevationTile = node.material?.getCurrentElevationTile();
+
+                if (labelsNode.needsAltitude && elevationTile) {
+                    elevationTile.addEventListener('rasterElevationLevelChanged', () => { labelsNode.needsUpdate = true; });
                 }
 
                 if (this.performance) {

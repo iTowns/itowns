@@ -19,11 +19,11 @@ describe('TiledGeometryLayer', function () {
 
     it('subdivide should compute a screenSize', function () {
         // perspective camera
-        viewPerspective.tileLayer.subdivision(viewPerspective, viewPerspective.tileLayer, viewPerspective.tileLayer.level0Nodes[0]);
+        viewPerspective.tileLayer.subdivision({ camera: viewPerspective.camera }, viewPerspective.tileLayer.level0Nodes[0]);
         assert.notEqual(viewPerspective.tileLayer.level0Nodes[0].screenSize, undefined);
 
         // orthographic camera
-        viewOrtho.tileLayer.subdivision(viewOrtho, viewOrtho.tileLayer, viewOrtho.tileLayer.level0Nodes[0]);
+        viewOrtho.tileLayer.subdivision({ camera: viewOrtho.camera }, viewOrtho.tileLayer.level0Nodes[0]);
         assert.notEqual(viewOrtho.tileLayer.level0Nodes[0].screenSize, undefined);
     });
 

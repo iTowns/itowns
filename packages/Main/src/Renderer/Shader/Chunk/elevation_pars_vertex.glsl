@@ -1,6 +1,6 @@
 #if NUM_VS_TEXTURES > 0
     struct Layer {
-        float scale;
+        float renderscale;
         float bias;
         int mode;
         float zmin;
@@ -34,6 +34,6 @@
         uv = vec2(uv.x, 1.0 - uv.y);
         uv = uv * offsetScale.zw + offsetScale.xy;
         float d = clamp(getElevationMode(uv, tex, layer.mode), layer.zmin, layer.zmax);
-        return d * layer.scale + layer.bias;
+        return d * layer.renderscale + layer.bias;
     }
 #endif
