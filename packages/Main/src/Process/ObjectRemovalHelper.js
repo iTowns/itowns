@@ -43,19 +43,6 @@ export default {
     },
 
     /**
-     * Remove obj's children belonging to a layer.
-     * Neither obj nor its children will be disposed!
-     * @param {Layer} layer The layer that objects must belong to. Other object are ignored
-     * @param {Object3D} obj The Object3D we want to clean
-     * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
-     */
-    removeChildren(layer, obj) {
-        const toRemove = obj.children.filter(c => (c.layer && c.layer.id) === layer.id);
-        obj.remove(...toRemove);
-        return toRemove;
-    },
-
-    /**
      * Remove an obj and all its children belonging to a layer and only cleanup the obj (and not its children).
      * obj will be disposed but its children **won't**!
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
