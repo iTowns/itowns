@@ -82,11 +82,25 @@ export default {
     removeChildrenAndCleanupRecursively(layer, obj) {
         // Objects are filtered by id because the obj hierarchy may also contain labels that have been added as childs
         // of the objects which have their own removal logic
+        // TODO: this filter may become obsolete once itowns nodes only reference
+        // their layer objects through link.
         let toRemove = obj.children.filter(c => c.layer && c.layer.id === layer.id);
         const linked = obj.link && obj.link[layer.id];
-        if (linked?.children.length) {
+        if (linked?.children?.length) {
             toRemove = toRemove.concat(linked.children);
+        }
+        if (obj.link) {
             delete obj.link[layer.id];
+        }
+        if (obj.layerUpdateState) {
+            delete obj.layerUpdateState[layer.id];
+        }
+        // Objects of the layer are not always direct children of objects of the
+        // same layer (e.g. tiles), so the whole tree is walked.
+        for (const c of obj.children) {
+            if (!toRemove.includes(c)) {
+                this.removeChildrenAndCleanupRecursively(layer, c);
+            }
         }
         for (const c of toRemove) {
             this.removeChildrenAndCleanupRecursively(layer, c);
