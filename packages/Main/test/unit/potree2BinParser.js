@@ -45,6 +45,8 @@ describe('Potree2BinParser', function () {
                     matrix: new THREE.Matrix4(),
                 },
                 numPoints: nbPoints,
+            },
+            out: {
                 crs,
             },
         };
@@ -146,6 +148,8 @@ describe('Potree2BinParser', function () {
                     matrix: new THREE.Matrix4(),
                 },
                 numPoints,
+            },
+            out: {
                 crs,
             },
         };

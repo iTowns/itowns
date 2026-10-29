@@ -39,20 +39,18 @@ class CopcNode extends LasNodeBase {
      * @param z - Z position with the octree.
      * @param source - Data source (COPC) of the node.
      * Set to -1 when we don't have the information yet.
-     * @param crs - The crs of the node.
      * @param hierarchy
      */
     constructor(
         depth: number,
         x: number, y: number, z: number,
         source: CopcSource,
-        crs: string,
         hierarchy: Hierarchy.Subtree,
     ) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const hNode = hierarchy.nodes[voxelKey];
         const numPoints = hNode?.pointCount ?? -1;
-        super(depth, x, y, z, numPoints, crs);
+        super(depth, x, y, z, numPoints);
         this.isCopcNode = true;
         this.source = source;
 
@@ -115,7 +113,6 @@ class CopcNode extends LasNodeBase {
         const child = new CopcNode(
             depth, x, y, z,
             this.source,
-            this.crs,
             this.hierarchy,
         );
 

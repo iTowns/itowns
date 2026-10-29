@@ -28,19 +28,17 @@ class EntwinePointTileNode extends LasNodeBase {
      * @param z - The z coordinate of the node in the tree - see the
      * [Entwine documentation](https://entwine.io/entwine-point-tile.html#ept-data)
      * @param source - Data source (Ept) of the node.
-     * @param crs - The crs of the node.
      * @param hierarchy
      */
     constructor(
         depth: number,
         x: number, y: number, z: number,
         source: EntwinePointTileSource,
-        crs: string,
         hierarchy: Record<string, number> = {},
     ) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const numPoints = hierarchy[voxelKey] ?? -1;
-        super(depth, x, y, z, numPoints, crs);
+        super(depth, x, y, z, numPoints);
 
         this.source = source;
 
@@ -77,7 +75,6 @@ class EntwinePointTileNode extends LasNodeBase {
         const child = new EntwinePointTileNode(
             depth, x, y, z,
             this.source,
-            this.crs,
             this.hierarchy,
         );
 
