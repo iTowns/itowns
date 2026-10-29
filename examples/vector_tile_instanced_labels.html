@@ -20,6 +20,8 @@
         <link rel="stylesheet" type="text/css" href="css/example.css">
         <link rel="stylesheet" type="text/css" href="css/noto.css">
         <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+        <!-- Font of the PLAN.IGN style -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400&display=block">
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
     </head>
@@ -28,6 +30,8 @@
         <div id="description">
             <p>Labels of the vector tile layer are drawn as instanced SDF text
             (<b>@itowns/labels</b>) instead of DOM elements.</p>
+            <p>Switch <b>Label renderer</b> in the menu to compare them with DOM
+            labels.</p>
         </div>
         <script type="module">
 
@@ -40,6 +44,11 @@
             // `addLabelLayer.instanced` draws the labels of the vector tile layer
             // as SDF text, in one instanced draw call. They are not culled behind
             // the horizon and not depth tested against the terrain.
+
+            // Label glyphs are rasterized once, so every font face the style
+            // uses is loaded before the labels are made.
+            await Promise.all(['400', 'italic 400', '600', '700']
+                .map(face => document.fonts.load(`${face} 16px "Source Sans Pro"`, 'Aœ')));
 
             // Define initial camera position
             const placement = {
@@ -59,17 +68,10 @@
 
             setupLoadingScreen(viewerDiv, view);
 
-            const promises = [];
-
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/Ortho.json').then((config) => {
-                config.source = new itowns.WMTSSource(config.source);
-                return view.addLayer(new itowns.ColorLayer('Ortho', config));
-            }));
-
-            promises.push(itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then((config) => {
+            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json').then((config) => {
                 config.source = new itowns.WMTSSource(config.source);
                 return view.addLayer(new itowns.ElevationLayer(config.id, config));
-            }));
+            }).catch(console.error);
 
             // Define a VectorTilesSource to load Vector Tiles data from the geoportail
             const mvtSource = new itowns.VectorTilesSource({
@@ -81,28 +83,56 @@
 
             const mvtLayer = new itowns.ColorLayer('MVT', {
                 source: mvtSource,
-                effect_type: itowns.colorLayerEffects.removeLightColor,
-                effect_parameter: 2.5,
                 addLabelLayer: { performance: true, instanced: true },
             });
 
-            view.addLayer(mvtLayer);
+            const vectorTiles = view.addLayer(mvtLayer);
+
+            // The same labels drawn as DOM elements, to compare both renderers.
+            // One of the two label layers is visible at a time; a hidden label
+            // layer stops updating, so switching changes nothing else.
+            function addDomLabelLayer() {
+                const domLabelLayer = new itowns.LabelLayer('MVT-label-dom', {
+                    source: mvtSource,
+                    style: mvtLayer.style,
+                    zoom: mvtLayer.zoom,
+                    performance: true,
+                    margin: 15,
+                    // Placed on the terrain, as the instanced labels are.
+                    forceClampToTerrain: true,
+                    visible: false,
+                });
+                return view.addLayer(domLabelLayer);
+            }
+
+            // Shows the label layer of the selected renderer, when labels are on
+            // and the vector tile layer is visible.
+            function addLabelGUI(gui, domLabelLayer) {
+                const instancedLabelLayer = view.getLayerById('MVT-label');
+                const settings = { labels: true, renderer: 'instanced' };
+                const update = () => {
+                    const on = settings.labels && mvtLayer.visible;
+                    instancedLabelLayer.visible = on && settings.renderer === 'instanced';
+                    domLabelLayer.visible = on && settings.renderer === 'dom';
+                    view.notifyChange(view.camera3D);
+                };
+                // Runs after the view's own listener, which shows the instanced
+                // labels with the vector tile layer.
+                mvtLayer.addEventListener('visible-property-changed', update);
+                gui.add(settings, 'labels').name('Labels').onChange(update);
+                gui.add(settings, 'renderer', { Instanced: 'instanced', DOM: 'dom' })
+                    .name('Label renderer').onChange(update);
+            }
 
             const menuGlobe = new GuiTools('menuDiv', view, 300);
 
-            view.addEventListener(itowns.GLOBE_VIEW_EVENTS.GLOBE_INITIALIZED, () => {
-                Promise.all(promises).then(() => {
-                    menuGlobe.addImageryLayersGUI(view.getLayers(l => l.isColorLayer));
-                    itowns.ColorLayersOrdering.moveLayerToIndex(view, 'Ortho', 0);
-
-                    const labelLayer = view.getLayerById('MVT-label');
-                    menuGlobe.gui.add({ labels: true }, 'labels').name('Labels')
-                        .onChange((value) => {
-                            labelLayer.visible = value;
-                            view.notifyChange(view.camera3D);
-                        });
-                }).catch(console.error);
-            });
+            // Menus, once the vector tile layer is ready.
+            vectorTiles.then(() => {
+                menuGlobe.addImageryLayersGUI(view.getLayers(l => l.isColorLayer));
+                return addDomLabelLayer();
+            }).then((domLabelLayer) => {
+                addLabelGUI(menuGlobe.gui, domLabelLayer);
+            }).catch(console.error);
 
             window.view = view;
             window.itowns = itowns;

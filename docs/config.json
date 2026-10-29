@@ -53,6 +53,7 @@
                 "Potree2Layer",
                 "OGC3DTilesLayer",
                 "LabelLayer",
+                "InstancedLabelLayer",
                 "GlobeLayer",
                 "PlanarLayer",
                 "Atmosphere"

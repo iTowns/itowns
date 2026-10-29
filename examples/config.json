@@ -158,6 +158,11 @@
         "description": "Classic 2D map rendering using vector tile sources."
       },
       {
+        "id": "vector_tile_instanced_labels_planar",
+        "label": "Instanced labels on 2D map",
+        "description": "Draws the labels of a vector tile layer as GPU instanced SDF text on a planar view."
+      },
+      {
         "id": "vector_tile_mapbox_raster",
         "label": "Mapbox Vector Tiles to raster",
         "description": "Specific implementation for converting Mapbox vector format to viewable raster layers."

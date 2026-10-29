@@ -9,6 +9,7 @@ import WEBGL from 'three/addons/capabilities/WebGL.js';
 import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
+import InstancedLabelRenderer from 'Renderer/InstancedLabelRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 import { EffectComposer } from 'postprocessing';
 
@@ -73,6 +74,7 @@ class c3DEngine {
             if (view.tileLayer) {
                 this.label2dRenderer.render(view.tileLayer.object3d, view.camera3D);
             }
+            this.instancedLabelRenderer.render(view);
         }.bind(this);
 
         /**
@@ -138,9 +140,12 @@ class c3DEngine {
         this.composer = new EffectComposer(this.renderer, {
             frameBufferType: THREE.HalfFloatType,
         });
+
+        this.instancedLabelRenderer = new InstancedLabelRenderer(this.renderer);
     }
 
     dispose() {
+        this.instancedLabelRenderer.dispose();
         this.label2dRenderer.domElement.parentElement?.removeChild(this.label2dRenderer.domElement);
         this.fullSizeRenderTarget.dispose();
         this.composer.dispose();

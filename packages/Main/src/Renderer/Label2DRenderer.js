@@ -134,7 +134,7 @@ class Label2DRenderer {
         const tileLayer = this.infoTileLayer?.layer;
         // Instanced label layers have no DOM element to place.
         const labelLayers = tileLayer?.attachedLayers
-            .filter(l => l.isLabelLayer && l.visible && !l.instanced) || [];
+            .filter(l => l.isLabelLayer && l.visible && !l.isInstancedLabelLayer) || [];
         if (labelLayers.length == 0) { return; }
         this.grid.reset();
 
