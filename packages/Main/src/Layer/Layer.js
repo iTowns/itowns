@@ -55,6 +55,7 @@ class Layer extends THREE.EventDispatcher {
      * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
      * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
+     * @param {boolean} [config.addLabelLayer.instanced=false] - draw the labels as GPU instanced text instead of DOM elements. Icons are not drawn.
      * @param {number} [config.subdivisionThreshold=256] - set the texture size and, if applied to the globe, affects the tile subdivision.
      *
      * @example
