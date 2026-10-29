@@ -404,6 +404,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
                     elt.obj.visible = false;
+                    // voxelOBB is used by the adaptive point size shader: it must be in the same local frame as the points
+                    elt.voxelOBB.projOBB(elt.source.crs, this.crs);
 
                     if (!elt.visible) {
                         elt.notVisibleSince = Date.now();

@@ -81,13 +81,14 @@ export default {
      * @param {object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in metadata.js
      * @param {THREE.Box3} options.in.bbox - the bbox of the node
-     * @param {THREE.Vector3} options.out.origin - the origin position of the data
+     * @param {string} options.out.crs - crs of the view
      *
      * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
      */
     parse: async function parse(buffer, options) {
         const potreeLoader = await loader();
         const source = options.in.source;
+        const crsOut = options.out.crs;
 
         const metadata = source.metadata;
         const scale = metadata.scale;
@@ -97,11 +98,11 @@ export default {
 
         const numPoints = options.in.numPoints;
 
-        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+        const centerZ0 = new Coordinates(crsOut).setFromVector3(
             new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrix),
         );
 
-        const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
+        const quaternion = getQuaternion(centerZ0, source.crs, crsOut);
 
         const config = {
             in: {
@@ -109,8 +110,8 @@ export default {
                 projDefs: CRS.defs(source.crs),
             },
             out: {
-                crs: options.in.crs,
-                projDefs: CRS.defs(options.in.crs),
+                crs: crsOut,
+                projDefs: CRS.defs(crsOut),
                 origin: centerZ0.toArray(),
                 rotation: quaternion.toArray(),
             },

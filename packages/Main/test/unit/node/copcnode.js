@@ -48,7 +48,7 @@ describe('Copc Node', function () {
                     pageOffset: 202960989,
                 } },
             };
-            const node = new CopcNode(depth, ...Object.values(key), source, crs, nodeHierarchy);
+            const node = new CopcNode(depth, ...Object.values(key), source, nodeHierarchy);
 
             assert.ok(node instanceof CopcNode);
             assert.equal(node.numPoints, -1);
@@ -64,7 +64,7 @@ describe('Copc Node', function () {
                 nodes: {},
                 pages: { '0-0-0-0': rootHierarchyPage },
             };
-            root = new CopcNode(0, 0, 0, 0, source, crs, rootHierarchy);
+            root = new CopcNode(0, 0, 0, 0, source, rootHierarchy);
         });
 
         it('get networkOptions', () => {
@@ -100,7 +100,7 @@ describe('Copc Node', function () {
                 pages: {},
             };
 
-            node = new CopcNode(depth, ...Object.values(key), source, crs, hierarchy);
+            node = new CopcNode(depth, ...Object.values(key), source, hierarchy);
             hierarchy.nodes[nodeVoxelKey(depth, key)].pointCount = numPoints;
         });
 

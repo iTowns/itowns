@@ -136,12 +136,11 @@ class Potree2Node extends PotreeNodeBase {
         depth: number,
         x: number, y: number, z: number,
         source: Potree2Source,
-        crs: string,
         hierarchy: Record<string, Potree2NodeHierarchy>,
     ) {
         const voxelKey = buildVoxelKey(depth, x, y, z);
         const numPoints = hierarchy[voxelKey]?.numPoints ?? -1;
-        super(depth, x, y, z, numPoints, crs);
+        super(depth, x, y, z, numPoints);
 
         this.source = source;
 
@@ -207,7 +206,6 @@ class Potree2Node extends PotreeNodeBase {
         const child = new Potree2Node(
             depth, x, y, z,
             this.source,
-            this.crs,
             this.hierarchy,
         );
 

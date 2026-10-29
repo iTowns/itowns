@@ -2,19 +2,15 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
+import OBB from 'Renderer/OBB';
 
 const TTL = 10000;
 const EPSILON = 10;
 
-function createClampOBB(
-    min = new THREE.Vector3(-1, -1, -1),
-    max = new THREE.Vector3(1, 1, 1),
-) {
-    const obb = new THREE.Object3D();
-    obb.box3D = new THREE.Box3(min.clone(), max.clone());
-    obb.matrixWorldInverse = new THREE.Matrix4();
-    return obb;
-}
+const crs = 'EPSG:4326';
+
+const minV3 = new THREE.Vector3(-1, -1, -1);
+const maxV3 = new THREE.Vector3(1, 1, 1);
 
 function createNode(params = {}) {
     const node = {
@@ -27,7 +23,8 @@ function createNode(params = {}) {
         obj: undefined,
         children: [],
         pointSpacing: 1,
-        clampOBB: createClampOBB(),
+        clampOBB: new OBB(minV3, maxV3),
+        source: { crs },
         ...params,
     };
     for (const child of node.children) {
@@ -106,7 +103,7 @@ describe('PointCloudLayer', function () {
     let layer;
 
     beforeEach(function () {
-        layer = new PointCloudLayer('test', { source });
+        layer = new PointCloudLayer('test', { source, crs });
         layer.material = {
             visible: undefined,
             opacity: undefined,
@@ -244,25 +241,25 @@ describe('PointCloudLayer', function () {
 
         it('requests data when the node is not yet loaded', function () {
             const node = createNode({ numPoints: 500 });
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
             assert.ok(request.calledOnce, 'Expected request to be scheduled once');
         });
 
         it('does not request data when the node has no points', function () {
             const node = createNode({ numPoints: 0 });
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
             assert.ok(request.notCalled, 'Expected request to not be scheduled');
         });
 
         it('does not request data when a node is loading', function () {
             const node = createNode({ numPoints: 500, promise: new Promise(() => {}) });
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
             assert.ok(request.notCalled, 'Expected request to not be scheduled');
         });
 
         it('does not request data when a node is loaded', function () {
             const node = createNode({ numPoints: 500, obj: new THREE.Points() });
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
             assert.ok(request.notCalled, 'Expected request to not be scheduled');
         });
     });
@@ -466,6 +463,7 @@ describe('PointCloudLayer', function () {
         // disposal.
         it('disposes points loaded for node never visible', async function () {
             const node = createNode({ numPoints: 100 }); // visible: false by default
+            node.voxelOBB = node.clampOBB;// to be modified when we move adaptative size from PointCloudLayer
             const pts = new THREE.Points();
             pts.userData.node = node;
 
@@ -473,7 +471,7 @@ describe('PointCloudLayer', function () {
                 scheduler: { execute: () => Promise.resolve(pts) },
             });
 
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
 
             await context.scheduler.execute();
 
@@ -492,6 +490,7 @@ describe('PointCloudLayer', function () {
         // the points were loaded. The points are never collected.
         it('disposes points loaded after nodes become not visible', async function () {
             const node = createNode({ numPoints: 100, visible: true });
+            node.voxelOBB = node.clampOBB;// to be modified when we move adaptative size from PointCloudLayer
             const pts = new THREE.Points();
             pts.userData.node = node;
 
@@ -499,7 +498,7 @@ describe('PointCloudLayer', function () {
                 scheduler: { execute: () => sinon.spy(Promise.resolve(pts)) },
             });
 
-            layer.loadData(node, context, layer, 0);
+            layer.loadData(node, context, layer);
             layer.setNodeVisible(node, false); // points set invisible before request finish
 
             await context.scheduler.execute();

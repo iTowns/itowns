@@ -26,7 +26,7 @@ function commonOptions(options) {
     return {
         crs: {
             in: source.crs,
-            out: options.in.crs,
+            out: options.out.crs,
         },
         matrixWorld: options.in.clampOBB.matrix,
         colorDepth: source.colorDepth,
@@ -157,13 +157,14 @@ export default {
      * @param {ArrayBuffer} data - The file content to parse.
      * @param {object} options - Options to give to the parser.
      * @param {object} options.in
-     * @param {object} options.in.source - source information
-     * @param {object} options.in.source.crs - crs of the source
+     * @param {object} options.in.source - Source of the node.
+     * @param {string} options.in.source.crs - Crs of the source.
      * @param { 8 | 16 } [options.in.source.colorDepth] - Color depth (in bits).
-     * @param {OBB} options.in.clampOBB - OBB of the data.
-     * @param {crs} options.in.crs - Crs of the view.
      * Defaults to 8 bits for LAS 1.2 and 16 bits for later versions
      * (as mandatory by the specification)
+     * @param {THREE.Matrix4} options.in.clampOBB.matrix - World transformation
+     * matrix of the node
+     * @param {string} options.out.crs - Crs of the view.
      *
      * @returns {Promise} A promise resolving with a `THREE.BufferGeometry`. The
      * header of the file is contained in `userData`.
