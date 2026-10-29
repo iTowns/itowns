@@ -53,8 +53,7 @@ class GlobeLayer extends TiledGeometryLayer {
             'EPSG:3857',
         ];
 
-        const uvCount = tileMatrixSets.length;
-        const builder = new GlobeTileBuilder({ uvCount });
+        const builder = new GlobeTileBuilder();
 
         super(id, object3d || new THREE.Group(), schemeTile, builder, {
             tileMatrixSets,
@@ -112,7 +111,7 @@ class GlobeLayer extends TiledGeometryLayer {
         return super.preUpdate(context, changeSources);
     }
 
-    subdivision(context, layer, node) {
+    subdivision(context, node) {
         if (node.level == 5) {
             const row = node.getExtentsByProjection('EPSG:4326')[0].row;
             if (row == 31 || row == 0) {
@@ -120,7 +119,7 @@ class GlobeLayer extends TiledGeometryLayer {
                 return false;
             }
         }
-        return super.subdivision(context, layer, node);
+        return super.subdivision(context, node);
     }
 
     culling(node, camera) {

@@ -11,6 +11,8 @@ import type { LayeredMaterial, LayeredMaterialParameters } from 'Renderer/Layere
 import type LayerUpdateState from 'Layer/LayerUpdateState';
 import { TileBuilder, TileBuilderParams } from 'Core/Prefab/TileBuilder';
 
+const defaultElevation = { min: 0, max: 0 };
+
 // A simplified interface for TiledGeometryLayer.
 // It is used to avoid a dependency on the full TiledGeometryLayer type.
 export interface TileLayerLike {
@@ -113,8 +115,12 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      * @param elevation.geoidHeight - The geoid height
      */
     setBBoxZ(elevation: { min?: number; max?: number; scale?: number; geoidHeight?: number }) {
-        elevation.geoidHeight = geoidLayerIsVisible(this.layer) ? this.geoidHeight : 0;
-        this.obb.updateZ(elevation);
+        const tileElevation = this.material.getCurrentElevationTile();
+        const { min, max } = elevation || tileElevation || defaultElevation;
+        const scale = elevation?.scale || tileElevation?.layer.scale || 1.0;
+        const geoidHeight = geoidLayerIsVisible(this.layer) ? this.geoidHeight : 0;
+
+        this.obb.updateZ({ min, max, scale, geoidHeight });
         if (this.horizonCullingPointElevationScaled && this.horizonCullingPoint) {
             this.horizonCullingPointElevationScaled.setLength(
                 this.obb.z.delta + this.horizonCullingPoint.length(),
@@ -162,7 +168,7 @@ class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
      */
     override onBeforeRender(renderer: THREE.WebGLRenderer) {
         if (this.material.layersNeedUpdate) {
-            this.material.updateLayersUniforms(renderer);
+            this.material.updateLayersUniforms(renderer, this.extent);
         }
 
         // Track actual usage every time this mesh is rendered

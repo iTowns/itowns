@@ -10,14 +10,14 @@ const cacheBuffer = new Map<string, {
     index: THREE.BufferAttribute;
     uv: THREE.BufferAttribute;
 }>();
-const cacheTile = new LRUCache<string, Promise<TileGeometry>>({ max: 500 });
+const cacheTile = new LRUCache<string, TileGeometry>({ max: 500 });
 
 export interface GpuBufferAttributes {
     index: THREE.BufferAttribute | null;
     position: THREE.BufferAttribute;
     normal: THREE.BufferAttribute;
-    uvs: THREE.BufferAttribute[];
-}
+    uv: THREE.BufferAttribute | null;
+};
 
 /**
  * Reference to a tile's extent with rigid transformations.
@@ -74,7 +74,7 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileB
     computeShareableExtent(extent: Extent): ShareableExtent;
 }
 
-type UintArray = Uint8Array | Uint16Array | Uint32Array;
+export type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
 export function newTileGeometry(
     builder: TileBuilder,
@@ -89,35 +89,26 @@ export function newTileGeometry(
         `${builder.crs}_${params.disableSkirt ? 0 : 1}_${params.segments}`;
 
     const key = `s${south}l${params.level}bK${bufferKey}`;
-    let promiseGeometry = cacheTile.get(key);
+    let geometry = cacheTile.get(key);
 
     // build geometry if doesn't exist
-    if (!promiseGeometry) {
-        let resolve: ((value: TileGeometry) => void) | undefined;
-        promiseGeometry = new Promise<TileGeometry>((r) => { resolve = r; });
-        cacheTile.set(key, promiseGeometry);
-
+    if (!geometry) {
         params.extent = shareableExtent;
         const center = builder.center(params.extent).clone();
         // Read previously cached values (index and uv.wgs84 only
         // depend on the # of triangles)
         let cachedBuffers = cacheBuffer.get(bufferKey);
 
-        let buffers;
-        try {
-            buffers = computeBuffers(
-                builder,
-                { ...params, center },
-                cachedBuffers !== undefined
-                    ? {
-                        index: cachedBuffers.index.array as UintArray,
-                        uv: cachedBuffers.uv.array as Float32Array,
-                    }
-                    : undefined,
-            );
-        } catch (e) {
-            return Promise.reject(e);
-        }
+        const buffers = computeBuffers(
+            builder,
+            { ...params, center },
+            cachedBuffers !== undefined
+                ? {
+                    index: cachedBuffers.index.array as UintArray,
+                    uv: cachedBuffers.uv.array as Float32Array,
+                }
+                : undefined,
+        );
 
         if (!cachedBuffers) {
             // We know the fields will exist due to the condition
@@ -125,8 +116,10 @@ export function newTileGeometry(
             // TODO: Make this brain-based check compiler-based.
 
             cachedBuffers = {
-                index: new THREE.BufferAttribute(buffers.index as UintArray, 1),
-                uv: new THREE.BufferAttribute(buffers.uvs[0] as Float32Array, 2),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                index: new THREE.BufferAttribute(buffers.index!, 1),
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                uv: new THREE.BufferAttribute(buffers.uv!, 2),
             };
 
             // Update cacheBuffer
@@ -135,26 +128,21 @@ export function newTileGeometry(
 
         const gpuBuffers: GpuBufferAttributes = {
             index: cachedBuffers.index,
-            uvs: [
-                cachedBuffers.uv,
-                ...(buffers.uvs[1] !== undefined
-                    ? [new THREE.BufferAttribute(buffers.uvs[1], 1)]
-                    : []
-                ),
-            ],
+            uv: cachedBuffers.uv,
             position: new THREE.BufferAttribute(buffers.position, 3),
             normal: new THREE.BufferAttribute(buffers.normal, 3),
         };
 
-        const geometry = new TileGeometry(builder, params, gpuBuffers);
+        geometry = new TileGeometry(builder, params, gpuBuffers);
         const bbox = geometry.boundingBox as THREE.Box3;
         geometry.OBB = new OBB(bbox.min, bbox.max);
-        geometry.initRefCount(cacheTile, key);
-        (resolve as (value: TileGeometry) => void)(geometry);
 
-        return Promise.resolve({ geometry, quaternion, position });
+        geometry.initRefCount(cacheTile, key);
+
+        cacheTile.set(key, geometry);
+
+        return { geometry, quaternion, position };
     }
 
-    return (promiseGeometry as Promise<TileGeometry>)
-        .then(geometry => ({ geometry, quaternion, position }));
+    return { geometry, quaternion, position };
 }
