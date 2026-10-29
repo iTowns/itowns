@@ -114,6 +114,28 @@ const direction = new THREE.Vector3();
 const positionVector = new THREE.Vector3();
 const coordinates = new Coordinates('EPSG:4326');
 const viewers = [];
+
+/**
+ * Calls `callback` each time `devicePixelRatio` changes.
+ * @param {function(number): void} callback - Receives the new ratio.
+ * @returns {function(): void} Function stopping the listening.
+ */
+function onDprChange(callback) {
+    if (typeof window.matchMedia !== 'function') { return () => {}; }
+    let mql;
+    let onChange;
+    const listen = () => {
+        mql = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+        // The query is only valid for the current ratio: re-create it each time.
+        onChange = () => {
+            callback(window.devicePixelRatio);
+            listen();
+        };
+        mql.addEventListener('change', onChange, { once: true });
+    };
+    listen();
+    return () => mql.removeEventListener('change', onChange);
+}
 // Size of the camera frustrum, in meters
 let screenMeters;
 
@@ -205,6 +227,10 @@ class View extends THREE.EventDispatcher {
 
         this._resizeListener = () => this.resize();
         window.addEventListener('resize', this._resizeListener, false);
+
+        // Track devicePixelRatio changes (browser zoom, window moved to
+        // another screen), which do not always fire a resize event.
+        this._stopDprListening = onDprChange(() => this.resize());
 
         this._changeSources = new Set();
 
@@ -307,6 +333,7 @@ class View extends THREE.EventDispatcher {
         }
 
         window.removeEventListener('resize', this._resizeListener);
+        this._stopDprListening();
 
         // controls dispose
         if (this.controls) {
