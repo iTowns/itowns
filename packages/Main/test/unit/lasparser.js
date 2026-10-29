@@ -60,6 +60,8 @@ describe('LASParser', function () {
                         crs: 'EPSG:2994',
                     },
                     clampOBB,
+                },
+                out: {
                     crs: 'EPSG:4978',
                 },
             };
@@ -89,6 +91,8 @@ describe('LASParser', function () {
                         crs: 'EPSG:3857',
                     },
                     clampOBB,
+                },
+                out: {
                     crs: 'EPSG:3857',
                 },
             };
@@ -154,6 +158,8 @@ describe('LASParser', function () {
                     clampOBB,
                     numPoints: header.pointCount,
                     // eb,
+                },
+                out: {
                     crs: 'EPSG:3857',
                 },
             };

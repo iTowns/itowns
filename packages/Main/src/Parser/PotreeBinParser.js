@@ -104,7 +104,7 @@ export default {
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {object} options
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in cloud.js
-     * @param {THREE.Vector3} options.out.origin - the origin position of the data
+     * @param {string} options.out.crs - crs of the view
      * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
      *
      */
@@ -116,21 +116,23 @@ export default {
         const view = new DataView(buffer);
         // Format: X1,Y1,Z1,R1,G1,B1,A1,[...],XN,YN,ZN,RN,GN,BN,AN
         const source = options.in.source;
+        const crsOut = options.out.crs;
+
         const scale = source.scale;
         const pointAttributes = source.pointAttributes;
 
         const offset = options.in.voxelOBB.natBox.min.toArray();
 
-        const forward = (source.crs !== options.in.crs) ?
-            CRS.transform(source.crs, options.in.crs).forward :
+        const forward = (source.crs !== crsOut) ?
+            CRS.transform(source.crs, crsOut).forward :
             (x => x);
-        const applyQuaternion = (source.crs !== options.in.crs) ?
+        const applyQuaternion = (source.crs !== crsOut) ?
             _applyQuaternion : (x => x);
 
-        const centerZ0 = new Coordinates(options.in.crs).setFromVector3(
+        const centerZ0 = new Coordinates(crsOut).setFromVector3(
             new THREE.Vector3().applyMatrix4(options.in.clampOBB.matrix),
         );
-        const quaternion = getQuaternion(centerZ0, source.crs, options.in.crs);
+        const quaternion = getQuaternion(centerZ0, source.crs, crsOut);
         const quaternionArr = quaternion.toArray();
 
         let pointByteSize = 0;

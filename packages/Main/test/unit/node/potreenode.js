@@ -25,7 +25,7 @@ describe('Potree Node', function () {
         it('instanciate a node (without hierarchy)', () => {
             const depth = 2;
             const key = { x: 5, y: 12, z: 2 };
-            const node = new PotreeNode(depth, ...Object.values(key), source, crs);
+            const node = new PotreeNode(depth, ...Object.values(key), source);
             assert.ok(node instanceof PotreeNode);
             assert.equal(node.numPoints, -1);
             assert.deepStrictEqual(node.hierarchy, {});
@@ -45,7 +45,7 @@ describe('Potree Node', function () {
                     numPoints: -1, // for it to load the hierarchy
                 },
             };
-            const node = new PotreeNode(depth, ...Object.values(key), source2, crs, hierarchy);
+            const node = new PotreeNode(depth, ...Object.values(key), source2, hierarchy);
             assert.ok(node instanceof PotreeNode);
             assert.equal(node.numPoints, -1);
             assert.deepStrictEqual(node.hierarchy, hierarchy);
@@ -57,7 +57,7 @@ describe('Potree Node', function () {
     describe('getters', () => {
         let root;
         before('instanciate a root node', function () {
-            root = new PotreeNode(0, 0, 0, 0, source, crs);
+            root = new PotreeNode(0, 0, 0, 0, source);
         });
 
         it('get networkOptions', () => {
@@ -88,7 +88,7 @@ describe('Potree Node', function () {
                     numPoints: -1, // for it to load the hierarchy
                 },
             };
-            node = new PotreeNode(depth, ...Object.values(key), source, crs, hierarchyParent);
+            node = new PotreeNode(depth, ...Object.values(key), source, hierarchyParent);
 
             hierarchyChild = { ...hierarchyParent };
             hierarchyChild[voxelKey].numPoints = numPoints;
@@ -192,7 +192,7 @@ describe('Potree Node', function () {
                         numPoints: -1, // for it to load the hierarchy
                     },
                 };
-                const nodeBug = new PotreeNode(depth, ...Object.values(key), source2, crs, hierarchyParent);
+                const nodeBug = new PotreeNode(depth, ...Object.values(key), source2, hierarchyParent);
                 const hierarchyUrl = `${nodeBug.source.baseurl}/1/${nodeBug.hierarchyKey}.${source.extensionOctree}`;
                 stub.fetcherNodeBug = sinon.stub(nodeBug, 'fetcher')
                     .callsFake(url => createHierarchyBuff(url, hierarchyUrl, true));
