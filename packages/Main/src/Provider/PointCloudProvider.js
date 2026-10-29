@@ -30,7 +30,7 @@ export default {
         const layer = command.layer;
         const node = command.requester;
 
-        return node.load().then((geometry) => {
+        return node.load(layer.crs).then((geometry) => {
             const points = new THREE.Points(geometry, layer.material);
             addPickingAttribute(points);
             points.frustumCulled = false;
