@@ -6,7 +6,7 @@ import { CRS, Coordinates, OrientationUtils } from '@itowns/geographic';
 import type { Extent, ProjectionLike } from '@itowns/geographic';
 
 // get oriented bounding box of tile
-const builder = new GlobeTileBuilder({ uvCount: 1 });
+const builder = new GlobeTileBuilder();
 const size = new THREE.Vector3();
 const dimension = new THREE.Vector2();
 const center = new THREE.Vector3();

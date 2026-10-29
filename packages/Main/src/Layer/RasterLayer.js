@@ -79,7 +79,7 @@ class RasterLayer extends Layer {
 
         const rasterTile = new this.rasterTile(this, tiles);
 
-        rasterTile.initFromParent(this.getRasterTileParent(node));
+        // rasterTile.initFromParent(this.getRasterTileParent(node));
 
         node.material.addRasterTile(rasterTile);
 
