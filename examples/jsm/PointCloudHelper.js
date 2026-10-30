@@ -46,7 +46,7 @@ export function getDefaultAttribute(format) {
 
 export function zoomToLayer(view, layer) {
     const camera = view.camera3D;
-    const obb = layer.root.voxelOBB;
+    const obb = layer.root.clampOBB;
 
     const center = obb.box3D.getCenter(new Vector3());
     obb.localToWorld(center);
@@ -69,7 +69,7 @@ export function zoomToLayerGlobe(view, layer) {
     const coordLookAt = new Coordinates(view.referenceCrs).setFromVector3(lookAt);
 
     const size = new Vector3();
-    layer.root.voxelOBB.box3D.getSize(size);
+    layer.root.clampOBB.box3D.getSize(size);
 
     view.controls.lookAtCoordinate({
         coord: coordLookAt,

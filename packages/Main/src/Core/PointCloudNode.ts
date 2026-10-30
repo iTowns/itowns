@@ -14,7 +14,7 @@ export interface PointCloudSource {
     zmin: number;
     zmax: number;
     fetcher: (url: string, options?: RequestInit) => Promise<ArrayBuffer>;
-    parser: (data: ArrayBuffer, options: { in: PointCloudNode }) => THREE.BufferGeometry;
+    parser: (data: ArrayBuffer, options: { in: PointCloudNode; out: { crs: string } }) => THREE.BufferGeometry;
     networkOptions: RequestInit;
 }
 
@@ -23,8 +23,6 @@ export function buildVoxelKey(depth: number, x: number, y: number, z: number): s
 }
 
 abstract class PointCloudNode extends THREE.EventDispatcher {
-    /** The crs of the node. */
-    abstract crs: string;
     /** Data source of the node. */
     abstract source: PointCloudSource;
 
@@ -105,13 +103,17 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
         return this.voxelKey;
     }
 
-    async load(): Promise<THREE.BufferGeometry> {
+    async load(crsOut: string): Promise<THREE.BufferGeometry> {
         if (!this._childrenCreated) {
             await this.createChildren();
+            this.children.forEach((child) => {
+                child.clampOBB.projOBB(this.source.crs, crsOut);
+            });
         }
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {
                 in: this,
+                out: { crs: crsOut },
             }));
     }
 
@@ -148,7 +150,7 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     setOBBes(): void {
         // set the voxelOBB
         const childVoxelBBox = this.computeBBoxFromParent();
-        this.voxelOBB.setFromBox3(childVoxelBBox).projOBB(this.source.crs, this.crs);
+        this.voxelOBB.setFromBox3(childVoxelBBox);
 
         // get the clamped bbox from the voxel bbox
         this.clampOBB.copy(this.voxelOBB)

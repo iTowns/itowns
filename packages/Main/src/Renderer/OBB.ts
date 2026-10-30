@@ -189,6 +189,7 @@ class OBB extends THREE.Object3D {
      * Project the OBB in a specified crs.
      * The OBB new position will be the initial OBB center
      * projected at z=0 in the initial crs.
+     * It doesn't modified the initial value of the OBB (this.natBox)
      *
      * @param crsIn - The initial crs (at the creation of the OBB)
      * @param crsOut - The crs in which we want the obb to be projected
@@ -254,19 +255,30 @@ class OBB extends THREE.Object3D {
         this._center = undefined;
     }
     /**
-     * Clamped the OBB on the z axes of the OBB.box3D.
+     * Clamped the OBB natBox on the z axes.
+     * /!\ If the box3 and the values don't intersect
+     * the initial box is kept.
      *
      * @param zmin - The min z value for clamping.
      * @param zmax - the max z value for clamping.
+     *
+     * @returns The new OBB clamped on z.
      */
     clampZ(zmin: number, zmax: number) {
-        const clampBBox = this.box3D;
+        const clampBBox = this.natBox;
         if (clampBBox.min.z < zmax) {
             clampBBox.max.z = Math.min(clampBBox.max.z, zmax);
         }
         if (clampBBox.max.z > zmin) {
             clampBBox.min.z = Math.max(clampBBox.min.z, zmin);
         }
+
+        this.box3D.copy(this.natBox);
+
+        // reset center
+        this._center = undefined;
+
+        return this;
     }
 }
 

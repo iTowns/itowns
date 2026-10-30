@@ -64,7 +64,7 @@ describe('Potree2 Node', function () {
                     byteSize: BigInt(firstChunkSize),
                 },
             };
-            const node = new Potree2Node(depth, ...Object.values(key), source, crs, nodeHierarchy);
+            const node = new Potree2Node(depth, ...Object.values(key), source, nodeHierarchy);
 
             assert.ok(node instanceof Potree2Node);
             assert.equal(node.numPoints, -1);
@@ -85,7 +85,7 @@ describe('Potree2 Node', function () {
                     byteSize: BigInt(firstChunkSize),
                 },
             };
-            root = new Potree2Node(0, 0, 0, 0, source, crs, rootHierarchy);
+            root = new Potree2Node(0, 0, 0, 0, source, rootHierarchy);
         });
 
         it('get networkOptions', () => {
@@ -121,7 +121,7 @@ describe('Potree2 Node', function () {
                     numPoints: -1, // for it to load the hierarchy
                 },
             };
-            node = new Potree2Node(depth, ...Object.values(key), source, crs, hierarchy);
+            node = new Potree2Node(depth, ...Object.values(key), source, hierarchy);
 
             hierarchy[voxelKey].numPoints = numPoints;
             hierarchy[voxelKey].byteOffset = dataOffset;
@@ -201,7 +201,7 @@ describe('Potree2 Node', function () {
                 const initHierarchy = {
                     '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(3 * BYTES_PER_NODE) },
                 };
-                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, initHierarchy);
                 sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
 
                 await rootNode.loadHierarchy();
@@ -233,7 +233,7 @@ describe('Potree2 Node', function () {
                 const initHierarchy = {
                     '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(2 * BYTES_PER_NODE) },
                 };
-                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, initHierarchy);
                 sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
 
                 await rootNode.loadHierarchy();
@@ -266,7 +266,7 @@ describe('Potree2 Node', function () {
                 const initHierarchy = {
                     '0-0-0-0': { numPoints: -1, byteOffset: 0n, byteSize: BigInt(4 * BYTES_PER_NODE) },
                 };
-                const rootNode = new Potree2Node(0, 0, 0, 0, source, crs, initHierarchy);
+                const rootNode = new Potree2Node(0, 0, 0, 0, source, initHierarchy);
                 sandbox.stub(rootNode, 'fetcher').resolves(hierarchyBuf);
 
                 await rootNode.loadHierarchy();
