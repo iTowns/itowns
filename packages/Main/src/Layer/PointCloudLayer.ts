@@ -14,6 +14,8 @@ export interface PointCloudSource {
     zmin: number;
     /** The maximal value for elevation (read from the metadata). */
     zmax: number;
+    /** The minimum distance between points at root level (from metadata). */
+    spacing: number;
 }
 
 export interface PointCloudLayerParameters {
@@ -376,29 +378,20 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
      * @param elt - The element (node) to load data.
      * @param context - The context.
      * @param layer - The layer on wich the node is attach.
-     * @param distanceToCamera - The distance between the camera and the node.
      *
      * @returns The child nodes to update or [].
      */
     loadData(
-        elt: PointCloudNode, context: Context, layer: this, distanceToCamera: number,
+        elt: PointCloudNode, context: Context, layer: this,
     ): void {
         // only load geometry if this elements has points
         if (elt.numPoints !== 0) {
             if (!elt.obj && !elt.promise) {
-                const distance = Math.max(0.001, distanceToCamera);
-                // Increase priority of greatest node on screen
-                const priority = computeScreenSpaceError(
-                    context,
-                    layer.pointSize,
-                    elt.pointSpacing,
-                    distance,
-                );
                 elt.promise = context.scheduler.execute({
                     layer,
                     requester: elt,
                     view: context.view,
-                    priority,
+                    priority: elt.sse,
                     redraw: true,
                     earlyDropFunction: cmd => !cmd.requester.visible || !this.visible,
                 }).then((pts: THREE.Points) => {
@@ -480,17 +473,17 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             node.sse = computeScreenSpaceError(
                 context,
                 layer.pointSize,
-                node.pointSpacing,
-                distanceToCamera,
-            ) / this.sseThreshold;
+                layer.source.spacing / 2 ** node.depth,
+                Math.max(0.001, distanceToCamera), // to avoid Infinity but keeping a priority between nodes of differents depth
+            );
 
             node.visible = visible;
             node.notVisibleSince = undefined;
             this._candidateNodes.push(node);
-            this.loadData(node, context, layer, distanceToCamera);
+            this.loadData(node, context, layer);
 
             if (node.children && node.children.length) {
-                if (node.sse >= 1) {
+                if (node.sse >= this.sseThreshold) {
                     for (const child of node.children) {
                         queue.push({ node: child, weight: node.sse });
                     }
@@ -573,7 +566,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 const node = pts.userData.node;
                 const depth = node.depth;
                 const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
-                const octreeSpacing = node.source.spacing;
+                const octreeSpacing = this.source.spacing;
 
                 if (nodeStartOffset === undefined) {
                     continue;

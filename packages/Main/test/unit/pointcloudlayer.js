@@ -11,6 +11,10 @@ const crs = 'EPSG:4326';
 
 const minV3 = new THREE.Vector3(-1, -1, -1);
 const maxV3 = new THREE.Vector3(1, 1, 1);
+const source = {
+    crs,
+    spacing: 1,
+};
 
 function createNode(params = {}) {
     const node = {
@@ -22,9 +26,8 @@ function createNode(params = {}) {
         promise: null,
         obj: undefined,
         children: [],
-        pointSpacing: 1,
         clampOBB: new OBB(minV3, maxV3),
-        source: { crs },
+        source,
         ...params,
     };
     for (const child of node.children) {
@@ -99,11 +102,11 @@ function assertNodeChangeInvisible(n, call) {
 }
 
 describe('PointCloudLayer', function () {
-    const source = {};
     let layer;
 
     beforeEach(function () {
-        layer = new PointCloudLayer('test', { source, crs });
+        layer = new PointCloudLayer('test', { source });
+        layer.crs = crs;
         layer.material = {
             visible: undefined,
             opacity: undefined,
