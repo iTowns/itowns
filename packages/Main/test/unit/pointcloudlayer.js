@@ -2,19 +2,15 @@ import assert from 'assert';
 import * as sinon from 'sinon';
 import * as THREE from 'three';
 import PointCloudLayer from 'Layer/PointCloudLayer';
+import OBB from 'Renderer/OBB';
 
 const TTL = 10000;
 const EPSILON = 10;
 
-function createClampOBB(
-    min = new THREE.Vector3(-1, -1, -1),
-    max = new THREE.Vector3(1, 1, 1),
-) {
-    const obb = new THREE.Object3D();
-    obb.box3D = new THREE.Box3(min.clone(), max.clone());
-    obb.matrixWorldInverse = new THREE.Matrix4();
-    return obb;
-}
+const crs = 'EPSG:4326';
+
+const minV3 = new THREE.Vector3(-1, -1, -1);
+const maxV3 = new THREE.Vector3(1, 1, 1);
 
 function createNode(params = {}) {
     const node = {
@@ -27,7 +23,8 @@ function createNode(params = {}) {
         obj: undefined,
         children: [],
         pointSpacing: 1,
-        clampOBB: createClampOBB(),
+        clampOBB: new OBB(minV3, maxV3),
+        source: { crs },
         ...params,
     };
     for (const child of node.children) {
@@ -106,7 +103,7 @@ describe('PointCloudLayer', function () {
     let layer;
 
     beforeEach(function () {
-        layer = new PointCloudLayer('test', { source });
+        layer = new PointCloudLayer('test', { source, crs });
         layer.material = {
             visible: undefined,
             opacity: undefined,

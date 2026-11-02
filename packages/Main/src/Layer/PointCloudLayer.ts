@@ -454,6 +454,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 object3d = node.clampOBB;
                 bbox = object3d.box3D;
                 if (!object3d.parent) {
+                    object3d.projOBB(node.source.crs, this.crs);
                     this.obbes.add(object3d);
                     object3d.updateMatrixWorld(true);
                 }

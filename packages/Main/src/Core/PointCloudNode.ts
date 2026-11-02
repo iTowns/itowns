@@ -106,9 +106,6 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     async load(crsOut: string): Promise<THREE.BufferGeometry> {
         if (!this._childrenCreated) {
             await this.createChildren();
-            this.children.forEach((child) => {
-                child.clampOBB.projOBB(this.source.crs, crsOut);
-            });
         }
         return this.fetcher(this.url, this.networkOptions)
             .then(file => this.source.parser(file, {
