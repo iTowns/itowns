@@ -9,6 +9,7 @@ const translation = new Vector3();
 const box3 = new Box3();
 
 export interface PointCloudSource {
+    /** The minimum distance between points at root level. */
     spacing: number;
     crs: string;
     zmin: number;

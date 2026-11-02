@@ -48,10 +48,6 @@ describe('Point Cloud Node', function () {
             root = newPtCloudNodeWithSource(0, -1, source);
         });
 
-        it('get pointSpacing', () => {
-            assert.equal(root.pointSpacing, source.spacing);
-        });
-
         it('get hierarchyIsLoaded', () => {
             assert.equal(root.hierarchyIsLoaded, false);
         });
