@@ -3,7 +3,6 @@ import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 
 interface EntwinePointTileLayerParameters extends PointCloudLayerParameters {
-    crs?: string;
     source: EntwinePointTileSource;
 }
 

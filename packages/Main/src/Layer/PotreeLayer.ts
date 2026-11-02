@@ -3,12 +3,6 @@ import PotreeNode from 'Core/PotreeNode';
 import type PotreeSource from 'Source/PotreeSource';
 
 interface PotreeLayerParameters extends PointCloudLayerParameters {
-    /**
-     * The CRS of the View this layer will be attached to.
-     * This is used to determine the extent of this layer.
-     * Default to `EPSG:4326`.
-     */
-    crs?: string;
     source: PotreeSource;
 }
 
