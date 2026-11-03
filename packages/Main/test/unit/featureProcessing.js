@@ -1,4 +1,5 @@
 import assert from 'assert';
+import * as THREE from 'three';
 import FeatureProcessing from 'Process/FeatureProcessing';
 import LayerUpdateState from 'Layer/LayerUpdateState';
 import Style from 'Core/Style';
@@ -106,5 +107,49 @@ describe('FeatureProcessing', function () {
             assert.strictEqual(featureNode.styleTopologyVersion, layer._styleTopologyVersion);
             done();
         }).catch(done);
+    });
+
+    it('should ignore features fetched after the layer was deleted', function () {
+        let resolveFetch;
+        const added = [];
+        const layer = {
+            id: 'late-layer',
+            zoom: { min: 5 },
+            source: { crs: 'EPSG:4326', hasData: () => true },
+            object3d: { add: (mesh) => { added.push(mesh); } },
+        };
+        const node = {
+            parent: { id: 'parent' },
+            children: [],
+            visible: true,
+            extent: {},
+            layerUpdateState: {},
+            link: {},
+            getExtentsByProjection: () => [{ zoom: 5 }],
+        };
+        let removed = false;
+        const context = {
+            view: { getLayerById: id => (!removed && id === layer.id ? layer : undefined) },
+            scheduler: {},
+        };
+
+        let command;
+        context.scheduler.execute = (cmd) => {
+            command = cmd;
+            return new Promise((resolve) => { resolveFetch = resolve; });
+        };
+        const update = FeatureProcessing.update.call(layer, context, layer, node);
+        assert.equal(command.earlyDropFunction(command), false);
+        removed = true;
+        delete node.layerUpdateState[layer.id];
+        assert.equal(command.earlyDropFunction(command), true);
+        delete node.link[layer.id];
+        resolveFetch([new THREE.Group(), undefined]);
+
+        return update.then(() => {
+            assert.equal(node.layerUpdateState[layer.id], undefined);
+            assert.equal(node.link[layer.id], undefined);
+            assert.equal(added.length, 0);
+        });
     });
 });
