@@ -1,15 +1,14 @@
 {
 	"id":         "IGN_MNS_HIGHRES",
 	"noDataValue" : -99999,
+	"clampValues": {
+        "min": 0
+    },
 	"updateStrategy": {
 		"type": 1,
 		"options": {
-			"groups": [12, 17]
+			"groups": [11, 14, 17]
 		}
-	},
-	"zoom" : {
-		"min": 12,
-		"max": 17
 	},
 	"source": {
 		"url": "https://data.geopf.fr/wmts?",
@@ -21,49 +20,7 @@
 		},
 		"name": "ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES.MNS",
 		"tileMatrixSet": "WGS84G",
-		"TileMatrixSetLimits": {
-			"4": {
-				"minTileRow": 0,
-				"maxTileRow": 15,
-				"minTileCol": 0,
-				"maxTileCol": 31
-			},
-			"5": {
-				"minTileRow": 0,
-				"maxTileRow": 31,
-				"minTileCol": 16,
-				"maxTileCol": 47
-			},
-			"6": {
-				"minTileRow": 0,
-				"maxTileRow": 47,
-				"minTileCol": 32,
-				"maxTileCol": 95
-			},
-			"7": {
-				"minTileRow": 16,
-				"maxTileRow": 79,
-				"minTileCol": 80,
-				"maxTileCol": 175
-			},
-			"8": {
-				"minTileRow": 48,
-				"maxTileRow": 159,
-				"minTileCol": 160,
-				"maxTileCol": 335
-			},
-			"9": {
-				"minTileRow": 96,
-				"maxTileRow": 319,
-				"minTileCol": 320,
-				"maxTileCol": 671
-			},
-			"10": {
-				"minTileRow": 208,
-				"maxTileRow": 639,
-				"minTileCol": 656,
-				"maxTileCol": 1343
-			},
+		"tileMatrixSetLimits": {
 			"11": {
 				"minTileRow": 432,
 				"maxTileRow": 1279,

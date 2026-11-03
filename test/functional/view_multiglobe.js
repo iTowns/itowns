@@ -19,6 +19,14 @@ describe('view_multiglobe', function _() {
         // press-space and zoom in
         await page.evaluate(() => {
             onKeyPress({ keyCode: 32 });
+        });
+
+        await page.waitForFunction(() => {
+            // check in example if the animation is finished
+            return animationTime == 1;
+        });
+
+        await page.evaluate(() => {
             for (let i = 0; i < 50; i++) {
                 onMouseWheel({ detail: -1 });
             }

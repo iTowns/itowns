@@ -36,6 +36,9 @@
             import * as itowns from 'itowns';
             import * as debug from 'debug';
             import * as itowns_widgets from 'itowns_widgets';
+
+            window.itowns = itowns;
+            window.THREE = THREE;
             // # Planar view with one single layer of vector tile
 
             // Define geographic extent: CRS, min/max X, min/max Y
@@ -59,6 +62,7 @@
                     smartTravelHeightMax: 100000,
                 },
             });
+            window.view = view;
             var menuGlobe = new GuiTools('menuDiv', view, 300);
 
             setupLoadingScreen(viewerDiv, view);
@@ -80,9 +84,6 @@
             // Request redraw
             view.notifyChange({});
             debug.createTileDebugUI(menuGlobe.gui, view);
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

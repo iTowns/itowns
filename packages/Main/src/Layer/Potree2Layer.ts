@@ -60,16 +60,17 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
      * Constructs a new instance of Potree2 layer.
      *
      * @example
+     * ```js
      * // Create a new point cloud layer
-     * const points = new Potree2Layer('points',
-     *  \{
-     *      source: new Potree2Source(\{
-     *          url: 'https://pointsClouds/',
-     *          file: 'metadata.json',
-     *      \}
-     *  \});
+     * const points = new Potree2Layer('points', {
+     *     source: new Potree2Source({
+     *         url: 'https://pointsClouds/',
+     *         file: 'metadata.json',
+     *     })
+     * });
      *
      * View.prototype.addLayer.call(view, points);
+     * ```
      *
      * @param id - The id of the layer, that should be unique. It is
      * not mandatory, but an error will be emitted if this layer is added a

@@ -186,23 +186,16 @@ async function saveInitialPosition() {
 }
 
 // Use waitUntilItownsIsIdle to wait until itowns has finished all its work (= layer updates)
-const waitUntilItownsIsIdle = async (screenshotName) => {
-    const result = await page.evaluate(() => new Promise((resolve) => {
-        function resolveWhenReady() {
-            if (view.mainLoop.renderingState === 0) {
-                view.mainLoop.removeEventListener('command-queue-empty', resolveWhenReady);
-                itowns.CameraUtils.stop(view, view.camera3D);
-                resolve(true);
-            }
-        }
-        view.mainLoop.addEventListener('command-queue-empty', resolveWhenReady);
-    }));
+const waitUntilItownsIsIdle = async (screenshotName, timeout = TIMEOUT) => {
+    await initializeLayers(timeout);
+
+    await page.evaluate(() => itowns.CameraUtils.stop(view, view.camera3D));
 
     await waitNextRender(page);
 
     await saveScreenshot(page, screenshotName);
 
-    return result;
+    return true;
 };
 
 // helper function to launch browser with GL enabled

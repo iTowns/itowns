@@ -41,6 +41,9 @@
             import * as debug from 'debug';
             import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
 
+            window.itowns = itowns;
+            window.THREE = THREE;
+
             // ---------- CREATE A GlobeView FOR SUPPORTING DATA VISUALIZATION : ----------
 
             // Define camera initial position
@@ -56,6 +59,7 @@
 
             // Create a GlobeView
             const view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
 
             // Setup loading screen and debug menu
             setupLoadingScreen(viewerDiv, view);
@@ -68,14 +72,17 @@
 
             // ---------- DISPLAY CONTEXTUAL DATA : ----------
 
+            const [orthoConfig, ignMntHighResConfig, worldDtmConfig] = await Promise.all([
+                itowns.Fetcher.json('./layers/JSONLayers/Ortho.json'),
+                itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json'),
+                itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json'),
+            ]);
+
             // Display ortho-images
-            itowns.Fetcher.json('./layers/JSONLayers/Ortho.json')
-                .then(function _(config) {
-                    config.source = new itowns.WMTSSource(config.source);
-                    view.addLayer(
-                        new itowns.ColorLayer('Ortho', config),
-                    ).then(debugMenu.addLayerGUI.bind(debugMenu));
-                });
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            view.addLayer(
+                new itowns.ColorLayer('Ortho', orthoConfig),
+            ).then(debugMenu.addLayerGUI.bind(debugMenu));
 
             // Display elevation data
             function addElevationLayerFromConfig(config) {
@@ -84,10 +91,8 @@
                     new itowns.ElevationLayer(config.id, config),
                 ).then(debugMenu.addLayerGUI.bind(debugMenu));
             }
-            itowns.Fetcher.json('./layers/JSONLayers/IGN_MNT_HIGHRES.json')
-                .then(addElevationLayerFromConfig);
-            itowns.Fetcher.json('./layers/JSONLayers/WORLD_DTM.json')
-                .then(addElevationLayerFromConfig);
+            addElevationLayerFromConfig(ignMntHighResConfig);
+            addElevationLayerFromConfig(worldDtmConfig);
 
 
 
@@ -130,11 +135,7 @@
 
             // Warning: the following code is not part of this example, those
             // variables are only exposed for internal functional test uses.
-            window.view = view;
 
-            window.view = view;
-            window.itowns = itowns;
-            window.THREE = THREE;
 
         </script>
     </body>

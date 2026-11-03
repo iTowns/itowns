@@ -129,7 +129,10 @@
                 currentView = view;
                 View.prototype.addLayer.call(view, layer);
 
-                const openSMJSON = await Fetcher.json('./layers/JSONLayers/OPENSM.json');
+                const [openSMJSON, worldDTMJSON] = await Promise.all([
+                    Fetcher.json('./layers/JSONLayers/OPENSM.json'),
+                    Fetcher.json('./layers/JSONLayers/WORLD_DTM.json'),
+                ]);
                 view.addLayer(
                     new ColorLayer(openSMJSON.id, {
                         ...openSMJSON,
@@ -137,7 +140,6 @@
                     }),
                 );
 
-                const worldDTMJSON = await Fetcher.json('./layers/JSONLayers/WORLD_DTM.json');
                 view.addLayer(
                     new ElevationLayer(worldDTMJSON.id, {
                         ...worldDTMJSON,

@@ -12,15 +12,15 @@ interface CopcLayerParameters extends PointCloudLayerParameters {
  *
  * @example
  * // Create a new COPC layer
- * const copcSource = new CopcSource(\{
+ * const copcSource = new CopcSource({
  *     url: 'https://s3.amazonaws.com/hobu-lidar/autzen-classified.copc.laz',
  *     crs: 'EPSG:4978',
  *     colorDepth: 16, // bit-depth of 'color' attribute (either 8 or 16 bits)
- * \});
+ * });
  *
- * const copcLayer = new CopcLayer('COPC', \{
+ * const copcLayer = new CopcLayer('COPC', {
  *     source: copcSource,
- * \});
+ * });
  *
  * View.prototype.addLayer.call(view, copcLayer);
  */
