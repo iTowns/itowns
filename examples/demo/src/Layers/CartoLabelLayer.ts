@@ -25,7 +25,6 @@ export const CartoLabelLayer: LayerPromiseTypeNoParams = {
                 };
 
                 CartoLabelLayer.cachedLayer = new itowns.LabelLayer(CartoLabelLayer.id, {
-                    // @ts-expect-error source undefined
                     source: await CartoWFSSource.getSource(),
                     style: wfsCartoStyle,
                 });

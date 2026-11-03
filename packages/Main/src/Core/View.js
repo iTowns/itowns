@@ -10,6 +10,7 @@ import FeaturesUtils from 'Utils/FeaturesUtils';
 import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
+import InstancedLabelLayer from 'Layer/InstancedLabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
 export const VIEW_EVENTS = {
@@ -60,7 +61,10 @@ function _preprocessLayer(view, layer, parentLayer) {
     }
 
     if (layer.isLabelLayer) {
-        view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
+        // Instanced label layers have no DOM element for the 2D renderer.
+        if (!layer.isInstancedLabelLayer) {
+            view.mainLoop.gfxEngine.label2dRenderer.registerLayer(layer);
+        }
     } else if (layer.labelEnabled || layer.addLabelLayer) {
         if (layer.labelEnabled) {
             // eslint-disable-next-line no-console
@@ -70,7 +74,8 @@ function _preprocessLayer(view, layer, parentLayer) {
         layer.buildExtent = true;
         // label layer needs 3d data structure.
         layer.structure = '3d';
-        const labelLayer = new LabelLayer(`${layer.id}-label`, {
+        const LabelLayerType = layer.addLabelLayer.instanced ? InstancedLabelLayer : LabelLayer;
+        const labelLayer = new LabelLayerType(`${layer.id}-label`, {
             source,
             style: layer.style,
             zoom: layer.zoom,

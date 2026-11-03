@@ -84,6 +84,8 @@ class ColorLayer extends RasterLayer {
      * many labels in the same screen area.
      * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - Use
      * elevation layer to clamp labels to terrain.
+     * @param {boolean} [config.addLabelLayer.instanced=false] - Draw the labels
+     * as GPU instanced text instead of DOM elements. Icons are not drawn.
      *
      * @example
      * // Create a ColorLayer
