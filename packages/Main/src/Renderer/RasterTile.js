@@ -21,7 +21,17 @@ function refinementCommandCancellationFn(cmd) {
 
     const layerWasDeleted = !view.getLayerById(cmd.layer.id);
 
-    return !requester.visible ||
+    let cancel = false;
+
+    if (cmd.layer.isElevationLayer) {
+        const zoom = cmd.extentsSource.find(a => a?.zoom).zoom;
+        const current = requester.material.getCurrentElevationTile()?.level;
+
+        cancel = current >= zoom;
+    }
+
+    return cancel ||
+        !requester.visible ||
         !requester.material.visible ||
         !requester.parent ||
         children.find(c => c.visible) ||
