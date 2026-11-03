@@ -1,4 +1,4 @@
-import { EMPTY_TEXTURE_ZOOM } from 'Renderer/RasterTile';
+import { EMPTY_TEXTURE_ZOOM, type RasterTile } from 'Renderer/RasterTile';
 /**
  * This modules implements various layer update strategies.
  *
@@ -78,37 +78,51 @@ export function chooseNextLevelToFetch(
     failureParams: { lowestLevelError: number },
     zoom?: { min: number; max: number },
 ): number {
-    let nextLevelToFetch;
+    let levelToFetch;
 
     const maxZoom = zoom?.max ?? Infinity;
     if (failureParams.lowestLevelError != Infinity) {
-        nextLevelToFetch = _dichotomy(failureParams.lowestLevelError, currentLevel, zoom);
+        levelToFetch = _dichotomy(failureParams.lowestLevelError, currentLevel, zoom);
 
-        nextLevelToFetch =
-            failureParams.lowestLevelError == nextLevelToFetch ?
-                nextLevelToFetch - 1 : nextLevelToFetch;
+        levelToFetch =
+            failureParams.lowestLevelError == levelToFetch ?
+                levelToFetch - 1 : levelToFetch;
 
         if (strategy.type == STRATEGY_GROUP) {
-            nextLevelToFetch = _group(nextLevelToFetch, strategy.options);
+            levelToFetch = _group(levelToFetch, strategy.options);
         }
     } else {
         switch (strategy.type) {
             case STRATEGY_GROUP:
-                nextLevelToFetch = _group(nodeLevel, strategy.options);
+                levelToFetch = _group(nodeLevel, strategy.options);
                 break;
             case STRATEGY_PROGRESSIVE: {
-                nextLevelToFetch = _progressive(nodeLevel, currentLevel, strategy.options);
+                levelToFetch = _progressive(nodeLevel, currentLevel, strategy.options);
                 break;
             }
             case STRATEGY_DICHOTOMY:
-                nextLevelToFetch = _dichotomy(nodeLevel, currentLevel, zoom);
+                levelToFetch = _dichotomy(nodeLevel, currentLevel, zoom);
                 break;
             // default strategy
             case STRATEGY_MIN_NETWORK_TRAFFIC:
             default:
-                nextLevelToFetch = _minimizeNetworkTraffic(nodeLevel);
+                levelToFetch = _minimizeNetworkTraffic(nodeLevel);
         }
-        nextLevelToFetch = Math.min(nextLevelToFetch, maxZoom);
+        levelToFetch = Math.min(levelToFetch, maxZoom);
     }
-    return nextLevelToFetch;
+    return levelToFetch;
 }
+
+export const nextLevelToFetch = (t: RasterTile) => {
+    const zoom = {
+        min: Math.max(t.layer.zoom.min, t.layer.source.zoom?.min),
+        max: Math.min(t.layer.zoom.max, t.layer.source.zoom?.max),
+    };
+    return chooseNextLevelToFetch(
+        t.layer.updateStrategy,
+        t.tiles[0].zoom,
+        t.level,
+        t.state.failureParams,
+        zoom,
+    );
+};
