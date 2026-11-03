@@ -16,13 +16,16 @@ function materialCommandQueuePriorityFunction(material) {
 }
 
 function refinementCommandCancellationFn(cmd) {
-    const { requester } = cmd;
+    const { requester, view } = cmd;
     const { children }  = requester;
+
+    const layerWasDeleted = !view.getLayerById(cmd.layer.id);
 
     return !requester.visible ||
         !requester.material.visible ||
         !requester.parent ||
-        children.find(c => c.visible);
+        children.find(c => c.visible) ||
+        layerWasDeleted;
 }
 
 function buildCommand(tile, extentsSource, requester, view) {
