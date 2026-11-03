@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - master
+      - 'release/**'
   pull_request:
     branches:
       - master
+      - 'release/**'
   workflow_dispatch: {}
+
+env:
+  # A release is triggered by a 'release v...' commit pushed on a 'release/**' branch
+  IS_RELEASE: ${{ startsWith(github.ref, 'refs/heads/release/') && startsWith(github.event.head_commit.message, 'release v') }}
 
 jobs:
 
@@ -64,7 +70,7 @@ jobs:
 
       # Build documentation
       - name: Build documentation
-        if: ${{ success() && github.ref == 'refs/heads/master' }}
+        if: ${{ success() && (github.ref == 'refs/heads/master' || env.IS_RELEASE == 'true') }}
         run: npm run doc -- -d buildDocs
 
       # Prepare archive for deploying
@@ -183,7 +189,7 @@ jobs:
   # Publish NPM package
   publish:
     name: Publish NPM package
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release/') && startsWith(github.event.head_commit.message, 'release v')) }}
     needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     permissions:
@@ -211,21 +217,13 @@ jobs:
       - run: npm run prepare
 
       - name: publish itowns@latest npm package
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        if: ${{ env.IS_RELEASE == 'true' }}
         run: npm run publish-latest
 
-      - name: publish itowns@next npm package (following a release)
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
-        run: |
-          git checkout next
-          git reset --hard master
-          npm run publish-next
-          git add .
-          git commit --amend --no-edit
-          git push -f
-
+      # The @next version following a release is published when the release branch is merged
+      # back to master.
       - name: publish itowns@next npm package
-        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         run: |
           git checkout next
           git merge master
@@ -237,7 +235,11 @@ jobs:
   # Deploy on itowns.github.io website
   deploy:
     name: Deploy to itowns.github.io
-    if: ${{ github.ref == 'refs/heads/master' }}
+    if: ${{ github.ref == 'refs/heads/master' || (startsWith(github.ref, 'refs/heads/release/') && startsWith(github.event.head_commit.message, 'release v')) }}
+    # Only one deployment at a time: the same deploy key can't publish two folders simultaneously
+    concurrency:
+      group: deploy-itowns-github-io
+      cancel-in-progress: false
     needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
@@ -262,14 +264,14 @@ jobs:
       # iTowns/itowns.github.io. This is because we can't publish both a release version
       # (in itowns/ folder) and a @next version (in itowns/dev folder) at the same time.
       - name: add dev bundle if release
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        if: ${{ env.IS_RELEASE == 'true' }}
         run: |
           cp -R itowns dev
           mv dev itowns/
 
       # Deploy to itowns.github.io LTS
       - name: Deploy LTS to itowns.github.io
-        if: ${{ startsWith(github.event.head_commit.message, 'release v' ) }}
+        if: ${{ env.IS_RELEASE == 'true' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
@@ -281,10 +283,7 @@ jobs:
 
       # Deploy to itowns.github.io Dev
       - name: Deploy Dev to itowns.github.io
-        # Prevent deploying @next version when a release is done. Doing so would cause an issue,
-        # since it is not possible to use the same deploy key to simultaneously deploy two different
-        # folders on iTowns/itowns.github.io (the release bundle on previous step and this one.
-        if: ${{ !startsWith(github.event.head_commit.message, 'release v' ) }}
+        if: ${{ github.ref == 'refs/heads/master' }}
         uses: peaceiris/actions-gh-pages@v4
         with:
           deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
@@ -298,7 +297,7 @@ jobs:
   # Create GitHub release
   release:
     name: Release GitHub
-    if: ${{ github.ref == 'refs/heads/master' && startsWith( github.event.head_commit.message, 'release v' ) }}
+    if: ${{ startsWith(github.ref, 'refs/heads/release/') && startsWith(github.event.head_commit.message, 'release v') }}
     needs: [check-commit-message, typecheck, finish-coverage, functional-tests]
     runs-on: ubuntu-latest
     steps:
