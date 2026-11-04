@@ -3,7 +3,7 @@ import assert from 'assert';
 import { Extent, CRS } from '@itowns/geographic';
 import { PlanarTileBuilder } from 'Core/Prefab/Planar/PlanarTileBuilder';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
-import { newTileGeometry } from 'Core/Prefab/TileBuilder';
+import { prepareTileMesh } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 
 describe('OBB', function () {
@@ -53,7 +53,7 @@ function assertVerticesAreInOBB(builder, extent) {
         segments: 1,
     };
 
-    const { geometry } = newTileGeometry(builder, params);
+    const { geometry } = prepareTileMesh(builder, params);
 
     const geom = geometry;
     const inverse = new THREE.Matrix4().copy(geom.OBB.matrix).invert();

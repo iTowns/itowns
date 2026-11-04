@@ -4,7 +4,7 @@ import TileMesh from 'Core/TileMesh';
 import PlanarLayer from 'Core/Prefab/Planar/PlanarLayer';
 import Tile from 'Core/Tile/Tile';
 import { globalExtentTMS } from 'Core/Tile/TileGrid';
-import { newTileGeometry } from 'Core/Prefab/TileBuilder';
+import { prepareTileMesh } from 'Core/Prefab/TileBuilder';
 import OBB from 'Renderer/OBB';
 import ElevationLayer from 'Layer/ElevationLayer';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
@@ -79,7 +79,7 @@ describe('TileMesh', function () {
             disableSkirt: true,
         };
 
-        const { geometry } = newTileGeometry(planarlayer.builder, paramsGeometry);
+        const { geometry } = prepareTileMesh(planarlayer.builder, paramsGeometry);
 
         const position = geometry.attributes.position;
         assert.ok(position.array.constructor.name == 'Float32Array');
@@ -91,7 +91,7 @@ describe('TileMesh', function () {
             disableSkirt: true,
         };
 
-        assert.throws(() => newTileGeometry(planarlayer.builder, paramsGeometry2), new Error('Tile segments count is too big'));
+        assert.throws(() => prepareTileMesh(planarlayer.builder, paramsGeometry2), new Error('Tile segments count is too big'));
     });
 
     it('should find the correct common ancestor between two tiles of different level', function () {
@@ -117,10 +117,10 @@ describe('TileMesh', function () {
             disableSkirt: true,
         };
 
-        const { geometry } = newTileGeometry(planarlayer.builder, paramsGeometry);
+        const { geometry } = prepareTileMesh(planarlayer.builder, paramsGeometry);
         geometry.increaseRefCount();
 
-        const r = newTileGeometry(planarlayer.builder, paramsGeometry);
+        const r = prepareTileMesh(planarlayer.builder, paramsGeometry);
 
         assert.equal(r.geometry.refCount, 1);
     });
@@ -133,7 +133,7 @@ describe('TileMesh', function () {
             disableSkirt: true,
         };
 
-        const { geometry } =  newTileGeometry(planarlayer.builder, paramsGeometry);
+        const { geometry } =  prepareTileMesh(planarlayer.builder, paramsGeometry);
         geometry.dispose();
         assert.equal(geometry.index, null);
     });

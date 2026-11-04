@@ -76,7 +76,7 @@ export interface TileBuilder<SpecializedParams extends TileBuilderParams = TileB
 
 type UintArray = Uint8Array | Uint16Array | Uint32Array;
 
-export function newTileGeometry(
+export function prepareTileMesh(
     builder: TileBuilder,
     params: TileBuilderPrepareParams,
 ) {

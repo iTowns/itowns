@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import TileMesh, { TileLayerLike } from 'Core/TileMesh';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
-import { newTileGeometry } from 'Core/Prefab/TileBuilder';
+import { prepareTileMesh } from 'Core/Prefab/TileBuilder';
 import ReferLayerProperties from 'Layer/ReferencingLayerProperties';
 import { geoidLayerIsVisible } from 'Layer/GeoidLayer';
 
@@ -47,7 +47,7 @@ export default {
             hideSkirt: layer.hideSkirt,
         };
 
-        const { geometry, quaternion, position } = newTileGeometry(builder, paramsGeometry);
+        const { geometry, quaternion, position } = prepareTileMesh(builder, paramsGeometry);
         // build tile mesh
         geometry.increaseRefCount();
         const crsCount = layer.tileMatrixSets.length;
