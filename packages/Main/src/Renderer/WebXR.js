@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import VRControls from 'Controls/VRControls';
+import { RenderPass } from 'postprocessing';
 
 // TODO handle xr session end
 export const VR_EVENTS = {
@@ -83,11 +84,13 @@ class WebXR extends THREE.EventDispatcher {
         this.options = options;
         this.renderCb = options.callback;
         this.vrControls = null;
+        this.renderPass = null;
     }
 
     // Start the webXR handler
     initializeWebXR = () => {
         const xr = this.view.renderer.xr;
+
 
         xr.addEventListener('sessionstart', () => {
             xr.enabled = true;
@@ -111,6 +114,13 @@ class WebXR extends THREE.EventDispatcher {
             this.view._camXR.far = 2000000;
             this.view._camXR.near = 0.1;
             this.view._camXR.updateProjectionMatrix();
+
+            if (!this.renderPass) {
+                this.renderPass = new RenderPass(this.view.scene, this.view._camXR);
+                this.view.mainLoop.gfxEngine.composer.passes.splice(1, 0, this.renderPass);
+            }
+            this.renderPass.enabled = true;
+            this.view.renderPass.enabled = false;
 
             vrHeadSet.add(this.view._camXR);
 
@@ -144,6 +154,11 @@ class WebXR extends THREE.EventDispatcher {
                 this.view.mainLoop.step(this.view, timestamp);
             });
         });
+
+        xr.addEventListener('sessionend', () => {
+            this.renderPass.enabled = false;
+            this.view.renderPass.enabled = true;
+        })
     };
 }
 export default WebXR;

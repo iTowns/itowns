@@ -10,7 +10,7 @@ import Capabilities from 'Core/System/Capabilities';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
-import { EffectComposer, RenderPass, EffectPass, FXAAEffect } from 'postprocessing';
+import { EffectComposer, EffectPass, FXAAEffect } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
 class c3DEngine {
@@ -121,7 +121,7 @@ class c3DEngine {
         this.composer = new EffectComposer(this.renderer, {
             frameBufferType: THREE.HalfFloatType,
         });
-        this.renderPass = null;
+
         this.fxaaPass = null;
     }
 
@@ -177,22 +177,8 @@ class c3DEngine {
         this.renderer.setClearAlpha(this.renderer.getClearAlpha());
         this.renderer.clear();
 
-        if (view._camXR && (!this.renderPass || this.renderPass.name != 'RenderPassXR')) {
-            this.renderPass = new RenderPass(view.scene, view._camXR);
-            this.renderPass.name = 'RenderPassXR';
-        } else if (!this.renderPass || this.renderPass?.name != 'RenderPass') {
-            this.renderPass = new RenderPass(view.scene, view.camera3D);
-            this.renderPass.name = 'RenderPass';
-        }
-
-        if (this.composer.passes[0]?.name.startsWith('RenderPass')) {
-            this.composer.passes[0] = this.renderPass;
-        } else {
-            this.composer.addPass(this.renderPass, 0);
-        }
-
         if (!this.fxaaPass) {
-            this.fxaaPass = this.addPass(new EffectPass(view.camera3D, new FXAAEffect()), this.composer.passes.length);
+            this.fxaaPass = this.composer.addPass(new EffectPass(view.camera3D, new FXAAEffect()));
         }
 
         this.composer.render();

@@ -11,6 +11,7 @@ import Scheduler from 'Core/Scheduler/Scheduler';
 import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
+import { RenderPass } from 'postprocessing';
 
 export const VIEW_EVENTS = {
     /**
@@ -200,6 +201,9 @@ class View extends THREE.EventDispatcher {
             this.mainLoop.gfxEngine.getWindowSize().x,
             this.mainLoop.gfxEngine.getWindowSize().y,
             options.camera);
+
+        this.renderPass = new RenderPass(this.scene, this.camera3D);
+        this.mainLoop.gfxEngine.composer.passes.splice(0, 0, this.renderPass);
 
         this._frameRequesters = {};
 
