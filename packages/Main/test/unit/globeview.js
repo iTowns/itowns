@@ -58,7 +58,7 @@ describe('GlobeView', function () {
             .then(() => {
                 const node = viewer.tileLayer.level0Nodes[0];
                 ObjectRemovalHelper.removeChildrenAndCleanup(viewer.tileLayer, node);
-                ObjectRemovalHelper.removeChildren(viewer.tileLayer, node);
+                node.clear();
                 done();
             }).catch(done);
     });
