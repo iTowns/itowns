@@ -148,26 +148,6 @@ class c3DEngine {
     }
 
     /**
-     * @param {Pass} pass
-     * @param {number} [index] Defaults to the index right before the anti-aliasing pass.
-     * @returns {Pass}
-     */
-    addPass(pass, index) {
-        index ??= this.composer.passes.length - 2;
-        index = Math.max(0, Math.min(index, this.composer.passes.length));
-        this.composer.addPass(pass, index);
-        return pass;
-    }
-
-    /**
-     * @param {Pass} pass
-     * @returns {void}
-     */
-    removePass(pass) {
-        this.composer.removePass(pass);
-    }
-
-    /**
      * @param {View} view
      * @returns {void}
      */
