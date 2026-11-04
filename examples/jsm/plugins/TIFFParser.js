@@ -4,7 +4,7 @@ import * as itowns from 'itowns';
 import UTIF from 'UTIF';
 
 /**
- * The TIFFParser module provides a [parse]{@link module:TIFFParser.parse}
+ * The TIFFParser module provides a `parse`
  * method that takes a TIFF in and gives a `THREE.DataTexture` that can be
  * displayed in the view.
  *
@@ -20,7 +20,7 @@ import UTIF from 'UTIF';
  *         view.addLayer(layer);
  *     });
  *
- * @module TIFFParser
+ * @category Plugins
  */
 const TIFFParser = (function _() {
     return {
@@ -31,8 +31,6 @@ const TIFFParser = (function _() {
          * @param {object} options - options
          *
          * @returns {Promise} A promise resolving with a `THREE.DataTexture`.
-         *
-         * @memberof module:TIFFParser
          */
         parse: function _(data, options) {
             const IFD = UTIF.decode(data)[0];

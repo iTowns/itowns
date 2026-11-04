@@ -4,8 +4,12 @@ import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 
 const utf8Decoder = new TextDecoder();
 
+/**
+ * Parser to extract `THREE.Points` and a batch table from a pnts buffer.
+ *
+ * @category Parser
+ */
 export default {
-    /** @module PntsParser */
     /**
      * Parse pnts buffer and extract THREE.Points and batch table
      * @function parse

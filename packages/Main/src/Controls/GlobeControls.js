@@ -152,8 +152,8 @@ let previous;
  *
  * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {CameraTransformOptions|Extent} placement   the {@link CameraTransformOptions} to apply to view's camera
- * or the extent it must display at initialisation, see {@link CameraTransformOptions} in {@link CameraUtils}.
+ * @param      {CameraTransformOptions|Extent} placement   the `CameraUtils.CameraTransformOptions` to apply to view's camera
+ * or the extent it must display at initialisation, see `CameraUtils`.
  * @param      {object}  [options] An object with one or more configuration properties. Any property of GlobeControls
  * can be passed in this object.
  * @property      {number}  zoomFactor The factor the scale is multiplied by when dollying (zooming) in or
@@ -180,6 +180,7 @@ let previous;
  * @property      {boolean} dampingMoveFactor the damping move factor. Default is 0.25.
  * @property      {StateControl.State} stateControl redefining which controls state is triggered by the keyboard/mouse
  * event (For example, rewrite the PAN movement to be triggered with the 'left' mouseButton instead of 'right').
+ * @category Controls
  */
 class GlobeControls extends THREE.EventDispatcher {
     constructor(view, placement, options = {}) {
@@ -1152,9 +1153,9 @@ class GlobeControls extends THREE.EventDispatcher {
      * Zoom parameter is ignored if range is set
      * The tilt's interval is between 4 and 89.5 degree
      *
-     * @param {CameraTransformOptions|Extent} [params] - camera transformation to apply
-     * @param {number} [params.zoom] - zoom
-     * @param {number} [params.scale] - scale
+     * @param {CameraTransformOptions|Extent} [params] - camera transformation to apply. It
+     * also accepts a `zoom` or a `scale` property (used respectively to compute the
+     * camera range from a zoom level, or from a map scale).
      * @param {boolean} [isAnimated] - Indicates if animated
      * @returns {Promise} A promise that resolves when transformation is complete
      */

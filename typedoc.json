@@ -1,0 +1,41 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "plugin": ["typedoc-plugin-mdn-links"],
+    "tsconfig": "tsconfig.typedoc.json",
+    "entryPoints": [
+        "packages/Geographic/src",
+        "packages/Main/src",
+        "packages/Debug/src",
+        "packages/Widgets/src",
+        "examples/jsm/plugins"
+    ],
+    "entryPointStrategy": "expand",
+    "projectDocuments": [
+        "docs/tutorials/Fundamentals.md",
+        "docs/tutorials/Raster-data-Lambert93.md",
+        "docs/tutorials/Raster-data-WGS84.md",
+        "docs/tutorials/Vector-data-3d.md",
+        "docs/tutorials/Vector-data-on-ground.md",
+        "docs/tutorials/3DTiles-mesh-b3dm.md",
+        "docs/tutorials/3DTiles-point-cloud-pnts.md"
+    ],
+    "exclude": ["**/lib/**", "**/test/**", "**/node_modules/**"],
+    "readme": "docs/HOMEPAGE.md",
+    "out": "docs/out",
+    "name": "iTowns",
+    "validation": { "notExported": true, "invalidLink": true, "notDocumented": false },
+    "treatWarningsAsErrors": true,
+    "categorizeByGroup": false,
+    "categoryOrder": ["Base", "View", "Geographic", "Layer", "Points", "Source", "Provider", "Parser", "Converter", "Controls", "Renderer", "Plugins", "Widgets", "*"],
+    "defaultCategory": "Other",
+    "externalSymbolLinkMappings": {
+        "typescript": {
+            "CanvasImageData.getImageData": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData"
+        },
+        "postprocessing": {
+            "EffectComposer": "https://pmndrs.github.io/postprocessing/public/docs/class/src/core/EffectComposer.js~EffectComposer.html",
+            "RenderPass": "https://pmndrs.github.io/postprocessing/public/docs/class/src/passes/RenderPass.js~RenderPass.html",
+            "Pass.initialize": "https://pmndrs.github.io/postprocessing/public/docs/class/src/passes/Pass.js~Pass.html#instance-method-initialize"
+        }
+    }
+}

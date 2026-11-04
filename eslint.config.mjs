@@ -15,7 +15,6 @@ const ignores = [
     'docs/out/',
     'docs/static/',
     'docs/tutorials/',
-    'docs/tmpl/',
     '**/test/data/**',
     '**/examples/libs/**',
     '**/examples/layers/**',

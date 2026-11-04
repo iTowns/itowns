@@ -2,6 +2,7 @@
  * An interface that stores common methods for all specific widgets.
  *
  * @hideconstructor
+ * @category Widgets
  */
 class Widget {
     #_display;

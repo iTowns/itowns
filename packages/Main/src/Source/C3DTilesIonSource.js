@@ -12,6 +12,7 @@ import C3DTilesSource from './C3DTilesSource';
  * @property {string} baseUrl - The base URL to access tiles.
  * @property {string} accessToken - The Cesium ion access token used to retrieve the resource.
  * @property {string} assetId - The id of the asset on Cesium ion.
+ * @category Source
  */
 class C3DTilesIonSource extends C3DTilesSource {
     /**

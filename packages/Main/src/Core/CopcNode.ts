@@ -2,6 +2,9 @@ import type CopcSource from 'Source/CopcSource';
 import { Hierarchy } from 'copc';
 import { buildVoxelKey } from 'Core/PointCloudNode';
 import LasNodeBase from 'Core/LasNodeBase';
+/**
+ * @category Points
+ */
 
 class CopcNode extends LasNodeBase {
     /**

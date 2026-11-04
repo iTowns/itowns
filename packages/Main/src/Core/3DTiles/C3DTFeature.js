@@ -33,6 +33,7 @@ function findBatchTable(object) {
  * @property {number} batchId - batch id
  * @property {Array<{start:number,count:number}>} groups - groups in geometry.attributes matching batchId
  * @property {object} [userData] - some userData
+ * @category Base
  */
 class C3DTFeature {
     #info;

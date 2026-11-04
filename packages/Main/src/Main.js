@@ -48,7 +48,7 @@ export { default as Label } from 'Core/Label';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
-// See http://www.itowns-project.org/itowns/docs/#api/Layer/Layer
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Layer.html
 export { default as Layer } from 'Layer/Layer';
 export * as ImageryLayers from 'Layer/ImageryLayers';
 export { default as ColorLayer } from 'Layer/ColorLayer';
@@ -80,7 +80,7 @@ export { default as GeoidLayer } from 'Layer/GeoidLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source
-// See http://www.itowns-project.org/itowns/docs/#api/Source/Source
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Source.html
 export { default as Source } from 'Source/Source';
 export { default as FileSource } from 'Source/FileSource';
 export { default as TMSSource } from 'Source/TMSSource';

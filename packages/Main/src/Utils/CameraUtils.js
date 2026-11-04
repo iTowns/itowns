@@ -346,7 +346,10 @@ export function getRig(camera) {
 }
 
 /**
- * @module CameraUtils
+ * Utility functions to transform the camera, such as moving it to look at a
+ * target or an extent.
+ *
+ * @category Controls
  */
 export default {
     /**

@@ -66,6 +66,7 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  *
  * // Add the layer to the view
  * view.addLayer(imageryLayer);
+ * @category Source
  */
 class TMSSource extends Source {
     /**

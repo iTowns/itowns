@@ -1,3 +1,8 @@
+---
+title: Fundamentals
+group: Getting started
+---
+
 ITowns is a javascript framework for 3D geographic data visualisation. 
 It can display a wide range of data such as ortho-images, Digital Elevation Models (DEM) or 3D models.
 
@@ -11,8 +16,8 @@ In this tutorial, we shall be introduced to the fundamentals of iTowns : how it 
 
 The support to display anything within iTowns is called a `{@link View}`.
 
-To provide geographic data visualization, a `{@link View}` contains a combination of [`Layers`]{@link Layer} which, in a digital map environment, are visual representations of any geographic data.
-In other words, all data that are displayed using iTowns are supported by some `Layer`.
+To provide geographic data visualization, a `{@link View}` contains a combination of `Layers` which, in a digital map environment, are visual representations of any geographic data.
+In other words, all data that are displayed using iTowns are supported by some {@link "packages/Main/src/Main".Layer | Layer}.
 
 Each `View` in iTowns displays 3D data in a unique Coordinates Reference System (CRS). 
 Yet, the data displayed within a `View` do not necessarily have to be in the `View`'s CRS.
@@ -30,9 +35,9 @@ It is important to acknowledge the following facts regarding original raster dat
 - a `GlobeView` allows displaying multiple raster data from two different source CRS : [WGS 84](https://epsg.io/4326) and [Pseudo-Mercator](https://epsg.io/3857),
 - a `PlanarView` allows displaying multiple raster data, but all those data sources must have the same CRS.
 
-&rarr;[**`Visit GlobeView tutorial`**]{@tutorial Raster-data-WGS84}
+&rarr;[**`Visit GlobeView tutorial`**](Raster-data-WGS84.md)
 
-&rarr;[**`Visit PlanarView tutorial`**]{@tutorial Raster-data-Lambert93}
+&rarr;[**`Visit PlanarView tutorial`**](Raster-data-Lambert93.md)
 
 ***
 
@@ -58,7 +63,7 @@ It is also possible to create your own source and/or your own parser to read and
 
 ## Layers
 
-It was earlier mentioned that data are displayed as [`Layers`]{@link Layer} within iTowns. 
+It was earlier mentioned that data are displayed as `Layers` within iTowns. 
 Several specific types of `Layers` exist, the use of which depends on the data to display :
 
 - `{@link ColorLayer}` can be used to display raster graphics or vector data that needs to be rasterized to be projected on the ground (left picture in the table bellow),
@@ -90,13 +95,13 @@ You can see bellow pictures illustrating the two cases.
 | Vector data projected on the ground | Vector data display as 3D objects |
 
 In both ways, the appearance and positioning of the vector data can be adjusted by modifying the `{@link Style}` parameter of the `Layer` the data are displayed in.
-The `Style` in iTowns comes with several properties : 
+The {@link "packages/Main/src/Main".Style | Style} in iTowns comes with several properties : 
 - `fill` allows defining style rules for polygons interior,
 - `stroke` allows defining style rules for lines and polygons edges,
 - `point` allows defining style rules for points.
 
 Each of these three properties comes with a bunch of parameters to set vector data appearance and positioning, such as `color`, `opacity`, `width`, `base_altitude`...
-You can find a list of all the possible parameters in `Style` [documentation]{@link Style}.
+You can find a list of all the possible parameters in {@link "packages/Main/src/Main".Style | Style} documentation.
 
 These parameters can be set as static values or as functions of the vector data properties.
 For example, let's suppose some vector data contains polygons.
@@ -119,7 +124,7 @@ In that case, the data basically consist in polygons, lines or points.
 Their appearance can be adjusted by modifying the `{@link Style}` of the `{@link ColorLayer}`. 
 Yet, their positioning can't be modified since it is computed so that tey appear projected on the ground.
 
-&rarr;[**`Visit tutorial`**]{@tutorial Vector-data-on-ground}
+&rarr;[**`Visit tutorial`**](Vector-data-on-ground.md)
 
 ### Vector data displayed as 3D objects
 
@@ -131,4 +136,4 @@ Two parameters allow modifying the data position :
 
 For example, given a set of polygons, setting `fill.base_altitude` to `500` and `fill.extrusion_height` to `20` will render extruded polygon expanding between 500 and 520 meters of altitude.
 
-&rarr;[**`Visit tutorial`**]{@tutorial Vector-data-3d}
+&rarr;[**`Visit tutorial`**](Vector-data-3d.md)

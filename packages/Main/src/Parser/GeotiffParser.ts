@@ -132,6 +132,7 @@ function rgbArrayToRGBAArray(
  *
  * It is basicaly a wrapper around
  * [GeoTIFFImage](https://geotiffjs.github.io/geotiff.js/module-geotiffimage-GeoTIFFImage.html).
+ * @category Parser
  */
 class GeotiffNode {
     /**

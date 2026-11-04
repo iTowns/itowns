@@ -58,6 +58,9 @@ export const GLOBE_VIEW_EVENTS = {
 };
 
 const camToSeaLevel = new Coordinates('EPSG:4978');
+/**
+ * @category View
+ */
 
 class GlobeView extends View {
     /**

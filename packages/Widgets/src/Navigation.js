@@ -70,6 +70,7 @@ const DEFAULT_BUTTONS = {
  *     // do something
  * }
  * navigation.zoomIn.onclick = newMethod;
+ * @category Widgets
  */
 class Navigation extends Widget {
     #_view;

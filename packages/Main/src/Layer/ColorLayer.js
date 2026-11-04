@@ -47,6 +47,7 @@ import Style from 'Core/Style';
  * - `3`: could be used by your own glsl code.
  *
  * @extends RasterLayer
+ * @category Layer
  */
 class ColorLayer extends RasterLayer {
     /**
@@ -76,14 +77,13 @@ class ColorLayer extends RasterLayer {
      * whether this layer can display labels from the data. For example, it
      * needs to be set for vector tile layers if you want to display labels.
      * If set, a new `LabelLayer` is added and attached to this layer.
-     * You can also configure it with {@link LabelLayer} options described below
-     * such as: `addLabelLayer: { performance: true }`.
-     * @param {boolean} [config.addLabelLayer.performance=false] - When adding
-     * a label layer, remove all labels that have no chance of being visible.
-     * Even if a label is visible, it may never be displayed if there are too
-     * many labels in the same screen area.
-     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - Use
-     * elevation layer to clamp labels to terrain.
+     * You can also configure it with {@link LabelLayer} options described
+     * below such as: `addLabelLayer: { performance: true }`. Supported
+     * properties are `performance` (boolean, default `false`) to remove all
+     * labels that have no chance of being visible even if there are too many
+     * labels in the same screen area, and `forceClampToTerrain` (boolean,
+     * default `false`) to use the elevation layer to clamp labels to the
+     * terrain.
      *
      * @example
      * // Create a ColorLayer

@@ -21,6 +21,9 @@ export interface PointCloudSource {
 export function buildVoxelKey(depth: number, x: number, y: number, z: number): string {
     return `${depth}-${x}-${y}-${z}`;
 }
+/**
+ * @category Points
+ */
 
 abstract class PointCloudNode extends THREE.EventDispatcher {
     /** The crs of the node. */

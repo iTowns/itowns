@@ -1,3 +1,8 @@
+---
+title: 3D point clouds
+group: 3D Tiles visualization
+---
+
 The goal of this tutorial is to learn how to visualize a 3D tiles point cloud (in the pnts format).
 We will also learn how to modify the style of a 3D tiles dataset in itowns.
 We will use a [data set](https://github.com/iTowns/iTowns2-sample-data/tree/master/3DTiles/dataset-dl.liris.cnrs.fr/three-d-tiles-lyon-metropolis/Lyon_2015_TileSet) representing a subset of the Tarn Gorges, initially provided by the [French Mapping Agency (IGN)](https://geoservices.ign.fr/lidarhd) and transformed in 3D tiles with [py3DTiles](https://gitlab.com/Oslandia/py3dtiles).
@@ -36,7 +41,7 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 We will first create a view, add a layer with ortho images and a digital elevation model (DEM).
 The 3D Tiles dataset we are using is in the `EPSG:4978` CRS, so we will use a `{@link GlobeView}` to display it.
 
-We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [WGS84 tutorial]{@tutorial Raster-data-WGS84} in which we explain how to add similar layers. The only differences are the data sources used. Here, we use ortho images from a XYZ stream of Open Street Map tiles which will allow to better distinguish the point cloud. We also use a more precise DEM (but that only covers France).
+We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [WGS84 tutorial](Raster-data-WGS84.md) in which we explain how to add similar layers. The only differences are the data sources used. Here, we use ortho images from a XYZ stream of Open Street Map tiles which will allow to better distinguish the point cloud. We also use a more precise DEM (but that only covers France).
 
 ```js
 var viewerDiv = document.getElementById('viewerDiv');

@@ -169,6 +169,7 @@ export const PLANAR_CONTROL_EVENT = {
  * @param   {number}        [options.maxZenithAngle=82.5]       The maximum reachable zenith angle for a camera
  * rotation, in degrees.
  * @param   {boolean}       [options.handleCollision=true]
+ * @category Controls
  */
 class PlanarControls extends THREE.EventDispatcher {
     constructor(view, options = {}) {

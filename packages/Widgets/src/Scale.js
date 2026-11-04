@@ -22,13 +22,14 @@ const DEFAULT_OPTIONS = {
  *
  * @property    {HTMLElement}   domElement      An html div containing the scale.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
+ * @category Widgets
  */
 class Scale extends Widget {
     /**
      * @param   {View}                  view                                    The iTowns view the scale should be
      * linked to. If it is a
-     * {@link PlanarView} or a
-     * {@link GlobeView}, the scale will be
+     * `PlanarView` or a
+     * `GlobeView`, the scale will be
      * automatically updated. Otherwise, user
      * will need to implement the update
      * automation using the `Scale.update`
