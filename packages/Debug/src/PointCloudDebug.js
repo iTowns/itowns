@@ -51,7 +51,8 @@ function setupControllerVisibily(gui, displayMode, sizeMode) {
     }
 }
 
-function createVoxelOBBHelper(node) {
+function createVoxelOBBHelper(node, crs) {
+    node.voxelOBB.projOBB(node.source.crs, crs);
     const helper = new OBBHelper(node.voxelOBB, new THREE.Color(THREE.Color.NAMES.darkred));
     helper.name = node.id;
     return helper;
@@ -150,7 +151,7 @@ class PointCloudDebug {
         let helpers = tile[NODE_BOXES_SYMBOL];
         if (visible && !helpers) {
             helpers = {
-                voxelOBB: createVoxelOBBHelper(tile),
+                voxelOBB: createVoxelOBBHelper(tile, this.layer.crs),
                 clampOBB: createClampOBBHelper(tile),
                 pointsOBB: createPointsOBBHelper(tile),
             };

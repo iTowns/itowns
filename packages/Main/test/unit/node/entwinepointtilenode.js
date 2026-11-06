@@ -26,7 +26,7 @@ describe('Entwine Point Tile Node', function () {
         it('instanciate a node (without hierarchy)', () => {
             const depth = 2;
             const key = { x: 5, y: 12, z: 2 };
-            const node = new EntwinePointTileNode(depth, ...Object.values(key), source, crs);
+            const node = new EntwinePointTileNode(depth, ...Object.values(key), source);
             assert.ok(node instanceof EntwinePointTileNode);
             assert.equal(node.numPoints, -1);
             assert.deepStrictEqual(node.hierarchy, {});
@@ -37,7 +37,7 @@ describe('Entwine Point Tile Node', function () {
     describe('getters', () => {
         let root;
         before('instanciate a root node', function () {
-            root = new EntwinePointTileNode(0, 0, 0, 0, source, crs);
+            root = new EntwinePointTileNode(0, 0, 0, 0, source);
         });
 
         it('get networkOptions', () => {
@@ -64,7 +64,7 @@ describe('Entwine Point Tile Node', function () {
                 [buildVoxelKey(depth, ...Object.values(key))]: numPoints,
             };
 
-            node = new EntwinePointTileNode(depth, ...Object.values(key), source, crs);
+            node = new EntwinePointTileNode(depth, ...Object.values(key), source);
         });
 
         afterEach('restore spies', function () {

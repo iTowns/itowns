@@ -3,12 +3,6 @@ import PotreeNode from 'Core/PotreeNode';
 import type PotreeSource from 'Source/PotreeSource';
 
 interface PotreeLayerParameters extends PointCloudLayerParameters {
-    /**
-     * The CRS of the View this layer will be attached to.
-     * This is used to determine the extent of this layer.
-     * Default to `EPSG:4326`.
-     */
-    crs?: string;
     source: PotreeSource;
 }
 
@@ -59,13 +53,16 @@ class PotreeLayer extends PointCloudLayer<PotreeSource> {
 
             this.setElevationRange();
 
-
             const { lx, ly, lz, ux, uy, uz } = cloud.boundingBox;
             const bounds = [lx, ly, lz, ux, uy, uz];
-            // this.root = new PotreeNode('r', this.source, this.crs);
-            this.root = new PotreeNode(0, 0, 0, 0, this.source, this.crs);
-            this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
-            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+
+            this.root = new PotreeNode(0, 0, 0, 0, this.source);
+
+            this.root.voxelOBB.setFromArray(bounds);
+
+            this.root.clampOBB.copy(this.root.voxelOBB)
+                .clampZ(this.source.zmin, this.source.zmax)
+                .projOBB(this.source.crs, this.crs);
 
             return this.root;
         });

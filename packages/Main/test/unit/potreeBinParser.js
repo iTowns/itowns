@@ -25,13 +25,15 @@ describe('PotreeBinParser', function () {
                     scale: 1,
                     crs,
                 },
-                crs,
                 voxelOBB: {
                     natBox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
                 },
                 clampOBB: {
                     matrix: new THREE.Matrix4(),
                 },
+            },
+            out: {
+                crs,
             },
         };
 
@@ -82,13 +84,15 @@ describe('PotreeBinParser', function () {
                     scale: 1,
                     crs,
                 },
-                crs,
                 voxelOBB: {
                     natBox: new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(valPositionMax, valPositionMax, valPositionMax)),
                 },
                 clampOBB: {
                     matrix: new THREE.Matrix4(),
                 },
+            },
+            out: {
+                crs,
             },
         };
 
