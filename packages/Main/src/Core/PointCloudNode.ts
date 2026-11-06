@@ -9,6 +9,8 @@ const translation = new Vector3();
 const box3 = new Box3();
 
 export interface PointCloudSource {
+    /** The minimum distance between points at root level. */
+    spacing: number;
     crs: string;
     zmin: number;
     zmax: number;
@@ -88,6 +90,10 @@ abstract class PointCloudNode extends THREE.EventDispatcher {
     abstract fetcher(url: string, networkOptions:  RequestInit): Promise<ArrayBuffer>;
     abstract loadHierarchy(): Promise<unknown>;
     abstract findAndCreateChild(depth: number, x: number, y: number, z: number): void;
+
+    get pointSpacing(): number {
+        return this.source.spacing / 2 ** this.depth;
+    }
 
     get hierarchyIsLoaded(): boolean {
         return this.numPoints >= 0;
