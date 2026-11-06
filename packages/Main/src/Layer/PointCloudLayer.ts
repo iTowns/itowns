@@ -14,8 +14,6 @@ export interface PointCloudSource {
     zmin: number;
     /** The maximal value for elevation (read from the metadata). */
     zmax: number;
-    /** The minimum distance between points at root level (from metadata). */
-    spacing: number;
 }
 
 export interface PointCloudLayerParameters {
@@ -397,6 +395,8 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
                 }).then((pts: THREE.Points) => {
                     elt.obj = pts;
                     elt.obj.visible = false;
+                    // voxelOBB is used by the adaptive point size shader: it must be in the same local frame as the points
+                    elt.voxelOBB.projOBB(elt.source.crs, this.crs);
 
                     if (!elt.visible) {
                         elt.notVisibleSince = Date.now();
@@ -473,7 +473,7 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             node.sse = computeScreenSpaceError(
                 context,
                 layer.pointSize,
-                layer.source.spacing / 2 ** node.depth,
+                node.pointSpacing,
                 Math.max(0.001, distanceToCamera), // to avoid Infinity but keeping a priority between nodes of differents depth
             );
 
@@ -554,44 +554,29 @@ abstract class PointCloudLayer<S extends PointCloudSource = PointCloudSource>
             vnt.needsUpdate = true;
 
             // Use box3D (projected in the local geometry coordinate frame) for
-            // octreeSize and bboxMin, because the vertex shader positions are
+            // nodeSize and bboxMin, because the vertex shader positions are
             // expressed in that same local frame after CRS reprojection and
             // quaternion rotation applied by the parsers.
-            // Using natBox (native source CRS) would mix coordinate systems
-            // (e.g. Lambert93 metres vs. ECEF metres) and produce wrong LODs
-            // for point clouds whose source CRS differs from the scene CRS.
-            const rootSize = this.root.voxelOBB.box3D.getSize(new THREE.Vector3());
 
             for (const pts of this.group.children) {
                 const node = pts.userData.node;
-                const depth = node.depth;
                 const nodeStartOffset = this._visibilityTextureData.nodeToIndex.get(node);
-                const octreeSpacing = this.source.spacing;
 
                 if (nodeStartOffset === undefined) {
                     continue;
                 }
 
-                // Compute the bounding box min of the node's octree cell in
-                // the local coordinate frame used by the THREE.Points geometry.
-                // The parsers store each point as:
-                //   quat * (forward(nativePos) - centerZ0)
-                // where centerZ0 = voxelOBB.position and quat is computed at
-                // that same position.  projOBB() builds box3D with the exact
-                // same origin and the same quaternion, so box3D.min is already
-                // expressed in the geometry's local frame — no further
-                // transformation is needed.
+                const nodeSize = node.voxelOBB.box3D.getSize(new THREE.Vector3());
+                const nodeSpacing = node.pointSpacing;
                 const bboxMin = node.voxelOBB.box3D.min.clone();
 
                 pts.onBeforeRender = (_renderer, _scene, _camera, _geometry, material) => {
                     // @ts-expect-error Material is not typed yet
                     material.uniforms.nodeStartOffset.value = nodeStartOffset;
                     // @ts-expect-error Material is not typed yet
-                    material.uniforms.octreeSize.value.copy(rootSize);
+                    material.uniforms.nodeSize.value.copy(nodeSize);
                     // @ts-expect-error Material is not typed yet
-                    material.uniforms.octreeSpacing.value = octreeSpacing;
-                    // @ts-expect-error Material is not typed yet
-                    material.uniforms.nodeDepth.value = depth;
+                    material.uniforms.nodeSpacing.value = nodeSpacing;
                     // @ts-expect-error Material is not typed yet
                     material.uniforms.nodeBBoxMin.value.copy(bboxMin);
                     // @ts-expect-error Material is not typed yet

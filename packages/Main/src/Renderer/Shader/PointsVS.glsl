@@ -33,9 +33,8 @@ uniform float maxAttenuatedSize;
 
 // Adaptive point size uniforms
 uniform sampler2D visibleNodes;
-uniform float octreeSpacing;
-uniform vec3 octreeSize;
-uniform float nodeDepth;
+uniform float nodeSpacing;
+uniform vec3 nodeSize;
 uniform float nodeStartOffset;
 uniform vec3 nodeBBoxMin;
 
@@ -75,9 +74,9 @@ float getLOD() {
     vec3 pos = position - nodeBBoxMin;
     vec3 offset = vec3(0.0, 0.0, 0.0);
     int iOffset = int(nodeStartOffset);
-    float depth = nodeDepth;
+    float depth = 0.0;
     for (float i = 0.0; i <= 30.0; i++) {
-        vec3 nodeSizeAtLevel = octreeSize / pow(2.0, i + nodeDepth);
+        vec3 nodeSizeAtLevel = nodeSize / pow(2.0, i);
 
         vec3 index3d = (pos - offset) / nodeSizeAtLevel;
         index3d = clamp(floor(index3d + 0.5), 0.0, 1.0);
@@ -195,7 +194,7 @@ void main() {
         }
     } else if (sizeMode == PNTS_SIZE_MODE_ADAPTIVE) {
         if (isPerspective) {
-            float r = octreeSpacing * 1.7;
+            float r = nodeSpacing * 1.7;
             float pointSizeAttenuation = pow(2.0, getLOD());
             float worldSpaceSize = size * r / pointSizeAttenuation;
             gl_PointSize = worldSpaceSize * depthAttenuationFactor;
