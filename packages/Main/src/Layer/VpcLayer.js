@@ -137,9 +137,9 @@ class VpcLayer extends PointCloudLayer {
         });
     }
 
-    loadData(elt, context, layer, bbox) {
+    loadData(elt, context, layer) {
         if (elt.source.isSource) {
-            return super.loadData(elt, context, layer, bbox);
+            return super.loadData(elt, context, layer);
         }
 
         // elt is a mockSubRoot (its source is a mockSource)
