@@ -11,6 +11,8 @@ export const RENDERING_SCHEDULED = 1;
 /**
  * MainLoop's update events list that are fired using
  * {@link View#execFrameRequesters}.
+ *
+ * @category View
  */
 export const MAIN_LOOP_EVENTS = {
     /** Fired at the start of the update */
@@ -104,6 +106,9 @@ function filterChangeSources(
     });
     return fullUpdate ? new Set([geometryLayer]) : filtered;
 }
+/**
+ * @category Base
+ */
 
 class MainLoop extends EventDispatcher<MainLoopEvents> {
     private _needsRedraw = false;

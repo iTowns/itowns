@@ -13,6 +13,9 @@ import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 import { EffectComposer } from 'postprocessing';
 
 const depthRGBA = new THREE.Vector4();
+/**
+ * @category Renderer
+ */
 class c3DEngine {
     constructor(rendererOrDiv, options = {}) {
         deprecatedC3DEngineWebGLOptions(options);

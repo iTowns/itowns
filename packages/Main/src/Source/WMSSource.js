@@ -95,6 +95,7 @@ function projAxisToWmsBbox(projAxis) {
  *
  * // Add the layer
  * view.addLayer(colorlayer);
+ * @category Source
  */
 class WMSSource extends Source {
     /**

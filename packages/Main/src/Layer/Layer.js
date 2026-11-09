@@ -16,13 +16,13 @@ import { LRUCache } from 'lru-cache';
  * - For GeometryLayer, the source datas are converted to meshes (not possible for the raster data sources).
  * @property {Promise} whenReady - this promise is resolved when the layer is added and all initializations are done.
  * This promise is resolved with this layer.
- * This promise is returned by [View#addLayer]{@link View}.
+ * This promise is returned by {@link View#addLayer}.
  * @property {object} [zoom] - This property is used only the layer is attached
- * to {@link TiledGeometryLayer}.
+ * to `TiledGeometryLayer`.
  * By example,
  * The layer checks the tile zoom level to determine if the layer is visible in this tile.
  *
- * ![tiled geometry](/docs/static/images/wfszoommaxmin.jpeg)
+ * ![tiled geometry](../../../../docs/static/images/wfszoommaxmin.jpeg)
  * _In `GlobeView`, **red lines** represents the **WGS84 grid** and **orange lines** the Pseudo-mercator grid_
  * _In this example [WFS to 3D objects](http://www.itowns-project.org/itowns/examples/index.html#source_stream_wfs_3d), the building layer zoom min is 14._
  * _In the lower part of the picture, the zoom tiles 14 have buildings, while in the upper part of the picture, the level 13 tiles have no buildings._
@@ -30,12 +30,13 @@ import { LRUCache } from 'lru-cache';
  * @property {number} [zoom.max=Infinity] - this is the maximum zoom beyond which it'll be hidden.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
  *
+ * @category Layer
  */
 class Layer extends THREE.EventDispatcher {
     /**
      * Don't use directly constructor to instance a new Layer. Instead, use
      * another available type of Layer, implement a new one inheriting from this
-     * one or use [View#addLayer]{@link View}.
+     * one or use {@link View#addLayer}.
      *
      * @protected
      *
@@ -52,9 +53,6 @@ class Layer extends THREE.EventDispatcher {
      * the layer doesn't need Source (like debug Layer or procedural layer).
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for cache expiration mechanism.
-     * @param {boolean} [config.addLabelLayer.performance=false] - In case label layer adding, so remove labels that have no chance of being visible.
-     * Indeed, even in the best case, labels will never be displayed. By example, if there's many labels.
-     * @param {boolean} [config.addLabelLayer.forceClampToTerrain=false] - use elevation layer to clamp label on terrain.
      * @param {number} [config.subdivisionThreshold=256] - set the texture size and, if applied to the globe, affects the tile subdivision.
      *
      * @example
@@ -203,7 +201,8 @@ class Layer extends THREE.EventDispatcher {
      * being replaced by the name of the property.  For example, if the added
      * property name is `frozen`, it will emit a `frozen-property-changed`.
      * <br><br>
-     * @example <caption>The emitted event has some properties assigned to it</caption>
+     * @example The emitted event has some properties assigned to it
+     * ```js
      * event = {
      *     new: {
      *         ${propertyName}: * // the new value of the property
@@ -214,6 +213,7 @@ class Layer extends THREE.EventDispatcher {
      *     target: Layer // the layer it has been dispatched from
      *     type: string // the name of the emitted event
      * }
+     * ```
      *
      * @param {string} propertyName - The name of the property, also used in
      * the emitted event name.

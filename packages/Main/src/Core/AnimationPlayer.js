@@ -46,6 +46,7 @@ const finishAnimation = function finishAnimation(player) {
  *       - for each animation's frame;
  *       - when Animation is stopped
  *       - when Animation is ending
+ * @category Base
  */
 class AnimationPlayer extends THREE.EventDispatcher {
     constructor() {

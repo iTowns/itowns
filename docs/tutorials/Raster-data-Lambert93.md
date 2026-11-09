@@ -1,3 +1,8 @@
+---
+title: Lambert conformal conic
+group: Raster visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize data that are in [RGF93 / Lambert-93](https://epsg.io/2154) Coordinate Reference System (CRS).
 We will display a Digital Elevation Model (DEM) and layer ortho-images from the 
 [French Geoportail](https://www.geoportail.gouv.fr) API on it.
@@ -40,9 +45,9 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 
 ## Create a view
 
-As mentioned in [fundamentals tutorial]{@tutorial Fundamentals}, we need a `{@link View}` to support any geographic data we wish to display.
+As mentioned in [fundamentals tutorial](Fundamentals.md), we need a {@link itowns!View} to support any geographic data we wish to display.
 What we want here is to display data in a RGF93 / Lambert-93 projection, which is a conic local projection. 
-Therefore, we should use a `{@link PlanarView}`, which is a specific type of `View` adapted to local projections.
+Therefore, we should use a {@link itowns!PlanarView}, which is a specific type of `View` adapted to local projections.
 We can create it as such :
 
 ```js
@@ -63,13 +68,13 @@ const view = new itowns.PlanarView(viewerDiv, viewExtent);
 
 Several things are done here :
 - First, we retrieve the `DomElement` relative to the container we created that will contain iTowns visualisation.
-- Then we define the geographic extent of our view by instantiating iTowns `{@link Extent}` class.
+- Then we define the geographic extent of our view by instantiating iTowns {@link itowns!Extent} class.
 To do so, we need to pass five argument to `Extent` constructor, which are :
   - The Coordinates Reference System (CRS) of the extent, given as its EPSG code.
     Here, we use [RGF93 / Lambert-93](https://epsg.io/2154) CRS.
     Not all CRS are defined by default within iTowns, which is why we need to define our CRS using [proj4](https://proj.org/) prior to instantiating the `Extent` ;
   - The westernmost, easternmost, southernmost and northernmost coordinates of the extent.
-- Finally, we create a `{@link PlanarView}` giving it the required `DomElement` and `Extent` parameters.
+- Finally, we create a {@link itowns!PlanarView} giving it the required `DomElement` and `Extent` parameters.
 
 At this stage, our webpage should look like this : 
 
@@ -77,7 +82,7 @@ At this stage, our webpage should look like this :
 
 The blue rectangle you can see is the view we just created.
 By default, iTowns positions the camera on top of the view center.
-We can change the initial camera position by passing a `[CameraTransformOption]{@link CameraUtils}` object as an optional parameter of `PlanarView` constructor.
+We can change the initial camera position by passing a {@link itowns!CameraUtils | CameraTransformOption} object as an optional parameter of `PlanarView` constructor.
 
 To do so, we first need to create our `CameraTransformOption` object :
 
@@ -126,12 +131,12 @@ view.addLayer(layerOrtho);
 ```
 
 In this code, we first define the source specifications of the data we wish to fetch. 
-`{@link WMSSource}` has several mandatory parameters :
+{@link itowns!WMSSource} has several mandatory parameters :
 - the server `url`, the `name` of the data and their `format`, which are used to generate the final `url` at which data shall be fetched ;
 - the CRS of the fetched data ;
 - the geographic extent of the resources (set here as the extent of the view).
 
-Then we create a `{@link ColorLayer}` from two parameters : a unique `id` for the layer (`Ortho`) as well as the `Source` instance for the layer data.
+Then we create a {@link itowns!ColorLayer} from two parameters : a unique `id` for the layer (`Ortho`) as well as the `Source` instance for the layer data.
 
 Finally, we add the created layer to the view with `view.addLayer(layerOrtho);`.
 
@@ -141,7 +146,7 @@ The result we get at this stage is the following, where we can see the newly add
 
 ## Add an elevation layer
 
-The process of adding an `{@link ElevationLayer}` is similar to what we just did with the `ColorLayer`. 
+The process of adding an {@link itowns!ElevationLayer} is similar to what we just did with the `ColorLayer`. 
 At first, we need to define the source of the elevation raster data.
 Then we can simply create the `ElevationLayer`, giving it a unique `id` and the source configuration, and finally adding it to the view.
 

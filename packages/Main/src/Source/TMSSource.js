@@ -32,7 +32,8 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  * the TileMatrix that will be fetched at zoom level 5 will be the one with identifier `EPSG:4326:5`.
  * By default, the method returns the input zoom level.
  *
- * @example <caption><b>Source from OpenStreetMap server :</b></caption>
+ * @example Source from OpenStreetMap server :
+ * ```js
  * // Create the source
  * const tmsSource = new itowns.TMSSource({
  *     format: 'image/png',
@@ -51,8 +52,10 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  *
  * // Add the layer
  * view.addLayer(colorLayer);
+ * ```
  *
- * @example <caption><b>Source from Mapbox server :</b></caption>
+ * @example Source from Mapbox server :
+ * ```js
  * // Create the source
  * const orthoSource = new itowns.TMSSource({
  *     url: 'https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.jpg?access_token=' + accessToken,
@@ -66,6 +69,9 @@ import { TileMatrixSetLimits } from 'Core/Tile/Tile';
  *
  * // Add the layer to the view
  * view.addLayer(imageryLayer);
+ * ```
+ *
+ * @category Source
  */
 class TMSSource extends Source {
     /**

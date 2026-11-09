@@ -1,4 +1,7 @@
 import * as THREE from 'three';
+/**
+ * @category Debug
+ */
 
 class OBBHelper extends THREE.Box3Helper {
     constructor(OBB, color) {
@@ -16,6 +19,12 @@ class OBBHelper extends THREE.Box3Helper {
         this.updateMatrixWorld(true);
     }
 
+    /**
+     * Recomputes this helper's world matrix from the wrapped OBB.
+     *
+     * @param {boolean} force - Recompute the world matrix even if it is not
+     * flagged as needing an update.
+     */
     updateMatrixWorld(force = false) {
         if (this.obb.box3D.isEmpty()) {
             return;

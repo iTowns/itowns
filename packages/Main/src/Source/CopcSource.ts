@@ -69,6 +69,7 @@ async function getHeaders(
  *   spec](https://portal.ogc.org/files/?artifact_id=74523))
  * - LAS 1.4 `Extra Bytes` record (optional, see [Las 1.4
  *   spec](https://portal.ogc.org/files/?artifact_id=74523))
+ * @category Source
  */
 class CopcSource extends Source {
     /** Read-only flag to check that a given object is of type CopcSource. */
@@ -80,17 +81,14 @@ class CopcSource extends Source {
     /** LAS header of the source. */
     header!: Las.Header;
     /**
-     * COPC `info` VLR.
-     * @param cube - Bounding box of the octree as a 6-elements.
-     * tuple `[minX, minY, minZ, maxX, maxY, maxZ]`. Computed from `center_x`,
-     * `center_y`, `center_z` and `halfSize` properties.
-     * @param rootHierarchyPage - Hierarchy page of the root node.
-     * @remarks rootHierarchyPage.pageOffset - Absolute Offset to the
-     * root node data chunk.
-     * @remarks rootHierarchyPage.pageLength - Size (in bytes) of the
-     * root node data chunk.
-     * @param gpsTimeRange - A 2-element tuple denoting the
-     * minimum and maximum values of attribute `gpsTime`.
+     * COPC `info` VLR. Notable fields are `cube` (bounding box of the octree
+     * as a 6-element tuple `[minX, minY, minZ, maxX, maxY, maxZ]`, computed
+     * from `center_x`, `center_y`, `center_z` and `halfSize` properties),
+     * `rootHierarchyPage` (hierarchy page of the root node, with a
+     * `pageOffset` - absolute offset to the root node data chunk - and a
+     * `pageLength` - size in bytes of the root node data chunk), and
+     * `gpsTimeRange` (a 2-element tuple denoting the minimum and maximum
+     * values of attribute `gpsTime`).
      */
     info!: Info;
     /** List of headers of each Variable Length Records (VLRs). */

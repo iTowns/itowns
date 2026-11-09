@@ -23,7 +23,7 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
  * Utilitary to fetch resources from a server using the [fetch API](
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
  *
- * @module Fetcher
+ * @category Provider
  */
 export default {
     /**

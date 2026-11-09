@@ -289,7 +289,10 @@ function initModeDefines(
         .forEach(key => fillInProp(defines, `MODE_${key}`, RenderMode.MODES[key]));
 }
 
-/** Material that handles the overlap of multiple raster tiles. */
+/**
+ * Material that handles the overlap of multiple raster tiles.
+ * @category Renderer
+ */
 export class LayeredMaterial extends THREE.ShaderMaterial {
     private _visible = true;
 

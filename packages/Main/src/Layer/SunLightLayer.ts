@@ -21,6 +21,7 @@ interface UpdateContext {
  * Manages directional lighting and shadows as a layer.
  * Updates the sun light position and shadow camera parameters
  * based on the current camera view and sun direction.
+ * @category Layer
  */
 class SunLightLayer extends GeometryLayer {
     sunLight: THREE.DirectionalLight;

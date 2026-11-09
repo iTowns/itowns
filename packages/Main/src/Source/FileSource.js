@@ -2,6 +2,11 @@ import Source from 'Source/Source';
 import { LRUCache } from 'lru-cache';
 
 /**
+ * @import { FeatureBuildingOptions } from 'Core/Feature'
+ * @import Layer from 'Layer/Layer'
+ */
+
+/**
  * An object defining the source of a single resource to get from a direct
  * access. It inherits from {@link Source}. There is multiple ways of adding a
  * resource here:
@@ -24,8 +29,8 @@ import { LRUCache } from 'lru-cache';
  * @property {*} features - Once the file has been loaded and parsed, the
  * resulting data is stored in this property.
  *
- * @example <caption>Simple: create a source, a layer, and let iTowns taking
- * care of everything.</caption>
+ * @example Simple: create a source, a layer, and let iTowns taking care of everything.
+ * ```js
  * const kmlSource = new itowns.FileSource({
  *     url: 'https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/croquis.kml',
  *     crs: 'EPSG:4326',
@@ -41,9 +46,10 @@ import { LRUCache } from 'lru-cache';
  * });
  *
  * view.addLayer(kmlLayer);
+ * ```
  *
- * @example <caption>Advanced: fetch some data, create a source, a layer, and
- * let iTowns do the parsing and converting.</caption>
+ * @example Advanced: fetch some data, create a source, a layer, and let iTowns do the parsing and converting.
+ * ```js
  * // Parse and Convert by iTowns
  * itowns.Fetcher.xml('https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/ULTRA2009.gpx')
  *     .then(function _(gpx) {
@@ -61,9 +67,10 @@ import { LRUCache } from 'lru-cache';
  *
  *         return view.addLayer(gpxLayer);
  *     });
+ * ```
  *
- * @example <caption>More advanced: create a layer, fetch some data, parse the
- * data, append a source to the layer and add the layer to iTowns.</caption>
+ * @example More advanced: create a layer, fetch some data, parse the data, append a source to the layer and add the layer to iTowns.
+ * ```js
  * // Create a layer
  * const ariege = new itowns.GeometryLayer('ariege', new itowns.THREE.Group());
  *
@@ -95,6 +102,9 @@ import { LRUCache } from 'lru-cache';
  *
  *         return view.addLayer(ariegeLayer);
  *     });
+ * ```
+ *
+ * @category Source
  */
 class FileSource extends Source {
     /**

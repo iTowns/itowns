@@ -70,6 +70,7 @@ const DEFAULT_BUTTONS = {
  *     // do something
  * }
  * navigation.zoomIn.onclick = newMethod;
+ * @category Widgets
  */
 class Navigation extends Widget {
     #_view;
@@ -86,7 +87,7 @@ class Navigation extends Widget {
 
     /**
      * @param   {GlobeView}     view                                    The iTowns view the navigation should be linked
-     * to. For the moment, only `{@link GlobeView}`
+     * to. For the moment, only {@link itowns!GlobeView}
      * is supported.
      * @param   {object}        options                                 The navigation menu optional configuration.
      * @param   {HTMLElement}   [options.parentElement=view.domElement] The parent HTML container of the div which

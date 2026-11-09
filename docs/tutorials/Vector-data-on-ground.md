@@ -1,14 +1,19 @@
+---
+title: Projected on the ground
+group: Vector visualization
+---
+
 The goal of this tutorial is to give an example on how to use iTowns to visualize some vector data projected on the ground.
 These data are contained within two GeoJSON files that you can find 
 [here](https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/multipolygon.geojson) and 
 [here](https://raw.githubusercontent.com/iTowns/iTowns2-sample-data/master/cities.geojson).
 The first file data consist in polygons which represent flood risk areas along the Marne river.
 The second file data consist in polygons which delimit city areas, and points at the center of some cities.
-These data shall be displayed on the `GlobeView` we created in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+These data shall be displayed on the `GlobeView` we created in the [WGS84 tutorial](Raster-data-WGS84.md).
 
 ## Preparing the field
 
-We are going to use the data displayed in the [WGS84 tutorial]{@tutorial Raster-data-WGS84}.
+We are going to use the data displayed in the [WGS84 tutorial](Raster-data-WGS84.md).
 However, we want the camera to be closer to the area our vector data will occupy.
 We need to change the starting position to something more appropriate.
 
@@ -79,7 +84,7 @@ We need to change the starting position to something more appropriate.
 ## Display flood risk areas on the ground
 
 The first mandatory thing we need to do for our flood area vector data to be displayed is to define their source.
-Our data is contained within a GeoJSON file, so we can use iTowns `{@link FileSource}` :
+Our data is contained within a GeoJSON file, so we can use iTowns {@link itowns!FileSource} :
 
 ```js
 var floodSource = new itowns.FileSource({
@@ -95,7 +100,7 @@ The `format` parameter defines the format of our file.
 Itowns needs this format to determine which method it shall use to download data and transform them into iTowns internal objects.
 
 Now that the source of our vector data is set, we need to create a `Layer` which will contain the data.
-We want our vector data to be projected on the ground. Therefore, we use a `{@link ColorLayer}` and add it to our `GlobeView` :
+We want our vector data to be projected on the ground. Therefore, we use a {@link itowns!ColorLayer} and add it to our `GlobeView` :
 
 ```js
 var floodLayer = new itowns.ColorLayer('flood', {
@@ -105,9 +110,9 @@ view.addLayer(floodLayer);
 ```
 
 If you run the example now, you will notice that nothing is displayed yet.
-That is because we did not yet define a `{@link Style}` for our vector data. 
+That is because we did not yet define a {@link itowns!Style} for our vector data. 
 To be more precise, our data consists in polygons, and we did not tell iTowns how these polygons should be displayed, so iTowns doesn't display them.
-We can correct this by creating a `{@link Style}` and applying it to our `ColorLayer` :
+We can correct this by creating a {@link itowns!Style} and applying it to our `ColorLayer` :
 
 ```js
 var floodStyle = {

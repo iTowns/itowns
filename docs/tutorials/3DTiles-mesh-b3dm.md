@@ -1,3 +1,8 @@
+---
+title: 3D textured buildings
+group: 3D Tiles visualization
+---
+
 The goal of this tutorial is to learn how to visualize 3D tiles textured mesh data (in the b3dm format). 
 We will use a [data set](https://github.com/iTowns/iTowns2-sample-data/tree/master/3DTiles/lyon_1_3946_textured_draco) representing buildings of the 1st borrough of Lyon.
 The original data are openly available on [Lyon metropolis open data](https://data.grandlyon.com/) and have been transformed in 3D tiles with [py3dtilers](https://github.com/VCityTeam/py3dtilers/).
@@ -35,9 +40,9 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 ## Preparing the field
 
 We will first create a view, add a layer with ortho images and a digital elevation model (DEM).
-The 3D Tiles dataset we are using is in the `EPSG:3946` CRS, so we will use a `{@link PlanarView}` in this CRS to display it.
+The 3D Tiles dataset we are using is in the `EPSG:3946` CRS, so we will use a {@link itowns!PlanarView} in this CRS to display it.
 
-We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [Raster visualization in Lambert Conformical conic projection]{@tutorial Raster-data-Lambert93} in which we do the same but in the `EPSG:2154` projection. You can use the following code that prepared the field with such data:
+We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [Raster visualization in Lambert Conformical conic projection](Raster-data-Lambert93.md) in which we do the same but in the `EPSG:2154` projection. You can use the following code that prepared the field with such data:
 
 ```js
 // Define crs projection that we will use (taken from https://epsg.io/3946, Proj4js section)
@@ -112,7 +117,7 @@ itowns.enableDracoLoader('./libs/draco/');
 ```
 
 As for every data displayed in iTowns, we first need to define a data `Source`.
-Our data is in the 3d-tiles format, so we can use iTowns `{@link OGC3DTilesSource}` : 
+Our data is in the 3d-tiles format, so we can use iTowns {@link itowns!OGC3DTilesSource} : 
 
 ```js
 const buildingsSource = new itowns.OGC3DTilesSource({
@@ -121,13 +126,13 @@ const buildingsSource = new itowns.OGC3DTilesSource({
 });
 ```
 
-It is worth noting that the 3d-tiles data we want to display on a given `{@link View}` must be in the same Coordinates 
-Reference System (CRS) as the `{@link View}`.
-Here, our 3d-tiles data are in [RGF93 / CC46](https://epsg.io/3946) projection, just like our `{@link PlanarView}`.
-This is the reason why we do not need to specify a `crs` parameter when instantiating our `{@link OGC3DTilesSource}`.
+It is worth noting that the 3d-tiles data we want to display on a given {@link itowns!View} must be in the same Coordinates 
+Reference System (CRS) as the {@link itowns!View}.
+Here, our 3d-tiles data are in [RGF93 / CC46](https://epsg.io/3946) projection, just like our {@link itowns!PlanarView}.
+This is the reason why we do not need to specify a `crs` parameter when instantiating our {@link itowns!OGC3DTilesSource}.
 
-Now that the source of our data is set, we need to create a `{@link Layer}` which will contain the data.
-To display 3d-tiles data, iTowns comes with a `{@link OGC3DTilesLayer}`, which we can use as such :
+Now that the source of our data is set, we need to create a {@link itowns!Layer} which will contain the data.
+To display 3d-tiles data, iTowns comes with a {@link itowns!OGC3DTilesLayer}, which we can use as such :
 
 ```js
 const buildingsLayer = new itowns.OGC3DTilesLayer('buildings', {

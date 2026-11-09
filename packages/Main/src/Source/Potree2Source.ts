@@ -124,6 +124,7 @@ function parseAttributes(jsonAttributes: Potree2Metadata['attributes']): Potree2
 /**
  * Potree2Source are object containing informations on how to fetch
  * potree 2.0 points cloud resources.
+ * @category Source
  */
 
 class Potree2Source extends Source {

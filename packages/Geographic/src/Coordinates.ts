@@ -47,6 +47,7 @@ export interface CoordinatesLike {
  * +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m
  * +no_defs +type=crs`);
  * ```
+ * @category Geographic
  */
 class Coordinates {
     /**

@@ -27,6 +27,7 @@
  *          registeredExtensions: extensions,
  *      },
  * view);
+ * @category Base
  */
 
 class C3DTExtensions {

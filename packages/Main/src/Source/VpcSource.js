@@ -19,6 +19,7 @@ import CopcSource from 'Source/CopcSource';
  * @property {object[] | PointCloudSource[]} sources - Array of all the source described in the VPC.
  * initialized with mockSource that will be replace by COPC or EPT Source as soon as any data need
  * to be loaded.
+ * @category Source
  */
 class VpcSource extends Source {
     /**

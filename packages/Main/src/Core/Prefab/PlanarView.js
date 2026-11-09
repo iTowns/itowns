@@ -5,15 +5,20 @@ import CameraUtils from 'Utils/CameraUtils';
 
 import PlanarControls from 'Controls/PlanarControls';
 import PlanarLayer from './Planar/PlanarLayer';
+/**
+ * @category View
+ */
 
 class PlanarView extends View {
     /**
      * @extends View
      *
-     * @example <caption><b>Instance with placement on the ground.</b></caption>
+     * @example Instance with placement on the ground.
+     * ```js
      * var viewerDiv = document.getElementById('viewerDiv');
      * const extent = new Extent('EPSG:3946', 1837816.94334, 1847692.32501, 5170036.4587, 5178412.82698);
      * var view = new itowns.PlanarView(viewerDiv, extent, { placement: { heading: -49.6, range: 6200, tilt: 17 } });
+     * ```
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
@@ -23,7 +28,7 @@ class PlanarView extends View {
      * @param {object} [options.controls] - options for the {@link PlanarControls} associated to the view, if
      * `options.noControls` is false.
      * @param {CameraTransformOptions|Extent} [options.placement] - The
-     * {@link CameraUtils~CameraTransformOptions} to apply to view's camera or the extent it must display at
+     * `CameraUtils.CameraTransformOptions` to apply to view's camera or the extent it must display at
      * initialization. By default, camera will display the view's extent (given in `extent` parameter).
      * @param {boolean} [options.dynamicCameraNearFar=true] - The camera's near and far are automatically adjusted.
      * @param {number} [options.farFactor=20] - Controls how far the camera can see.
