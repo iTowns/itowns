@@ -152,18 +152,14 @@ export default {
             const idx = (yi * (radius * 2 + 1) + xi) * 4;
             const data = buffer.slice(idx, idx + 4);
 
-            // see PotreeProvider and the construction of unique_id
-            const objId = (data[0] << 8) | data[1];
-            const index = (data[2] << 8) | data[3];
+            // see PointCloudProvider and the construction of unique_id
+            const id = ((data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3]) >>> 0;
 
-            const r = { objId, index };
-
-            for (let i = 0; i < candidates.length; i++) {
-                if (candidates[i].objId == r.objId && candidates[i].index == r.index) {
-                    return;
-                }
+            // 0 is the background of the picking buffer
+            if (id === 0 || candidates.includes(id)) {
+                return;
             }
-            candidates.push(r);
+            candidates.push(id);
         });
 
         layer.object3d.traverse((o) => {
@@ -175,12 +171,14 @@ export default {
                 if (!o.geometry || !o.geometry.attributes || !o.geometry.attributes.position) {
                     return;
                 }
-                // if baseId matches objId, the clicked point belongs to `o`
+                // if the id belongs to the range owned by `o`, the clicked
+                // point belongs to `o`
                 for (let i = 0; i < candidates.length; i++) {
-                    if (candidates[i].objId == o.baseId) {
+                    const index = candidates[i] - o.baseId;
+                    if (index >= 0 && index < o.geometry.attributes.position.count) {
                         // Get point position: get the picked point from the buffer geometry and apply local to world
                         // transform of the picked object
-                        pointPos.fromBufferAttribute(o.geometry.attributes.position, candidates[i].index);
+                        pointPos.fromBufferAttribute(o.geometry.attributes.position, index);
                         o.localToWorld(pointPos);
                         // Compute distance to the camera
                         pointPosCoord.setCrs(view.referenceCrs);
@@ -192,7 +190,7 @@ export default {
                         result.push({
                             object: o,
                             point: pointPos.clone(), // the position of the point in the 3D view. Same name and value than what's returned by pickObjectsAt
-                            index: candidates[i].index,
+                            index,
                             distance: dist,
                             layer,
                         });
