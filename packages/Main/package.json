@@ -70,7 +70,11 @@
   "peerDependencies": {
     "postprocessing": "6.38.2",
     "proj4": "^2.20.4",
-    "three": "^0.182.0"
+    "three": "mrdoob/three.js#dev"
+  },
+  "devDependencies": {
+    "chalk": "^5.4.1",
+    "copyfiles": "^2.4.1"
   },
   "homepage": "https://itowns.github.io/"
 }
