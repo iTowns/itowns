@@ -3,7 +3,6 @@ import EntwinePointTileNode from 'Core/EntwinePointTileNode';
 import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 
 interface EntwinePointTileLayerParameters extends PointCloudLayerParameters {
-    crs?: string;
     source: EntwinePointTileSource;
 }
 
@@ -47,10 +46,13 @@ class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
             this.setElevationRange();
 
             const { bounds } = source;
-            this.root = new EntwinePointTileNode(0, 0, 0, 0, source, this.crs);
+            this.root = new EntwinePointTileNode(0, 0, 0, 0, source);
 
-            this.root.voxelOBB.setFromArray(bounds).projOBB(source.crs, this.crs);
-            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(source.zmin, source.zmax);
+            this.root.voxelOBB.setFromArray(bounds);
+
+            this.root.clampOBB.copy(this.root.voxelOBB)
+                .clampZ(source.zmin, source.zmax)
+                .projOBB(source.crs, this.crs);
 
             return this.root;
         });

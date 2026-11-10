@@ -38,12 +38,6 @@ import Potree2Node from 'Core/Potree2Node';
 import type Potree2Source from 'Source/Potree2Source';
 
 interface Potree2LayerParameters extends PointCloudLayerParameters {
-    /**
-     * The CRS of the View this layer will be attached to.
-     * This is used to determine the extent of this layer.
-     * Default to `EPSG:4326`.
-     */
-    crs?: string;
     source: Potree2Source;
 }
 
@@ -107,10 +101,13 @@ class Potree2Layer extends PointCloudLayer<Potree2Source> {
                     byteSize: BigInt(hierarchy.firstChunkSize),
                 },
             };
-            this.root = new Potree2Node(0, 0, 0, 0, this.source, this.crs, rootHierarchy);
+            this.root = new Potree2Node(0, 0, 0, 0, this.source, rootHierarchy);
 
-            this.root.voxelOBB.setFromArray(bounds).projOBB(this.source.crs, this.crs);
-            this.root.clampOBB.copy(this.root.voxelOBB).clampZ(this.source.zmin, this.source.zmax);
+            this.root.voxelOBB.setFromArray(bounds);
+
+            this.root.clampOBB.copy(this.root.voxelOBB)
+                .clampZ(this.source.zmin, this.source.zmax)
+                .projOBB(this.source.crs, this.crs);
 
             return this.root;
         });

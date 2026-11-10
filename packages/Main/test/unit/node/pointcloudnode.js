@@ -7,7 +7,6 @@ const crs = 'EPSG:4978';
 function newPtCloudNodeWithSource(depth, numPoints, source) {
     const node = new PointCloudNode(depth, numPoints);
     node.source = source;// might be moved to constructor ?
-    node.crs = crs;// might be moved to constructor ?
     return node;
 }
 
@@ -47,10 +46,6 @@ describe('Point Cloud Node', function () {
         let root;
         before('instanciate a root node', function () {
             root = newPtCloudNodeWithSource(0, -1, source);
-        });
-
-        it('get pointSpacing', () => {
-            assert.equal(root.pointSpacing, source.spacing);
         });
 
         it('get hierarchyIsLoaded', () => {
@@ -145,7 +140,6 @@ describe('Point Cloud Node', function () {
         it('setOBBes()', () => {
             assert.deepStrictEqual(child.parent, root, 'root not declared as parent');
             child.source = source;
-            child.crs = child.source.crs;
 
             stub = {
                 computeBBoxFromParent: sinon.stub(child, 'computeBBoxFromParent')
@@ -155,12 +149,11 @@ describe('Point Cloud Node', function () {
             child.setOBBes();
 
             assert.deepStrictEqual(child.voxelOBB.natBox, boundsBox3, 'voxelOBB.natBox');
-            assert.deepStrictEqual(child.voxelOBB.box3D.min, new Vector3().fromArray([-5, -5, source.bounds[2]]), 'voxelOBB.box3D.min');
-            assert.deepStrictEqual(child.voxelOBB.box3D.max, new Vector3().fromArray([5, 5, source.bounds[5]]), 'voxelOBB.box3D.max');
+            assert.deepStrictEqual(child.voxelOBB.box3D.min, new Vector3().fromArray(source.bounds.slice(0, 3)), 'voxelOBB.box3D.min');
+            assert.deepStrictEqual(child.voxelOBB.box3D.max, new Vector3().fromArray(source.bounds.slice(3, 6)), 'voxelOBB.box3D.max');
 
-            assert.deepStrictEqual(child.clampOBB.natBox, boundsBox3, 'clampOBB.natBox');
-            assert.deepStrictEqual(child.clampOBB.box3D.min, new Vector3().fromArray([-5, -5, source.zmin]));
-            assert.deepStrictEqual(child.clampOBB.box3D.max, new Vector3().fromArray([5, 5, source.zmax]));
+            assert.deepStrictEqual(child.clampOBB.box3D.min, new Vector3().fromArray([...source.bounds.slice(0, 2), source.zmin]));
+            assert.deepStrictEqual(child.clampOBB.box3D.max, new Vector3().fromArray([...source.bounds.slice(3, 5), source.zmax]));
         });
 
         it('computeBBoxFromParent()', () => {

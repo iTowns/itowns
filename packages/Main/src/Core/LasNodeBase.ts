@@ -8,21 +8,16 @@ abstract class LasNodeBase extends PointCloudNode {
     /** Z position within the octree */
     z: number;
 
-    crs: string;
-
     constructor(
         depth: number,
         x: number, y: number, z: number,
         numPoints: number,
-        crs: string,
     ) {
         super(depth, numPoints);
 
         this.x = x;
         this.y = y;
         this.z = z;
-
-        this.crs = crs;
     }
 
     override get networkOptions(): RequestInit {
