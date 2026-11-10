@@ -16,4 +16,25 @@ describe('GeometryLayer', function () {
         geometry.detach(color);
         assert.equal(geometry.attachedLayers.length, 0);
     });
+
+    it('should clear its state on the parent tiles when deleted', function () {
+        const layer = new GeometryLayer('features', new THREE.Group(), { source: false });
+        const root = new THREE.Object3D();
+        const child = new THREE.Object3D();
+        root.add(child);
+        for (const node of [root, child]) {
+            node.layerUpdateState = { features: {}, other: {} };
+            node.link = { features: [], other: [] };
+        }
+        const parentObject = new THREE.Group();
+        parentObject.add(root);
+        layer.parent = { object3d: parentObject };
+
+        layer.delete();
+
+        for (const node of [root, child]) {
+            assert.deepEqual(Object.keys(node.layerUpdateState), ['other']);
+            assert.deepEqual(Object.keys(node.link), ['other']);
+        }
+    });
 });
