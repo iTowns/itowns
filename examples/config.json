@@ -196,6 +196,17 @@
     ]
   },
   {
+    "id": "ogc",
+    "label": "OGC services",
+    "items": [
+      {
+        "id": "source_ogc_client",
+        "label": "OGC services browser",
+        "description": "Connect to an OGC service with <code>@camptocamp/ogc-client</code> and add layers interactively to a globe."
+      }
+    ]
+  },
+  {
     "id": "specific_source_options",
     "label": "Specific source options",
     "items": [
