@@ -73,6 +73,7 @@ export { default as ColorLayersOrdering } from 'Renderer/ColorLayersOrdering';
 export { default as GlobeLayer } from 'Core/Prefab/Globe/GlobeLayer';
 export { default as PlanarLayer } from 'Core/Prefab/Planar/PlanarLayer';
 export { default as LabelLayer } from 'Layer/LabelLayer';
+export { default as InstancedLabelLayer } from 'Layer/InstancedLabelLayer';
 export { default as EntwinePointTileLayer } from 'Layer/EntwinePointTileLayer';
 export { default as CopcLayer } from 'Layer/CopcLayer';
 export { default as VpcLayer } from 'Layer/VpcLayer';
