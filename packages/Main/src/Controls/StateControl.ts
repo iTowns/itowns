@@ -162,25 +162,36 @@ class StateControl extends THREE.EventDispatcher<StateControlEvents> {
     /** When camera is idle. */
     /** {@link State} when camera is idle. */
     public NONE: State = DEFAULT_STATES.NONE;
-    /** {@link State} describing camera orbiting movement : the camera moves around its target at a constant distance from it. */
+    /**
+     * {@link State} describing camera orbiting movement : the camera moves around its target at a constant distance
+     * from it.
+     */
     public ORBIT: State = DEFAULT_STATES.ORBIT;
     /** {@link State} describing camera dolly movement : the camera moves forward or backward from its target. */
     public DOLLY: State = DEFAULT_STATES.DOLLY;
     /** {@link State} describing camera pan movement : the camera moves parallel to the current view plane. */
     public PAN: State = DEFAULT_STATES.PAN;
-    /** {@link State} describing camera drag movement : the camera is moved around the view to give the feeling that the view is dragged under a static camera. */
+    /**
+     * {@link State} describing camera drag movement : the camera is moved around the view to give the feeling that the
+     * view is dragged under a static camera.
+     */
     public MOVE_GLOBE: State = DEFAULT_STATES.MOVE_GLOBE;
     /** {@link State} describing camera panoramic movement : the camera is rotated around its own position. */
     public PANORAMIC: State = DEFAULT_STATES.PANORAMIC;
-    /** {@link State} describing camera travel in movement : the camera is zoomed in toward a given position. The target position depends on the key/mouse binding of this state. If bound to a mouse button; the target position is the mouse position. Otherwise; it is the center of the screen. */
+    /**
+     * {@link State} describing camera travel in movement : the camera is zoomed in toward a given position.
+     * The target position depends on the key/mouse binding of this state.
+     * If bound to a mouse button; the target position is the mouse position. Otherwise; it is the center of the screen.
+     */
     public TRAVEL_IN: State = DEFAULT_STATES.TRAVEL_IN;
-    /** {@link State} describing camera travel out movement : the camera is zoomed out from a given position. The target position depends on the key/mouse binding of this state. If bound to a mouse button; the target position is the mouse position. Otherwise; it is the center of the screen. It is disabled by default. */
+    /**
+     * {@link State} describing camera travel out movement : the camera is zoomed out from a given position. The target
+     * position depends on the key/mouse binding of this state. If bound to a mouse button; the target position is the
+     * mouse position. Otherwise; it is the center of the screen. It is disabled by default.
+     */
     public TRAVEL_OUT: State = DEFAULT_STATES.TRAVEL_OUT;
     /** {@link State} describing camera zoom in and out movement. */
     public ZOOM: State = DEFAULT_STATES.ZOOM;
-
-    // this-bound versions of the event handling methods
-    // private _on: Partial<{ [Key in keyof HTMLElementEventMap]: (this: this, ev: HTMLElementEventMap[Key]) => unknown }>;
 
     private _on: {
         pointerdown: (this: StateControl, ev: PointerEvent) => void;
@@ -193,7 +204,10 @@ class StateControl extends THREE.EventDispatcher<StateControlEvents> {
         contextmenu: (this: StateControl, ev: PointerEvent) => void;
     };
 
-    constructor(view: View, options?: Partial<{ [Name in keyof typeof DEFAULT_STATES]: Partial<typeof DEFAULT_STATES[Name]> }>) {
+    constructor(
+        view: View,
+        options?: Partial<{ [Name in keyof typeof DEFAULT_STATES]: Partial<typeof DEFAULT_STATES[Name]> }>,
+    ) {
         super();
 
         this._view = view;
@@ -390,8 +404,8 @@ class StateControl extends THREE.EventDispatcher<StateControlEvents> {
                 this.currentState = this.inputToState(
                     this._currentMousePressed,
                     this._currentKeyPressed,
-                    // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved two much
-                    // since previous click. If so, set dblclick to true.
+                    // Detect if the mouse button was pressed less than 500 ms before, and if the cursor has not moved
+                    // too much since previous click. If so, set dblclick to true.
                     event.timeStamp - this._clickTimeStamp < 500
                     && this._lastMousePressed.button === this._currentMousePressed
                     && this._lastMousePressed.viewCoords.distanceTo(viewCoords) < 5,
