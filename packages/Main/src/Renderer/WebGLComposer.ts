@@ -86,7 +86,7 @@ export function makeDataArrayRenderTarget(
             ++i, ++currentLayerIndex
         ) {
             const texture = tile.textures[i];
-            if (!texture.isTexture) { continue; }
+            if (!texture?.isTexture) { continue; }
 
             // Set the current source 2D texture on the quad's material
             (material as THREE.ShaderMaterial).uniforms.sourceTexture.value = texture;
