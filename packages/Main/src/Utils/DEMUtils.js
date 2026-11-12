@@ -99,7 +99,7 @@ function tileAt(pt, tile) {
                 return t;
             }
         }
-        const tileLayer = tile.material.getElevationTile();
+        const tileLayer = tile.material.getCurrentElevationTile();
         if (tileLayer && tileLayer.level >= 0) {
             return tile;
         }
@@ -330,7 +330,8 @@ function _readZ(layer, method, coord, nodes, cache) {
     }
 
     const tile = tileWithValidElevationTexture;
-    const tileLayer = tile.material.getElevationTile();
+    const tileLayer = tile.material.getCurrentElevationTile();
+
     const src = tileLayer.textures[0];
 
     // check cache value if existing
@@ -342,7 +343,7 @@ function _readZ(layer, method, coord, nodes, cache) {
 
     // Assuming that tiles are split in 4 children, we lookup the parent that
     // really owns this texture
-    const stepsUpInHierarchy = Math.round(Math.log2(1.0 / tileLayer.offsetScales[0].z));
+    const stepsUpInHierarchy = Math.round(Math.log2(1.0 / tileLayer.mapTransforms[0].elements[0]));
     for (let i = 0; i < stepsUpInHierarchy; i++) {
         tileWithValidElevationTexture = tileWithValidElevationTexture.parent;
     }

@@ -1,25 +1,10 @@
-struct Layer {
-    int textureOffset;
-    int crs;
-    int effect_type;
-    float effect_parameter;
-    float opacity;
-    bool transparent;
-};
-
-#include <itowns/custom_header_colorLayer>
-
-uniform sampler2DArray   colorTextures;
-uniform vec4        colorOffsetScales[NUM_FS_TEXTURES];
-uniform Layer       colorLayers[NUM_FS_TEXTURES];
-uniform int         colorTextureCount;
-
-vec3 uvs[NUM_CRS];
-
 float getBorderDistance(vec2 uv) {
     vec2 p2 = min(uv, 1. -uv);
     return min(p2.x, p2.y);
 }
+
+
+/* move new Pass
 
 float tolerance = 0.99;
 
@@ -37,10 +22,11 @@ vec4 applyLightColorToInvisibleEffect(vec4 color, float intensity) {
     color.rgb *= color.rgb * color.rgb;
     return color;
 }
+*/
 
 #if defined(DEBUG)
 uniform bool showOutline;
-uniform vec3 outlineColors[NUM_CRS];
+uniform vec3 outlineColors;
 uniform float outlineWidth;
 
 vec4 getOutlineColor(vec3 outlineColor, vec2 uv) {
@@ -50,31 +36,3 @@ vec4 getOutlineColor(vec3 outlineColor, vec2 uv) {
 #endif
 
 uniform float minBorderDistance;
-vec4 getLayerColor(int textureOffset, sampler2DArray tex, vec4 offsetScale, Layer layer) {
-    if ( textureOffset >= colorTextureCount ) return vec4(0);
-
-    vec3 uv;
-    // #pragma unroll_loop
-    for ( int i = 0; i < NUM_CRS; i ++ ) {
-        if ( i == layer.crs ) uv = uvs[ i ];
-    }
-
-    float borderDistance = getBorderDistance(uv.xy);
-    if (textureOffset != layer.textureOffset + int(uv.z) || borderDistance < minBorderDistance ) return vec4(0);
-    vec4 color = texture(tex, vec3(pitUV(uv.xy, offsetScale), float(textureOffset)));
-    if (layer.effect_type == 3) {
-        #include <itowns/custom_body_colorLayer>
-    } else {
-        if (layer.transparent && color.a != 0.0) {
-            color.rgb /= color.a;
-        }
-
-        if (layer.effect_type == 1) {
-            color = applyLightColorToInvisibleEffect(color, layer.effect_parameter);
-        } else if (layer.effect_type == 2) {
-            color = applyWhiteToInvisibleEffect(color);
-        }
-    }
-    color.a *= layer.opacity;
-    return color;
-}
