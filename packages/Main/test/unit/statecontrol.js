@@ -4,7 +4,7 @@ import { Coordinates } from '@itowns/geographic';
 import GlobeView from 'Core/Prefab/GlobeView';
 import Renderer from './bootstrap';
 
-describe('StateControl', function () {
+describe('StateControl', () => {
     const renderer = new Renderer();
 
     const placement = { coord: new Coordinates('EPSG:4326', 2.351323, 48.856712), range: 250000, proxy: false };
@@ -12,29 +12,29 @@ describe('StateControl', function () {
     const states = viewer.controls.states;
 
     const event = {
-        stopPropagation: () => {},
-        preventDefault: () => {},
+        stopPropagation: () => { },
+        preventDefault: () => { },
         target: viewer.domElement,
     };
 
     function testEventTriggering(eventType, event, actions) {
         let eventTriggered = false;
 
-        states.addEventListener(eventType, function () { eventTriggered = true; });
+        states.addEventListener(eventType, () => { eventTriggered = true; });
 
         actions(event);
 
         return eventTriggered;
     }
 
-    it('inputToState should return the correct state', function () {
+    it('inputToState should return the correct state', () => {
         assert.strictEqual(
             JSON.stringify(states.inputToState(MOUSE.LEFT, 17)),
             JSON.stringify(states.ORBIT),
         );
     });
 
-    it('inputToState should return NONE state if matching state is disabled', function () {
+    it('inputToState should return NONE state if matching state is disabled', () => {
         states.ORBIT.enable = false;
         assert.strictEqual(
             JSON.stringify(states.inputToState(MOUSE.LEFT, 17)),
@@ -43,14 +43,14 @@ describe('StateControl', function () {
         states.ORBIT.enable = true;
     });
 
-    it('touchToState should return the correct state', function () {
+    it('touchToState should return the correct state', () => {
         assert.strictEqual(
             JSON.stringify(states.touchToState(3)),
             JSON.stringify(states.PAN),
         );
     });
 
-    it('touchToState should return NONE state if matching state is disabled', function () {
+    it('touchToState should return NONE state if matching state is disabled', () => {
         states.PAN.enable = false;
         assert.strictEqual(
             JSON.stringify(states.touchToState(3)),
@@ -59,7 +59,7 @@ describe('StateControl', function () {
         states.PAN.enable = true;
     });
 
-    it('setFromOptions should set states according to given options', function () {
+    it('setFromOptions should set states according to given options', () => {
         const options = {
             PAN: { enable: false, double: false },
             MOVE_GLOBE: { enable: true, double: false, mouseButton: MOUSE.LEFT },
@@ -88,115 +88,115 @@ describe('StateControl', function () {
         });
     });
 
-    it('should trigger state-changed event from left-click', function () {
+    it('should trigger state-changed event from left-click', () => {
         event.pointerType = 'mouse';
         event.button = MOUSE.LEFT;
         event.offsetX = 100;
         event.offsetY = 100;
 
-        assert(testEventTriggering('state-changed', event, states._onPointerDown));
+        assert(testEventTriggering('state-changed', event, states._on.pointerdown));
     });
 
-    it('should trigger drag event', function () {
-        assert(testEventTriggering('drag', event, states._onPointerMove));
-        states._onPointerUp();
+    it('should trigger drag event', () => {
+        assert(testEventTriggering('drag', event, states._on.pointermove));
+        states._on.pointerup();
     });
 
-    it('should trigger state-changed event from ctrl + left-click', function () {
+    it('should trigger state-changed event from ctrl + left-click', () => {
         event.keyCode = 17;
 
         assert(testEventTriggering('state-changed', event, (event) => {
-            states._onKeyDown(event);
-            states._onPointerDown(event);
+            states._on.keydown(event);
+            states._on.pointerdown(event);
         }));
     });
 
-    it('should trigger rotate event', function () {
-        assert(testEventTriggering('rotate', event, states._onPointerMove));
-        states._onPointerUp();
-        states._onKeyUp();
+    it('should trigger rotate event', () => {
+        assert(testEventTriggering('rotate', event, states._on.pointermove));
+        states._on.pointerup();
+        states._on.keyup();
     });
 
-    it('should trigger state-changed event from middle click', function () {
+    it('should trigger state-changed event from middle click', () => {
         event.button = MOUSE.MIDDLE;
 
-        assert(testEventTriggering('state-changed', event, states._onPointerDown));
+        assert(testEventTriggering('state-changed', event, states._on.pointerdown));
     });
 
-    it('should trigger dolly event', function () {
-        assert(testEventTriggering('dolly', event, states._onPointerMove));
-        states._onPointerUp();
+    it('should trigger dolly event', () => {
+        assert(testEventTriggering('dolly', event, states._on.pointermove));
+        states._on.pointerup();
     });
 
-    it('should trigger state-changed event from right-click', function () {
+    it('should trigger state-changed event from right-click', () => {
         event.button = MOUSE.RIGHT;
 
-        assert(testEventTriggering('state-changed', event, states._onPointerDown));
+        assert(testEventTriggering('state-changed', event, states._on.pointerdown));
     });
 
-    it('should trigger pan event', function () {
-        assert(testEventTriggering('pan', event, states._onPointerMove));
+    it('should trigger pan event', () => {
+        assert(testEventTriggering('pan', event, states._on.pointermove));
         states.onPointerUp();
     });
 
-    it('should trigger pan event from up arrow key press', function () {
+    it('should trigger pan event from up arrow key press', () => {
         event.button = undefined;
 
         // UP arrow key
         event.keyCode = 38;
-        assert(testEventTriggering('pan', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('pan', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should trigger pan event from bottom arrow key press', function () {
+    it('should trigger pan event from bottom arrow key press', () => {
         // BOTTOM arrow key
         event.keyCode = 40;
-        assert(testEventTriggering('pan', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('pan', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should trigger pan event from left arrow key press', function () {
+    it('should trigger pan event from left arrow key press', () => {
         // LEFT arrow key
         event.keyCode = 37;
-        assert(testEventTriggering('pan', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('pan', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should trigger pan event from right arrow key press', function () {
+    it('should trigger pan event from right arrow key press', () => {
         // RIGHT arrow key
         event.keyCode = 39;
-        assert(testEventTriggering('pan', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('pan', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should trigger state-changed event from shift + left-click', function () {
+    it('should trigger state-changed event from shift + left-click', () => {
         event.button = MOUSE.LEFT;
         event.keyCode = 16;
 
         assert(testEventTriggering('state-changed', event, (event) => {
-            states._onKeyDown(event);
-            states._onPointerDown(event);
+            states._on.keydown(event);
+            states._on.pointerdown(event);
         }));
     });
 
-    it('should trigger panoramic event', function () {
-        assert(testEventTriggering('panoramic', event, states._onPointerMove));
-        states._onPointerUp();
-        states._onKeyUp();
+    it('should trigger panoramic event', () => {
+        assert(testEventTriggering('panoramic', event, states._on.pointermove));
+        states._on.pointerup();
+        states._on.keyup();
     });
 
-    it('should trigger travel_in event from mouse event', function () {
+    it('should trigger travel_in event from mouse event', () => {
         assert(testEventTriggering('travel_in', event, (event) => {
             event.timeStamp = 100;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
             event.timeStamp = 200;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
     });
 
-    it('should trigger travel_in event from keyboard event', function () {
+    it('should trigger travel_in event from keyboard event', () => {
         states.setFromOptions({
             TRAVEL_IN: {
                 keyboard: 80,
@@ -206,38 +206,38 @@ describe('StateControl', function () {
         event.button = undefined;
         event.keyCode = 80;
 
-        assert(testEventTriggering('travel_in', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('travel_in', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should no longer trigger travel_in event from mouse event', function () {
+    it('should no longer trigger travel_in event from mouse event', () => {
         event.button = MOUSE.LEFT;
         event.keyCode = undefined;
 
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.timeStamp = 700;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
             event.timeStamp = 800;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
         }));
     });
 
-    it('should trigger travel_out event from mouse event', function () {
+    it('should trigger travel_out event from mouse event', () => {
         event.button = MOUSE.RIGHT;
 
         assert(testEventTriggering('travel_out', event, (event) => {
             event.timeStamp = 1300;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
             event.timeStamp = 1400;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
     });
 
-    it('should trigger travel_out event from keyboard event', function () {
+    it('should trigger travel_out event from keyboard event', () => {
         states.setFromOptions({
             TRAVEL_OUT: {
                 keyboard: 77,
@@ -248,105 +248,105 @@ describe('StateControl', function () {
         event.button = undefined;
         event.keyCode = 77;
 
-        assert(testEventTriggering('travel_out', event, states._onKeyDown));
-        states._onKeyUp();
+        assert(testEventTriggering('travel_out', event, states._on.keydown));
+        states._on.keyup();
     });
 
-    it('should no longer trigger travel_out event from mouse event', function () {
+    it('should no longer trigger travel_out event from mouse event', () => {
         event.button = MOUSE.RIGHT;
         event.keyCode = undefined;
 
         assert(!testEventTriggering('travel_out', event, (event) => {
             event.timeStamp = 1900;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
             event.timeStamp = 2000;
-            states._onPointerDown(event);
-            states._onPointerUp(event);
+            states._on.pointerdown(event);
+            states._on.pointerup(event);
         }));
     });
 
-    it('should trigger zoom event from wheel event', function () {
-        assert(testEventTriggering('zoom', event, states._onMouseWheel));
+    it('should trigger zoom event from wheel event', () => {
+        assert(testEventTriggering('zoom', event, states._on.wheel));
     });
 
-    it('should not trigger zoom event if zoom trigger is disabled', function () {
+    it('should not trigger zoom event if zoom trigger is disabled', () => {
         states.ZOOM.enable = false;
-        assert(!testEventTriggering('zoom', event, states._onMouseWheel));
+        assert(!testEventTriggering('zoom', event, states._on.wheel));
         states.ZOOM.enable = true;
     });
 
-    it('blur event should resume currentState to NONE', function () {
+    it('blur event should resume currentState to NONE', () => {
         states.currentState = states.MOVE_GLOBE;
-        states._onBlur(event);
+        states._on.blur(event);
         assert.ok(states.NONE === states.currentState);
     });
 
-    it('context menu should not appear', function () {
+    it('context menu should not appear', () => {
         states.onContextMenu(event);
     });
 
-    it('should not trigger anything if StateControl is disabled', function () {
+    it('should not trigger anything if StateControl is disabled', () => {
         states.enabled = false;
 
         assert(!testEventTriggering('state-changed', event, (event) => {
             // Single left click
             event.button = MOUSE.LEFT;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
 
             // Single right click
             event.button = MOUSE.RIGHT;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
 
             // Single middle click
             event.button = MOUSE.MIDDLE;
-            states._onPointerDown(event);
-            states._onPointerUp();
+            states._on.pointerdown(event);
+            states._on.pointerup();
         }));
 
         event.button = undefined;
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.keyCode = 80;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
         assert(!testEventTriggering('travel_in', event, (event) => {
             event.keyCode = 77;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
         assert(!testEventTriggering('pan', event, (event) => {
             // Left arrow key
             event.keyCode = 37;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Up arrow key
             event.keyCode = 38;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Right arrow key
             event.keyCode = 39;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
 
             // Bottom arrow key
             event.keyCode = 40;
-            states._onKeyDown(event);
-            states._onKeyUp();
+            states._on.keydown(event);
+            states._on.keyup();
         }));
 
-        assert(!testEventTriggering('zoom', event, states._onMouseWheel));
+        assert(!testEventTriggering('zoom', event, states._on.wheel));
 
         states.enabled = true;
     });
 
-    it('should dispose event listeners', function () {
+    it('should dispose event listeners', () => {
         states.dispose();
     });
 });
