@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeImagery } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterColorTile } from 'Renderer/RasterTile';
 import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
 import Style from 'Core/Style';
@@ -154,6 +153,8 @@ class ColorLayer extends RasterLayer {
         this.structure = '2d';
         this.addLabelLayer = addLabelLayer;
         this.mergeFeatures = mergeFeatures;
+
+        this.rasterTile = RasterColorTile;
     }
 
     /**
@@ -163,18 +164,15 @@ class ColorLayer extends RasterLayer {
      * @param      {TileMesh}  node    The node to apply new RasterColorTile;
      * @returns     {RasterColorTile}  The raster color node added.
      */
-    setupRasterNode(node) {
-        const rasterColorTile = new RasterColorTile(this);
-
-        node.material.addColorTile(rasterColorTile);
+    addRasterTile(node) {
         // set up ColorLayer ordering.
         node.material.setColorTileIds(this.parent.colorLayersOrder);
 
-        return rasterColorTile;
+        return super.addRasterTile(node);
     }
 
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeImagery(context, this, node, parent);
+    getRasterTileParent(node) {
+        return node.parent.material?.getTile(this.id);
     }
 }
 
