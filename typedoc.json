@@ -10,15 +10,7 @@
         "docs/plugins.js"
     ],
     "entryPointStrategy": "resolve",
-    "projectDocuments": [
-        "docs/tutorials/Fundamentals.md",
-        "docs/tutorials/Raster-data-Lambert93.md",
-        "docs/tutorials/Raster-data-WGS84.md",
-        "docs/tutorials/Vector-data-3d.md",
-        "docs/tutorials/Vector-data-on-ground.md",
-        "docs/tutorials/3DTiles-mesh-b3dm.md",
-        "docs/tutorials/3DTiles-point-cloud-pnts.md"
-    ],
+    "projectDocuments": ["docs/tutorials/*.md"],
     "exclude": ["**/lib/**", "**/test/**", "**/node_modules/**"],
     "readme": "docs/HOMEPAGE.md",
     "out": "docs/out",

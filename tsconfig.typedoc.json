@@ -7,17 +7,7 @@
         "paths": {
             "@itowns/geographic": ["packages/Geographic/src/index.ts"],
             "Main": ["packages/Main/src/Main.js"],
-            "Controls/*": ["packages/Main/src/Controls/*"],
-            "Converter/*": ["packages/Main/src/Converter/*"],
-            "Core/*": ["packages/Main/src/Core/*"],
-            "Layer/*": ["packages/Main/src/Layer/*"],
-            "Loader/*": ["packages/Main/src/Loader/*"],
-            "Parser/*": ["packages/Main/src/Parser/*"],
-            "Process/*": ["packages/Main/src/Process/*"],
-            "Provider/*": ["packages/Main/src/Provider/*"],
-            "Renderer/*": ["packages/Main/src/Renderer/*"],
-            "Source/*": ["packages/Main/src/Source/*"],
-            "Utils/*": ["packages/Main/src/Utils/*"]
+            "*": ["packages/Main/src/*"]
         }
     },
     "include": [
