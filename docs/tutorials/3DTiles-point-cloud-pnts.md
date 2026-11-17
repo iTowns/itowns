@@ -41,7 +41,7 @@ long as you have a local web server and that you adapt the link to itowns (`<scr
 ## Preparing the field
 
 We will first create a view, add a layer with ortho images and a digital elevation model (DEM).
-The 3D Tiles dataset we are using is in the `EPSG:4978` CRS, so we will use a {@link itowns!GlobeView | GlobeView} to display it.
+The 3D Tiles dataset we are using is in the `EPSG:4978` CRS, so we will use a {@link GlobeView} to display it.
 
 We won't go into the details of creating the view, adding the ortho images and the DEM. For more information on this part, see the [WGS84 tutorial](Raster-data-WGS84.md) in which we explain how to add similar layers. The only differences are the data sources used. Here, we use ortho images from a XYZ stream of Open Street Map tiles which will allow to better distinguish the point cloud. We also use a more precise DEM (but that only covers France).
 
@@ -122,7 +122,7 @@ a basemap and a 3D terrain:
 
 ## Adding the 3D Tiles Layer
 
-As usual, we first configure a source. Here, we will use a {@link itowns!OGC3DTilesSource | OGC3DTilesSource} for which it is as simple as giving the url of the dataset to display.
+As usual, we first configure a source. Here, we will use a {@link OGC3DTilesSource} for which it is as simple as giving the url of the dataset to display.
 
 ```js
 const pointCloudSource = new itowns.OGC3DTilesSource({
@@ -131,8 +131,8 @@ const pointCloudSource = new itowns.OGC3DTilesSource({
 });
 ```
 
-Then, we create the {@link itowns!OGC3DTilesLayer | OGC3DTilesLayer} by giving it and `id` and the `source`.
-And finally we add it to the {@link itowns!GlobeView | GlobeView}.
+Then, we create the {@link OGC3DTilesLayer} by giving it and `id` and the `source`.
+And finally we add it to the {@link GlobeView}.
 
 ```js
 const pointCloudLayer = new itowns.OGC3DTilesLayer('gorges', {
@@ -154,7 +154,7 @@ In the next part, we will see how we can improve that.
 ## Updating 3D Tiles style
 
 3D Tiles style can be changed on the fly when loading the 3D Tiles data in itowns. It can be done with
-the `OGC3DTILES_LAYER_EVENTS.LOAD_MODEL` event of {@link itowns!OGC3DTilesLayer | OGC3DTilesLayer} that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
+the `OGC3DTILES_LAYER_EVENTS.LOAD_MODEL` event of {@link OGC3DTilesLayer} that is called for each tile when the content of a tile has been loaded. The tile content is a Threejs `Object3D` or `Group`, so we can access its material and make any style changes that we want. In our case, we will modify the size of the points.
 First, we create a function to update the size of the point:
 
 ```js

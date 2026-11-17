@@ -102,7 +102,7 @@ layer to a more precise one.
 
 We will use a WFS stream that provides buildings footprints geometries and altitude information for each building. 
 We will display the buildings by extruding the building footprints to the altitude value. iTowns provides a specific
-layer for such usecases: {@link itowns!FeatureGeometryLayer | FeatureGeometryLayer} (which is a pre-configured type of {@link itowns!GeometryLayer | GeometryLayer}).
+layer for such usecases: {@link FeatureGeometryLayer} (which is a pre-configured type of {@link GeometryLayer}).
 Before creating this layer, let's instantiate the data source:
 
 ```js
@@ -144,7 +144,7 @@ So let's start modifying these polygons' altitude to place them on the ground !
 ## Placing the data on the ground
 
 To achieve the positioning relative to the elevation layer, we will need to add
-a parameter to the `FeatureGeometryLayer`, which is its {@link itowns!Style | Style}.
+a parameter to the `FeatureGeometryLayer`, which is its {@link Style}.
 As mentioned in the [fundamentals](Fundamentals.md) tutorial, we can modify the appearance and positioning of polygons thanks to the `fill` property of `Style`.
 The altitude at which polygons are displayed can be modified using the `base_altitude` parameter, which we set as follows :
 

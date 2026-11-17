@@ -49,7 +49,7 @@ import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
  * @property {string} LAYER_REMOVED - Deprecated: emit when layer id removed in viewer (use VIEW_EVENTS.LAYER_REMOVED instead).
  * @property {string} COLOR_LAYERS_ORDER_CHANGED - Deprecated: emit when  color layers order change (use VIEW_EVENTS.COLOR_LAYERS_ORDER_CHANGED instead).
  * @category View
- * @deprecated Use {@link itowns!VIEW_EVENTS | VIEW_EVENTS} instead.
+ * @deprecated Use {@link VIEW_EVENTS} instead.
  */
 
 export const GLOBE_VIEW_EVENTS = {

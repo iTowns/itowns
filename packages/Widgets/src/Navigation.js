@@ -87,7 +87,7 @@ class Navigation extends Widget {
 
     /**
      * @param   {GlobeView}     view                                    The iTowns view the navigation should be linked
-     * to. For the moment, only {@link itowns!GlobeView | GlobeView}
+     * to. For the moment, only {@link GlobeView}
      * is supported.
      * @param   {object}        options                                 The navigation menu optional configuration.
      * @param   {HTMLElement}   [options.parentElement=view.domElement] The parent HTML container of the div which

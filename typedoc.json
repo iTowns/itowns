@@ -1,6 +1,6 @@
 {
     "$schema": "https://typedoc.org/schema.json",
-    "plugin": ["typedoc-plugin-mdn-links", "./docs/typedoc-plugins/version-switch.mjs", "./docs/typedoc-plugins/check-categories.mjs"],
+    "plugin": ["typedoc-plugin-mdn-links", "./docs/typedoc-plugins/version-switch.mjs", "./docs/typedoc-plugins/check-categories.mjs", "./docs/typedoc-plugins/resolve-module-links.mjs"],
     "tsconfig": "tsconfig.typedoc.json",
     "entryPoints": [
         "packages/Main/src/Main.js",

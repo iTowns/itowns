@@ -86,7 +86,7 @@ We need to change the starting position to something more appropriate.
 ## Display flood risk areas on the ground
 
 The first mandatory thing we need to do for our flood area vector data to be displayed is to define their source.
-Our data is contained within a GeoJSON file, so we can use iTowns {@link itowns!FileSource | FileSource} :
+Our data is contained within a GeoJSON file, so we can use iTowns {@link FileSource} :
 
 ```js
 var floodSource = new itowns.FileSource({
@@ -102,7 +102,7 @@ The `format` parameter defines the format of our file.
 Itowns needs this format to determine which method it shall use to download data and transform them into iTowns internal objects.
 
 Now that the source of our vector data is set, we need to create a `Layer` which will contain the data.
-We want our vector data to be projected on the ground. Therefore, we use a {@link itowns!ColorLayer | ColorLayer} and add it to our `GlobeView` :
+We want our vector data to be projected on the ground. Therefore, we use a {@link ColorLayer} and add it to our `GlobeView` :
 
 ```js
 var floodLayer = new itowns.ColorLayer('flood', {
@@ -112,9 +112,9 @@ view.addLayer(floodLayer);
 ```
 
 If you run the example now, you will notice that nothing is displayed yet.
-That is because we did not yet define a {@link itowns!Style | Style} for our vector data. 
+That is because we did not yet define a {@link Style} for our vector data. 
 To be more precise, our data consists in polygons, and we did not tell iTowns how these polygons should be displayed, so iTowns doesn't display them.
-We can correct this by creating a {@link itowns!Style | Style} and applying it to our `ColorLayer` :
+We can correct this by creating a {@link Style} and applying it to our `ColorLayer` :
 
 ```js
 var floodStyle = {

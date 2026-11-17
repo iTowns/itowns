@@ -101,9 +101,11 @@ Tutorial content...
 Sections are ordered by the `categoryOrder` option of `typedoc.json`; add any
 new section there.
 
-Tutorials have no TypeScript scope, so links to the API must be qualified
-with their module. Give them an explicit text, otherwise the module prefix is
-displayed, e.g. `{@link itowns!GlobeView | GlobeView}` or
+Links to the API can be written without their module, e.g.
+`{@link GlobeView}`: the `docs/typedoc-plugins/resolve-module-links.mjs`
+plugin looks the symbol up in every package. If several packages export a
+symbol with that name, the link is reported as ambiguous and must be
+qualified with its module, e.g.
 `{@link @itowns/geographic!Coordinates | Coordinates}`.
 
 When adding a tutorial, create the Markdown file in `docs/tutorials/` and
