@@ -28,8 +28,8 @@ class Scale extends Widget {
     /**
      * @param   {View}                  view                                    The iTowns view the scale should be
      * linked to. If it is a
-     * `PlanarView` or a
-     * `GlobeView`, the scale will be
+     * {@link PlanarView} or a
+     * {@link GlobeView}, the scale will be
      * automatically updated. Otherwise, user
      * will need to implement the update
      * automation using the `Scale.update`
