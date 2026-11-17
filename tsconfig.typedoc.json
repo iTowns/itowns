@@ -6,7 +6,7 @@
         "baseUrl": ".",
         "paths": {
             "@itowns/geographic": ["packages/Geographic/src/index.ts"],
-            "Main": ["packages/Main/src/Main.js"],
+            "Main": ["packages/Main/src/Main.ts"],
             "*": ["packages/Main/src/*"]
         }
     },

@@ -4,7 +4,7 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
- * @import { ParsingOptions } from 'Source/Source'
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
  */
 
 /**

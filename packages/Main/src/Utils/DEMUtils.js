@@ -3,6 +3,10 @@ import { Coordinates } from '@itowns/geographic';
 import { sharedReadContext2D } from 'Utils/CanvasUtils';
 import placeObjectOnGround from 'Utils/placeObjectOnGround';
 
+/**
+ * @import { Terrain } from 'Utils/Terrain'
+ */
+
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;
 
@@ -41,15 +45,6 @@ export default {
         }
     },
 
-    /**
-     * @typedef Terrain
-     * @type {object}
-     *
-     * @property {Coordinates} coord - Pick coordinate with the elevation in coord.z.
-     * @property {THREE.Texture} texture - the picked elevation texture.
-     * The texture where the `z` value has been read from
-     * @property {TileMesh} tile - the picked tile and the tile containing the texture
-     */
     /**
      * Gives a {@link Terrain} object, at a specific {@link Coordinates}. The returned
      * object is as follow:

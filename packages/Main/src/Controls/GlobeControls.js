@@ -5,6 +5,10 @@ import CameraUtils from 'Utils/CameraUtils';
 import StateControl from 'Controls/StateControl';
 import { VIEW_EVENTS } from 'Core/View';
 
+/**
+ * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ */
+
 // private members
 const EPS = 0.000001;
 
@@ -152,8 +156,8 @@ let previous;
  * GlobeControls is a camera controller
  *
  * @param      {GlobeView}  view the view where the control will be used
- * @param      {CameraTransformOptions|Extent} placement   the `CameraUtils.CameraTransformOptions` to apply to view's camera
- * or the extent it must display at initialisation, see `CameraUtils`.
+ * @param      {CameraTransformOptions|Extent} placement   the {@link CameraTransformOptions} to apply to view's camera
+ * or the extent it must display at initialisation, see {@link CameraUtils} for available options.
  * @param      {object}  [options] An object with one or more configuration properties. Any property of GlobeControls
  * can be passed in this object.
  * @property      {number}  zoomFactor The factor the scale is multiplied by when dollying (zooming) in or

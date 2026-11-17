@@ -1,3 +1,5 @@
+// TypeDoc uses the `@module` tag to name the module.
+/* eslint-disable jsdoc/check-tag-names */
 /**
  * @module itowns
  * @category API
@@ -40,7 +42,10 @@ export { PLANAR_CONTROL_EVENT } from 'Controls/PlanarControls';
 export { default as Feature2Mesh } from 'Converter/Feature2Mesh';
 export { default as FeaturesUtils } from 'Utils/FeaturesUtils';
 export { default as DEMUtils } from 'Utils/DEMUtils';
+export type { Terrain } from 'Utils/Terrain';
 export { default as CameraUtils } from 'Utils/CameraUtils';
+export type { CameraTransformOptions } from 'Utils/CameraTransformOptions';
+export { default as Picking } from 'Core/Picking';
 export { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
@@ -93,6 +98,7 @@ export { default as GeoidLayer } from 'Layer/GeoidLayer';
 // A custom source should at least implements Source
 // See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Source.html
 export { default as Source } from 'Source/Source';
+export type { ParsingOptions } from 'Source/ParsingOptions';
 export { default as FileSource } from 'Source/FileSource';
 export { default as TMSSource } from 'Source/TMSSource';
 export { default as WFSSource } from 'Source/WFSSource';

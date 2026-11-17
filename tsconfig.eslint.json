@@ -4,7 +4,7 @@
         "noEmit": true,
         "paths": {
             "@itowns/geographic": ["packages/Geographic/src/index.ts"],
-            "itowns": ["packages/Main/src/Main.js"]
+            "itowns": ["packages/Main/src/Main.ts"]
         }
     },
     "include": [

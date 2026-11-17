@@ -31,7 +31,7 @@ See the [node website](https://nodejs.org) to install node and npm.
 * Transpile itowns to ES5 to require it in your code:
    * `npm run transpile`
    * The transpiled source is in `lib/`
-   * You can then require `src/Main.js` in your code
+   * You can then require `src/Main.ts` in your code
 * Test and lint changes: see test, lint and test-examples npm script
 
 ## Monorepo structure

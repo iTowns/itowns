@@ -3,7 +3,7 @@
     "plugin": ["typedoc-plugin-mdn-links", "./docs/typedoc-plugins/version-switch.mjs", "./docs/typedoc-plugins/check-categories.mjs", "./docs/typedoc-plugins/resolve-module-links.mjs", "./docs/typedoc-plugins/three-links.mjs"],
     "tsconfig": "tsconfig.typedoc.json",
     "entryPoints": [
-        "packages/Main/src/Main.js",
+        "packages/Main/src/Main.ts",
         "packages/Geographic/src/index.ts",
         "packages/Debug/src/Main.js",
         "packages/Widgets/src/Main.js",

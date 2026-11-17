@@ -7,7 +7,8 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 import { Coordinates } from '@itowns/geographic';
 
 /**
- * @import Source, { ParsingOptions } from 'Source/Source'
+ * @import Source from 'Source/Source'
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
  * @import { FeatureBuildingOptions } from 'Core/Feature'
  */
 
@@ -226,7 +227,7 @@ export default {
      * @param {ArrayBuffer} file - The vector tile file to parse.
      *
      * @param {object} options - Options controlling the parsing, see
-     * `ParsingOptions`. `options.in` is the {@link Source} (styles,
+     * {@link ParsingOptions}. `options.in` is the {@link Source} (styles,
      * layers and informations data) and `options.out` the
      * {@link FeatureBuildingOptions} indicating how the features should be
      * built.

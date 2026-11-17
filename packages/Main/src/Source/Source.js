@@ -13,6 +13,7 @@ import { LRUCache } from 'lru-cache';
 /**
  * @import { FeatureBuildingOptions } from 'Core/Feature'
  * @import Layer from 'Layer/Layer'
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
  */
 
 /** @private */
@@ -29,14 +30,6 @@ export const supportedParsers = new Map([
 ]);
 
 const noCache = { get: () => {}, set: a => a, clear: () => {} };
-
-/**
- * This interface describes parsing options.
- * @typedef {object} ParsingOptions
- * @property {Source} in - data informations contained in the file.
- * @property {FeatureBuildingOptions|Layer} out - options indicates how the features should be built.
- * @category Source
- */
 
 let uid = 0;
 

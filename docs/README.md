@@ -18,15 +18,32 @@ and `.js` sources, and generates a classic reference explaining all exposed
 methods and classes in itowns.
 
 The reference is built from the public entry point of each package, declared
-in `typedoc.json` (`entryPoints`): `itowns` (`packages/Main/src/Main.js`),
+in `typedoc.json` (`entryPoints`): `itowns` (`packages/Main/src/Main.ts`),
 `@itowns/geographic`, `@itowns/debug`, `@itowns/widgets`, and `plugins`
 (`docs/plugins.js`, which re-exports the example plugins). Each entry file
 names its module with a `@module` tag. Only what is exported from these entry
 points is documented. Internal types (e.g. JSDoc `@typedef`s such as
-`ParsingOptions`) are not exported, so don't reference them with `{@link}`
-(use backticks): an unresolved link is a warning, and warnings fail the build.
-In `.js` files, make sure such types are resolvable by TypeScript, e.g. with a
-JSDoc `@import` (`/** @import { ParsingOptions } from 'Source/Source' */`).
+`FeatureBuildingOptions`) are not exported, so don't reference them with
+`{@link}` (use backticks): an unresolved link is a warning, and warnings fail
+the build.
+
+To make a type public, declare it in a `.ts` file (e.g.
+`Source/ParsingOptions.ts`) and re-export it from the `itowns` entry point,
+`packages/Main/src/Main.ts`, with a type-only export (a plain `export { ... }`
+would fail, as the type does not exist at runtime):
+
+```ts
+export type { ParsingOptions } from 'Source/ParsingOptions';
+```
+
+In `.js` files, use a JSDoc `@import` to make such types resolvable by
+TypeScript:
+
+```js
+/**
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
+ */
+```
 
 Every documented class must carry an `@category` tag (e.g. `@category Layer`,
 `@category View`...), so it gets grouped under the correct navigation section

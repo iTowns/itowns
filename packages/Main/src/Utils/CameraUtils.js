@@ -6,6 +6,10 @@ import { Coordinates, Ellipsoid } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import { VIEW_EVENTS } from 'Core/View';
 
+/**
+ * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ */
+
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -352,18 +356,6 @@ export function getRig(camera) {
  * @category Controls
  */
 export default {
-    /**
-     * @typedef {object} CameraTransformOptions
-     * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
-     * @property {number} [tilt=currentTilt] camera's tilt, in degree
-     * @property {number} [heading=currentHeading] camera's heading, in degree
-     * @property {number} [range=currentRange] camera distance to target coordinate, in meter
-     * @property {number} [time=2500] duration of the animation, in ms
-     * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
-     * @property {number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
-     * @property {Function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
-     * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
-     */
     /**
      * Default value for option to stop place target
      * on the ground at animation ending.

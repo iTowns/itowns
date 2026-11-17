@@ -11,6 +11,10 @@ import SkyController from 'Core/Prefab/Globe/SkyController';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
 /**
+ * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ */
+
+/**
  * Fires when the view is completely loaded. Controls and view's functions can be called then.
  * @event GlobeView#initialized
  * @property {View} target - the view that dispatched the event
@@ -82,7 +86,7 @@ class GlobeView extends View {
      *
      * @param {HTMLDivElement} viewerDiv - Where to attach the view and display it
      * in the DOM.
-     * @param {CameraTransformOptions|Extent} placement - An object to place view
+     * @param {CameraTransformOptions|Extent} placement - The {@link CameraTransformOptions} used to place the view
      * @param {object} [options] - See options of {@link View}.
      * @param {object} [options.controls] - See options of {@link GlobeControls}
      * @param {object} [options.webXR] - WebXR configuration - its presence alone

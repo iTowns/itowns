@@ -101,6 +101,20 @@ const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set
  * @category View
  */
 export default {
+    /**
+     * Picks the tiles of a {@link TiledGeometryLayer} under the given view
+     * coordinates.
+     *
+     * @param {View} view - The view instance.
+     * @param {THREE.Vector2} viewCoords - The view coordinates (in pixels)
+     * where picking should be done.
+     * @param {number} radius - The radius (in pixels) of the picking circle.
+     * @param {TiledGeometryLayer} layer - The tiled layer used for picking.
+     * @param {Array} [results=[]] - Array to which picked results are pushed.
+     *
+     * @returns {Array} The `results` array, filled with `{ object, layer }`
+     * entries for each picked tile.
+     */
     pickTilesAt(view, viewCoords, radius, layer, results = []) {
         const _ids = screenCoordsToNodeId(view, layer, viewCoords, radius);
 
