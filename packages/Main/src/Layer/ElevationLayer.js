@@ -1,5 +1,4 @@
 import RasterLayer from 'Layer/RasterLayer';
-import { updateLayeredMaterialNodeElevation } from 'Process/LayeredMaterialNodeProcessing';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
@@ -105,6 +104,8 @@ class ElevationLayer extends RasterLayer {
 
         this.bias = bias;
         this.mode = mode;
+
+        this.rasterTile = RasterElevationTile;
     }
 
     /**
@@ -114,32 +115,34 @@ class ElevationLayer extends RasterLayer {
      * @param      {TileMesh}  node    The node to apply new RasterElevationTile;
      * @returns     {RasterElevationTile}  The raster elevation node added.
      */
-    setupRasterNode(node) {
-        const rasterElevationNode = new RasterElevationTile(this);
-
-        node.material.setElevationTile(rasterElevationNode);
-        node.material.setElevationTileId(this.id);
-        // bounding box initialisation
-        const updateBBox = () => node.setBBoxZ({
-            min: rasterElevationNode.min, max: rasterElevationNode.max, scale: this.scale,
-        });
-        updateBBox();
+    addRasterTile(node) {
+        const rasterElevationTile = super.addRasterTile(node);
 
         // listen elevation updating
-        rasterElevationNode.addEventListener('rasterElevationLevelChanged', updateBBox);
+        rasterElevationTile.addEventListener('rasterElevationLevelChanged', () => node.setBBoxZ());
 
-        // listen scaling elevation updating
+        node.setBBoxZ();
+
+        return rasterElevationTile;
+    }
+
+    removeRasterTile(node) {
+        super.removeRasterTile(node);
+        node.setBBoxZ();
+    }
+
+    getRasterTileParent(node) {
+        return node.parent.material?.getCurrentElevationTile();
+    }
+
+    onNodeCreated(node) {
+        const updateBBox = () => node.setBBoxZ();
+
         this.addEventListener('scale-property-changed', updateBBox);
-        // remove scaling elevation updating if node is removed
+
         node.addEventListener('dispose', () => {
             this.removeEventListener('scale-property-changed', updateBBox);
         });
-
-        return rasterElevationNode;
-    }
-
-    update(context, layer, node, parent) {
-        return updateLayeredMaterialNodeElevation(context, this, node, parent);
     }
 }
 
