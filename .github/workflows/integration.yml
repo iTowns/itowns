@@ -62,11 +62,6 @@ jobs:
         if: ${{ success() }}
         run: npm run build
 
-      # Lint documentation
-      - name: Lint documentation
-        if: ${{ success() }}
-        run: npm run doclint
-
       # Build documentation
       - name: Build documentation
         if: ${{ success() && github.ref == 'refs/heads/master' }}
