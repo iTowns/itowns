@@ -454,7 +454,7 @@ class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style (`StyleOptions`).
+     * and sub properties of a Style {@link StyleOptions}.
      */
     constructor(params = {}) {
         super();

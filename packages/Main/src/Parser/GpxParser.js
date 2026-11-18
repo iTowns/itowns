@@ -7,7 +7,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 
 /**
- * The GpxParser module provides a `parse`
+ * The GpxParser module provides a [parse]{@link GpxParser.parse}
  * method that takes a GPX in and gives an object formatted for iTowns
  * containing all necessary informations to display this GPX.
  *
@@ -15,12 +15,12 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a GPX file content and return a `FeatureCollection`.
+     * Parse a GPX file content and return a {@link FeatureCollection}.
      *
      * @param {XMLDocument} gpxFile - The GPX file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
      *
-     * @returns {Promise} A promise resolving with a `FeatureCollection`.
+     * @returns {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(gpxFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);

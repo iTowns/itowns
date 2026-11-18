@@ -7,7 +7,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 
 /**
- * The KMLParser module provides a `parse`
+ * The KMLParser module provides a [parse]{@link KMLParser.parse}
  * method that takes a KML in and gives an object formatted for iTowns
  * containing all necessary informations to display this KML.
  *
@@ -15,12 +15,12 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a KML file content and return a `FeatureCollection`.
+     * Parse a KML file content and return a {@link FeatureCollection}.
      *
      * @param {XMLDocument} kmlFile - The KML file content to parse.
      * @param {ParsingOptions} options - Options controlling the parsing.
      *
-     * @returns {Promise} A promise resolving with a `FeatureCollection`.
+     * @returns {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(kmlFile, options) {
         options = deprecatedParsingOptionsToNewOne(options);

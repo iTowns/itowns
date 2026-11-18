@@ -7,7 +7,7 @@ export const BYTES_PER_FLOAT = 4;
 
 
 /**
- * The `GTXParser` module provides a `parse` method. This method takes the content of a
+ * The `GTXParser` module provides a [parse]{@link GTXParser.parse} method. This method takes the content of a
  * GTX file in, and returns a {@link GeoidGrid}. The {@link GeoidGrid} contains all the necessary attributes and
  * methods to access the GTX data in iTowns.
  *

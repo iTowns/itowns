@@ -31,9 +31,9 @@ const DEFAULT_OPTIONS = {
 class Minimap extends Widget {
     /**
      * @param   {GlobeView}             view                                    The iTowns view the minimap should be
-     * linked to. Only `GlobeView` is
+     * linked to. Only {@link GlobeView} is
      * supported at the moment.
-     * @param   {ColorLayer}            layer                                   The `ColorLayer` that should be
+     * @param   {ColorLayer}            layer                                   The {@link ColorLayer} that should be
      * displayed on the minimap.
      * @param   {object}                [options]                               The minimap optional configuration.
      * @param   {HTMLElement}           [options.parentElement=view.domElement] The parent HTML container of the div

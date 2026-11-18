@@ -191,7 +191,7 @@ function jsonFeaturesToFeatures(crsIn, jsonFeatures, options) {
 }
 
 /**
- * The GeoJsonParser module provide a `parse`
+ * The GeoJsonParser module provide a [parse]{@link GeoJsonParser.parse}
  * method that takes a GeoJSON in and gives an object formatted for iTowns
  * containing all necessary informations to display this GeoJSON.
  *

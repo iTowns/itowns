@@ -187,7 +187,7 @@ class TiledGeometryLayer extends GeometryLayer {
         }
     }
     /**
-     * Picking method for this layer. It uses the `Picking.pickTilesAt`
+     * Picking method for this layer. It uses the {@link Picking.pickTilesAt}
      * method.
      *
      * @param {View} view - The view instance.

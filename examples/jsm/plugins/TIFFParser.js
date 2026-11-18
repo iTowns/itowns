@@ -4,7 +4,7 @@ import * as itowns from 'itowns';
 import UTIF from 'UTIF';
 
 /**
- * The TIFFParser module provides a `parse`
+ * The TIFFParser module provides a [parse]{@link TIFFParser.parse}
  * method that takes a TIFF in and gives a `THREE.DataTexture` that can be
  * displayed in the view.
  *

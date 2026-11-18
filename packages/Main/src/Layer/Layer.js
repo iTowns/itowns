@@ -18,7 +18,7 @@ import { LRUCache } from 'lru-cache';
  * This promise is resolved with this layer.
  * This promise is returned by {@link View#addLayer}.
  * @property {object} [zoom] - This property is used only the layer is attached
- * to `TiledGeometryLayer`.
+ * to {@link TiledGeometryLayer}.
  * By example,
  * The layer checks the tile zoom level to determine if the layer is visible in this tile.
  *

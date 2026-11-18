@@ -8,7 +8,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 
 /**
- * The ShapefileParser module provides a `parse` method that takes a bunch of files constituing
+ * The ShapefileParser module provides a [parse]{@link ShapefileParser.parse} method that takes a bunch of files constituing
  * a shapefile in and gives an object formateted for iTowns, containing all
  * necessary informations to display this shapefile.
  *
@@ -48,7 +48,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  */
 export default {
     /**
-     * Parse a bunch of Shapefile files and return a `FeatureCollection`.
+     * Parse a bunch of Shapefile files and return a {@link FeatureCollection}.
      *
      * @param {object} data - All the data that can be specified in a shapefile.
      * @param {ArrayBuffer} data.shp - Data from the shapefile itself,
@@ -61,7 +61,7 @@ export default {
      * information.
      * @param {ParsingOptions} [options]
      *
-     * @returns {Promise} A promise resolving with a `FeatureCollection`.
+     * @returns {Promise} A promise resolving with a {@link FeatureCollection}.
      */
     parse(data, options = {}) {
         options = deprecatedParsingOptionsToNewOne(options);

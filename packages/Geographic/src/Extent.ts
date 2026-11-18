@@ -275,7 +275,7 @@ class Extent {
      *
      * @param extent - input extent
      * @param target - copy the result to target.
-     * @returns A Vector4 where the `x` property encodes the
+     * @returns A {@link three!Vector4} where the `x` property encodes the
      * translation on west-east, the `y` property the translation on
      * south-north, the `z` property the scale on west-east, the `w` property
      * the scale on south-north.

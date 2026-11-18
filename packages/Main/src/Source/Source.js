@@ -77,7 +77,7 @@ let uid = 0;
  * When calling this method, two parameters are passed:
  * <ul>
  *  <li>the fetched data, i.e. the data to parse</li>
- *  <li>a `ParsingOptions` object containing severals properties, set when this method is
+ *  <li>a {@link ParsingOptions} object containing severals properties, set when this method is
  *  called: it is specific to each call, so the value of each property can vary
  *  depending on the current fetched tile for example</li>
  * </ul>

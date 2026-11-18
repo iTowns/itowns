@@ -39,7 +39,7 @@ export const FEATURE_TYPES = {
  * @property {boolean} [buildExtent] - If true the geometry will
  * have an extent property containing the area covered by the geometry.
  * Default value is false if `structure` parameter is set to '3d', and true otherwise.
- * True if the layer does not inherit from `GeometryLayer`.
+ * True if the layer does not inherit from {@link GeometryLayer}.
  * @property {string} forcedExtentCrs - force feature extent crs if buildExtent is true.
  * @property {Function} [filter] - Filter function to remove features
  * @property {boolean} [mergeFeatures=true] - If true all geometries are merged by type and multi-type.

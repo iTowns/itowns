@@ -1228,13 +1228,13 @@ export function rebuildMeshTopology(featureMesh, layerStyle) {
 }
 
 /**
- * Convert `Feature`s to THREE.js meshes.
+ * Convert `Features` to THREE.js meshes.
  *
  * @category Converter
  */
 export default {
     /**
-     * Return a function that converts `Feature`s to Meshes. Feature
+     * Return a function that converts `Features` from {@link GeoJsonParser} to Meshes. Feature
      * collection will be converted to a THREE.Group.
      *
      * @param {object} options - options controlling the conversion

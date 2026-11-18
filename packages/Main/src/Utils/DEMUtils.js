@@ -17,12 +17,12 @@ const PRECISE_READ_Z = 1;
  */
 export default {
     /**
-     * Gives the elevation value of a `TiledGeometryLayer`, at a specific
-     * `Coordinates`.
+     * Gives the elevation value of {@link TiledGeometryLayer}, at a specific
+     * {@link Coordinates}.
      *
      * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
-     * textures we're going to query. This is typically a `GlobeLayer` or
-     * `PlanarLayer` (accessible through `view.tileLayer`).
+     * textures we're going to query. This is typically a {@link GlobeLayer} or
+     * {@link PlanarLayer} (accessible through `view.tileLayer`).
      * @param {Coordinates} coord - The coordinates that we're interested in.
      * @param {number} [method=FAST_READ_Z] - There are two available methods:
      * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
@@ -42,7 +42,16 @@ export default {
     },
 
     /**
-     * Gives a `Terrain` object, at a specific {@link Coordinates}. The returned
+     * @typedef Terrain
+     * @type {object}
+     *
+     * @property {Coordinates} coord - Pick coordinate with the elevation in coord.z.
+     * @property {THREE.Texture} texture - the picked elevation texture.
+     * The texture where the `z` value has been read from
+     * @property {TileMesh} tile - the picked tile and the tile containing the texture
+     */
+    /**
+     * Gives a {@link Terrain} object, at a specific {@link Coordinates}. The returned
      * object is as follow:
      * - `coord`, Coordinate, coord.z is the value in meters of the elevation at the coordinates
      * - `texture`, the texture where the `z` value has been read from
@@ -57,8 +66,8 @@ export default {
      *
      *
      * @param {TiledGeometryLayer} layer - The tile layer owning the elevation
-     * textures we're going to query. This is typically a `GlobeLayer` or
-     * `PlanarLayer` (accessible through `view.tileLayer`).
+     * textures we're going to query. This is typically a {@link GlobeLayer} or
+     * {@link PlanarLayer} (accessible through `view.tileLayer`).
      * @param {Coordinates} coord - The coordinates that we're interested in.
      * @param {number} [method=FAST_READ_Z] - There are two available methods:
      * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,
@@ -68,8 +77,7 @@ export default {
      * Otherwise the lookup process starts from the root of `layer`.
      * @param {object} [cache] - Object to cache previous result and speed up the next `getTerrainObjectAt`` use.
      *
-     * @returns {object} - The `Terrain` object, with `coord` (`Coordinates`),
-     * `texture` (`THREE.Texture`) and `tile` (`TileMesh`)
+     * @returns {Terrain} - The {@link Terrain} object.
      * properties.
      */
     getTerrainObjectAt(layer, coord, method = FAST_READ_Z, tileHint, cache) {

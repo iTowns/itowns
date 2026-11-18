@@ -54,8 +54,8 @@ function parseCalibration(calibration, options = {}) {
 }
 
 /**
- * The CameraCalibrationParser module provide a `parse`
- * method that takes a JSON array of camera calibrations in and yields an array of `OrientedImageCamera`
+ * The CameraCalibrationParser module provide a [parse]{@link CameraCalibrationParser.parse}
+ * method that takes a JSON array of camera calibrations in and yields an array of {@link OrientedImageCamera}
  *
  * @category Parser
  */
@@ -81,8 +81,8 @@ export default {
      * Parser a JSON array of camera calibrations and return an array of {@link OrientedImageCamera}.
      * @param {string|JSON} json - the json content of the calibration file.
      * @param {object} [options={}] - Options controlling the parsing.
-     * @param {string} [options.near=0.1] - Near of the created cameras. Default value comes from created `OrientedImageCamera`
-     * @param {string} [options.far=1000] - Far of the created cameras. Default value comes from created `OrientedImageCamera`
+     * @param {string} [options.near=0.1] - Near of the created cameras. Default value comes from created {@link OrientedImageCamera}
+     * @param {string} [options.far=1000] - Far of the created cameras. Default value comes from created {@link OrientedImageCamera}
      * @returns {Promise} - A promise resolving with an array of {@link OrientedImageCamera}.
      */
     parse(json, options = {}) {
