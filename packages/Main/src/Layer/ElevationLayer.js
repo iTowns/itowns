@@ -21,6 +21,11 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * ```
  * @property {number} colorTextureElevationMinZ - elevation minimum in `useColorTextureElevation` mode.
  * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
+ * @property {boolean} useRgbaTextureElevation - Decode lossless RGB textures using the Mapbox Terrain-RGB encoding:
+ * `-10000 + (R * 65536 + G * 256 + B) * 0.1` meters, where each channel is an 8-bit value.
+ * This is not an IEEE 754 float encoding. Use PNG rather than JPEG to preserve channel values.
+ * The elevation bounds are computed from the texture; `clampValues` also limits the bounds before it loads.
+ * The `noDataValue` option is not supported in this mode.
  *
  * @extends RasterLayer
  */
@@ -70,6 +75,10 @@ class ElevationLayer extends RasterLayer {
             mode,
             ...rasterConfig
         } = config;
+
+        if (useRgbaTextureElevation && noDataValue != undefined) {
+            throw new Error('noDataValue is not supported for Terrain-RGB elevation');
+        }
 
         super(id, rasterConfig);
 

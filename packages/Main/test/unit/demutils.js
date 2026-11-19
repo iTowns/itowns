@@ -7,7 +7,9 @@ import GlobeView from 'Core/Prefab/GlobeView';
 import { Coordinates, Extent } from '@itowns/geographic';
 import TileMesh from 'Core/TileMesh';
 import OBB from 'Renderer/OBB';
-import DEMUtils from 'Utils/DEMUtils';
+import DEMUtils, { readTextureValueWithBilinearFiltering } from 'Utils/DEMUtils';
+import { computeTerrainRGBMinMax } from 'Parser/TerrainRGB';
+import { sharedReadContext2D } from 'Utils/CanvasUtils';
 import { LayeredMaterial } from 'Renderer/LayeredMaterial';
 import * as sinon from 'sinon';
 import Renderer from './bootstrap';
@@ -26,6 +28,68 @@ describe('DemUtils', function () {
     let elevationlayer;
     let stubFetcherTextFloat;
     const ELEVATION = 300;
+
+    it('decodes and interpolates Terrain-RGB elevations', () => {
+        const texture = new THREE.DataTexture(new Uint8Array([
+            1, 134, 160, 255, 1, 134, 170, 255,
+            1, 134, 180, 255, 1, 134, 190, 255,
+        ]), 2, 2, THREE.RGBAFormat);
+        const metadata = { useRgbaTextureElevation: true };
+        assert.equal(readTextureValueWithBilinearFiltering(metadata, texture, 0.25, 0.25), 0);
+        assert.equal(readTextureValueWithBilinearFiltering(metadata, texture, 0.75, 0.75), 3);
+        assert.equal(readTextureValueWithBilinearFiltering(metadata, texture, 0.5, 0.5), 1.5);
+        assert.equal(readTextureValueWithBilinearFiltering(
+            { ...metadata, zmin: 2, zmax: 4, scale: 2, bias: 1 }, texture, 0.5, 0.5), 5);
+    });
+
+    it('decodes negative elevations and carries between Terrain-RGB channels', () => {
+        const texture = new THREE.DataTexture(new Uint8Array([
+            1, 134, 159, 255, 1, 134, 255, 255, 1, 135, 0, 255,
+        ]), 3, 1, THREE.RGBAFormat);
+        const metadata = { useRgbaTextureElevation: true };
+        assert.ok(Math.abs(readTextureValueWithBilinearFiltering(metadata, texture, 1 / 6, 0.5) + 0.1) < 1e-9);
+        assert.ok(Math.abs(readTextureValueWithBilinearFiltering(metadata, texture, 2 / 3, 0.5) - 9.55) < 1e-9);
+    });
+
+    it('computes conservative Terrain-RGB bounds for inherited texture regions', () => {
+        const pixels = new Uint8Array(4 * 4 * 4);
+        for (let i = 0; i < 16; i++) {
+            const value = 100000 + i * 10;
+            pixels.set([value >> 16, (value >> 8) & 255, value & 255, 255], i * 4);
+        }
+        const texture = new THREE.DataTexture(pixels, 4, 4, THREE.RGBAFormat);
+        const topLeft = computeTerrainRGBMinMax(texture, new THREE.Vector4(0, 0, 0.5, 0.5));
+        const bottomRight = computeTerrainRGBMinMax(texture, new THREE.Vector4(0.5, 0.5, 0.5, 0.5), 7, 12);
+        assert.deepEqual(topLeft, { min: -0.5, max: 10.5 });
+        assert.deepEqual(bottomRight, { min: 7, max: 12 });
+    });
+
+    it('reuses image readback and retains conservative bounds for transparent pixels', () => {
+        const ctx = sharedReadContext2D();
+        const draw = sinon.stub(ctx, 'drawImage');
+        const read = sinon.stub(ctx, 'getImageData').returns({ data: new Uint8ClampedArray([1, 134, 160, 255]) });
+        try {
+            const texture = new THREE.Texture({ width: 1, height: 1 });
+            const pitch = new THREE.Vector4(0, 0, 1, 1);
+            assert.deepEqual(computeTerrainRGBMinMax(texture, pitch), { min: -0.5, max: 0.5 });
+            computeTerrainRGBMinMax(texture, pitch);
+            assert.equal(read.callCount, 1);
+            read.returns({ data: new Uint8ClampedArray([0, 0, 0, 0]) });
+            texture.needsUpdate = true;
+            assert.deepEqual(computeTerrainRGBMinMax(texture, pitch, -100, 5000), { min: -100, max: 5000 });
+            assert.equal(read.callCount, 2);
+        } finally {
+            draw.restore();
+            read.restore();
+        }
+    });
+
+    it('rejects noDataValue for Terrain-RGB elevation', () => {
+        assert.throws(() => new ElevationLayer('rgb', {
+            useRgbaTextureElevation: true,
+            noDataValue: -9999,
+        }), /noDataValue is not supported/);
+    });
 
     before(function () {
         stubFetcherTextFloat = sinon.stub(Fetcher, 'textureFloat')

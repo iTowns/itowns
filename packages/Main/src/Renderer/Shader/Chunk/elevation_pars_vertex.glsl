@@ -13,17 +13,9 @@
     uniform int         elevationTextureCount;
     uniform float       geoidHeight;
 
-    highp float decode32(highp vec4 rgba) {
-        highp float Sign = 1.0 - step(128.0,rgba[0])*2.0;
-        highp float Exponent = 2.0 * mod(rgba[0],128.0) + step(128.0,rgba[1]) - 127.0;
-        highp float Mantissa = mod(rgba[1],128.0)*65536.0 + rgba[2]*256.0 +rgba[3] + float(0x800000);
-        highp float Result =  Sign * exp2(Exponent) * (Mantissa * exp2(-23.0 ));
-        return Result;
-    }
-
     float getElevationMode(vec2 uv, sampler2DArray tex, int mode) {
         if (mode == ELEVATION_RGBA)
-            return decode32(texture(tex, vec3(uv, 0.0)).abgr * 255.0);
+            return -10000.0 + dot(texture(tex, vec3(uv, 0.0)).rgb * 255.0, vec3(65536.0, 256.0, 1.0)) * 0.1;
         if (mode == ELEVATION_DATA || mode == ELEVATION_COLOR)
             return texture(tex, vec3(uv, 0.0)).r;
         return 0.;

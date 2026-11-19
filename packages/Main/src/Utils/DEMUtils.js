@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Coordinates } from '@itowns/geographic';
 import { sharedReadContext2D } from 'Utils/CanvasUtils';
 import placeObjectOnGround from 'Utils/placeObjectOnGround';
+import { decodeTerrainRGB } from 'Parser/TerrainRGB';
 
 const FAST_READ_Z = 0;
 const PRECISE_READ_Z = 1;
@@ -114,6 +115,14 @@ function _readTextureValueAt(metadata, texture, ...uv) {
     }
 
     if (texture.image.data) {
+        if (metadata.useRgbaTextureElevation) {
+            const values = [];
+            for (let i = 0; i < uv.length; i += 2) {
+                const index = 4 * (uv[i + 1] * texture.image.width + uv[i]);
+                values.push(decodeTerrainRGB(texture.image.data, index));
+            }
+            return uv.length === 2 ? values[0] : values;
+        }
         // read a single value
         if (uv.length === 2) {
             const v = texture.image.data[uv[1] * texture.image.width + uv[0]];
@@ -153,10 +162,13 @@ function _readTextureValueAt(metadata, texture, ...uv) {
             const oy = uv[i + 1] - miny;
 
             // d is 4 bytes per pixel
-            const v = THREE.MathUtils.lerp(
-                metadata.colorTextureElevationMinZ,
-                metadata.colorTextureElevationMaxZ,
-                d.data[4 * oy * dw + 4 * ox] / 255);
+            const index = 4 * (oy * dw + ox);
+            const v = metadata.useRgbaTextureElevation ?
+                decodeTerrainRGB(d.data, index) :
+                THREE.MathUtils.lerp(
+                    metadata.colorTextureElevationMinZ,
+                    metadata.colorTextureElevationMaxZ,
+                    d.data[index] / 255);
             result.push(v != metadata.noDataValue ? v : undefined);
         }
         if (uv.length === 2) {
@@ -191,7 +203,15 @@ function _readTextureValueNearestFiltering(metadata, texture, vertexU, vertexV) 
     const u = (coords.wu <= 0) ? coords.u1 : coords.u2;
     const v = (coords.wv <= 0) ? coords.v1 : coords.v2;
 
-    return _readTextureValueAt(metadata, texture, u, v);
+    return _applyTerrainRGBOptions(metadata, _readTextureValueAt(metadata, texture, u, v));
+}
+
+function _applyTerrainRGBOptions(metadata, value) {
+    if (!metadata.useRgbaTextureElevation || value == undefined) {
+        return value;
+    }
+    return THREE.MathUtils.clamp(value, metadata.zmin ?? -Infinity, metadata.zmax ?? Infinity) *
+        (metadata.scale ?? 1) + (metadata.bias ?? 0);
 }
 
 function _lerpWithUndefinedCheck(x, y, t) {
@@ -218,7 +238,7 @@ export function readTextureValueWithBilinearFiltering(metadata, texture, vertexU
     const zu1 = _lerpWithUndefinedCheck(z11, z21, coords.wu);
     const zu2 = _lerpWithUndefinedCheck(z12, z22, coords.wu);
     // then vertical filtering
-    return _lerpWithUndefinedCheck(zu1, zu2, coords.wv);
+    return _applyTerrainRGBOptions(metadata, _lerpWithUndefinedCheck(zu1, zu2, coords.wv));
 }
 
 

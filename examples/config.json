@@ -372,6 +372,16 @@
         "id": "misc_geotiff",
         "label": "Geotiff elevation from stream",
         "description": "Using GeoTIFF data to define the vertical relief of the terrain."
+      },
+      {
+        "id": "source_wms_terrain_xbil",
+        "label": "IGN XBIL elevation",
+        "description": "Displays IGN WMS float32 elevation for comparison with Terrain-RGB."
+      },
+      {
+        "id": "source_wms_terrain_rgb",
+        "label": "IGN Terrain-RGB elevation",
+        "description": "Displays IGN WMS elevation encoded as Terrain-RGB PNG imagery."
       }
     ]
   },

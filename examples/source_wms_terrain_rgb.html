@@ -1,0 +1,72 @@
+<html>
+    <head>
+        <title>IGN Terrain-RGB elevation</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="importmap">
+        {
+            "imports": {
+                "itowns": "../dist/itowns.js",
+                "debug": "../dist/debug.js",
+                "dat": "https://unpkg.com/dat.gui@0.7.9/build/dat.gui.module.js",
+                "GuiTools": "./jsm/GUI/GuiTools.js",
+                "LoadingScreen": "./jsm/GUI/LoadingScreen.js",
+                "three": "https://unpkg.com/three@0.182.0/build/three.module.js"
+            }
+        }
+        </script>
+        <link rel="stylesheet" type="text/css" href="css/example.css">
+        <link rel="stylesheet" type="text/css" href="css/LoadingScreen.css">
+    </head>
+    <body>
+        <div id="viewerDiv"></div>
+        <script type="module">
+            import * as itowns from 'itowns';
+            import * as debug from 'debug';
+            import GuiTools from 'GuiTools';
+            import setupLoadingScreen from 'LoadingScreen';
+
+            const placement = {
+                coord: new itowns.Coordinates('EPSG:4326', 6.227, 45.167),
+                range: 15000,
+                tilt: 5,
+                heading: 62,
+            }
+            const viewerDiv = document.getElementById('viewerDiv');
+            const view = new itowns.GlobeView(viewerDiv, placement);
+            window.view = view;
+
+            // Setup loading screen and debug menu
+            setupLoadingScreen(viewerDiv, view);
+            const debugMenu = new GuiTools('menuDiv', view);
+            debug.createTileDebugUI(debugMenu.gui, view);
+
+            const orthoConfig = await itowns.Fetcher.json('./layers/JSONLayers/Ortho.json');
+            orthoConfig.source = new itowns.WMTSSource(orthoConfig.source);
+            orthoConfig.zoom = { min: 8, max: 16 };
+            view.addLayer(new itowns.ColorLayer('Ortho', orthoConfig))
+                .then(debugMenu.addLayerGUI.bind(debugMenu));
+
+            // PNG preserves the RGB bytes encoding elevations in meters.
+            const source = new itowns.WMSSource({
+                url: 'https://data.geopf.fr/wms-r/wms',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE.HIGHRES',
+                style: 'terrainrgb',
+                version: '1.3.0',
+                crs: 'EPSG:4326',
+                format: 'image/png',
+                extent: new itowns.Extent('EPSG:4326', 5, 8, 44, 47),
+                attribution: { name: 'IGN', url: 'https://www.ign.fr/' },
+            });
+            const elevation = new itowns.ElevationLayer('IGN Terrain-RGB', {
+                source,
+                useRgbaTextureElevation: true,
+                // Avoid expensive near-global WMS requests at low zoom levels.
+                zoom: { min: 8 },
+                // This example is restricted to the Alps; the bounds also improve culling.
+                clampValues: { min: -100, max: 5000 },
+            });
+            view.addLayer(elevation).then(debugMenu.addLayerGUI.bind(debugMenu));
+        </script>
+    </body>
+</html>
