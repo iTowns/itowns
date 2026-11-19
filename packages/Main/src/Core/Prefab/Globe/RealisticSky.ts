@@ -182,9 +182,9 @@ class RealisticSky implements ISkyStrategy {
         this.skyLight.visible = on;
 
         if (on) {
-            // TODO: add passes in the middle of the pipeline
             this.effectPass.enabled = true;
-            this.composer.addPass(this.effectPass);
+            const fxaaInitialized = this.view.mainLoop.gfxEngine.fxaaPass !== null;
+            this.composer.addPass(ths.effectPass, this.composer.passes.length - +fxaaInitialized);
         } else {
             this.composer.removePass(this.effectPass);
         }
