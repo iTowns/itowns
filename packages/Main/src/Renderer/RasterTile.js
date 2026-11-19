@@ -4,6 +4,7 @@ import LayerUpdateState from 'Layer/LayerUpdateState';
 import { nextLevelToFetch } from 'Layer/LayerUpdateStrategy';
 import handlingError from 'Process/handlerNodeError';
 import { checkNodeElevationTextureValidity, insertSignificantValuesFromParent, computeMinMaxElevation } from 'Parser/XbilParser';
+import { computeTerrainRGBMinMax } from 'Parser/TerrainRGB';
 
 export const EMPTY_TEXTURE_ZOOM = -1;
 
@@ -277,8 +278,6 @@ export class RasterElevationTile extends RasterTile {
         // Define elevation properties
         if (layer.useRgbaTextureElevation) {
             defaultEle.mode = ELEVATION_MODES.RGBA;
-            defaultEle.zmax = 5000;
-            throw new Error('Restore this feature');
         } else if (layer.useColorTextureElevation) {
             this.scaleFactor = layer.colorTextureElevationMaxZ - layer.colorTextureElevationMinZ;
             defaultEle.mode = ELEVATION_MODES.COLOR;
@@ -295,6 +294,27 @@ export class RasterElevationTile extends RasterTile {
         this.zmax = layer.zmax ?? defaultEle.zmax;
 
         layer.addEventListener('scale-property-changed', this._handlerCBEvent);
+    }
+
+    get min() {
+        return this.layer.useRgbaTextureElevation ? this.terrainRGBBound(this._min ?? this.layer.zmin ?? -10000) : this._min;
+    }
+
+    set min(value) {
+        this._min = value;
+    }
+
+    get max() {
+        return this.layer.useRgbaTextureElevation ? this.terrainRGBBound(this._max ?? this.layer.zmax ?? (-10000 + 0xffffff * 0.1)) : this._max;
+    }
+
+    set max(value) {
+        this._max = value;
+    }
+
+    terrainRGBBound(value) {
+        return THREE.MathUtils.clamp(value, -10000, -10000 + 0xffffff * 0.1) +
+            (this.bias ?? 0) / (this.layer.scale || 1);
     }
 
     get scale() {
@@ -330,17 +350,24 @@ export class RasterElevationTile extends RasterTile {
             return;
         }
         const currentLevel = this.level;
+        const previousMin = this.min;
+        const previousMax = this.max;
         this.replaceNoDataValueFromTexture(anyValidTexture);
         super.setTextures(textures);
         this.updateMinMaxElevation();
-        if (currentLevel !== this.level) {
+        if (currentLevel !== this.level || previousMin !== this.min || previousMax !== this.max) {
             this.dispatchEvent({ type: 'rasterElevationLevelChanged', node: this });
         }
     }
 
     updateMinMaxElevation() {
         const firstValidIndex = this.textures.findIndex(texture => texture?.isTexture);
-        if (firstValidIndex !== -1 && !this.layer.useColorTextureElevation) {
+        if (firstValidIndex !== -1 && this.layer.useRgbaTextureElevation) {
+            const { min, max } = computeTerrainRGBMinMax(
+                this.textures[firstValidIndex], this.offsetScales[firstValidIndex], this.zmin, this.zmax);
+            this.min = min;
+            this.max = max;
+        } else if (firstValidIndex !== -1 && !this.layer.useColorTextureElevation) {
             const { min, max } = computeMinMaxElevation(
                 this.textures[firstValidIndex],
                 this.offsetScales[firstValidIndex],
@@ -357,6 +384,9 @@ export class RasterElevationTile extends RasterTile {
     }
 
     replaceNoDataValueFromTexture(texture) {
+        if (this.layer.useRgbaTextureElevation) {
+            return;
+        }
         const nodatavalue = this.layer.noDataValue;
         if (nodatavalue == undefined) {
             return;

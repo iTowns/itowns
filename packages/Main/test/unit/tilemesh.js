@@ -175,13 +175,37 @@ describe('TileMesh', function () {
         assert.equal(tileMesh.obb.z.max, max);
     });
 
-    it('RasterElevationTile throws error if ElevationLayer.useRgbaTextureElevation is true', () => {
+    it('RasterElevationTile uses conservative Terrain-RGB bounds', () => {
         elevationLayer.useRgbaTextureElevation = true;
         const tileMesh = new TileMesh(geom, material, planarlayer, tile.toExtent('EPSG:3857'), 0);
         tileMesh.parent = {};
-        assert.throws(() => {
-            elevationLayer.addRasterTile(tileMesh);
-        });
+        const rasterNode = elevationLayer.addRasterTile(tileMesh);
+        assert.equal(rasterNode.min, -10000);
+        assert.equal(rasterNode.max, -10000 + 0xffffff * 0.1);
+        material.removeTile(elevationLayer.id);
+
+        elevationLayer.zmin = -100;
+        elevationLayer.zmax = 5000;
+        const clampedNode = elevationLayer.addRasterTile(tileMesh);
+        assert.equal(clampedNode.min, -100);
+        assert.equal(clampedNode.max, 5000);
+        const texture = new THREE.DataTexture(new Uint8Array([2, 53, 150, 255]), 1, 1, THREE.RGBAFormat);
+        texture.extent = tile;
+        clampedNode.setTextures([texture]);
+        assert.equal(clampedNode.min, 4478.5);
+        assert.equal(clampedNode.max, 4479.5);
+        clampedNode.bias = 50;
+        elevationLayer.scale = 2;
+        assert.equal(clampedNode.min, 4503.5);
+        assert.equal(clampedNode.max, 4504.5);
+        const replacement = new THREE.DataTexture(new Uint8Array([2, 54, 104, 255]), 1, 1, THREE.RGBAFormat);
+        replacement.extent = tile;
+        clampedNode.setTextures([replacement]);
+        assert.equal(clampedNode.min, 4524.5);
+        assert.equal(tileMesh.obb.z.min, 4524.5);
+        elevationLayer.scale = 1;
+        delete elevationLayer.zmin;
+        delete elevationLayer.zmax;
     });
 
 
