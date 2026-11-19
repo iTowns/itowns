@@ -1,19 +1,24 @@
 import * as THREE from 'three';
+import { allocatePickingIds } from 'Utils/PointCloudPickingUtils';
 
-let nextuuid = 1;
 function addPickingAttribute(points) {
     // generate unique id for picking
     const numPoints = points.geometry.attributes.position.count;
-    const ids = new Uint8Array(4 * numPoints);
-    const baseId = nextuuid++;
-    if (numPoints > 0xffff || baseId > 0xffff) {
-        // TODO: fixme
-        console.warn('Currently picking is limited to Points with less than 65535 elements and less than 65535 Points instances');
+    if (numPoints === 0) {
         return points;
     }
+
+    // Reserve a contiguous range of ids: the id of the point `i` is
+    // `baseId + i`, encoded as a big endian 32 bits integer.
+    const baseId = allocatePickingIds(numPoints);
+    if (baseId < 0) {
+        console.warn('Picking is disabled for this node: no more picking ids available (more than 2^32 points are loaded)');
+        return points;
+    }
+
+    const ids = new Uint8Array(4 * numPoints);
     for (let i = 0; i < numPoints; i++) {
-        // todo numpoints > 16bits
-        const v = (baseId << 16) | i;
+        const v = baseId + i;
         ids[4 * i + 0] = (v & 0xff000000) >> 24;
         ids[4 * i + 1] = (v & 0x00ff0000) >> 16;
         ids[4 * i + 2] = (v & 0x0000ff00) >> 8;
