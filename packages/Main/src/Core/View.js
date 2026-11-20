@@ -206,6 +206,23 @@ class View extends THREE.EventDispatcher {
         this._resizeListener = () => this.resize();
         window.addEventListener('resize', this._resizeListener, false);
 
+        // Track devicePixelRatio changes (browser zoom, window moved to
+        // another screen), which do not always fire a resize event.
+        if (typeof window.matchMedia === 'function') {
+            this._dprAbortController = new AbortController();
+            const listenDprChange = () => {
+                // The query is only valid for the current ratio: re-create it each time.
+                // The MediaQueryList is kept on the view so it is not garbage collected.
+                this._dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+                this._dprQuery.addEventListener('change', () => {
+                    this.renderer.setPixelRatio(window.devicePixelRatio);
+                    this.notifyChange();
+                    listenDprChange();
+                }, { once: true, signal: this._dprAbortController.signal });
+            };
+            listenDprChange();
+        }
+
         this._changeSources = new Set();
 
         if (__DEBUG__) {
@@ -307,6 +324,7 @@ class View extends THREE.EventDispatcher {
         }
 
         window.removeEventListener('resize', this._resizeListener);
+        this._dprAbortController?.abort();
 
         // controls dispose
         if (this.controls) {

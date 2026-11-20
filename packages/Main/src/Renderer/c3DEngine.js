@@ -128,7 +128,7 @@ class c3DEngine {
         this.renderer.debug.checkShaderErrors = __DEBUG__;
 
         if (!renderer) {
-            this.renderer.setPixelRatio(viewerDiv.devicePixelRatio);
+            this.renderer.setPixelRatio(window.devicePixelRatio);
             this.renderer.setSize(viewerDiv.clientWidth, viewerDiv.clientHeight);
             viewerDiv.appendChild(this.renderer.domElement);
         }
