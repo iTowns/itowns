@@ -6,10 +6,11 @@ import Picking from 'Core/Picking';
 import { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 
 import type PointCloudNode from 'Core/PointCloudNode';
+import type Source from 'Source/Source';
 
 const point = new THREE.Vector3();
 
-export interface PointCloudSource {
+export interface PointCloudSource extends Source {
     /** The minimal value for elevation (read from the metadata). */
     zmin: number;
     /** The maximal value for elevation (read from the metadata). */

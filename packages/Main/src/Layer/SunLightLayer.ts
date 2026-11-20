@@ -48,7 +48,7 @@ class SunLightLayer extends GeometryLayer {
         const id = 'sunlight';
         object3d.name = id;
 
-        super(id, object3d, { source: null });
+        super(id, object3d, { source: false });
 
         this.isSunLightLayer = true;
         this.sunDirection = new THREE.Vector3();

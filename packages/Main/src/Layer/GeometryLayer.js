@@ -42,7 +42,8 @@ class GeometryLayer extends Layer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {Source} config.source - Description and options of the source.
+     * @param {Source|boolean} config.source - Description and options of the source.
+     * If `false`, the layer has no source.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
      * This value is used for cache expiration mechanism.
      * @param {boolean} [config.visible]
