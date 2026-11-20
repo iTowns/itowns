@@ -22,7 +22,7 @@ export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';
 export { default as URLBuilder } from 'Provider/URLBuilder';
-export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+export { default as MainLoop, MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
@@ -50,7 +50,7 @@ export { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
-export { CAMERA_TYPE } from 'Renderer/Camera';
+export { default as Camera, CAMERA_TYPE } from 'Renderer/Camera';
 export { default as OBB } from 'Renderer/OBB';
 
 export { default as PointCloudNode } from 'Core/PointCloudNode';
@@ -60,6 +60,10 @@ export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES }
 export { default as Style } from 'Core/Style';
 export { default as StyleOptions } from 'Core/StyleOptions';
 export { default as Label } from 'Core/Label';
+export { default as c3DEngine } from 'Renderer/c3DEngine';
+export { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+export { default as Scheduler } from 'Core/Scheduler/Scheduler';
+export type { Provider, ProviderCommand } from 'Core/Scheduler/Scheduler';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
