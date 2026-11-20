@@ -2,6 +2,10 @@ import RasterLayer from 'Layer/RasterLayer';
 import { RasterElevationTile } from 'Renderer/RasterTile';
 
 /**
+ * @import TileMesh from 'Core/TileMesh'
+ */
+
+/**
  * @property {boolean} isElevationLayer - Used to checkout whether this layer is
  * an ElevationLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.
@@ -23,6 +27,7 @@ import { RasterElevationTile } from 'Renderer/RasterTile';
  * @property {number} colorTextureElevationMaxZ - elevation maximum in `useColorTextureElevation` mode.
  *
  * @extends RasterLayer
+ * @category Layer
  */
 class ElevationLayer extends RasterLayer {
     /**

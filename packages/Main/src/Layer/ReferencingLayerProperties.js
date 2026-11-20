@@ -1,3 +1,6 @@
+/**
+ * @import * as THREE from 'three'
+ */
 
 // next step is move these properties to Style class
 function ReferLayerProperties(material, layer) {
@@ -84,7 +87,7 @@ function ReferLayerProperties(material, layer) {
 }
 
 /**
- * Patches castShadow and receiveShadow on a THREE.Object3D so that they
+ * Patches castShadow and receiveShadow on a {@link THREE.Object3D} so that they
  * combine the layer value with a local per-object value:
  *   getter returns `layer.<prop> && localValue`
  *   setter stores the local value

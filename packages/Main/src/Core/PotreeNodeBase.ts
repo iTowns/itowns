@@ -40,6 +40,9 @@ export function getChildVoxelKey(nodeInfo: NodeKeyInfo, childIndex: number) {
         z,
     };
 }
+/**
+ * @category Points
+ */
 
 export abstract class PotreeNodeBase extends PointCloudNode {
     /** X position within the octree */

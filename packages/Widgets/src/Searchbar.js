@@ -1,6 +1,10 @@
 import { Fetcher } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { View } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     width: 300,
@@ -55,6 +59,7 @@ function eraseSuggestionList(form) {
  *
  * @property    {HTMLElement}   domElement      An html div containing the searchbar.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
+ * @category Widgets
  */
 class Searchbar extends Widget {
     #_onSelected;

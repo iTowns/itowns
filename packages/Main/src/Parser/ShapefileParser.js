@@ -4,8 +4,11 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
- * The ShapefileParser module provides a [parse]{@link
- * module:ShapefileParser.parse} method that takes a bunch of files constituing
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
+ */
+
+/**
+ * The ShapefileParser module provides a [parse]{@link ShapefileParser.parse} method that takes a bunch of files constituing
  * a shapefile in and gives an object formateted for iTowns, containing all
  * necessary informations to display this shapefile.
  *
@@ -41,7 +44,7 @@ import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
  * });
  *
  *
- * @module ShapefileParser
+ * @category Parser
  */
 export default {
     /**

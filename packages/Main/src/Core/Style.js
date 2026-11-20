@@ -7,6 +7,10 @@ import { sharedContext2D, sharedReadContext2D } from 'Utils/CanvasUtils';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
+/**
+ * @import * as THREE from 'three'
+ */
+
 const cachedImg = new LRUCache({ max: 500 });
 
 let matrix;
@@ -133,6 +137,7 @@ function defineStyleProperty(style, category, parameter, userValue, defaultValue
  *                                      from the local coordinates?
  * @property {Feature}              feature  (private) The itowns feature of interest.
  * @property {FeatureGeometry}      geometry  (private) The FeatureGeometry to compute the style.
+ * @category Base
  */
 export class StyleContext {
     #worldCoord = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -430,7 +435,8 @@ function _addIcon(icon, domElement, opt) {
  *
  * view.addLayer(layer);
  *
- * @example <caption>Updating style properties. Currently only works for FeatureGeometryLayer and color and extrusionHeight properties.</caption>
+ * @example Updating style properties. Currently only works for FeatureGeometryLayer and color and extrusionHeight properties.
+ * ```js
  * // Update a single sub-property:
  * layer.style.fill.color = '#00cc00';
  *
@@ -443,13 +449,16 @@ function _addIcon(icon, domElement, opt) {
  * // The spread evaluates every getter immediately, which executes dynamic
  * // properties (functions, expressions) without a feature context and will
  * // either crash or freeze their values.
+ * ```
+ *
+ * @category Base
  */
 
 class Style extends EventDispatcher {
     /**
      * @param {StyleOptions} [params={}] An object that contain any properties
      * (zoom, fill, stroke, point, text or/and icon)
-     * and sub properties of a Style ({@link StyleOptions}).
+     * and sub properties of a Style {@link StyleOptions}.
      */
     constructor(params = {}) {
         super();

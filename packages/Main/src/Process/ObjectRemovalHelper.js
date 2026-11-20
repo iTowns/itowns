@@ -1,3 +1,8 @@
+/**
+ * @import * as THREE from 'three'
+ * @import Layer from 'Layer/Layer'
+ */
+
 function disposeSingleMaterialAndTextures(material) {
     material.dispose();
     // dispose textures
@@ -12,7 +17,7 @@ function disposeSingleMaterialAndTextures(material) {
 export default {
     /**
      * Cleanup obj to release three.js allocated resources
-     * @param {Object3D} obj object to release
+     * @param {THREE.Object3D} obj object to release
      */
     cleanup(obj) {
         obj.layer = null;
@@ -46,7 +51,7 @@ export default {
      * Remove an obj and all its children belonging to a layer and only cleanup the obj (and not its children).
      * obj will be disposed but its children **won't**!
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
-     * @param {Object3D} obj The Object3D we want to clean
+     * @param {THREE.Object3D} obj The Object3D we want to clean
      * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildrenAndCleanup(layer, obj) {
@@ -63,7 +68,7 @@ export default {
      * Recursively remove an obj and all its children belonging to a layer.
      * All removed obj will have their geometry/material disposed.
      * @param {Layer} layer The layer that objects must belong to. Other object are ignored
-     * @param {Object3D} obj The Object3D we want to clean
+     * @param {THREE.Object3D} obj The Object3D we want to clean
      * @returns {Array} an array of removed Object3D from obj (not including the recursive removals)
      */
     removeChildrenAndCleanupRecursively(layer, obj) {

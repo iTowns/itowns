@@ -1,5 +1,9 @@
 import { readTextureValueWithBilinearFiltering } from 'Utils/DEMUtils';
 
+/**
+ * @import * as THREE from 'three'
+ */
+
 function minMax4Corners(texture, pitch, options) {
     const u = pitch.x;
     const v = pitch.y;

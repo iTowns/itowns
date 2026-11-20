@@ -30,14 +30,15 @@ export interface TileLayerLike {
 }
 
 /**
- * A TileMesh is a THREE.Mesh with a geometricError and an OBB.
+ * A TileMesh is a {@link THREE.Mesh} with a geometricError and an OBB.
  * The objectId property of the layered material is assigned to the id of the
  * TileMesh.
  * @param geometry - The tile geometry
- * @param material - A THREE.Material compatible with THREE.Mesh
+ * @param material - A {@link THREE.Material} compatible with {@link THREE.Mesh}
  * @param layer - The layer the tile is added to
  * @param extent - The tile extent
  * @param level - The tile level (default = 0)
+ * @category Base
  */
 class TileMesh extends THREE.Mesh<TileGeometry, LayeredMaterial> {
     readonly isTileMesh: true;

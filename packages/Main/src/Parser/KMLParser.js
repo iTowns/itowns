@@ -3,11 +3,15 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
- * The KMLParser module provides a [parse]{@link module:KMLParser.parse}
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
+ */
+
+/**
+ * The KMLParser module provides a [parse]{@link KMLParser.parse}
  * method that takes a KML in and gives an object formatted for iTowns
  * containing all necessary informations to display this KML.
  *
- * @module KMLParser
+ * @category Parser
  */
 export default {
     /**

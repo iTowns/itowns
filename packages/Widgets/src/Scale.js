@@ -1,6 +1,10 @@
 import { CONTROL_EVENTS, GLOBE_VIEW_EVENTS, PLANAR_CONTROL_EVENT, VIEW_EVENTS } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { View } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     width: 200,
@@ -22,6 +26,7 @@ const DEFAULT_OPTIONS = {
  *
  * @property    {HTMLElement}   domElement      An html div containing the scale.
  * @property    {HTMLElement}   parentElement   The parent HTML container of `this.domElement`.
+ * @category Widgets
  */
 class Scale extends Widget {
     /**

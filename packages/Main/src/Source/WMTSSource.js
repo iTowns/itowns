@@ -57,6 +57,7 @@ import TMSSource from 'Source/TMSSource';
  *
  * // Add the layer
  * view.addLayer(colorLayer);
+ * @category Source
  */
 class WMTSSource extends TMSSource {
     /**

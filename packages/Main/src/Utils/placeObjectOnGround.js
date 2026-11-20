@@ -2,6 +2,11 @@ import * as THREE from 'three';
 import { Coordinates } from '@itowns/geographic';
 import DEMUtils from 'Utils/DEMUtils';
 
+/**
+ * @import TileMesh from 'Core/TileMesh'
+ * @import TiledGeometryLayer from 'Layer/TiledGeometryLayer'
+ */
+
 const temp = {
     v: new THREE.Vector3(),
     coord1: new Coordinates('EPSG:4978'),
@@ -37,7 +42,7 @@ function _updateVector3(layer, method, nodes, vecCRS, vec, offset, matrices = {}
  * `PlanarLayer` (accessible through `view.tileLayer`).
  * @param {string} crs - The CRS used by the object coordinates. You
  * probably want to use `view.referenceCRS` here.
- * @param {Object3D} obj - the object we want to modify.
+ * @param {THREE.Object3D} obj - the object we want to modify.
  * @param {object} options
  * @param {number} [options.method=FAST_READ_Z] - There are two available methods:
  * `FAST_READ_Z` (default) or `PRECISE_READ_Z`. The first one is faster,

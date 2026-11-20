@@ -11,6 +11,8 @@ export const RENDERING_SCHEDULED = 1;
 /**
  * MainLoop's update events list that are fired using
  * {@link View#execFrameRequesters}.
+ *
+ * @category View
  */
 export const MAIN_LOOP_EVENTS = {
     /** Fired at the start of the update */
@@ -40,6 +42,16 @@ interface Context {
 
 type UpdatableGeometryLayer<T> = GeometryLayer & {
     update(context: Context, layer: Layer, node: T, parent?: T): T[] | undefined;
+};
+
+type PreUpdatableLayer = Layer & {
+    preUpdate?(context: Context, sources: Set<UpdateSource>): Object3D[] | undefined;
+};
+
+type RootGeometryLayer = UpdatableGeometryLayer<Object3D> & {
+    frozen: boolean;
+    preUpdate(context: Context, sources: Set<UpdateSource>): Object3D[] | undefined;
+    postUpdate(context: Context, layer: GeometryLayer, sources: Set<UpdateSource>): void;
 };
 
 type UpdateSource = Layer | ThreeCamera | { layer: Layer };
@@ -73,12 +85,12 @@ function updateElements<T extends Object3D>(
                             Must be a THREE.Object and have a THREE.Material`);
                 }
                 // update attached layers
-                for (const attachedLayer of geometryLayer.attachedLayers) {
+                for (const attachedLayer of geometryLayer.attachedLayers as PreUpdatableLayer[]) {
                     if (attachedLayer.ready) {
                         (attachedLayer as UpdatableGeometryLayer<T>).update(context,
                             attachedLayer,
-                            sub.elements[i],
-                            sub.parent);
+                            sub.elements[i] as T,
+                            sub.parent as T);
                     }
                 }
             }
@@ -104,6 +116,9 @@ function filterChangeSources(
     });
     return fullUpdate ? new Set([geometryLayer]) : filtered;
 }
+/**
+ * @category Base
+ */
 
 class MainLoop extends EventDispatcher<MainLoopEvents> {
     private _needsRedraw = false;
@@ -157,7 +172,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
             }
         });
 
-        for (const geometryLayer of view.getLayers((_, y) => !y)) {
+        for (const geometryLayer of view.getLayers((_, y) => !y) as RootGeometryLayer[]) {
             if (geometryLayer.ready && geometryLayer.visible && !geometryLayer.frozen) {
                 view.execFrameRequesters(
                     MAIN_LOOP_EVENTS.BEFORE_LAYER_UPDATE, dt, this._updateLoopRestarted,
@@ -168,7 +183,7 @@ class MainLoop extends EventDispatcher<MainLoopEvents> {
                 const srcs = filterChangeSources(updateSources, geometryLayer);
                 if (srcs.size > 0) {
                     // pre update attached layer
-                    for (const attachedLayer of geometryLayer.attachedLayers) {
+                    for (const attachedLayer of geometryLayer.attachedLayers as PreUpdatableLayer[]) {
                         if (attachedLayer.ready && attachedLayer.preUpdate) {
                             attachedLayer.preUpdate(context, srcs);
                         }

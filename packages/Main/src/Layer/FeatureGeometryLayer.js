@@ -6,6 +6,10 @@ import Feature2Mesh from 'Converter/Feature2Mesh';
 import Style from 'Core/Style';
 
 /**
+ * @import * as THREE from 'three'
+ */
+
+/**
  * `FeatureGeometryLayer` displays geographic vector data (geojson, kml...) in object 3D.
  * `FeatureGeometryLayer` is a pre-configured `GeometryLayer` to load and convert vector data.
  * In deed, `GeometryLayer` allows customizing data loading (`update` method)
@@ -16,6 +20,7 @@ import Style from 'Core/Style';
  * internally for optimisation.
  *
  * @extends GeometryLayer
+ * @category Layer
  */
 class FeatureGeometryLayer extends GeometryLayer {
     /**

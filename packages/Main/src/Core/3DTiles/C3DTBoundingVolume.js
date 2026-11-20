@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { Ellipsoid, Coordinates } from '@itowns/geographic';
 import { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './C3DTilesEnums';
 
+/**
+ * @import Camera from 'Renderer/Camera'
+ */
+
 const ellipsoid = new Ellipsoid();
 
 // bounding box scratch variables
@@ -93,11 +97,12 @@ function initFromSphere(sphere) {
  * (i.e. for which 3D Tiles class) the parsing of the extension should be done.
  * @property {string} initialVolumeType - the initial volume type to be able to dissociate spheres
  * and regions if needed since both are converted to spheres (one of {@link C3DTilesBoundingVolumeTypes})
- * @property {THREE.Box3|THREE.Sphere} volume - The 3D bounding volume created. Can be a THREE.Box3 for bounding volumes
- * of types box or a THREE.Sphere for bounding volumes of type sphere or region.
+ * @property {THREE.Box3|THREE.Sphere} volume - The 3D bounding volume created. Can be a {@link THREE.Box3} for bounding volumes
+ * of types box or a {@link THREE.Sphere} for bounding volumes of type sphere or region.
  * @property {object} extensions - 3D Tiles extensions of the bounding volume
  * stored in the following format:
  * {extensioName1: extensionObject1, extensioName2: extensionObject2, ...}
+ * @category Base
  */
 class C3DTBoundingVolume {
     constructor(json, tileMatrixInverse, registeredExtensions) {

@@ -3,6 +3,10 @@ import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import FirstPersonControls from 'Controls/FirstPersonControls';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const material = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     depthTest: false,
@@ -108,6 +112,7 @@ function computeTime(distance) {
  * @property {number} keySetCameraToCurrentPositionAndLookAtNext key code set camera to current position, default to 65 for key  A
  * @property {number} keySetCameraToCurrentPositionAndLookAtPrevious key code set camera to current position, default to 81 for key  Q
  * @extends FirstPersonControls
+ * @category Controls
  */
 class StreetControls extends FirstPersonControls {
     /**

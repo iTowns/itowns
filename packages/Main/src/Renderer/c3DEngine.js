@@ -12,7 +12,14 @@ import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 import { EffectComposer } from 'postprocessing';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const depthRGBA = new THREE.Vector4();
+/**
+ * @category Renderer
+ */
 class c3DEngine {
     constructor(rendererOrDiv, options = {}) {
         deprecatedC3DEngineWebGLOptions(options);
@@ -196,7 +203,7 @@ class c3DEngine {
     }
 
     /**
-     * Render view to a THREE.RenderTarget.
+     * Render view to a {@link THREE.RenderTarget}.
      *
      * @param {View} view - The view to render
      * @param {THREE.RenderTarget} [target] - destination render target. Default value: full size render target owned by c3DEngine.

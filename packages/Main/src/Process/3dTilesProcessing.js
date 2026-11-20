@@ -1,10 +1,16 @@
+/**
+ * Internal processing functions for `OGC3DTilesLayer`.
+ *
+ * @packageDocumentation
+ */
 import * as THREE from 'three';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { C3DTilesBoundingVolumeTypes } from 'Core/3DTiles/C3DTilesEnums';
 import { C3DTILES_LAYER_EVENTS } from '../Layer/C3DTilesLayer';
 
 /**
-  @module 3dTilesProcessing
+ * @import Camera from 'Renderer/Camera'
+ * @import C3DTilesLayer from 'Layer/C3DTilesLayer'
  */
 
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
@@ -172,6 +178,11 @@ function cleanup3dTileset(layer, n, depth = 0) {
 }
 
 // this is a layer
+/**
+ * @param {object} context - The pre-update context.
+ * @returns {Array} The tiles to update.
+ * @hidden
+ */
 export function pre3dTilesUpdate(context) {
     if (!this.visible) {
         return [];

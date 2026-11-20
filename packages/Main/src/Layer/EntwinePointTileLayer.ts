@@ -5,6 +5,9 @@ import type EntwinePointTileSource from 'Source/EntwinePointTileSource';
 interface EntwinePointTileLayerParameters extends PointCloudLayerParameters {
     source: EntwinePointTileSource;
 }
+/**
+ * @category Layer
+ */
 
 class EntwinePointTileLayer extends PointCloudLayer<EntwinePointTileSource> {
     /**

@@ -1,0 +1,23 @@
+{
+    "extends": "./tsconfig-base.json",
+    "compilerOptions": {
+        "composite": false,
+        "noEmit": true,
+        "baseUrl": ".",
+        "paths": {
+            "@itowns/geographic": ["packages/Geographic/src/index.ts"],
+            "Main": ["packages/Main/src/Main.ts"],
+            "itowns": ["packages/Main/src/Main.ts"],
+            "*": ["packages/Main/src/*"]
+        }
+    },
+    "include": [
+        "packages/Geographic/src",
+        "packages/Main/src",
+        "packages/Debug/src",
+        "packages/Widgets/src",
+        "examples/jsm/plugins",
+        "docs/plugins.js"
+    ],
+    "exclude": ["**/lib/**", "**/test/**", "**/node_modules/**"]
+}

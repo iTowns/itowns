@@ -78,11 +78,15 @@ export const InstancedDataScene: SceneType = {
         InstancedDataScene.ready = true;
     },
     onEnter: async () => {
-        InstancedDataScene.getItownsView().addFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
+        if (InstancedDataScene.event) {
+            InstancedDataScene.getItownsView().addFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
+        }
     },
     onExit: async () => {
-        InstancedDataScene.getItownsView().removeFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
+        if (InstancedDataScene.event) {
+            InstancedDataScene.getItownsView().removeFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, InstancedDataScene.event);
+        }
     },
 };

@@ -29,6 +29,7 @@ const tileMatrixInverse = new THREE.Matrix4();
  *  layer). This list represents a flattened tileset.
  *  @property {object} extensions - Extensions of the tileset in the form:
  * {extensioName1: extensionObject1, extensioName2: extensionObject2, ...}
+ * @category Base
  */
 class C3DTileset {
     constructor(json, baseURL, registeredExtensions) {

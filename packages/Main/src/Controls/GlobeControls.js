@@ -5,6 +5,10 @@ import CameraUtils from 'Utils/CameraUtils';
 import StateControl from 'Controls/StateControl';
 import { VIEW_EVENTS } from 'Core/View';
 
+/**
+ * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ */
+
 // private members
 const EPS = 0.000001;
 
@@ -126,6 +130,7 @@ if (enableTargetHelper) {
  * @property {string} ORIENTATION_CHANGED - Fires when camera's orientation change
  * @property {string} RANGE_CHANGED - Fires when camera's range to target change
  * @property {string} CAMERA_TARGET_CHANGED - Fires when camera's target change
+ * @category Controls
  */
 
 export const CONTROL_EVENTS = {
@@ -150,10 +155,9 @@ let previous;
 /**
  * GlobeControls is a camera controller
  *
- * @class      GlobeControls
  * @param      {GlobeView}  view the view where the control will be used
  * @param      {CameraTransformOptions|Extent} placement   the {@link CameraTransformOptions} to apply to view's camera
- * or the extent it must display at initialisation, see {@link CameraTransformOptions} in {@link CameraUtils}.
+ * or the extent it must display at initialisation, see {@link CameraUtils} for available options.
  * @param      {object}  [options] An object with one or more configuration properties. Any property of GlobeControls
  * can be passed in this object.
  * @property      {number}  zoomFactor The factor the scale is multiplied by when dollying (zooming) in or
@@ -180,6 +184,7 @@ let previous;
  * @property      {boolean} dampingMoveFactor the damping move factor. Default is 0.25.
  * @property      {StateControl.State} stateControl redefining which controls state is triggered by the keyboard/mouse
  * event (For example, rewrite the PAN movement to be triggered with the 'left' mouseButton instead of 'right').
+ * @category Controls
  */
 class GlobeControls extends THREE.EventDispatcher {
     constructor(view, placement, options = {}) {
@@ -1002,7 +1007,7 @@ class GlobeControls extends THREE.EventDispatcher {
     /**
      * Displaces the central point to a specific amount of pixels from its current position.
      * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
-     * @param      {vector}  pVector  The vector
+     * @param      {THREE.Vector2}  pVector  The vector
      * @returns {Promise}
      */
     pan(pVector) {
@@ -1152,9 +1157,9 @@ class GlobeControls extends THREE.EventDispatcher {
      * Zoom parameter is ignored if range is set
      * The tilt's interval is between 4 and 89.5 degree
      *
-     * @param {CameraTransformOptions|Extent} [params] - camera transformation to apply
-     * @param {number} [params.zoom] - zoom
-     * @param {number} [params.scale] - scale
+     * @param {CameraTransformOptions|Extent} [params] - camera transformation to apply. It
+     * also accepts a `zoom` or a `scale` property (used respectively to compute the
+     * camera range from a zoom level, or from a map scale).
      * @param {boolean} [isAnimated] - Indicates if animated
      * @returns {Promise} A promise that resolves when transformation is complete
      */
@@ -1203,7 +1208,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
-     * @param {Vector2} windowCoords - window coordinates
+     * @param {THREE.Vector2} windowCoords - window coordinates
      * @returns {Coordinates} position
      */
     pickGeoPosition(windowCoords) {

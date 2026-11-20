@@ -13,6 +13,11 @@ import PointCloudProvider from 'Provider/PointCloudProvider';
 import URLBuilder from 'Provider/URLBuilder';
 import CancelledCommandException from './CancelledCommandException';
 
+/**
+ * @import View from 'Core/View'
+ * @import Layer from 'Layer/Layer'
+ */
+
 function queueOrdering(a, b) {
     const cmp = b.priority - a.priority;
     // Prioritize recent commands
@@ -121,12 +126,13 @@ function _instanciateQueue() {
 }
 
 /**
- * The Scheduler is in charge of managing the [Providers]{@link Provider} that
+ * The Scheduler is in charge of managing the {@link Provider}s that
  * are used to gather resources needed to display the layers on a {@link View}.
  * There is only one instance of a Scheduler per webview, and it is instanciated
  * with the creation of the first view.
  *
  * @class
+ * @category Base
  */
 function Scheduler() {
     // Constructor
@@ -213,49 +219,32 @@ Scheduler.prototype.execute = function execute(command) {
 };
 
 /**
- * A Provider has the responsability to handle protocols and datablobs. Given a
- * data request (see {@link Provider#executeCommand} for details about this
- * request), it fetches serialized datasets, file content or even file chunks.
+ * The `command` object given to {@link Provider}'s `executeCommand`. The
+ * `view` and the `layer` are always present, the other parameters are
+ * optional.
  *
- * @interface Provider
- */
-
-/**
- * When adding a layer to a view, some preprocessing can be done on it, before
- * fetching or creating resources attached to it. For example, in the WMTS and
- * WFS providers (included in iTowns), default options to the layer are added if
- * some are missing.
- *
- * @param {Layer} layer
- * @param {View} [view]
- * @param {Scheduler} [scheduler]
- * @param {Layer} [parentLayer]
- */
-
-/**
- * In the {@link Scheduler} loop, this function is called every time the layer
- * needs new information about itself. For tiled layers, it gets the necessary
- * tiles, given the current position of the camera on the map. For simple layers
- * like a GPX trace, it gets the data once.
- * <br><br>
- * It passes a `command` object as a parameter, with the `view` and the `layer`
- * always present. The other parameters are optional.
- *
- * @function
- * @name Provider#executeCommand
- *
- * @param {object} command
- * @param {View} command.view
- * @param {Layer} command.layer
- * @param {TileMesh} [command.requester] - Every layer is attached to a tile.
- * @param {number} [command.targetLevel] - The target level is used when there
+ * @typedef {object} ProviderCommand
+ * @property {View} view - The view requesting the data.
+ * @property {Layer} layer - The layer requesting the data.
+ * @property {TileMesh} [requester] - Every layer is attached to a tile.
+ * @property {number} [targetLevel] - The target level is used when there
  * is a tiled layer, such as WMTS or TMS, but not in case like a GPX layer.
+ */
+
+/**
+ * A Provider has the responsability to handle protocols and datablobs. Given a
+ * data request (see `executeCommand` for details about this request), it
+ * fetches serialized datasets, file content or even file chunks.
  *
- * @returns {Promise} The {@link Scheduler} always expect a Promise as a result,
+ * @typedef {object} Provider
+ * @property {(command: ProviderCommand) => Promise<any>} executeCommand - In
+ * the {@link Scheduler} loop, this function is called every time the layer
+ * needs new information about itself. For tiled layers, it gets the necessary
+ * tiles, given the current position of the camera on the map. For simple
+ * layers like a GPX trace, it gets the data once. It must return a Promise,
  * resolving to an object containing sufficient information for the associated
  * processing to the current layer. For example, see the
- * [LayeredMaterialNodeProcessing#updateRasterTile]{@link
- * https://github.com/iTowns/itowns/blob/master/src/Process/LayeredMaterialNodeProcessing.js}
+ * [LayeredMaterialNodeProcessing#updateRasterTile](https://github.com/iTowns/itowns/blob/master/src/Process/LayeredMaterialNodeProcessing.js)
  * class or other processing class.
  */
 
@@ -265,7 +254,7 @@ Scheduler.prototype.execute = function execute(command) {
  * informations.
  * By default, some protocols are already set in iTowns: WMTS, WMS, WFS, TMS,
  * XYZ, PotreeConverter, Rasterizer, 3D-Tiles and Static.
- * <br><br>
+ *
  * Warning: if the specified protocol has already a provider attached to it, the
  * current provider will be overwritten by the given provider.
  *

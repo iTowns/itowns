@@ -1,4 +1,7 @@
 import PointCloudNode from 'Core/PointCloudNode';
+/**
+ * @category Points
+ */
 
 abstract class LasNodeBase extends PointCloudNode {
     /** X position within the octree */

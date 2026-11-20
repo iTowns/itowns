@@ -1,4 +1,7 @@
 import OGC3DTilesSource from './OGC3DTilesSource';
+/**
+ * @category Source
+ */
 
 class OGC3DTilesGoogleSource extends OGC3DTilesSource {
     /**

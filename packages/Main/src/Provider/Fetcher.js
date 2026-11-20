@@ -1,6 +1,10 @@
 import { TextureLoader, DataTexture, RedFormat, FloatType } from 'three';
 import * as GeoTIFF from 'geotiff';
 
+/**
+ * @import * as THREE from 'three'
+ */
+
 export const TEXTURE_TILE_DIM = 256;
 const TEXTURE_TILE_SIZE = TEXTURE_TILE_DIM * TEXTURE_TILE_DIM;
 
@@ -23,7 +27,7 @@ const arrayBuffer = (url, options = {}) => fetch(url, options).then((response) =
  * Utilitary to fetch resources from a server using the [fetch API](
  * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch).
  *
- * @module Fetcher
+ * @category Provider
  */
 export default {
     /**
@@ -78,17 +82,17 @@ export default {
     },
 
     /**
-     * Wrapper around [THREE.TextureLoader](https://threejs.org/docs/#api/en/loaders/TextureLoader).
+     * Wrapper around {@link THREE.TextureLoader}.
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {object} options - Fetch options (passed directly to `fetch()`),
      * see [the syntax for more information](
      * https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Syntax).
      * Note that THREE.js docs mentions `withCredentials`, but it is not
-     * actually used in [THREE.TextureLoader](https://threejs.org/docs/#api/en/loaders/TextureLoader).
+     * actually used in {@link THREE.TextureLoader}.
      *
      * @returns {Promise<THREE.Texture>} Promise containing the
-     * [THREE.Texture](https://threejs.org/docs/api/en/textures/Texture.html).
+     * {@link THREE.Texture}.
      */
     texture(url, options = {}) {
         let res;
@@ -123,7 +127,7 @@ export default {
 
     /**
      * Wrapper over fetch to get some
-     * [THREE.DataTexture](https://threejs.org/docs/#api/en/textures/DataTexture).
+     * {@link THREE.DataTexture}.
      *
      * @param {string} url - The URL of the resources to fetch.
      * @param {object} options - Fetch options (passed directly to `fetch()`),

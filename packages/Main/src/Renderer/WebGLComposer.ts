@@ -24,7 +24,7 @@ let material: THREE.ShaderMaterial | null = null;
 let quad: THREE.Mesh | null = null;
 const quadCam: THREE.OrthographicCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 /**
- * Initializes a THREE.WebGLArrayRenderTarget with immutable storage
+ * Initializes a {@link THREE.WebGLArrayRenderTarget} with immutable storage
  * and populates its layers.
  * Returns the populated render target so callers can own/dispose it.
  *

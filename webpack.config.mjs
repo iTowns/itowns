@@ -61,7 +61,7 @@ export default () => {
                 '.js': ['.ts', '.js'],
             },
             alias: {
-                itowns: path.resolve(__dirname, 'packages/Main/src/Main.js'),
+                itowns: path.resolve(__dirname, 'packages/Main/src/Main.ts'),
                 '@itowns/geographic': path.resolve(__dirname, 'packages/Geographic/src/index.ts'),
             },
         },
@@ -125,7 +125,7 @@ export default () => {
         entry: {
             ...sharedConfig.entry,
             itowns: [
-                './packages/Main/src/Main.js',
+                './packages/Main/src/Main.ts',
             ],
             demo: {
                 import: './examples/demo/src/index.ts',

@@ -70,15 +70,19 @@ export const ExtrudedData3dScene: SceneType = {
         for (const mesh of ExtrudedData3dScene.meshes ?? []) {
             itownsView.scene.add(mesh);
         }
-        itownsView.addFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
+        if (ExtrudedData3dScene.event) {
+            itownsView.addFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
+        }
     },
     onExit: async () => {
         const itownsView = ExtrudedData3dScene.getItownsView();
         for (const mesh of ExtrudedData3dScene.meshes ?? []) {
             itownsView.scene.remove(mesh);
         }
-        itownsView.removeFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
+        if (ExtrudedData3dScene.event) {
+            itownsView.removeFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER, ExtrudedData3dScene.event);
+        }
     },
 };

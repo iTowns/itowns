@@ -1,5 +1,10 @@
 import * as THREE from 'three';
 
+/**
+ * Distortion model of an {@link OrientedImageCamera}.
+ *
+ * @category Renderer
+ */
 class Distortion {
     constructor(size) {
         this.size = size;
@@ -33,14 +38,15 @@ const zoom = new THREE.Vector3();
 /**
  * OrientedImageCamera is a ThreeJs camera adapted to photogrammetric description.
  * So we can build a ThreeJs perspective camera from size and focal information.
+ * @category Controls
  */
 class OrientedImageCamera extends THREE.PerspectiveCamera {
     /**
-     * @param {number|Vector2} size - image size in pixels (default: x=1024, y=x)
-     * @param {number|Vector2} focal - focal length in pixels (default: x=1024, y=x)
-     * @param {Vector2} center - principal point in pixels (default: size/2)
-     * @param {number} near - Camera frustum near plane (default: see THREE.PerspectiveCamera).
-     * @param {number} far - Camera frustum far plane (default: see THREE.PerspectiveCamera).
+     * @param {number|THREE.Vector2} size - image size in pixels (default: x=1024, y=x)
+     * @param {number|THREE.Vector2} focal - focal length in pixels (default: x=1024, y=x)
+     * @param {THREE.Vector2} center - principal point in pixels (default: size/2)
+     * @param {number} near - Camera frustum near plane (default: see {@link THREE.PerspectiveCamera}).
+     * @param {number} far - Camera frustum far plane (default: see {@link THREE.PerspectiveCamera}).
      * @param {number} skew - shear transform parameter (default: 0)
      * @param {number} aspect - aspect ratio of the camera (default: size.x/size.y).
      */
@@ -98,6 +104,14 @@ class OrientedImageCamera extends THREE.PerspectiveCamera {
         this.projectionMatrix.scale(zoom);
     }
 
+    /**
+     * Copies the properties of the source `OrientedImageCamera` into this one.
+     *
+     * @param {OrientedImageCamera} source - The camera to copy.
+     * @param {boolean} [recursive] - If true, descendants of the source are
+     * recursively copied too.
+     * @returns {this} This camera.
+     */
     copy(source, recursive) {
         super.copy(source, recursive);
         this.size = source.size.clone();

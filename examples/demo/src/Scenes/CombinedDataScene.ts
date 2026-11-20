@@ -173,10 +173,12 @@ export const CombinedDataScene: SceneType = {
         const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'block';
         itownsView.scene.add(...(CombinedDataScene.meshes ?? []));
-        itownsView.addFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
-            CombinedDataScene.event,
-        );
+        if (CombinedDataScene.event) {
+            itownsView.addFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
+                CombinedDataScene.event,
+            );
+        }
 
         const layer = Layers.PointCloudLayer.cachedLayer as itowns.CopcLayer & {
             material: {
@@ -196,9 +198,11 @@ export const CombinedDataScene: SceneType = {
         const itownsView = CombinedDataScene.getItownsView();
         configContainer.style.display = 'none';
         itownsView.scene.remove(...(CombinedDataScene.meshes ?? []));
-        itownsView.removeFrameRequester(
-            itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
-            CombinedDataScene.event,
-        );
+        if (CombinedDataScene.event) {
+            itownsView.removeFrameRequester(
+                itowns.MAIN_LOOP_EVENTS.BEFORE_RENDER,
+                CombinedDataScene.event,
+            );
+        }
     },
 };

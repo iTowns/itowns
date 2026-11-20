@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const MOVEMENTS = {
     38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
     40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key
@@ -87,6 +91,7 @@ function onDocumentMouseWheel(event) {
  * - left + right keys: strafing movements
  * - PageUp + PageDown: roll movement
  * - mouse click+drag: pitch and yaw movements (as looking at a panorama, not as in FPS games for instance)
+ * @category Controls
  */
 class FlyControls extends THREE.EventDispatcher {
     /**

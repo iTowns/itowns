@@ -46,6 +46,7 @@ export const FEATURE_TYPES = {
  * @property {Style} style - The style to inherit when creating
  * style for all new features.
  *
+ * @category Base
  */
 
 /**
@@ -57,6 +58,7 @@ export const FEATURE_TYPES = {
  *
  * @property {object} properties - Properties of the geometry. It can be
  * anything specified in the GeoJSON under the `properties` property.
+ * @category Base
  */
 export class FeatureGeometry {
     #currentExtent;
@@ -221,6 +223,7 @@ function push3DValues(value0, value1, value2 = 0) {
  * FeatureGeometry}.
  * @property {Extent?} extent - The extent containing all the geometries
  * composing the feature.
+ * @category Base
  */
 class Feature {
     /**
@@ -292,7 +295,7 @@ const transformToLocalSystem2D = (coord, collection) => coord.applyMatrix4(colle
 const axisZ = new THREE.Vector3(0, 0, 1);
 const alignYtoEast = new THREE.Quaternion();
 /**
- * An object regrouping a list of [features]{@link Feature} and the extent of this collection.
+ * An object regrouping a list of {@link Feature | features} and the extent of this collection.
  * **Warning**, the data (`extent` or `Coordinates`) can be stored in a local system.
  * The local system center is the `center` property.
  * To use `Feature` vertices or `FeatureCollection/Feature` extent in FeatureCollection.crs projection,
@@ -335,6 +338,7 @@ const alignYtoEast = new THREE.Quaternion();
  * @property {Coordinates} center - The local center coordinates in `EPSG:4326`.
  * The local system is centred in this center.
  *
+ * @category Base
  */
 
 export class FeatureCollection extends THREE.Object3D {

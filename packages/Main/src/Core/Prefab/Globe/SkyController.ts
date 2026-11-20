@@ -5,6 +5,9 @@ import ISkyStrategy from 'Core/Prefab/Globe/ISkyStrategy';
 import GlobeView from 'Core/Prefab/GlobeView';
 import { AtmosphereParameters } from '@takram/three-atmosphere';
 import * as THREE from 'three';
+/**
+ * @category View
+ */
 
 class SkyController {
     private readonly _view: GlobeView;

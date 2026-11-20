@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import DEMUtils from 'Utils/DEMUtils';
 import { Coordinates } from '@itowns/geographic';
 
+/**
+ * @import Style from 'Core/Style'
+ */
+
 const coord = new Coordinates('EPSG:4326');
 let rect;
 
@@ -40,6 +44,7 @@ if (typeof document !== 'undefined') {
  * @property {Coordinates} coordinates - The coordinates of the label.
  * @property {number} order - Order of the label that will be read from the
  * style. It helps sorting and prioritizing a Label during render.
+ * @category Base
  */
 class Label extends THREE.Object3D {
     /**

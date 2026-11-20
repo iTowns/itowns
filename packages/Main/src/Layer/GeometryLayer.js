@@ -5,6 +5,12 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
 
 /**
+ * @import * as THREE from 'three'
+ * @import View from 'Core/View'
+ * @import Source from 'Source/Source'
+ */
+
+/**
  * Fires when the opacity of the layer has changed.
  * @event GeometryLayer#"opacity-property-changed"
  */
@@ -19,6 +25,7 @@ import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
  * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
  * @property {number} [zoom.min=0] - this is the minimum zoom from which it'll be visible.
  * This property is used only if the layer is attached to {@link TiledGeometryLayer}.
+ * @category Layer
  */
 class GeometryLayer extends Layer {
     /**
@@ -36,9 +43,10 @@ class GeometryLayer extends Layer {
      * contains three elements `name, protocol, extent`, these elements will be
      * available using `layer.name` or something else depending on the property
      * name.
-     * @param {Source} config.source - Description and options of the source.
+     * @param {Source|boolean} config.source - Description and options of the source.
+     * If `false`, the layer has no source.
      * @param {number} [config.cacheLifeTime=Infinity] - set life time value in cache.
-     * This value is used for [Cache]{@link Cache} expiration mechanism.
+     * This value is used for cache expiration mechanism.
      * @param {boolean} [config.visible]
      *
      * @throws {Error} `object3d` must be a valid `THREE.Object3d`.

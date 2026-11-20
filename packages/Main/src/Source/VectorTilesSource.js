@@ -34,6 +34,7 @@ function getPropertiesFromRefLayer(layers, layer) {
  * parameter function is a layer.
  * @property {boolean} [symbolToCircle=false] - If true, all symbols from a tile
  * will be considered as circle, and render as circles.
+ * @category Source
  */
 class VectorTilesSource extends TMSSource {
     /**

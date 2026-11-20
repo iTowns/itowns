@@ -13,6 +13,9 @@ export const ellipsoidSizes = /* @__PURE__ */ (() => new Vector3(
 ))();
 
 const normal = /* @__PURE__ */ new Vector3();
+/**
+ * @category Geographic
+ */
 
 class Ellipsoid {
     /**

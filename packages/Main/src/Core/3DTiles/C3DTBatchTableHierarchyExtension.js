@@ -13,6 +13,7 @@
  * of the class (from this.classes) of the instance. instanceIdx is the index of
  * the instance in this class. Goal: Ease the retrieval of the properties of an
  * instance.
+ * @category Base
  */
 class C3DTBatchTableHierarchyExtension {
     /**
@@ -66,7 +67,7 @@ class C3DTBatchTableHierarchyExtension {
     /**
      * Creates and returns a javascript object holding the displayable
      * information relative to this extension for a given feature.
-     * @param {integer} featureId - id of the feature
+     * @param {number} featureId - integer id of the feature
      * @returns {object} - displayable information relative to this
      * extension, for the feature with id=featureId and for its parents
      */

@@ -23,6 +23,12 @@ import PointsMaterial, {
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
 
+/**
+ * @import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
+ * @import View from 'Core/View'
+ * @import OGC3DTilesSource from 'Source/OGC3DTilesSource'
+ */
+
 const _raycaster = new THREE.Raycaster();
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
@@ -49,7 +55,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * Fired when a tile model is loaded
      * @event OGC3DTilesLayer#"load-model"
      * @type {object}
-     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {THREE.Group} scene - the model (tile content) parsed in a {@link THREE.Group}
      * @property {object} tile - the tile metadata from the tileset
      */
     LOAD_MODEL: 'load-model',
@@ -65,7 +71,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * Fired when a tiles visibility changes
      * @event OGC3DTilesLayer#"tile-visibility-change"
      * @type {object}
-     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {THREE.Group} scene - the model (tile content) parsed in a {@link THREE.Group}
      * @property {object} tile - the tile metadata from the tileset
      * @property {boolean} visible - the tile visible state
      */
@@ -126,7 +132,7 @@ export function enableKtx2Loader(path, renderer) {
  * Enable loading 3D Tiles and GLTF with
  * [meshopt](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) compression extension.
  *
- * @param {MeshOptDecoder.constructor} MeshOptDecoder - The Meshopt decoder
+ * @param {typeof MeshoptDecoder} MeshOptDecoder - The Meshopt decoder
  * module.
  *
  * @example
@@ -340,6 +346,9 @@ async function getMetadataFromIntersection(intersection) {
 
     return metadata;
 }
+/**
+ * @category Layer
+ */
 
 class OGC3DTilesLayer extends GeometryLayer {
     /**
@@ -572,7 +581,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      * stored in property attributes and textures.
      *
      * If present in GLTF 2.0 assets, this method leverages the
-     * [`EXT_mesh_features`](`https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
+     * [`EXT_mesh_features`](https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features)
      * extension and the returned featured to index metadata stored in property tables.
      *
      * @param {Array<THREE.Intersection>} intersections
@@ -665,7 +674,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      *
      * @param {Function} callback The callback to execute for each tile. Has the following two parameters:
      *  1. tile (Object) - the JSON tile
-     *  2. scene (THREE.Object3D | null) - The tile content. Contains a `batchTable` property. Can be null if the tile
+     *  2. scene ({@link THREE.Object3D} | null) - The tile content. Contains a `batchTable` property. Can be null if the tile
      *  has not yet been loaded.
      */
     forEachTile(callback) {

@@ -8,6 +8,11 @@ import Style from 'Core/Style';
 import C3DTFeature from 'Core/3DTiles/C3DTFeature';
 import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
 
+/**
+ * @import View from 'Core/View'
+ * @import C3DTilesSource from 'Source/C3DTilesSource'
+ */
+
 export const C3DTILES_LAYER_EVENTS = {
     /**
      * Fires when a tile content has been loaded
@@ -55,6 +60,7 @@ function object3DHasFeature(object3d) {
 
 /**
  * @extends GeometryLayer
+ * @category Layer
  */
 class C3DTilesLayer extends GeometryLayer {
     #fillColorMaterialsBuffer;
@@ -236,7 +242,7 @@ class C3DTilesLayer extends GeometryLayer {
      * computed with view.pickObjectsAt(..). See fillHTMLWithPickingInfo()
      * in 3dTilesHelper.js for an example.
      *
-     * @returns {C3DTileFeature} - the closest C3DTileFeature of the intersects array
+     * @returns {C3DTFeature} - the closest C3DTileFeature of the intersects array
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
         // find closest intersect with an attributes _batchid + face != undefined
@@ -269,7 +275,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Called when a tile content is loaded
-     * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
+     * @param {THREE.Object3D} tileContent - tile as {@link THREE.Object3D}
      */
     onTileContentLoaded(tileContent) {
         this.initC3DTileFeatures(tileContent);
@@ -283,7 +289,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Initialize C3DTileFeatures from tileContent
-     * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
+     * @param {THREE.Object3D} tileContent - tile as {@link THREE.Object3D}
      */
     initC3DTileFeatures(tileContent) {
         this.tilesC3DTileFeatures.set(tileContent.tileId, new Map()); // initialize
@@ -348,7 +354,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Update style of the C3DTFeatures, an allowList of tile id can be passed to only update certain tile.
-     * Note that this function only update THREE.Object3D materials, in order to see style changes you should call view.notifyChange()
+     * Note that this function only update {@link THREE.Object3D} materials, in order to see style changes you should call view.notifyChange()
      * @param {Array<number>|null} [allowTileIdList] - tile ids to allow in updateStyle computation if null all tiles are updated
      *
      * @returns {boolean} true if style updated false otherwise

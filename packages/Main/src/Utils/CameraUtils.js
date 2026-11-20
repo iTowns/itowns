@@ -6,6 +6,12 @@ import { Coordinates, Ellipsoid } from '@itowns/geographic';
 import OBB from 'Renderer/OBB';
 import { VIEW_EVENTS } from 'Core/View';
 
+/**
+ * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ * @import View from 'Core/View'
+ * @import { Extent } from '@itowns/geographic'
+ */
+
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
 const targetPosition = new THREE.Vector3();
 const targetCoord = new Coordinates('EPSG:4326', 0, 0, 0);
@@ -346,21 +352,12 @@ export function getRig(camera) {
 }
 
 /**
- * @module CameraUtils
+ * Utility functions to transform the camera, such as moving it to look at a
+ * target or an extent.
+ *
+ * @category Controls
  */
 export default {
-    /**
-     * @typedef {object} CameraTransformOptions
-     * @property {Coordinate} [coord=currentCoordinate] Camera look at geographic coordinate
-     * @property {number} [tilt=currentTilt] camera's tilt, in degree
-     * @property {number} [heading=currentHeading] camera's heading, in degree
-     * @property {number} [range=currentRange] camera distance to target coordinate, in meter
-     * @property {number} [time=2500] duration of the animation, in ms
-     * @property {boolean} [proxy=true] use proxy to handling camera's transformation. if proxy == true, other camera's transformation stops rig's transformation
-     * @property {number} [easing=TWEEN.Easing.Quartic.InOut] in and out easing animation
-     * @property {Function} [callback] callback call each animation's frame (params are current cameraTransform and worldTargetPosition)
-     * @property {boolean} [stopPlaceOnGroundAtEnd=false] stop place target on the ground at animation ending
-     */
     /**
      * Default value for option to stop place target
      * on the ground at animation ending.
@@ -372,7 +369,7 @@ export default {
      * Stop camera's animation
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to stop animation
+     * @param      {THREE.Camera}  camera  The camera to stop animation
      */
     stop(view, camera) {
         getRig(camera).stop(view);
@@ -381,7 +378,7 @@ export default {
      * Gets the current parameters transform camera looking at target.
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to get transform
+     * @param      {THREE.Camera}  camera  The camera to get transform
      * @param      {THREE.Vector3} [target] - The optional target
      * @returns     {CameraTransformOptions}  The transform camera looking at target
      */
@@ -394,7 +391,7 @@ export default {
      * Apply transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to transform
+     * @param      {THREE.Camera}  camera  The camera to transform
      * @param      {CameraTransformOptions|Extent}  params  The parameters
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
@@ -478,7 +475,7 @@ export default {
      * Apply transform to camera with animation
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraTransformOptions}  params  The parameters
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
@@ -505,7 +502,7 @@ export default {
      * chain animation transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraTransformOptions[]}  params  array parameters, each parameters transforms are apply to camera, in serial
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */

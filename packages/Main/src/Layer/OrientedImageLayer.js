@@ -5,6 +5,10 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import CameraCalibrationParser from 'Parser/CameraCalibrationParser';
 import { Coordinates, OrientationUtils } from '@itowns/geographic';
 
+/**
+ * @import OrientedImageSource from 'Source/OrientedImageSource'
+ */
+
 const coord = new Coordinates('EPSG:4978', 0, 0, 0);
 const commandCancellation = cmd => cmd.requester.id !== cmd.layer.currentPano.id;
 
@@ -83,6 +87,7 @@ function createBackground(radius) {
  * and a set of texture (each image for each camera for each panoramic), all organised in an {@link OrientedImageSource}. </br>
  * It creates an {@link OrientedImageMaterial} used to do projective texture mapping on the scene.
  * @extends GeometryLayer
+ * @category Layer
  */
 class OrientedImageLayer extends GeometryLayer {
     /**

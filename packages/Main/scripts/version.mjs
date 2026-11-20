@@ -4,9 +4,9 @@ import { execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 // This script is used to "augment" the default behavior of npm version by
-// updating the version of the Main.js file.
+// updating the version of the Main.ts file.
 //
-// It also add the Main.js file to the git index if the --no-git-tag-version
+// It also add the Main.ts file to the git index if the --no-git-tag-version
 // flag is not set. This will be committed at the end of the npm version
 // command.
 
@@ -17,7 +17,7 @@ const {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const mainPath = path.join(__dirname, '../src/Main.js');
+const mainPath = path.join(__dirname, '../src/Main.ts');
 
 try {
     const content = fs.readFileSync(mainPath, 'utf8');

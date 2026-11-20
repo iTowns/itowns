@@ -5,6 +5,10 @@ import {
     moveLayerToIndex,
 } from 'Layer/ImageryLayers';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 function updateLayersOrdering(geometryLayer, imageryLayers) {
     const sequence = getColorLayersIdOrderedBySequence(imageryLayers);
     const cO = function cO(object) {
@@ -23,7 +27,7 @@ export const COLOR_LAYERS_ORDER_CHANGED = 'layers-order-changed';
 /**
  * Utilitary to organize {@link ColorLayer} in a {@link View}.
  *
- * @module ColorLayersOrdering
+ * @category Layer
  */
 export default {
     /**

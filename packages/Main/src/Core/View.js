@@ -12,6 +12,10 @@ import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
+/**
+ * @import Layer from 'Layer/Layer'
+ */
+
 export const VIEW_EVENTS = {
     /**
      * Fires when all the layers of the view are considered initialized.
@@ -129,6 +133,7 @@ let id = 0;
  * @property {THREE.Camera} camera3D - threejs camera that is stored in itowns camera
  * @property {THREE.WebGLRenderer} renderer - threejs webglrenderer rendering this view
  * @property {undefined | function(): void} render - custom rendering callback
+ * @category View
  */
 class View extends THREE.EventDispatcher {
     #layers = [];
@@ -140,27 +145,31 @@ class View extends THREE.EventDispatcher {
     /**
      * Constructs an Itowns View instance
      *
-     * @example <caption><b>Create a view with a custom Three.js camera.</b></caption>
+     * @example Create a view with a custom Three.js camera.
+     * ```js
      * var viewerDiv = document.getElementById('viewerDiv');
      * var customCamera = itowns.THREE.PerspectiveCamera();
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { cameraThree: customCamera } });
+     * ```
      *
-     * @example <caption><b>Create a view with an orthographic camera, and grant it with Three.js custom controls.</b></caption>
+     * @example Create a view with an orthographic camera, and grant it with Three.js custom controls.
+     * ```js
      * var viewerDiv = document.getElementById('viewerDiv');
      * var view = itowns.View('EPSG:4326', viewerDiv, { camera: { type: itowns.CAMERA_TYPE.ORTHOGRAPHIC } });
      * var customControls = itowns.THREE.OrbitControls(view.camera3D, viewerDiv);
+     * ```
      *
      * @param {string} crs - The default CRS of Three.js coordinates. Should be a cartesian CRS.
      * @param {HTMLElement} viewerDiv - Where to instanciate the Three.js scene in the DOM
      * @param {object} [options] - Optional properties.
-     * @param {object} [options.camera] - Options for the camera associated to the view. See {@link Camera} options.
-     * @param {MainLoop} [options.mainLoop] - {@link MainLoop} instance to use, otherwise a default one will be constructed
-     * @param {WebGLRenderer | object} [options.renderer] - {@link WebGLRenderer} instance to use, otherwise
+     * @param {object} [options.camera] - Options for the camera associated to the view. See `Camera` options.
+     * @param {MainLoop} [options.mainLoop] - `MainLoop` instance to use, otherwise a default one will be constructed
+     * @param {WebGLRenderer | object} [options.renderer] - `WebGLRenderer` instance to use, otherwise
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
-     * configure the renderer (see {@link c3DEngine}.  If not present, a new &lt;canvas> will be created and
+     * configure the renderer (see `c3DEngine`.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
-     * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
+     * @param {Scene} [options.scene3D] - {@link THREE.Scene} instance to use, otherwise a default one will be constructed
+     * @param {Color} [options.diffuse] - {@link THREE.Color} Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
      */
@@ -526,40 +535,6 @@ class View extends THREE.EventDispatcher {
             .reduce((max, layer) => Math.max(max, layer.scale), 1.0);
     }
 
-    /**
-     * @name FrameRequester
-     * @function
-     *
-     * @description
-     * Method that will be called each time the `MainLoop` updates. This function
-     * will be given as parameter the delta (in ms) between this update and the
-     * previous one, and whether or not we just started to render again. This update
-     * is considered as the "next" update if `view.notifyChange` was called during a
-     * precedent update. If `view.notifyChange` has been called by something else
-     * (other micro/macrotask, UI events etc...), then this update is considered as
-     * being the "first". It can also receive optional arguments, depending on the
-     * attach point of this function. Currently only `BEFORE_LAYER_UPDATE /
-     * AFTER_LAYER_UPDATE` attach points provide an additional argument: the layer
-     * being updated.
-     * <br><br>
-     *
-     * This means that if a `frameRequester` function wants to animate something, it
-     * should keep on calling `view.notifyChange` until its task is done.
-     * <br><br>
-     *
-     * Implementors of `frameRequester` should keep in mind that this function will
-     * be potentially called at each frame, thus care should be given about
-     * performance.
-     * <br><br>
-     *
-     * Typical frameRequesters are controls, module wanting to animate moves or UI
-     * elements etc... Basically anything that would want to call
-     * requestAnimationFrame.
-     *
-     * @param {number} dt
-     * @param {boolean} updateLoopRestarted
-     * @param {...*} args
-     */
     /**
      * Add a frame requester to this view.
      *
@@ -1176,3 +1151,38 @@ class View extends THREE.EventDispatcher {
 }
 
 export default View;
+
+/**
+ * @callback FrameRequester
+ * Method that will be called each time the `MainLoop` updates. This function
+ * will be given as parameter the delta (in ms) between this update and the
+ * previous one, and whether or not we just started to render again. This update
+ * is considered as the "next" update if `view.notifyChange` was called during a
+ * precedent update. If `view.notifyChange` has been called by something else
+ * (other micro/macrotask, UI events etc...), then this update is considered as
+ * being the "first". It can also receive optional arguments, depending on the
+ * attach point of this function. Currently only `BEFORE_LAYER_UPDATE /
+ * AFTER_LAYER_UPDATE` attach points provide an additional argument: the layer
+ * being updated.
+ * <br><br>
+ *
+ * This means that if a `frameRequester` function wants to animate something, it
+ * should keep on calling `view.notifyChange` until its task is done.
+ * <br><br>
+ *
+ * Implementors of `frameRequester` should keep in mind that this function will
+ * be potentially called at each frame, thus care should be given about
+ * performance.
+ * <br><br>
+ *
+ * Typical frameRequesters are controls, module wanting to animate moves or UI
+ * elements etc... Basically anything that would want to call
+ * requestAnimationFrame.
+ *
+ * @param {number} dt
+ * @param {boolean} updateLoopRestarted
+ * @param {...*} args
+ * @returns {void}
+ *
+ * @category View
+ */

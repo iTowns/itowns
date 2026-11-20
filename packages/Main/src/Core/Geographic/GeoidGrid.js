@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { Coordinates, CRS } from '@itowns/geographic';
 
+/**
+ * @import { Extent } from '@itowns/geographic'
+ */
+
 const coord = new Coordinates('EPSG:4326');
 const indexes = new THREE.Vector2();
 
@@ -65,6 +69,7 @@ function biLinearInterpolation(indexes, getData) {
  * // This should return 2.0, which is the result from the bi-linear
  * // interpolation at the center of the `[[1, 2], [2, 3]]` subsection
  * // of the grid data.
+ * @category Geographic
  */
 class GeoidGrid {
     /**

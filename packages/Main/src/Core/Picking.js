@@ -3,6 +3,11 @@ import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import { Coordinates } from '@itowns/geographic';
 
+/**
+ * @import View from 'Core/View'
+ * @import TiledGeometryLayer from 'Layer/TiledGeometryLayer'
+ */
+
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
 function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {
@@ -88,8 +93,6 @@ const cameraPos = new THREE.Vector3();
 const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set to view crs when used
 
 /**
- * @module Picking
- *
  * Implement various picking methods for geometry layers.
  * These methods are not meant to be used directly, see View.pickObjectsAt
  * instead.
@@ -99,8 +102,24 @@ const cameraPosCoord = new Coordinates('EPSG:4978'); // default crs, will be set
  *   - view coordinates (in pixels) where picking should be done
  *   - radius (in pixels) of the picking circle
  *   - layer: the geometry layer used for picking
+ *
+ * @category View
  */
 export default {
+    /**
+     * Picks the tiles of a {@link TiledGeometryLayer} under the given view
+     * coordinates.
+     *
+     * @param {View} view - The view instance.
+     * @param {THREE.Vector2} viewCoords - The view coordinates (in pixels)
+     * where picking should be done.
+     * @param {number} radius - The radius (in pixels) of the picking circle.
+     * @param {TiledGeometryLayer} layer - The tiled layer used for picking.
+     * @param {Array} [results=[]] - Array to which picked results are pushed.
+     *
+     * @returns {Array} The `results` array, filled with `{ object, layer }`
+     * entries for each picked tile.
+     */
     pickTilesAt(view, viewCoords, radius, layer, results = []) {
         const _ids = screenCoordsToNodeId(view, layer, viewCoords, radius);
 

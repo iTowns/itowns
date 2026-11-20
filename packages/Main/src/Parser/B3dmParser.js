@@ -56,12 +56,14 @@ function transformToZUp(gltfScene, gltfUpAxis) {
 }
 
 /**
- * @module B3dmParser
+ * Parser to convert Batched 3D Model (b3dm) tiles to THREE.js meshes.
+ *
+ * @category Parser
  */
 
 export default {
     /**
-     * Parse b3dm buffer and extract THREE.Scene and batch table
+     * Parse b3dm buffer and extract {@link THREE.Scene} and batch table
      * @param {ArrayBuffer} buffer - the b3dm buffer.
      * @param {object} options - additional properties.
      * @param {string=} [options.gltfUpAxis='Y'] - embedded glTF model up axis.
@@ -73,7 +75,7 @@ export default {
      * true, a threejs [MeshBasicMaterial](https://threejs.org/docs/index.html?q=meshbasic#api/en/materials/MeshBasicMaterial)
      * is set up. config.overrideMaterials can also be a threejs [Material](https://threejs.org/docs/index.html?q=material#api/en/materials/Material)
      * in which case it will be the material used to override.
-     * @returns {Promise} - a promise that resolves with an object containig a THREE.Scene (gltf) and a batch table (batchTable).
+     * @returns {Promise} - a promise that resolves with an object containig a {@link THREE.Scene} (gltf) and a batch table (batchTable).
      *
      */
     parse(buffer, options) {

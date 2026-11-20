@@ -4,15 +4,18 @@ import C3DTBatchTable from 'Core/3DTiles/C3DTBatchTable';
 
 const utf8Decoder = new TextDecoder();
 
+/**
+ * Parser to extract `THREE.Points` and a batch table from a pnts buffer.
+ *
+ * @category Parser
+ */
 export default {
-    /** @module PntsParser */
     /**
-     * Parse pnts buffer and extract THREE.Points and batch table
-     * @function parse
+     * Parse pnts buffer and extract {@link THREE.Points} and batch table
      * @param {ArrayBuffer} buffer - the pnts buffer.
      * @param {object} registeredExtensions - 3D Tiles extensions registered
      * in the layer
-     * @returns {Promise} - a promise that resolves with an object containig a THREE.Points (point) and a batch table (batchTable).
+     * @returns {Promise} - a promise that resolves with an object containig a {@link THREE.Points} (point) and a batch table (batchTable).
      *
      */
     parse: function parse(buffer, registeredExtensions) {

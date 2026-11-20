@@ -32,13 +32,13 @@ function defaultColorEncoding(header) {
 }
 
 /**
- * @classdesc
  * Loader for LAS and LAZ (LASZip) point clouds. It uses the copc.js library and
  * the laz-perf decoder under the hood.
  *
  * The laz-perf web assembly module is lazily fetched at runtime when a parsing
  * request is initiated. Location of laz-perf wasm defaults to the unpkg
  * repository.
+ * @category Parser
  */
 class LASLoader {
     constructor() {

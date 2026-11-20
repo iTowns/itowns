@@ -3,6 +3,15 @@ import { STRATEGY_MIN_NETWORK_TRAFFIC } from 'Layer/LayerUpdateStrategy';
 import textureConverter from 'Converter/textureConverter';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 
+/**
+ * @import View from 'Core/View'
+ * @import TileMesh from 'Core/TileMesh'
+ */
+
+/**
+ * @category Layer
+ */
+
 class RasterLayer extends Layer {
     constructor(id, config) {
         const {

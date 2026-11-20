@@ -3,11 +3,15 @@ import GeoJsonParser from 'Parser/GeoJsonParser';
 import { deprecatedParsingOptionsToNewOne } from 'Core/Deprecated/Undeprecator';
 
 /**
- * The GpxParser module provides a [parse]{@link module:GpxParser.parse}
+ * @import { ParsingOptions } from 'Source/ParsingOptions'
+ */
+
+/**
+ * The GpxParser module provides a [parse]{@link GpxParser.parse}
  * method that takes a GPX in and gives an object formatted for iTowns
  * containing all necessary informations to display this GPX.
  *
- * @module GpxParser
+ * @category Parser
  */
 export default {
     /**

@@ -2,6 +2,9 @@ import { Chart, LineController, LineElement, PointElement, LinearScale, Category
 import { scales, color_rose, color_blue } from './ChartConfig';
 
 Chart.register(LineController, LineElement, PointElement, LinearScale,  CategoryScale, BarElement, BarController);
+/**
+ * @category Debug
+ */
 
 export default function ThreeStatsChart(ctx, renderer) {
     let lastValidCompareIndex = -1;

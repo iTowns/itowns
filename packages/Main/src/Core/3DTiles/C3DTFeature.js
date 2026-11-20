@@ -2,6 +2,10 @@
 import { Object3D, Box3 } from 'three';
 
 /**
+ * @import * as THREE from 'three'
+ */
+
+/**
  * Finds the batch table of an object in a 3D Tiles layer. This is
  * for instance needed when picking because we pick the geometric
  * object which is not at the same level in the layer structure as
@@ -22,7 +26,6 @@ function findBatchTable(object) {
 /**
  * C3DTFeature is a feature of a 3DTiles
  *
- * @class      C3DTFeature
  * @param {number} tileId - tileId
  * @param {number} batchId - batch id
  * @param {Array<{start:number,count:number}>} groups - groups in geometry.attributes matching batchId
@@ -33,6 +36,7 @@ function findBatchTable(object) {
  * @property {number} batchId - batch id
  * @property {Array<{start:number,count:number}>} groups - groups in geometry.attributes matching batchId
  * @property {object} [userData] - some userData
+ * @category Base
  */
 class C3DTFeature {
     #info;

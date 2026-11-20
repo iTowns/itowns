@@ -2,11 +2,19 @@ import * as THREE from 'three';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+/**
+ * @import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+ * @import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js'
+ */
+/**
+ * @category Parser
+ */
+
 class iGLTFLoader extends THREE.Loader {
     /**
      * Parses [glTF](https://www.khronos.org/gltf/) 1.0 and 2.0 files.
      *
-     * Under the hood, glTF 2.0 files are parsed with THREE.GLTFLoader and GLTF 1.0 are parsed with the previous THREE
+     * Under the hood, glTF 2.0 files are parsed with {@link THREE.GLTFLoader} and GLTF 1.0 are parsed with the previous THREE
      * GltfLoader (for 1.0 glTF) that has been kept and maintained in iTowns.
      *
      * Beware that gltf convention is y-up while itowns is z-up. You can apply a PI/2 rotation around the X axis to the
@@ -90,7 +98,7 @@ class iGLTFLoader extends THREE.Loader {
      * [Draco](https://google.github.io/draco/) geometry extension. See Threejs
      * [DracoLoader](https://threejs.org/docs/index.html#examples/en/loaders/DRACOLoader) for more information.
      * Only works for GLTF 2.0 files.
-     * @param {THREE.DracoLoader} dracoLoader - the threejs DracoLoader instance.
+     * @param {DRACOLoader} dracoLoader - the threejs DracoLoader instance.
      */
     setDRACOLoader(dracoLoader) {
         this.glTFLoader.setDRACOLoader(dracoLoader);
@@ -101,7 +109,7 @@ class iGLTFLoader extends THREE.Loader {
      * [KTX2](https://www.khronos.org/ktx/) texture extension. See Threejs
      * [KTX2Loader](https://threejs.org/docs/index.html?q=KTX2#examples/en/loaders/KTX2Loader) for more information.
      * Only works for GLTF 2.0 files.
-     * @param {THREE.KTX2Loader} ktx2Loader - the threejs KTX2Loader instance.
+     * @param {KTX2Loader} ktx2Loader - the threejs KTX2Loader instance.
      */
     setKTX2Loader(ktx2Loader) {
         this.glTFLoader.setKTX2Loader(ktx2Loader);

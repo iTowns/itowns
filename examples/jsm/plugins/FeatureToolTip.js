@@ -1,10 +1,14 @@
 import * as itowns from 'itowns';
 
 /**
+ * @import { View, Layer } from 'itowns'
+ */
+
+/**
  * A tooltip that can display some useful information about a feature when
  * hovering it.
  *
- * @module FeatureToolTip
+ * @category Plugins
  *
  * @example
  * // Initialize the FeatureToolTip
@@ -155,8 +159,6 @@ const FeatureToolTip = (function _() {
          * const view = new GlobeView(viewerDiv, { longitude: 4, latitude: 45, altitude: 3000 });
          *
          * FeatureToolTip.init(viewerDiv, view);
-         *
-         * @memberof module:FeatureToolTip
          */
         init: function _(viewerDiv, viewer) {
             // HTML element
@@ -219,8 +221,6 @@ const FeatureToolTip = (function _() {
          *          });
          *      }
          * });
-         *
-         * @memberof module:FeatureToolTip
          */
         addLayer: function _(layer, options) {
             if (!layer.isLayer) {

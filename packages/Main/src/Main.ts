@@ -1,3 +1,9 @@
+// TypeDoc uses the `@module` tag to name the module.
+/* eslint-disable jsdoc/check-tag-names */
+/**
+ * @module itowns
+ * @category API
+ */
 const conf = {
     version: '2.46.0',
 };
@@ -5,18 +11,24 @@ const conf = {
 export const REVISION = conf.version;
 
 // Geographic tools
-export { Coordinates, Extent, CRS, Ellipsoid, ellipsoidSizes, OrientationUtils } from '@itowns/geographic';
+export { Coordinates, Extent, Ellipsoid, ellipsoidSizes } from '@itowns/geographic';
+/** @category Geographic */
+export { CRS } from '@itowns/geographic';
+/** @category Geographic */
+export { OrientationUtils } from '@itowns/geographic';
 export { default as GeoidGrid } from 'Core/Geographic/GeoidGrid';
 
 export { default as GlobeView, GLOBE_VIEW_EVENTS } from 'Core/Prefab/GlobeView';
 export { default as PlanarView } from 'Core/Prefab/PlanarView';
 export { default as Fetcher } from 'Provider/Fetcher';
-export { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
+export { default as URLBuilder } from 'Provider/URLBuilder';
+export { default as MainLoop, MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 export { default as View } from 'Core/View';
 export { VIEW_EVENTS } from 'Core/View';
 export { default as FeatureProcessing } from 'Process/FeatureProcessing';
 export { default as ObjectRemovalHelper } from 'Process/ObjectRemovalHelper';
 export { default as OrientedImageCamera } from 'Renderer/OrientedImageCamera';
+export { default as OrientedImageMaterial } from 'Renderer/OrientedImageMaterial';
 export { default as PointsMaterial, PNTS_MODE, PNTS_SHAPE, PNTS_SIZE_MODE, ClassificationScheme } from 'Renderer/PointsMaterial';
 export { default as GlobeControls } from 'Controls/GlobeControls';
 export { default as FlyControls } from 'Controls/FlyControls';
@@ -30,12 +42,15 @@ export { PLANAR_CONTROL_EVENT } from 'Controls/PlanarControls';
 export { default as Feature2Mesh } from 'Converter/Feature2Mesh';
 export { default as FeaturesUtils } from 'Utils/FeaturesUtils';
 export { default as DEMUtils } from 'Utils/DEMUtils';
+export type { Terrain } from 'Utils/Terrain';
 export { default as CameraUtils } from 'Utils/CameraUtils';
+export type { CameraTransformOptions } from 'Utils/CameraTransformOptions';
+export { default as Picking } from 'Core/Picking';
 export { computeVisibilityTextureData } from 'Utils/PointCloudUtils';
 export { default as ShaderChunk } from 'Renderer/Shader/ShaderChunk';
 export { getMaxColorSamplerUnitsCount, colorLayerEffects } from 'Renderer/LayeredMaterial';
 export { default as Capabilities } from 'Core/System/Capabilities';
-export { CAMERA_TYPE } from 'Renderer/Camera';
+export { default as Camera, CAMERA_TYPE } from 'Renderer/Camera';
 export { default as OBB } from 'Renderer/OBB';
 
 export { default as PointCloudNode } from 'Core/PointCloudNode';
@@ -43,12 +58,19 @@ export { default as PointCloudNode } from 'Core/PointCloudNode';
 // Internal itowns format
 export { default as Feature, FeatureCollection, FeatureGeometry, FEATURE_TYPES } from 'Core/Feature';
 export { default as Style } from 'Core/Style';
+export { default as StyleOptions } from 'Core/StyleOptions';
 export { default as Label } from 'Core/Label';
+export { default as c3DEngine } from 'Renderer/c3DEngine';
+export { CACHE_POLICIES } from 'Core/Scheduler/Cache';
+export { default as Scheduler } from 'Core/Scheduler/Scheduler';
+export type { Provider, ProviderCommand } from 'Core/Scheduler/Scheduler';
+export type { FrameRequester } from 'Core/View';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer
-// See http://www.itowns-project.org/itowns/docs/#api/Layer/Layer
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Layer.html
 export { default as Layer } from 'Layer/Layer';
+/** @category Layer */
 export * as ImageryLayers from 'Layer/ImageryLayers';
 export { default as ColorLayer } from 'Layer/ColorLayer';
 export { default as ElevationLayer } from 'Layer/ElevationLayer';
@@ -79,8 +101,9 @@ export { default as GeoidLayer } from 'Layer/GeoidLayer';
 
 // Sources provided by default in iTowns
 // A custom source should at least implements Source
-// See http://www.itowns-project.org/itowns/docs/#api/Source/Source
+// See https://www.itowns-project.org/itowns/docs/classes/packages_Main_src_Main.Source.html
 export { default as Source } from 'Source/Source';
+export type { ParsingOptions } from 'Source/ParsingOptions';
 export { default as FileSource } from 'Source/FileSource';
 export { default as TMSSource } from 'Source/TMSSource';
 export { default as WFSSource } from 'Source/WFSSource';

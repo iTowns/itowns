@@ -5,6 +5,9 @@ import type PotreeSource from 'Source/PotreeSource';
 interface PotreeLayerParameters extends PointCloudLayerParameters {
     source: PotreeSource;
 }
+/**
+ * @category Layer
+ */
 
 class PotreeLayer extends PointCloudLayer<PotreeSource> {
     /**

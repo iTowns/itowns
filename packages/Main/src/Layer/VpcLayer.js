@@ -56,6 +56,7 @@ function _instantiateSubRoot(source, crs) {
  * });
  *
  * View.prototype.addLayer.call(view, vpcLayer);
+ * @category Layer
  */
 class VpcLayer extends PointCloudLayer {
     /**

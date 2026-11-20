@@ -21,6 +21,7 @@ interface UpdateContext {
  * Manages directional lighting and shadows as a layer.
  * Updates the sun light position and shadow camera parameters
  * based on the current camera view and sun direction.
+ * @category Layer
  */
 class SunLightLayer extends GeometryLayer {
     sunLight: THREE.DirectionalLight;
@@ -47,7 +48,7 @@ class SunLightLayer extends GeometryLayer {
         const id = 'sunlight';
         object3d.name = id;
 
-        super(id, object3d, { source: null });
+        super(id, object3d, { source: false });
 
         this.isSunLightLayer = true;
         this.sunDirection = new THREE.Vector3();

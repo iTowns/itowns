@@ -1,13 +1,6 @@
 import * as THREE from 'three';
 import OrientedImageCamera from 'Renderer/OrientedImageCamera';
 
-/**
- * The CameraCalibrationParser module provide a [parse]{@link module:CameraCalibrationParser.parse}
- * method that takes a JSON array of camera calibrations in and yields an array of {@link OrientedImageCamera}
- *
- * @module CameraCalibrationParser
- */
-
 const textureLoader = new THREE.TextureLoader();
 const matrix3 = new THREE.Matrix3();
 
@@ -60,6 +53,12 @@ function parseCalibration(calibration, options = {}) {
     return deferred;
 }
 
+/**
+ * The CameraCalibrationParser module provide a [parse]{@link CameraCalibrationParser.parse}
+ * method that takes a JSON array of camera calibrations in and yields an array of {@link OrientedImageCamera}
+ *
+ * @category Parser
+ */
 export default {
     /**
      * Description of a camera calibration in a JSON file.

@@ -1,0 +1,35 @@
+{
+    "$schema": "https://typedoc.org/schema.json",
+    "plugin": ["typedoc-plugin-mdn-links", "./docs/typedoc-plugins/version-switch.mjs", "./docs/typedoc-plugins/check-categories.mjs", "./docs/typedoc-plugins/resolve-module-links.mjs", "./docs/typedoc-plugins/three-links.mjs"],
+    "tsconfig": "tsconfig.typedoc.json",
+    "entryPoints": [
+        "packages/Main/src/Main.ts",
+        "packages/Geographic/src/index.ts",
+        "packages/Debug/src/Main.js",
+        "packages/Widgets/src/Main.js",
+        "docs/plugins.js"
+    ],
+    "entryPointStrategy": "resolve",
+    "projectDocuments": ["docs/tutorials/*.md"],
+    "exclude": ["**/lib/**", "**/test/**", "**/node_modules/**"],
+    "readme": "docs/HOMEPAGE.md",
+    "out": "docs/out",
+    "name": "iTowns",
+    "includeVersion": true,
+    "validation": { "notExported": true, "invalidLink": true, "notDocumented": false },
+    "treatWarningsAsErrors": true,
+    "categorizeByGroup": false,
+    "navigation": { "includeCategories": true },
+    "categoryOrder": ["Getting started", "Raster visualization", "Vector visualization", "3D Tiles visualization", "API", "Base", "View", "Geographic", "Layer", "Points", "Source", "Provider", "Parser", "Converter", "Controls", "Renderer", "Plugins", "Widgets", "*"],
+    "defaultCategory": "Other",
+    "externalSymbolLinkMappings": {
+        "typescript": {
+            "CanvasImageData.getImageData": "https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData"
+        },
+        "postprocessing": {
+            "EffectComposer": "https://pmndrs.github.io/postprocessing/public/docs/class/src/core/EffectComposer.js~EffectComposer.html",
+            "RenderPass": "https://pmndrs.github.io/postprocessing/public/docs/class/src/passes/RenderPass.js~RenderPass.html",
+            "Pass.initialize": "https://pmndrs.github.io/postprocessing/public/docs/class/src/passes/Pass.js~Pass.html#instance-method-initialize"
+        }
+    }
+}

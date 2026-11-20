@@ -28,6 +28,7 @@ function findSessionId(tile) {
  * true. You should not change this, as it is used internally for optimisation.
  * @property {string} url - The URL to the tileset json.
  * @property {string} baseUrl - The base URL to access tiles.
+ * @category Source
  */
 class C3DTilesGoogleSource extends C3DTilesSource {
     /**

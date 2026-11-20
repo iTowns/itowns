@@ -2,6 +2,11 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import * as maplibre from '@maplibre/maplibre-gl-style-spec';
 
 /**
+ * @import * as THREE from 'three'
+ * @import { StyleContext } from 'Core/Style'
+ */
+
+/**
  * An object that can contain any properties (zoom, fill, stroke, point,
  * text or/and icon) and sub properties of a Style.
  * Used for the instanciation of a {@link Style}.
@@ -145,12 +150,13 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
  * It will change the color of the white pixels of the icon source image.
  * @property {number|Function} [icon.opacity] - The opacity of the icon. Can be between
  * `0.0` and `1.0`. Default is `1.0`.
+ * @category Base
  */
 
 /**
  * generate a StyleOptions from (geojson-like) properties.
  * @param {object} properties (geojson-like) properties.
- * @param {FeatureContext} featCtx the context of the feature
+ * @param {StyleContext} featCtx the context of the feature
  *
  * @returns {StyleOptions} containing all properties for itowns.Style
  */
