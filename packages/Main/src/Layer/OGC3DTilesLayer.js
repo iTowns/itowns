@@ -23,6 +23,12 @@ import PointsMaterial, {
     ClassificationScheme,
 } from 'Renderer/PointsMaterial';
 
+/**
+ * @import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js'
+ * @import View from 'Core/View'
+ * @import OGC3DTilesSource from 'Source/OGC3DTilesSource'
+ */
+
 const _raycaster = new THREE.Raycaster();
 
 // Internal instance of GLTFLoader, passed to 3d-tiles-renderer-js to support GLTF 1.0 and 2.0
@@ -126,7 +132,7 @@ export function enableKtx2Loader(path, renderer) {
  * Enable loading 3D Tiles and GLTF with
  * [meshopt](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Vendor/EXT_meshopt_compression/README.md) compression extension.
  *
- * @param {MeshOptDecoder.constructor} MeshOptDecoder - The Meshopt decoder
+ * @param {typeof MeshoptDecoder} MeshOptDecoder - The Meshopt decoder
  * module.
  *
  * @example

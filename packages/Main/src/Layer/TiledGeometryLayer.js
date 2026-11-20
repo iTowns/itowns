@@ -8,6 +8,12 @@ import { getColorLayersIdOrderedBySequence } from 'Layer/ImageryLayers';
 import { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 import { RenderTargetCache } from 'Renderer/RenderTargetCache';
 
+/**
+ * @import View from 'Core/View'
+ * @import Layer from 'Layer/Layer'
+ * @import TileMesh from 'Core/TileMesh'
+ */
+
 const subdivisionVector = new THREE.Vector3();
 const boundingSphereCenter = new THREE.Vector3();
 

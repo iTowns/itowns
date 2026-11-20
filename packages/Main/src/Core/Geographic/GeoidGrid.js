@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { Coordinates, CRS } from '@itowns/geographic';
 
+/**
+ * @import { Extent } from '@itowns/geographic'
+ */
+
 const coord = new Coordinates('EPSG:4326');
 const indexes = new THREE.Vector2();
 

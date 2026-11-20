@@ -5,6 +5,10 @@ import { globalExtentTMS, globalDefaultExtentCRS } from 'Core/Tile/TileGrid';
 import { PlanarTileBuilder } from './PlanarTileBuilder';
 
 /**
+ * @import { Extent } from '@itowns/geographic'
+ */
+
+/**
  * @property {boolean} isPlanarLayer - Used to checkout whether this layer is a
  * PlanarLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.

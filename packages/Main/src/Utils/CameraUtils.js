@@ -8,6 +8,8 @@ import { VIEW_EVENTS } from 'Core/View';
 
 /**
  * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ * @import View from 'Core/View'
+ * @import { Extent } from '@itowns/geographic'
  */
 
 THREE.Object3D.DEFAULT_UP.set(0, 0, 1);
@@ -367,7 +369,7 @@ export default {
      * Stop camera's animation
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to stop animation
+     * @param      {THREE.Camera}  camera  The camera to stop animation
      */
     stop(view, camera) {
         getRig(camera).stop(view);
@@ -376,7 +378,7 @@ export default {
      * Gets the current parameters transform camera looking at target.
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to get transform
+     * @param      {THREE.Camera}  camera  The camera to get transform
      * @param      {THREE.Vector3} [target] - The optional target
      * @returns     {CameraTransformOptions}  The transform camera looking at target
      */
@@ -389,7 +391,7 @@ export default {
      * Apply transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to transform
+     * @param      {THREE.Camera}  camera  The camera to transform
      * @param      {CameraTransformOptions|Extent}  params  The parameters
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
@@ -473,7 +475,7 @@ export default {
      * Apply transform to camera with animation
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraTransformOptions}  params  The parameters
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */
@@ -500,7 +502,7 @@ export default {
      * chain animation transform to camera
      *
      * @param      {View}  view    The camera view
-     * @param      {Camera}  camera  The camera to animate
+     * @param      {THREE.Camera}  camera  The camera to animate
      * @param      {CameraTransformOptions[]}  params  array parameters, each parameters transforms are apply to camera, in serial
      * @returns     {Promise} promise with resolve final CameraTransformOptions
      */

@@ -2,6 +2,10 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import * as maplibre from '@maplibre/maplibre-gl-style-spec';
 
 /**
+ * @import { StyleContext } from 'Core/Style'
+ */
+
+/**
  * An object that can contain any properties (zoom, fill, stroke, point,
  * text or/and icon) and sub properties of a Style.
  * Used for the instanciation of a {@link Style}.
@@ -151,7 +155,7 @@ import * as maplibre from '@maplibre/maplibre-gl-style-spec';
 /**
  * generate a StyleOptions from (geojson-like) properties.
  * @param {object} properties (geojson-like) properties.
- * @param {FeatureContext} featCtx the context of the feature
+ * @param {StyleContext} featCtx the context of the feature
  *
  * @returns {StyleOptions} containing all properties for itowns.Style
  */

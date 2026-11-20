@@ -4,6 +4,7 @@ import { LRUCache } from 'lru-cache';
 /**
  * @import { FeatureBuildingOptions } from 'Core/Feature'
  * @import Layer from 'Layer/Layer'
+ * @import { Extent } from '@itowns/geographic'
  */
 
 /**

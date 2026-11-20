@@ -1,6 +1,10 @@
 import * as itowns from 'itowns';
 
 /**
+ * @import { View, Layer } from 'itowns'
+ */
+
+/**
  * A tooltip that can display some useful information about a feature when
  * hovering it.
  *

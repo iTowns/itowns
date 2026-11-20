@@ -7,6 +7,7 @@ import PlanarLayer from './Planar/PlanarLayer';
 
 /**
  * @import { CameraTransformOptions } from 'Utils/CameraTransformOptions'
+ * @import { Extent } from '@itowns/geographic'
  */
 
 /**

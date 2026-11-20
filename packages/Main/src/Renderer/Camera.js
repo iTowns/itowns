@@ -3,6 +3,11 @@ import { Coordinates } from '@itowns/geographic';
 import DEMUtils from 'Utils/DEMUtils';
 
 /**
+ * @import View from 'Core/View'
+ * @import ElevationLayer from 'Layer/ElevationLayer'
+ */
+
+/**
  * @typedef     {object}    CAMERA_TYPE
  * Stores the different types of camera usable in iTowns.
  *

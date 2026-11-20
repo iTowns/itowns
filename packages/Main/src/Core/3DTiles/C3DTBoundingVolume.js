@@ -2,6 +2,10 @@ import * as THREE from 'three';
 import { Ellipsoid, Coordinates } from '@itowns/geographic';
 import { C3DTilesTypes, C3DTilesBoundingVolumeTypes } from './C3DTilesEnums';
 
+/**
+ * @import Camera from 'Renderer/Camera'
+ */
+
 const ellipsoid = new Ellipsoid();
 
 // bounding box scratch variables

@@ -7,6 +7,7 @@
         "paths": {
             "@itowns/geographic": ["packages/Geographic/src/index.ts"],
             "Main": ["packages/Main/src/Main.ts"],
+            "itowns": ["packages/Main/src/Main.ts"],
             "*": ["packages/Main/src/*"]
         }
     },

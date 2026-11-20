@@ -12,6 +12,10 @@ import Picking from 'Core/Picking';
 import LabelLayer from 'Layer/LabelLayer';
 import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 
+/**
+ * @import Layer from 'Layer/Layer'
+ */
+
 export const VIEW_EVENTS = {
     /**
      * Fires when all the layers of the view are considered initialized.
@@ -531,40 +535,6 @@ class View extends THREE.EventDispatcher {
             .reduce((max, layer) => Math.max(max, layer.scale), 1.0);
     }
 
-    /**
-     * @name FrameRequester
-     * @function
-     *
-     * @description
-     * Method that will be called each time the `MainLoop` updates. This function
-     * will be given as parameter the delta (in ms) between this update and the
-     * previous one, and whether or not we just started to render again. This update
-     * is considered as the "next" update if `view.notifyChange` was called during a
-     * precedent update. If `view.notifyChange` has been called by something else
-     * (other micro/macrotask, UI events etc...), then this update is considered as
-     * being the "first". It can also receive optional arguments, depending on the
-     * attach point of this function. Currently only `BEFORE_LAYER_UPDATE /
-     * AFTER_LAYER_UPDATE` attach points provide an additional argument: the layer
-     * being updated.
-     * <br><br>
-     *
-     * This means that if a `frameRequester` function wants to animate something, it
-     * should keep on calling `view.notifyChange` until its task is done.
-     * <br><br>
-     *
-     * Implementors of `frameRequester` should keep in mind that this function will
-     * be potentially called at each frame, thus care should be given about
-     * performance.
-     * <br><br>
-     *
-     * Typical frameRequesters are controls, module wanting to animate moves or UI
-     * elements etc... Basically anything that would want to call
-     * requestAnimationFrame.
-     *
-     * @param {number} dt
-     * @param {boolean} updateLoopRestarted
-     * @param {...*} args
-     */
     /**
      * Add a frame requester to this view.
      *
@@ -1181,3 +1151,38 @@ class View extends THREE.EventDispatcher {
 }
 
 export default View;
+
+/**
+ * @callback FrameRequester
+ * Method that will be called each time the `MainLoop` updates. This function
+ * will be given as parameter the delta (in ms) between this update and the
+ * previous one, and whether or not we just started to render again. This update
+ * is considered as the "next" update if `view.notifyChange` was called during a
+ * precedent update. If `view.notifyChange` has been called by something else
+ * (other micro/macrotask, UI events etc...), then this update is considered as
+ * being the "first". It can also receive optional arguments, depending on the
+ * attach point of this function. Currently only `BEFORE_LAYER_UPDATE /
+ * AFTER_LAYER_UPDATE` attach points provide an additional argument: the layer
+ * being updated.
+ * <br><br>
+ *
+ * This means that if a `frameRequester` function wants to animate something, it
+ * should keep on calling `view.notifyChange` until its task is done.
+ * <br><br>
+ *
+ * Implementors of `frameRequester` should keep in mind that this function will
+ * be potentially called at each frame, thus care should be given about
+ * performance.
+ * <br><br>
+ *
+ * Typical frameRequesters are controls, module wanting to animate moves or UI
+ * elements etc... Basically anything that would want to call
+ * requestAnimationFrame.
+ *
+ * @param {number} dt
+ * @param {boolean} updateLoopRestarted
+ * @param {...*} args
+ * @returns {void}
+ *
+ * @category View
+ */

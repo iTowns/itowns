@@ -5,6 +5,10 @@ import { globalExtentTMS, schemeTiles } from 'Core/Tile/TileGrid';
 import { GlobeTileBuilder } from 'Core/Prefab/Globe/GlobeTileBuilder';
 
 /**
+ * @import TileMesh from 'Core/TileMesh'
+ */
+
+/**
  * @property {boolean} isGlobeLayer - Used to checkout whether this layer is a
  * GlobeLayer. Default is true. You should not change this, as it is used
  * internally for optimisation.

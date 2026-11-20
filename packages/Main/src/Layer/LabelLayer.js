@@ -7,6 +7,10 @@ import Label from 'Core/Label';
 import Style, { readExpression, StyleContext } from 'Core/Style';
 import { ScreenGrid } from 'Renderer/Label2DRenderer';
 
+/**
+ * @import { FeatureCollection } from 'Core/Feature'
+ */
+
 const context = new StyleContext();
 
 const coord = new Coordinates('EPSG:4326', 0, 0, 0);

@@ -2,6 +2,10 @@ import { Coordinates } from '@itowns/geographic';
 import { MAIN_LOOP_EVENTS, PlanarView, CAMERA_TYPE } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { GlobeView, ColorLayer } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     minScale: 1 / 500000,

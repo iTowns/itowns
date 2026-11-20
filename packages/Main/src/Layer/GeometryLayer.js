@@ -5,6 +5,11 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
 
 /**
+ * @import View from 'Core/View'
+ * @import Source from 'Source/Source'
+ */
+
+/**
  * Fires when the opacity of the layer has changed.
  * @event GeometryLayer#"opacity-property-changed"
  */

@@ -64,6 +64,7 @@ export { default as c3DEngine } from 'Renderer/c3DEngine';
 export { CACHE_POLICIES } from 'Core/Scheduler/Cache';
 export { default as Scheduler } from 'Core/Scheduler/Scheduler';
 export type { Provider, ProviderCommand } from 'Core/Scheduler/Scheduler';
+export type { FrameRequester } from 'Core/View';
 
 // Layers provided by default in iTowns
 // A custom layer should at least implements Layer

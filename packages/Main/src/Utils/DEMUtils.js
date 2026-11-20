@@ -5,6 +5,8 @@ import placeObjectOnGround from 'Utils/placeObjectOnGround';
 
 /**
  * @import { Terrain } from 'Utils/Terrain'
+ * @import TileMesh from 'Core/TileMesh'
+ * @import TiledGeometryLayer from 'Layer/TiledGeometryLayer'
  */
 
 const FAST_READ_Z = 0;

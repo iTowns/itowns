@@ -1,6 +1,10 @@
 import { CONTROL_EVENTS, GLOBE_VIEW_EVENTS, PLANAR_CONTROL_EVENT, VIEW_EVENTS } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { View } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     width: 200,

@@ -12,6 +12,10 @@ import Label2DRenderer from 'Renderer/Label2DRenderer';
 import { deprecatedC3DEngineWebGLOptions } from 'Core/Deprecated/Undeprecator';
 import { EffectComposer } from 'postprocessing';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const depthRGBA = new THREE.Vector4();
 /**
  * @category Renderer

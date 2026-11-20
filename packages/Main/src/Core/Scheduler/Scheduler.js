@@ -13,6 +13,11 @@ import PointCloudProvider from 'Provider/PointCloudProvider';
 import URLBuilder from 'Provider/URLBuilder';
 import CancelledCommandException from './CancelledCommandException';
 
+/**
+ * @import View from 'Core/View'
+ * @import Layer from 'Layer/Layer'
+ */
+
 function queueOrdering(a, b) {
     const cmp = b.priority - a.priority;
     // Prioritize recent commands

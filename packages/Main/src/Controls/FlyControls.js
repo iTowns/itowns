@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const MOVEMENTS = {
     38: { method: 'translateZ', sign: -1 }, // FORWARD: up key
     40: { method: 'translateZ', sign: 1 }, // BACKWARD: down key

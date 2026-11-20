@@ -1,6 +1,11 @@
 import * as THREE from 'three';
 import LegacyGLTFLoader from 'Parser/deprecated/LegacyGLTFLoader';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+/**
+ * @import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js'
+ * @import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js'
+ */
 /**
  * @category Parser
  */
@@ -93,7 +98,7 @@ class iGLTFLoader extends THREE.Loader {
      * [Draco](https://google.github.io/draco/) geometry extension. See Threejs
      * [DracoLoader](https://threejs.org/docs/index.html#examples/en/loaders/DRACOLoader) for more information.
      * Only works for GLTF 2.0 files.
-     * @param {THREE.DracoLoader} dracoLoader - the threejs DracoLoader instance.
+     * @param {DRACOLoader} dracoLoader - the threejs DracoLoader instance.
      */
     setDRACOLoader(dracoLoader) {
         this.glTFLoader.setDRACOLoader(dracoLoader);
@@ -104,7 +109,7 @@ class iGLTFLoader extends THREE.Loader {
      * [KTX2](https://www.khronos.org/ktx/) texture extension. See Threejs
      * [KTX2Loader](https://threejs.org/docs/index.html?q=KTX2#examples/en/loaders/KTX2Loader) for more information.
      * Only works for GLTF 2.0 files.
-     * @param {THREE.KTX2Loader} ktx2Loader - the threejs KTX2Loader instance.
+     * @param {KTX2Loader} ktx2Loader - the threejs KTX2Loader instance.
      */
     setKTX2Loader(ktx2Loader) {
         this.glTFLoader.setKTX2Loader(ktx2Loader);

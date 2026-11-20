@@ -8,6 +8,11 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { C3DTilesBoundingVolumeTypes } from 'Core/3DTiles/C3DTilesEnums';
 import { C3DTILES_LAYER_EVENTS } from '../Layer/C3DTilesLayer';
 
+/**
+ * @import Camera from 'Renderer/Camera'
+ * @import C3DTilesLayer from 'Layer/C3DTilesLayer'
+ */
+
 function requestNewTile(view, scheduler, geometryLayer, metadata, parent, redraw) {
     const command = {
         /* mandatory */

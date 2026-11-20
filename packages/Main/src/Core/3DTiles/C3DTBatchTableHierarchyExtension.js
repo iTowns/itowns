@@ -67,7 +67,7 @@ class C3DTBatchTableHierarchyExtension {
     /**
      * Creates and returns a javascript object holding the displayable
      * information relative to this extension for a given feature.
-     * @param {integer} featureId - id of the feature
+     * @param {number} featureId - integer id of the feature
      * @returns {object} - displayable information relative to this
      * extension, for the feature with id=featureId and for its parents
      */

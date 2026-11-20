@@ -88,7 +88,7 @@ class C3DTBatchTable {
      * Creates and returns a javascript object holding the displayable
      * information from the batch table and from extensions of the batch table,
      * for a given feature (identified with its batchID).
-     * @param {integer} batchID - id of the feature
+     * @param {number} batchID - integer id of the feature
      * @returns {object} - displayable information relative to the batch
      * table and its extensions. Object is formatted as follow:
      * {batchTable:

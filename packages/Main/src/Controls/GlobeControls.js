@@ -1007,7 +1007,7 @@ class GlobeControls extends THREE.EventDispatcher {
     /**
      * Displaces the central point to a specific amount of pixels from its current position.
      * The view flies to the desired coordinate, i.e.is not teleported instantly. Note : The results can be strange in some cases, if ever possible, when e.g.the camera looks horizontally or if the displaced center would not pick the ground once displaced.
-     * @param      {vector}  pVector  The vector
+     * @param      {THREE.Vector2}  pVector  The vector
      * @returns {Promise}
      */
     pan(pVector) {
@@ -1208,7 +1208,7 @@ class GlobeControls extends THREE.EventDispatcher {
 
     /**
      * Pick a position on the globe at the given position in lat,lon. See {@linkcode Coordinates} for conversion.
-     * @param {Vector2} windowCoords - window coordinates
+     * @param {THREE.Vector2} windowCoords - window coordinates
      * @returns {Coordinates} position
      */
     pickGeoPosition(windowCoords) {

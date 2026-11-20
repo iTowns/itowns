@@ -4,6 +4,10 @@ import ShaderUtils from 'Renderer/Shader/ShaderUtils';
 import textureVS from './Shader/ProjectiveTextureVS.glsl';
 import textureFS from './Shader/ProjectiveTextureFS.glsl';
 
+/**
+ * @import OrientedImageCamera from 'Renderer/OrientedImageCamera'
+ */
+
 const ndcToTextureMatrix = new THREE.Matrix4(
     1, 0, 0, 1,
     0, 1, 0, 1,

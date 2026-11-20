@@ -3,6 +3,10 @@ import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 import FirstPersonControls from 'Controls/FirstPersonControls';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 const material = new THREE.MeshBasicMaterial({
     color: 0xffffff,
     depthTest: false,

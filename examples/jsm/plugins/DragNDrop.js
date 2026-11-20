@@ -1,6 +1,10 @@
 import * as itowns from 'itowns';
 
 /**
+ * @import { View } from 'itowns'
+ */
+
+/**
  * This module can be added to a web page or in a web application. It provides a
  * simple behavior where single files can be drag and dropped onto a viewer. No
  * relationship between a type of file and the way it is read, parsed and

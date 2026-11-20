@@ -3,6 +3,11 @@ import RenderMode from 'Renderer/RenderMode';
 import { unpack1K } from 'Renderer/LayeredMaterial';
 import { Coordinates } from '@itowns/geographic';
 
+/**
+ * @import View from 'Core/View'
+ * @import TiledGeometryLayer from 'Layer/TiledGeometryLayer'
+ */
+
 const depthRGBA = new THREE.Vector4();
 // TileMesh picking support function
 function screenCoordsToNodeId(view, tileLayer, viewCoords, radius = 0) {

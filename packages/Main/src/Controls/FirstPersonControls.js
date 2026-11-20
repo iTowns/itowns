@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { MAIN_LOOP_EVENTS } from 'Core/MainLoop';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 // Note: we could use existing three.js controls (like https://github.com/mrdoob/three.js/blob/dev/examples/js/controls/FirstPersonControls.js)
 // but including these controls in itowns allows use to integrate them tightly with itowns.
 // Especially the existing controls are expecting a continuous update loop while we have a pausable one (so our controls use .notifyChange when needed)

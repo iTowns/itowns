@@ -1,6 +1,10 @@
 import { VIEW_EVENTS } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { GlobeView } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     displayCompass: true,

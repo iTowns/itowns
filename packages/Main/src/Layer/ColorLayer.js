@@ -4,6 +4,10 @@ import { deprecatedColorLayerOptions } from 'Core/Deprecated/Undeprecator';
 import Style from 'Core/Style';
 
 /**
+ * @import TileMesh from 'Core/TileMesh'
+ */
+
+/**
  * Fires when the visiblity of the layer has changed.
  * @event ColorLayer#"visible-property-changed"
  */

@@ -1,6 +1,10 @@
 import { FEATURE_TYPES } from 'Core/Feature';
 import { Coordinates } from '@itowns/geographic';
 
+/**
+ * @import Feature from 'Core/Feature'
+ */
+
 function pointIsOverLine(point, linePoints, epsilon, offset, count, size) {
     const x0 = point.x;
     const y0 = point.y;

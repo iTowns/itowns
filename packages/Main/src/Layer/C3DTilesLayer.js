@@ -8,6 +8,11 @@ import Style from 'Core/Style';
 import C3DTFeature from 'Core/3DTiles/C3DTFeature';
 import { optimizeGeometryGroups } from 'Utils/ThreeUtils';
 
+/**
+ * @import View from 'Core/View'
+ * @import C3DTilesSource from 'Source/C3DTilesSource'
+ */
+
 export const C3DTILES_LAYER_EVENTS = {
     /**
      * Fires when a tile content has been loaded
@@ -237,7 +242,7 @@ class C3DTilesLayer extends GeometryLayer {
      * computed with view.pickObjectsAt(..). See fillHTMLWithPickingInfo()
      * in 3dTilesHelper.js for an example.
      *
-     * @returns {C3DTileFeature} - the closest C3DTileFeature of the intersects array
+     * @returns {C3DTFeature} - the closest C3DTileFeature of the intersects array
      */
     getC3DTileFeatureFromIntersectsArray(intersects) {
         // find closest intersect with an attributes _batchid + face != undefined

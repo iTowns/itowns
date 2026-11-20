@@ -1,6 +1,10 @@
 import { Fetcher } from 'itowns';
 import Widget from './Widget';
 
+/**
+ * @import { View } from 'itowns'
+ */
+
 
 const DEFAULT_OPTIONS = {
     width: 300,

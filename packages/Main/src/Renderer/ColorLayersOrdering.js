@@ -5,6 +5,10 @@ import {
     moveLayerToIndex,
 } from 'Layer/ImageryLayers';
 
+/**
+ * @import View from 'Core/View'
+ */
+
 function updateLayersOrdering(geometryLayer, imageryLayers) {
     const sequence = getColorLayersIdOrderedBySequence(imageryLayers);
     const cO = function cO(object) {

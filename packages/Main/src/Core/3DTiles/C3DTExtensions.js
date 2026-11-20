@@ -1,4 +1,8 @@
 /**
+ * @import { C3DTilesTypes } from './C3DTilesEnums'
+ */
+
+/**
  * Class for managing
  * [3D Tiles extensions](https://github.com/AnalyticalGraphicsInc/3d-tiles/tree/master/extensions).
  * Extensions used in a 3D Tiles tileset must be registered in the iTowns' layer
