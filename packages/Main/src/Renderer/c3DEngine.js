@@ -84,10 +84,6 @@ class c3DEngine {
             this.width = w;
             this.height = h;
             this.fullSizeRenderTarget.setSize(this.width, this.height);
-            if (this._shouldDisposeRenderer) {
-                // devicePixelRatio may have changed (zoom, screen change)
-                this.renderer.setPixelRatio(window.devicePixelRatio);
-            }
             this.renderer.setSize(this.width, this.height);
             this.label2dRenderer.setSize(this.width, this.height);
             this.composer.setSize(this.width, this.height);

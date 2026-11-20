@@ -215,7 +215,8 @@ class View extends THREE.EventDispatcher {
                 // The MediaQueryList is kept on the view so it is not garbage collected.
                 this._dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
                 this._dprQuery.addEventListener('change', () => {
-                    this.resize();
+                    this.renderer.setPixelRatio(window.devicePixelRatio);
+                    this.notifyChange();
                     listenDprChange();
                 }, { once: true, signal: this._dprAbortController.signal });
             };
