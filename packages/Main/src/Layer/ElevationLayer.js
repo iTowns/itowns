@@ -132,7 +132,7 @@ class ElevationLayer extends RasterLayer {
     }
 
     getRasterTileParent(node) {
-        return node.parent.material?.getCurrentElevationTile();
+        return node.parent.material?.getTile(this.id);
     }
 
     onNodeCreated(node) {
