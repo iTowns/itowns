@@ -1121,7 +1121,7 @@ function createInstancedMesh(mesh, ptsIn, geometries, modelSize) {
  * Convert a {@link Feature} of type POINT to a Instanced meshes
  *
  * @param {object} feature
- * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
+ * @returns {THREE.Mesh} mesh or GROUP of {@link THREE.InstancedMesh}
  */
 function pointsToInstancedMeshes(feature) {
     context.setFeature(feature);
@@ -1160,7 +1160,7 @@ function pointsToInstancedMeshes(feature) {
  * @param {Feature} feature - the feature to convert
  * @param {object} options - options controlling the conversion
  *
- * @returns {THREE.Mesh} mesh or GROUP of THREE.InstancedMesh
+ * @returns {THREE.Mesh} mesh or GROUP of {@link THREE.InstancedMesh}
  */
 function featureToMesh(feature, options) {
     if (!feature.vertices) {
@@ -1235,7 +1235,7 @@ export function rebuildMeshTopology(featureMesh, layerStyle) {
 export default {
     /**
      * Return a function that converts `Features` from {@link GeoJsonParser} to Meshes. Feature
-     * collection will be converted to a THREE.Group.
+     * collection will be converted to a {@link THREE.Group}.
      *
      * @param {object} options - options controlling the conversion
      * @param {Function} [options.batchId] - optional function to create batchId attribute.

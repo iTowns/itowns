@@ -14,7 +14,7 @@ class iGLTFLoader extends THREE.Loader {
     /**
      * Parses [glTF](https://www.khronos.org/gltf/) 1.0 and 2.0 files.
      *
-     * Under the hood, glTF 2.0 files are parsed with THREE.GLTFLoader and GLTF 1.0 are parsed with the previous THREE
+     * Under the hood, glTF 2.0 files are parsed with {@link THREE.GLTFLoader} and GLTF 1.0 are parsed with the previous THREE
      * GltfLoader (for 1.0 glTF) that has been kept and maintained in iTowns.
      *
      * Beware that gltf convention is y-up while itowns is z-up. You can apply a PI/2 rotation around the X axis to the

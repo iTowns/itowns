@@ -7,6 +7,10 @@ import { sharedContext2D, sharedReadContext2D } from 'Utils/CanvasUtils';
 
 import itowns_stroke_single_before from './StyleChunk/itowns_stroke_single_before.css';
 
+/**
+ * @import * as THREE from 'three'
+ */
+
 const cachedImg = new LRUCache({ max: 500 });
 
 let matrix;

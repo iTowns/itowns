@@ -79,7 +79,7 @@ export default {
     },
 
     /**
-     * Parse .bin PotreeConverter 2.0 format and convert to a THREE.BufferGeometry
+     * Parse .bin PotreeConverter 2.0 format and convert to a {@link THREE.BufferGeometry}
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {object} options
      * @param {object} options.in
@@ -87,7 +87,7 @@ export default {
      * @param {THREE.Box3} options.in.bbox - the bbox of the node
      * @param {string} options.out.crs - crs of the view
      *
-     * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @returns {Promise} - a promise that resolves with a {@link THREE.BufferGeometry}.
      */
     parse: async function parse(buffer, options) {
         const potreeLoader = await loader();

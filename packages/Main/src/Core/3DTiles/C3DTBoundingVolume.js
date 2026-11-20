@@ -97,8 +97,8 @@ function initFromSphere(sphere) {
  * (i.e. for which 3D Tiles class) the parsing of the extension should be done.
  * @property {string} initialVolumeType - the initial volume type to be able to dissociate spheres
  * and regions if needed since both are converted to spheres (one of {@link C3DTilesBoundingVolumeTypes})
- * @property {THREE.Box3|THREE.Sphere} volume - The 3D bounding volume created. Can be a THREE.Box3 for bounding volumes
- * of types box or a THREE.Sphere for bounding volumes of type sphere or region.
+ * @property {THREE.Box3|THREE.Sphere} volume - The 3D bounding volume created. Can be a {@link THREE.Box3} for bounding volumes
+ * of types box or a {@link THREE.Sphere} for bounding volumes of type sphere or region.
  * @property {object} extensions - 3D Tiles extensions of the bounding volume
  * stored in the following format:
  * {extensioName1: extensionObject1, extensioName2: extensionObject2, ...}

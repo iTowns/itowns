@@ -103,13 +103,13 @@ for (const potreeName of Object.keys(POINT_ATTRIBUTES)) {
  */
 export default {
     /**
-     * Parse .bin PotreeConverter format and convert to a THREE.BufferGeometry
+     * Parse .bin PotreeConverter format and convert to a {@link THREE.BufferGeometry}
      * @param {ArrayBuffer} buffer - the bin buffer.
      * @param {object} options
      * @param {object} options.in
      * @param {string[]} options.in.pointAttributes - the point attributes information contained in cloud.js
      * @param {string} options.out.crs - crs of the view
-     * @returns {Promise} - a promise that resolves with a THREE.BufferGeometry.
+     * @returns {Promise} - a promise that resolves with a {@link THREE.BufferGeometry}.
      *
      */
     parse: function parse(buffer, options) {

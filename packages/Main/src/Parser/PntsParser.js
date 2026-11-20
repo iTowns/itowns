@@ -11,11 +11,11 @@ const utf8Decoder = new TextDecoder();
  */
 export default {
     /**
-     * Parse pnts buffer and extract THREE.Points and batch table
+     * Parse pnts buffer and extract {@link THREE.Points} and batch table
      * @param {ArrayBuffer} buffer - the pnts buffer.
      * @param {object} registeredExtensions - 3D Tiles extensions registered
      * in the layer
-     * @returns {Promise} - a promise that resolves with an object containig a THREE.Points (point) and a batch table (batchTable).
+     * @returns {Promise} - a promise that resolves with an object containig a {@link THREE.Points} (point) and a batch table (batchTable).
      *
      */
     parse: function parse(buffer, registeredExtensions) {

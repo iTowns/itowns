@@ -1,4 +1,8 @@
 /**
+ * @import * as THREE from 'three'
+ */
+
+/**
  * Find threejs textures from a material
  * @param {Material} material the threejs material holding textures
  * @returns {Array} an array of textures in the material

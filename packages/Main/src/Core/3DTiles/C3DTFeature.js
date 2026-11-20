@@ -2,6 +2,10 @@
 import { Object3D, Box3 } from 'three';
 
 /**
+ * @import * as THREE from 'three'
+ */
+
+/**
  * Finds the batch table of an object in a 3D Tiles layer. This is
  * for instance needed when picking because we pick the geometric
  * object which is not at the same level in the layer structure as

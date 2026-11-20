@@ -45,8 +45,8 @@ class OrientedImageCamera extends THREE.PerspectiveCamera {
      * @param {number|THREE.Vector2} size - image size in pixels (default: x=1024, y=x)
      * @param {number|THREE.Vector2} focal - focal length in pixels (default: x=1024, y=x)
      * @param {THREE.Vector2} center - principal point in pixels (default: size/2)
-     * @param {number} near - Camera frustum near plane (default: see THREE.PerspectiveCamera).
-     * @param {number} far - Camera frustum far plane (default: see THREE.PerspectiveCamera).
+     * @param {number} near - Camera frustum near plane (default: see {@link THREE.PerspectiveCamera}).
+     * @param {number} far - Camera frustum far plane (default: see {@link THREE.PerspectiveCamera}).
      * @param {number} skew - shear transform parameter (default: 0)
      * @param {number} aspect - aspect ratio of the camera (default: size.x/size.y).
      */

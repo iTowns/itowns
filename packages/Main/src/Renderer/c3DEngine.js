@@ -203,7 +203,7 @@ class c3DEngine {
     }
 
     /**
-     * Render view to a THREE.RenderTarget.
+     * Render view to a {@link THREE.RenderTarget}.
      *
      * @param {View} view - The view to render
      * @param {THREE.RenderTarget} [target] - destination render target. Default value: full size render target owned by c3DEngine.

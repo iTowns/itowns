@@ -2,6 +2,7 @@ import { FEATURE_TYPES } from 'Core/Feature';
 import * as maplibre from '@maplibre/maplibre-gl-style-spec';
 
 /**
+ * @import * as THREE from 'three'
  * @import { StyleContext } from 'Core/Style'
  */
 

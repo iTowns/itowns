@@ -45,14 +45,14 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
      * {@link CameraCalibrationParser} can be used to create this array of camera from a configuration file.
      * @param {object} [options={}] - Object with one or more properties defining the material's appearance.
      * Any property of the material (including any property inherited from
-     * [THREE.Material](https://threejs.org/docs/#api/en/materials/Material) and
-     * [THREE.ShaderMaterial](https://threejs.org/docs/#api/en/materials/ShaderMaterial)) can be passed in here.
+     * {@link THREE.Material} and
+     * {@link THREE.ShaderMaterial}) can be passed in here.
      * @param {number} [options.side=THREE.DoubleSide] - We override default
-     * [THREE.Material.side](https://threejs.org/docs/#api/en/materials/Material.side) from FrontSide to DoubleSide.
+     * {@link THREE.Material.side} from FrontSide to DoubleSide.
      * @param {boolean} [options.transparent=true] - We override default
-     * [THREE.Material.transparent](https://threejs.org/docs/#api/en/materials/Material.transparent) from false to true.
+     * {@link THREE.Material.transparent} from false to true.
      * @param {number} [options.opacity=0.1] - We override default
-     * [THREE.Material.opacity](https://threejs.org/docs/#api/en/materials/Material.opacity) from 1 to 0.1.
+     * {@link THREE.Material.opacity} from 1 to 0.1.
      * @param {number} [options.alphaBorder=20] - Part of the texture that is blended, when texture crosses each other.
      * For example, 10 means a border as large as 1 / 10 of the size of the texture is used to blend colors.
      * @param {number} [options.debugAlphaBorder=0] - Set this option to 1 to see influence of alphaBorder option.
@@ -132,7 +132,7 @@ class OrientedImageMaterial extends THREE.ShaderMaterial {
 
     /**
      * Set new textures and new position/orientation of the camera set.
-     * @param {THREE.Texture} textures - Array of [THREE.Texture](https://threejs.org/docs/#api/en/textures/Texture).
+     * @param {THREE.Texture} textures - Array of {@link THREE.Texture}.
      * @param {object} feature - New position / orientation of the set of cameras
      * @param {THREE.Vector3} feature.position - New position.
      * @param {THREE.Quaternion} feature.quaternion - New orientation.

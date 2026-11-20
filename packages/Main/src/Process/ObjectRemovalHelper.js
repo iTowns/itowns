@@ -1,4 +1,5 @@
 /**
+ * @import * as THREE from 'three'
  * @import Layer from 'Layer/Layer'
  */
 

@@ -55,7 +55,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * Fired when a tile model is loaded
      * @event OGC3DTilesLayer#"load-model"
      * @type {object}
-     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {THREE.Group} scene - the model (tile content) parsed in a {@link THREE.Group}
      * @property {object} tile - the tile metadata from the tileset
      */
     LOAD_MODEL: 'load-model',
@@ -71,7 +71,7 @@ export const OGC3DTILES_LAYER_EVENTS = {
      * Fired when a tiles visibility changes
      * @event OGC3DTilesLayer#"tile-visibility-change"
      * @type {object}
-     * @property {THREE.Group} scene - the model (tile content) parsed in a THREE.GROUP
+     * @property {THREE.Group} scene - the model (tile content) parsed in a {@link THREE.Group}
      * @property {object} tile - the tile metadata from the tileset
      * @property {boolean} visible - the tile visible state
      */
@@ -674,7 +674,7 @@ class OGC3DTilesLayer extends GeometryLayer {
      *
      * @param {Function} callback The callback to execute for each tile. Has the following two parameters:
      *  1. tile (Object) - the JSON tile
-     *  2. scene (THREE.Object3D | null) - The tile content. Contains a `batchTable` property. Can be null if the tile
+     *  2. scene ({@link THREE.Object3D} | null) - The tile content. Contains a `batchTable` property. Can be null if the tile
      *  has not yet been loaded.
      */
     forEachTile(callback) {

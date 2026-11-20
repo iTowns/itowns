@@ -168,8 +168,8 @@ class View extends THREE.EventDispatcher {
      * a default one will be constructed. In this case, if options.renderer is an object, it will be used to
      * configure the renderer (see `c3DEngine`.  If not present, a new &lt;canvas> will be created and
      * added to viewerDiv (mutually exclusive with mainLoop)
-     * @param {Scene} [options.scene3D] - [THREE.Scene](https://threejs.org/docs/#api/en/scenes/Scene) instance to use, otherwise a default one will be constructed
-     * @param {Color} [options.diffuse] - [THREE.Color](https://threejs.org/docs/?q=color#api/en/math/Color) Diffuse color terrain material.
+     * @param {Scene} [options.scene3D] - {@link THREE.Scene} instance to use, otherwise a default one will be constructed
+     * @param {Color} [options.diffuse] - {@link THREE.Color} Diffuse color terrain material.
      * This color is applied to terrain if there isn't color layer on terrain extent (by example on pole).
      * @param {boolean} [options.enableFocusOnStart=true] - enable focus on dom element on start.
      */

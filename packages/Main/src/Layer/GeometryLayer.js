@@ -5,6 +5,7 @@ import ObjectRemovalHelper from 'Process/ObjectRemovalHelper';
 import { referShadowProperties } from 'Layer/ReferencingLayerProperties';
 
 /**
+ * @import * as THREE from 'three'
  * @import View from 'Core/View'
  * @import Source from 'Source/Source'
  */

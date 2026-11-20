@@ -89,8 +89,8 @@ function updateElements<T extends Object3D>(
                     if (attachedLayer.ready) {
                         (attachedLayer as UpdatableGeometryLayer<T>).update(context,
                             attachedLayer,
-                            sub.elements[i],
-                            sub.parent);
+                            sub.elements[i] as T,
+                            sub.parent as T);
                     }
                 }
             }

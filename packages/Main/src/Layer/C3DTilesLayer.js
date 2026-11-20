@@ -275,7 +275,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Called when a tile content is loaded
-     * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
+     * @param {THREE.Object3D} tileContent - tile as {@link THREE.Object3D}
      */
     onTileContentLoaded(tileContent) {
         this.initC3DTileFeatures(tileContent);
@@ -289,7 +289,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Initialize C3DTileFeatures from tileContent
-     * @param {THREE.Object3D} tileContent - tile as THREE.Object3D
+     * @param {THREE.Object3D} tileContent - tile as {@link THREE.Object3D}
      */
     initC3DTileFeatures(tileContent) {
         this.tilesC3DTileFeatures.set(tileContent.tileId, new Map()); // initialize
@@ -354,7 +354,7 @@ class C3DTilesLayer extends GeometryLayer {
 
     /**
      * Update style of the C3DTFeatures, an allowList of tile id can be passed to only update certain tile.
-     * Note that this function only update THREE.Object3D materials, in order to see style changes you should call view.notifyChange()
+     * Note that this function only update {@link THREE.Object3D} materials, in order to see style changes you should call view.notifyChange()
      * @param {Array<number>|null} [allowTileIdList] - tile ids to allow in updateStyle computation if null all tiles are updated
      *
      * @returns {boolean} true if style updated false otherwise

@@ -507,7 +507,7 @@ class Extent {
     }
 
     /**
-     * Instance Extent with THREE.Box3.
+     * Instance Extent with {@link THREE.Box3}.
      *
      * If crs is a geocentric projection, the `box3.min` and `box3.max`
      * should be the geocentric coordinates of `min` and `max` of a `box3`
